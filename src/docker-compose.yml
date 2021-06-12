@@ -1,0 +1,51 @@
+services:
+  nginx:
+    container_name: nginx
+    image: oklookat/nginx
+    restart: always
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 1111:80
+      
+  db:
+    container_name: postgres
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: elven
+     
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    restart: always
+    ports:
+      - 2222:8080
+       
+  backend:
+    container_name: backend
+    image: oklookat/backend
+    restart: unless-stopped
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: /usr/src/app/entrypoint.sh
+    volumes:
+      - "./backend:/usr/src/app"
+     
+  elvenfront:
+    container_name: elvenfront
+    image: oklookat/elvenfront
+    restart: unless-stopped
+    build:
+      context: ./elvenfront
+      dockerfile: Dockerfile
+    command: /usr/src/app/entrypoint.sh
+    volumes:
+      - "./elvenfront:/usr/src/app"
+    ports:
+      - 4444:8080
+

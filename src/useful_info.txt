@@ -1,0 +1,2 @@
+1. Run "service docker start" before run docker (do it once on WSL started. Or you can add docker to systemctl or something)
+2. If permission denied in entrypoint.sh: cd to this .sh on host machine, and run chmod +x entrypoint.sh
