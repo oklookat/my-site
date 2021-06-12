@@ -32,7 +32,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: /usr/src/app/entrypoint.sh
     volumes:
       - "./backend:/usr/src/app"
      
@@ -43,7 +42,6 @@ services:
     build:
       context: ./elvenfront
       dockerfile: Dockerfile
-    command: /usr/src/app/entrypoint.sh
     volumes:
       - "./elvenfront:/usr/src/app"
     ports:
