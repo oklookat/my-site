@@ -46,6 +46,7 @@ body {
   font-family: 'Helvetica', 'Arial', sans-serif;
   color: var(--color-text);
   background-color: var(--color-body);
+  height: 100vh;
 }
 
 ::-webkit-scrollbar {
@@ -69,9 +70,11 @@ a {
 }
 
 #app {
+  height: 100vh;
 }
 
 .container {
+  height: 100vh;
   word-break: break-word;
 }
 
@@ -133,6 +136,13 @@ input:focus::placeholder {
   color: var(--color-text);
   background-color: var(--color-hover);
 }
+
+.ce-block__content,
+.ce-toolbar__content {
+  max-height: unset;
+  max-width: unset;
+}
+
 
 @media screen and (min-width: 640px) {
   .content {

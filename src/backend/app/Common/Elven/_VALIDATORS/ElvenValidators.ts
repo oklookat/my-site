@@ -35,8 +35,7 @@ class ElvenValidators {
   public static async articleValidate(request: RequestContract){
     let {is_published, thumbnail, title, content} = request.all()
     if(!is_published){
-      const err = await ElvenTools.errorConstructor('VALIDATION_ERROR', 'isPublished не может быть пустым.')
-      return Promise.reject(err)
+      is_published = false
     }
     if(!title){
       title = 'Без названия'

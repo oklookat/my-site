@@ -25,6 +25,34 @@ class ArticleAdapter {
                 return Promise.reject(error)
             })
     }
+
+    public static async createArticle(article){
+        return await Axios.post('articles/', article)
+            .then(response =>{
+                if(response.data){
+                    return Promise.resolve(response.data)
+                } else{
+                    return Promise.reject('Нет данных.')
+                }
+            })
+            .catch(error =>{
+                return Promise.reject(error)
+            })
+    }
+
+    public static async saveArticle(article){
+        return await Axios.post(`articles/${article.id}`, article)
+            .then(response =>{
+                if(response.data){
+                    return Promise.resolve(response.data)
+                } else{
+                    return Promise.reject('Нет данных.')
+                }
+            })
+            .catch(error =>{
+                return Promise.reject(error)
+            })
+    }
 }
 
 export default ArticleAdapter
