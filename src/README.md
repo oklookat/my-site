@@ -8,18 +8,17 @@
 2. Edit .env as you like (almost)
 3. Install Docker and Node.js
 4. In /src run "./run.sh"
-5. Run migration (see [Host Commands](#host-commands))
-8. Create superuser
+5. Run migration and create superuser (see [Container Commands](#container-commands))
 
 
 #### Open ports:
 ##### Services
-1. Nginx: localhost:1111 (use for access to backend)
-2. Database: db (only between containers, not available outside)
-3. Adminer: localhost:2222
+- Nginx: localhost:1111 (use for access to backend)
+- Database: db (only between containers, not available outside)
+- Adminer: localhost:2222
 ##### Main stuff
-4. Backend: localhost:3333 (now is closed, because nginx)
-5. Frontend (admin panel): localhost:4444
+- Backend: localhost:3333 (now is closed, because nginx)
+- Frontend (admin panel): localhost:4444
 
 
 ## <a name="host-commands"></a>Host Commands:
@@ -29,15 +28,16 @@
 - ```docker exec -it elvenfront <command>``` = run command in frontend (admin panel)
 
 
-## Container commands (via docker exec)
+## <a name="container-commands"></a>Container commands (via docker exec):
 - ```node ace migration:run``` = run migration (backend)
 - ```node ace elven:superuser``` = create superuser (backend)
 - ```node ace migration:rollback``` = reset tables (backend)
+
 
 ##### Other useful commands
 - ```docker kill $(docker ps -q)``` = kill all containers
 
 
 #### Extra:
-1. In WSL2 before start docker run "service docker start"
-2. If you want to copy something from Windows to WSL2, do it only from WSL2 console (/mnt/c). If you directly copy files via Explorer to \\wsl$\Ubuntu it break permissions on files, and you need use chmod, what annoying.
+- In WSL2 before start docker run "service docker start"
+- If you want to copy something from Windows to WSL2, do it only from WSL2 console (/mnt/c). If you directly copy files via Explorer to \\wsl$\Ubuntu it break permissions on files, and you need use chmod, what annoying.
