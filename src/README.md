@@ -35,6 +35,7 @@
 
 ## Other useful commands
 - ```docker kill $(docker ps -q)``` = kill all containers
+- ```wsl --shutdown``` = stop WSL
 
 
 ## Extra:
