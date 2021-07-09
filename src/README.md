@@ -1,14 +1,13 @@
-
 # Development with Docker #
-##### Tested in WSL2 (Ubuntu)
+#### Tested in WSL2 (Ubuntu)
 
 
 ## How to run
 1. In /backend make copy of .env.example and rename it to .env
 2. Edit .env as you like (almost)
 3. Install Docker and Node.js
-4. In /src run "./run.sh"
-5. Run migration and create superuser (see [Container Commands](#container-commands))
+4. In /src run ```./run.sh```
+5. Run migration and create superuser (see [Container commands](#container-commands))
 
 
 ## Open ports:
@@ -39,5 +38,5 @@
 
 
 ## Extra:
-- In WSL2 before start docker run "service docker start"
-- If you want to copy something from Windows to WSL2, do it only from WSL2 console (/mnt/c). If you directly copy files via Explorer to \\wsl$\Ubuntu it break permissions on files, and you need use chmod, what annoying.
+- In WSL2 before start docker run ```service docker start```
+- If you want to copy something from Windows to WSL2, do it only from WSL2 console (```/mnt/c```). If you directly copy files via Explorer to ```\\wsl$\Ubuntu``` it break permissions on files, and you need use chmod, what annoying
