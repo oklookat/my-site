@@ -3,7 +3,7 @@
 ##### Tested in WSL2 (Ubuntu)
 
 
-#### How to run
+## How to run
 1. In /backend make copy of .env.example and rename it to .env
 2. Edit .env as you like (almost)
 3. Install Docker and Node.js
@@ -11,12 +11,12 @@
 5. Run migration and create superuser (see [Container Commands](#container-commands))
 
 
-#### Open ports:
-##### Services
+## Open ports:
+#### Services
 - Nginx: localhost:1111 (use for access to backend)
 - Database: db (only between containers, not available outside)
 - Adminer: localhost:2222
-##### Main stuff
+#### Main stuff
 - Backend: localhost:3333 (now is closed, because nginx)
 - Frontend (admin panel): localhost:4444
 
@@ -34,10 +34,10 @@
 - ```node ace migration:rollback``` = reset tables (backend)
 
 
-##### Other useful commands
+## Other useful commands
 - ```docker kill $(docker ps -q)``` = kill all containers
 
 
-#### Extra:
+## Extra:
 - In WSL2 before start docker run "service docker start"
 - If you want to copy something from Windows to WSL2, do it only from WSL2 console (/mnt/c). If you directly copy files via Explorer to \\wsl$\Ubuntu it break permissions on files, and you need use chmod, what annoying.
