@@ -2,7 +2,7 @@ services:
   nginx:
     container_name: nginx
     image: oklookat/nginx
-    restart: no
+    restart: "no"
     build:
       context: ./nginx
       dockerfile: Dockerfile
@@ -12,7 +12,11 @@ services:
   db:
     container_name: postgres
     image: oklookat/postgres
-    restart: no
+    restart: "no"
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: elven
+      PGDATA: /var/lib/postgresql/data
     build:
       context: ./postgres
       dockerfile: Dockerfile
@@ -22,14 +26,14 @@ services:
   adminer:
     container_name: adminer
     image: adminer
-    restart: no
+    restart: "no"
     ports:
       - 2222:8080
 
   backend:
     container_name: backend
     image: oklookat/backend
-    restart: no
+    restart: "no"
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -39,7 +43,7 @@ services:
   elvenfront:
     container_name: elvenfront
     image: oklookat/elvenfront
-    restart: no
+    restart: "no"
     build:
       context: ./elvenfront
       dockerfile: Dockerfile
