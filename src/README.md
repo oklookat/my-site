@@ -1,6 +1,8 @@
 # Development with Docker #
 #### Tested in WSL2 (Ubuntu)
 
+## !!!
+- Run commands like ```npm install``` only via ```docker exec```, because host's node_modules folder sync with container's node_modules (for IDE code highlighting and etc). But if you call ```npm install``` in container, it change package.json IN CONTAINER. That means if you stop container, host's package.json be outdated. I don't know what to do with this, but it need to fix
 
 ## How to run
 1. In /backend make copy of .env.example and rename it to .env
@@ -43,4 +45,3 @@
 ## Extra:
 - In WSL2 before start docker run ```service docker start```
 - If you want to copy something from Windows to WSL2, do it only from WSL2 console (```/mnt/c```). If you directly copy files via Explorer to ```\\wsl$\Ubuntu``` it break permissions on files, and you need use chmod, what annoying
-- <span style="color:red">Run commands like ```npm install``` only via ```docker exec```, because host's node_modules folder sync with container's node_modules (for IDE code highlighting and etc). But if you call ```npm install``` in container, it change package.json IN CONTAINER. That means if you stop container, host's package.json be outdated. I don't know what to do with this, but it need to fix</span>
