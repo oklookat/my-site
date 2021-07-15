@@ -3,7 +3,10 @@ ENV APP_PATH /usr/src/app
 
 
 WORKDIR $APP_PATH
-COPY . ./
+COPY package*.json ./
+RUN npm install
+
+COPY . .
 
 EXPOSE 3333
 CMD ["node", "ace", "serve", "--watch"]

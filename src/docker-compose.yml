@@ -39,6 +39,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - "./backend:/usr/src/app"
+      - node_modules_backend:/usr/src/app/node_modules/
 
   elvenfront:
     container_name: elvenfront
@@ -49,5 +50,25 @@ services:
       dockerfile: Dockerfile
     volumes:
       - "./elvenfront:/usr/src/app"
+      - node_modules_elvenfront:/usr/src/app/node_modules/
     ports:
       - 4444:8080
+      
+
+
+      
+volumes:
+  node_modules_backend:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./backend/node_modules/
+      
+      
+  node_modules_elvenfront:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./elvenfront/node_modules/
