@@ -19,7 +19,7 @@
 - Adminer: localhost:2222
 #### Main stuff
 - Backend: localhost:3333 (now is closed, because nginx)
-- Frontend (admin panel): localhost:4444
+- Frontend: localhost:4444 (admin panel)
 
 
 ## <a name="host-commands"></a>Host Commands:
