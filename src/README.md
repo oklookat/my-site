@@ -17,7 +17,7 @@
 - Adminer: localhost:2222
 #### Main stuff
 - Backend: localhost:3333 (now is closed, because nginx)
-- Frontend: localhost:4444 (admin panel)
+- Frontend (admin panel): localhost:4444
 
 
 ## <a name="host-commands"></a>Host Commands:
@@ -35,9 +35,12 @@
 
 ## Other useful commands
 - ```docker kill $(docker ps -q)``` = kill all containers
+- ```docker container prune``` = remove containers
+- ```docker volume prune``` = remove not used volumes
 - ```wsl --shutdown``` = stop WSL
 
 
 ## Extra:
 - In WSL2 before start docker run ```service docker start```
 - If you want to copy something from Windows to WSL2, do it only from WSL2 console (```/mnt/c```). If you directly copy files via Explorer to ```\\wsl$\Ubuntu``` it break permissions on files, and you need use chmod, what annoying
+- <span style="color:red">Run commands like ```npm install``` only via ```docker exec```, because host's node_modules folder sync with container's node_modules (for IDE code highlighting and etc). But if you call ```npm install``` in container, it change package.json IN CONTAINER. That means if you stop container, host's package.json be outdated. I don't know what to do with this, but it need to fix</span>
