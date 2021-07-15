@@ -13,7 +13,8 @@
       >
       <div class="header-mobile-menu" v-if="isMobileMenuActive">
         <RouterLink class="header-mobile-menu-item" :to="{name: 'Index'}">Главная</RouterLink>
-        <RouterLink class="header-mobile-menu-item" :to="{name: 'Articles'}">Записи</RouterLink>
+        <RouterLink class="header-mobile-menu-item" :to="{name: 'ArticleCreate'}">Создать запись</RouterLink>
+        <RouterLink class="header-mobile-menu-item" :to="{name: 'Articles'}">Список записей</RouterLink>
         <RouterLink class="header-mobile-menu-item" :to="{name: 'Files'}">Файлы</RouterLink>
         <RouterLink class="header-mobile-menu-item" :to="{name: 'Settings'}">Настройки</RouterLink>
         <RouterLink class="header-mobile-menu-item" :to="{name: 'Logout'}">Выход</RouterLink>
@@ -157,6 +158,13 @@ export default defineComponent({
   animation: item-4  0.6s;
 }
 .header-mobile-menu.show-mobile.leave-active > a:nth-child(5){
+  animation: item-4  0.6s reverse;
+}
+
+.header-mobile-menu.show-mobile.enter-active > a:nth-child(6){
+  animation: item-4  0.6s;
+}
+.header-mobile-menu.show-mobile.leave-active > a:nth-child(6){
   animation: item-4  0.6s reverse;
 }
 

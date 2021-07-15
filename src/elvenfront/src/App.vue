@@ -117,7 +117,7 @@ input:focus::placeholder {
 }
 
 .content {
-  height: var(--header-height);
+  height: calc(100% - var(--header-height));
   display: flex;
   margin-left: auto;
   margin-right: auto;

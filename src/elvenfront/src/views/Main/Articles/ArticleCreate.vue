@@ -2,7 +2,7 @@
   <div class="container">
     <Header title="новая запись"></Header>
     <div class="content">
-      <input id="article-title" type="text" v-model="title"/>
+      <input id="article-title" type="text" v-model="title" @input="saveData"/>
       <div id="editor" @input="saveData"></div>
     </div>
   </div>
@@ -53,11 +53,18 @@ export default defineComponent({
     },
     async saveData() {
       let editorData
+      let saveAllowed = false
       await this.editor.save().then((outputData) => {
-        editorData = outputData
+        if(outputData.blocks.length >= 1){
+          saveAllowed = true
+          editorData = outputData
+        }
       }).catch((error) => {
         console.log('Saving failed: ', error)
       })
+      if(!saveAllowed){
+        return 0
+      }
       if (!this.article) {
         let article = {title: this.title, content: editorData}
         await ArticleAdapter.createArticle(article)
@@ -71,7 +78,9 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .container {
-
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .content {

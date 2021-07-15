@@ -2,11 +2,15 @@
   <div class="container">
     <Header title="записи"></Header>
     <div class="content">
-      <RouterLink class="create-new-link" :to="{name: 'ArticleCreate'}">Создать новую</RouterLink>
       <div class="articles-list">
         <article class="article" v-for="article in articles" :key="article.id" v-on:click="selectArticle(article)">
           <div class="article-item article-title">{{ article.title }}</div>
         </article>
+      </div>
+
+      <div class="articles-404" v-if="articles.length < 1">
+        Нет записей. Но вы можете
+        <RouterLink class="articles-404-link" :to="{name: 'ArticleCreate'}">создать новую</RouterLink>.
       </div>
     </div>
 
@@ -59,7 +63,7 @@ export default defineComponent({
     async deleteArticle(article){
       const isDelete = confirm('Удалить запись?')
       if(isDelete){
-        // await ArticleAdapter.deleteArticle(article.id)
+        await ArticleAdapter.deleteArticle(article.id)
         const index = this.articles.indexOf(article)
         this.articles.splice(index, 1)
         this.isOverlayActive = false
@@ -71,18 +75,10 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .content{
-  height: 100%;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 42px 1fr;
   grid-gap: 12px;
-}
-.create-new-link{
-  border-radius: 6px;
-  background-color: var(--color-level-2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 .articles-list{
   height: 100%;
@@ -116,7 +112,10 @@ export default defineComponent({
   height: 64px;
   width: 100%;
 }
-
+.articles-404{
+  width: 100%;
+  height: 100%;
+}
 @media screen and (min-width: 1023px) {
   .articles-list{
 

@@ -90,7 +90,7 @@ export default class ArticlesController {
       return ctx.response.status(200).send(article)
     } catch (error) {
       console.log(error)
-      return ctx.response.badGateway(await ElvenTools.publicErrorConstructor('Не удалось сохранить запись. Обратитесь к администратору.'))
+      return ctx.response.badGateway(await ElvenTools.publicErrorConstructor('Не удалось сохранить запись.'))
     }
   }
 }
