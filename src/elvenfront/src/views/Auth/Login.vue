@@ -31,8 +31,7 @@ export default defineComponent({
     trackInput() {
       const usernameLength = this.username.length
       const passwordLength = this.password.length
-      const canShow = usernameLength >= 4 && usernameLength <= 24 && passwordLength >= 8 && passwordLength <= 64
-      this.isAuthButton = canShow
+      this.isAuthButton = usernameLength >= 4 && usernameLength <= 24 && passwordLength >= 8 && passwordLength <= 64
     },
     async makeLogin() {
       this.isError = false

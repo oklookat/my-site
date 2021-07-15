@@ -15,10 +15,8 @@ export default class ArticlesController {
     let articles
     try {
       if (ctx['user'] && ctx['user'].role === 'admin') {
-        // @ts-ignore
         articles = await Article.query().orderBy(order, direction).paginate(page, pageSize)
       } else {
-        // @ts-ignore
         articles = await Article.query().where('is_published', 'true').orderBy(order, direction).paginate(page, pageSize)
       }
     } catch (error) {

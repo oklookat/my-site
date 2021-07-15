@@ -16,14 +16,14 @@ class AuthAdapter {
                     await Store.dispatch('setToken', token)
                     return Promise.resolve()
                 }
-                return Promise.reject('токен не получен.')
+                return Promise.reject('Токен не получен.')
             })
             .catch(error =>{
-                const readableErr = error.response.data.error
-                if(readableErr){
-                    return Promise.reject(readableErr)
+                if(!error.response){
+                    return Promise.reject('Произошла ошибка. Попробуйте позже.')
                 }
-                return Promise.reject(error.response.status)
+                const readableErr = error.response.status
+                return Promise.reject(readableErr)
             })
     }
 
