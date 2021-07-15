@@ -1,24 +1,13 @@
-# elvenfront
+# elven frontend (admin panel)
 
-## Project setup
-```
-npm install
-```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+### Setup
+1. Install deps
+2. Copy ```.env.development```, rename it to ```.env.production```, and change what you like (for deployment)
 
-### Compiles and minifies for production
-```
-npm run build
-```
 
-### Lints and fixes files
-```
-npm run lint
-```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Commands
+- ```npm install``` = install deps
+- ```npm run serve``` = compiles and hot-reloads for development
+- ```npm run build``` = compiles and minifies for production

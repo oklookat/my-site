@@ -1,4 +1,12 @@
-# oklookat.ru (src) #
+# oklookat.ru source (elven) #
+
+
+## Powered by
+### Backend
+AdonisJS v5 - https://adonisjs.com
+### Frontend
+Vue.js v3 - https://vuejs.org/
+
 
 ## Requirements a.k.a tested with
 - Node.js 16.5.0
@@ -21,11 +29,16 @@
 
 
 ## <a name="main-commands"></a>Main commands:
-### Backend
+### Elven backend (backend)
 - ```node ace migration:run``` = run migration
 - ```node ace migration:rollback``` = reset tables
 - ```node ace elven:superuser``` = create superuser
 - ```node ace serve --watch``` = run in dev
 - ```node ace build --production``` = build prod
-### Elvenfront
+### Elven frontend (elvenfront)
 - ```npm run serve``` = run in dev
+
+
+## F.A.Q
+### Elven?
+Elven is my CMS. It's not WP or other super cool things, but anyway it's my and it's cool. That's all I can say. 
