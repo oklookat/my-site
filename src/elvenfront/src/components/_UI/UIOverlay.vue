@@ -21,7 +21,6 @@ export default defineComponent({
     }
   },
   props: {
-    title: String,
     active: Boolean,
   },
   watch: {
@@ -70,11 +69,15 @@ export default defineComponent({
   overflow: auto;
 }
 .ui-overlay-content{
-  margin: 12px;
+  box-sizing: border-box;
+  padding-top: 12px;
+  margin-left: 12px;
+  margin-right: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 24px;
   font-size: 1.2rem;
+  height: 100%;
 }
 </style>

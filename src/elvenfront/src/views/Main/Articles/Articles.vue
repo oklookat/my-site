@@ -5,12 +5,15 @@
       <div class="articles-list">
         <article class="article" v-for="article in articles" :key="article.id" v-on:click="selectArticle(article)">
           <div class="article-item article-title">{{ article.title }}</div>
+          <div class="article-item article-updated-at">Изменена: {{ convertDateWrap(article.updated_at) }}</div>
         </article>
       </div>
-
+      <h1>ПРИ СКЛОНЕНИИ ДАТ КАКАЯ-ТО БЕДА. ЕСЛИ ОБНОВЛЯТЬ СТРАНИЦУ, ДАТЫ СТРАННО СКЛОНЯЮТСЯ.</h1>
       <div class="articles-404" v-if="articles.length < 1">
-        Нет записей. Но вы можете
-        <RouterLink class="articles-404-link" :to="{name: 'ArticleCreate'}">создать новую</RouterLink>.
+        <div>
+          Нет записей. Но вы можете
+          <RouterLink class="articles-404-link" :to="{name: 'ArticleCreate'}">создать новую</RouterLink>.
+        </div>
       </div>
     </div>
 
@@ -20,7 +23,7 @@
           <div class="article-make-draft" v-if="selectedArticle.is_published">Сделать черновиком</div>
           <div class="article-publish" v-else>Опубликовать</div>
         </div>
-        <div class="item article-edit">Редактировать</div>
+        <div class="item article-edit" v-on:click="editArticle(selectedArticle)">Редактировать</div>
         <div class="item article-delete" v-on:click="deleteArticle(selectedArticle)">Удалить</div>
       </div>
     </UIOverlay>
@@ -32,6 +35,7 @@ import {defineComponent} from "vue";
 import Header from "@/components/Header/Header";
 import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter";
 import UIOverlay from "@/components/_UI/UIOverlay";
+import ElvenTools from "@/common/tools/ElvenTools";
 
 export default defineComponent({
   name: 'Articles',
@@ -42,6 +46,7 @@ export default defineComponent({
       articles: [],
       articlesMeta: [],
       selectedArticle: undefined,
+      elvenTools: undefined,
     }
   },
   async mounted() {
@@ -68,6 +73,12 @@ export default defineComponent({
         this.articles.splice(index, 1)
         this.isOverlayActive = false
       }
+    },
+    async editArticle(article){
+      await this.$router.push({name: 'ArticleCreate', params: {id: article.id}})
+    },
+    convertDateWrap(date){
+      return ElvenTools.convertDate(date)
     }
   }
 })
@@ -85,16 +96,20 @@ export default defineComponent({
   width: 100%;
   display: grid;
   grid-template-columns: 1fr;
-  grid-auto-rows: minmax(94px, 1fr);
+  grid-auto-rows: minmax(64px, 1fr);
   gap: 12px;
 }
 .article{
   border-radius: 6px;
-  background-color: red;
-  display: flex;
-  flex-direction: column;
+  background-color: var(--color-level-2);
   width: 100%;
   height: 100%;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.article:hover{
+  background-color: var(--color-hover);
 }
 .article-item{
   font-size: 1.4rem;
@@ -115,6 +130,11 @@ export default defineComponent({
 .articles-404{
   width: 100%;
   height: 100%;
+  display: flex;
+  justify-content: center;
+}
+.articles-404 a{
+  text-decoration: underline;
 }
 @media screen and (min-width: 1023px) {
   .articles-list{

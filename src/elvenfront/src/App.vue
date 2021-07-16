@@ -22,6 +22,7 @@
     --color-scrollbar-hover: #909090;
     --color-header-active: #141414;
     --color-header-menu: black;
+    --color-text-selection: #803E34;
   }
 }
 
@@ -37,6 +38,7 @@
     --color-border: #CCCCCC;
     --color-header-active: white;
     --color-header-menu: #E6E6E6;
+    --color-text-selection: #FF7C69;
   }
 }
 
@@ -74,7 +76,6 @@ a {
 }
 
 .container {
-  height: 100vh;
   word-break: break-word;
 }
 
@@ -137,12 +138,51 @@ input:focus::placeholder {
   background-color: var(--color-hover);
 }
 
+
+//// EDITOR.JS STYLING START ////
+// WIDTH AND HEIGHT START //
 .ce-block__content,
 .ce-toolbar__content {
   max-height: unset;
   max-width: unset;
 }
+// WIDTH AND HEIGHT END //
+// EDITOR.JS LIGHT AND DARK THEME STYLING START //
+.ce-inline-tool,
+.codex-editor svg{
+  color: var(--color-text);
+}
 
+.ce-inline-tool:hover,
+.ce-inline-toolbar__dropdown:hover,
+.ce-toolbar__settings-btn:hover,
+.ce-settings__button:hover{
+  background-color: var(--color-hover);
+}
+.ce-inline-tool-input,
+.ce-inline-toolbar,
+.ce-conversion-toolbar,
+.ce-settings,
+{
+  background-color: var(--color-level-2);
+  border: 1px solid var(--color-border);
+}
+.ce-conversion-tool__icon,
+.ce-toolbar__settings-btn{
+  background: var(--color-level-3);
+}
+
+.ce-inline-toolbar__actions input::placeholder,
+.ce-conversion-toolbar__label{
+  color: var(--color-text-inactive)
+}
+
+::selection,
+.ce-block--selected .ce-block__content{
+  background: var(--color-text-selection);
+}
+// EDITOR.JS LIGHT AND DARK THEME STYLING END //
+//// EDITOR.JS STYLING END ////
 
 @media screen and (min-width: 640px) {
   .content {

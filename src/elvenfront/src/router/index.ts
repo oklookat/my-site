@@ -34,7 +34,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {auth: 'yes'}
     },
     {
-        path: '/articles/create',
+        path: '/articles/create/:id?',
         name: 'ArticleCreate',
         component: ArticleCreate,
         meta: {auth: 'yes'}

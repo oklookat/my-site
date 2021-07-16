@@ -16,6 +16,20 @@ class ArticleAdapter {
             })
     }
 
+    public static async getArticle(id){
+        return await Axios.get(`articles/${id}`)
+            .then(response =>{
+                if(response.data){
+                    return Promise.resolve(response.data)
+                } else{
+                    return Promise.reject('Запись не найдена.')
+                }
+            })
+            .catch(error =>{
+                return Promise.reject(error.response.status)
+            })
+    }
+
     public static async deleteArticle(id){
         return await Axios.delete(`articles/${id}`)
             .then(() =>{
@@ -41,7 +55,7 @@ class ArticleAdapter {
     }
 
     public static async saveArticle(article){
-        return await Axios.post(`articles/${article.id}`, article)
+        return await Axios.put(`articles/${article.id}`, article)
             .then(response =>{
                 if(response.data){
                     return Promise.resolve(response.data)
