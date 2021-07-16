@@ -37,7 +37,7 @@ class ElvenTools{
     }
 
     public static declensionOfNumbers(number, titles){
-        // https://gist.github.com/realmyst/1262561#gistcomment-2299442
+        // https://gist.github.com/realmyst/1262561#gistcomment-3443551
         number = Math.abs(number);
         if (Number.isInteger(number)) {
             const cases = [2, 0, 1, 1, 1, 2];
