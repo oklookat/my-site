@@ -15,3 +15,5 @@ updates:
     directory: "/src/elvenfront"
     schedule:
       interval: "daily"
+    ignore: 
+     - dependency-name: "sass-loader"
