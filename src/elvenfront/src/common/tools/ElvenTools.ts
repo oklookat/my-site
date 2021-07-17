@@ -19,13 +19,13 @@ class ElvenTools{
                 date = `${secondsAgo} ${this.declensionOfNumbers(secondsAgo, secTitles)} назад`
             } else if(minutesAgo < 60){
                 // 1h-
-                date = `${minutesAgo} ${this.declensionOfNumbers(secondsAgo, minTitles)} назад`
+                date = `${minutesAgo} ${this.declensionOfNumbers(minutesAgo, minTitles)} назад`
             } else if(hoursAgo === 1){
                 // 2h-
                 date = `час назад`
             } else if(hoursAgo < 8){
                 // 8h-
-                date = `${hoursAgo} ${this.declensionOfNumbers(secondsAgo, hoursTitles)} назад`
+                date = `${hoursAgo} ${this.declensionOfNumbers(hoursAgo, hoursTitles)} назад`
             } else if(hoursAgo < 24){
                 // 24h-
                 date = `в ${date.getHours()}:${date.getMinutes()}`

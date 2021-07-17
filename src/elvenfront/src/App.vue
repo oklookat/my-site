@@ -1,11 +1,13 @@
 <template>
+  <elven-progress></elven-progress>
   <router-view/>
 </template>
 
 <style lang="scss">
 :root {
-  --header-height: 46px;
+  --header-height: 54px;
   --header-anim-height: 95%;
+  --header-anim-duration: 0.4s;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,8 +22,7 @@
     --color-border: #353535;
     --color-scrollbar: #707070;
     --color-scrollbar-hover: #909090;
-    --color-header-active: #141414;
-    --color-header-menu: black;
+    --color-header-active: #000000;
     --color-text-selection: #803E34;
   }
 }
@@ -30,14 +31,13 @@
   :root {
     --color-text: black;
     --color-text-inactive: #303030;
-    --color-body: #F5F5F5;
-    --color-level-1: #E6E6E6;
-    --color-level-2: #D9D9D9;
-    --color-level-3: #B3B3B3;
-    --color-hover: rgba(0, 0, 0, 0.06);
+    --color-body: #E6E6E6;
+    --color-level-1: #F5F5F5;
+    --color-level-2: #FFFFFF;
+    --color-level-3: #FFFFFF;
+    --color-hover: rgba(0, 0, 0, 0.03);
     --color-border: #CCCCCC;
-    --color-header-active: white;
-    --color-header-menu: #E6E6E6;
+    --color-header-active: #FFFFFF;
     --color-text-selection: #FF7C69;
   }
 }
@@ -111,17 +111,16 @@ input:focus::placeholder {
 }
 
 .logo-text {
-  font-weight: bold;
-  font-size: 1.1rem;
-  letter-spacing: 0.6rem;
+  font-size: 1.2rem;
+  letter-spacing: 0.8rem;
+  text-indent: 0.8rem;
   user-select: none;
 }
 
 .content {
   height: calc(100% - var(--header-height));
-  display: flex;
-  margin-left: auto;
-  margin-right: auto;
+  margin: auto;
+  padding-bottom: 16px;
   width: 95%;
   font-size: 1.1rem;
   line-height: 1.46rem;
@@ -163,6 +162,7 @@ input:focus::placeholder {
 .ce-inline-toolbar,
 .ce-conversion-toolbar,
 .ce-settings,
+.ce-toolbar--opened,
 {
   background-color: var(--color-level-2);
   border: 1px solid var(--color-border);
@@ -196,3 +196,9 @@ input:focus::placeholder {
   }
 }
 </style>
+
+<script>
+export default {
+  name: 'App',
+}
+</script>

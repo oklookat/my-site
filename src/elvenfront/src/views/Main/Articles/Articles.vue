@@ -5,11 +5,10 @@
       <div class="articles-list">
         <article class="article" v-for="article in articles" :key="article.id" v-on:click="selectArticle(article)">
           <div class="article-item article-title">{{ article.title }}</div>
-          <div class="article-item article-updated-at">Изменена: {{ convertDateWrap(article.updated_at) }}</div>
+          <div class="article-item article-updated-at">ред. {{ convertDateWrap(article.updated_at) }}</div>
         </article>
       </div>
-      <h1>ПРИ СКЛОНЕНИИ ДАТ КАКАЯ-ТО БЕДА. ЕСЛИ ОБНОВЛЯТЬ СТРАНИЦУ, ДАТЫ СТРАННО СКЛОНЯЮТСЯ.</h1>
-      <div class="articles-404" v-if="articles.length < 1">
+      <div class="articles-404" v-if="isArticlesLoaded && articles.length < 1">
         <div>
           Нет записей. Но вы можете
           <RouterLink class="articles-404-link" :to="{name: 'ArticleCreate'}">создать новую</RouterLink>.
@@ -47,6 +46,7 @@ export default defineComponent({
       articlesMeta: [],
       selectedArticle: undefined,
       elvenTools: undefined,
+      isArticlesLoaded: false,
     }
   },
   async mounted() {
@@ -54,11 +54,12 @@ export default defineComponent({
   },
   methods: {
     async getArticles(page = '1'){
+      this.isArticlesLoaded = false;
       await ArticleAdapter.getArticles(page)
         .then(result =>{
-          console.log(result)
           this.articles = result.data
           this.articlesMeta = result.meta
+          this.isArticlesLoaded = true;
         })
     },
     selectArticle(article){
@@ -85,19 +86,17 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-.content{
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 42px 1fr;
-  grid-gap: 12px;
+.container{
+
 }
 .articles-list{
   height: 100%;
   width: 100%;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-auto-rows: minmax(64px, 1fr);
+  display: flex;
+  flex-direction: column;
+  min-height: 42px;
   gap: 12px;
+
 }
 .article{
   border-radius: 6px;
@@ -107,13 +106,20 @@ export default defineComponent({
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  padding-bottom: 12px;
 }
 .article:hover{
   background-color: var(--color-hover);
 }
 .article-item{
-  font-size: 1.4rem;
-  margin: 4px;
+  font-size: 1.2rem;
+  line-height: 1.5rem;
+  margin-top: 12px;
+  margin-left: 12px;
+  margin-right: 12px;
+}
+.article-updated-at{
+  font-size: 0.9rem;
 }
 .article-tools{
   width: 100%;
@@ -136,6 +142,9 @@ export default defineComponent({
 .articles-404 a{
   text-decoration: underline;
 }
+
+
+
 @media screen and (min-width: 1023px) {
   .articles-list{
 

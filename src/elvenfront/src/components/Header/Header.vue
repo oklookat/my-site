@@ -71,23 +71,24 @@ export default defineComponent({
 .header-mobile{
   height: 100%;
   width: 100%;
-  transition: background-color 0.6s;
+  transition: background-color var(--header-anim-duration);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  background-color: transparent;
 }
 .header-mobile.mobile-menu-active{
   background-color: var(--color-header-active);
 }
 .header-mobile-menu{
+  background-color: var(--color-header-active);
   z-index: 9999;
   width: 100%;
-  background-color: var(--color-header-menu);
   position: absolute;
   top: var(--header-height); left: 0; bottom: 0; right: 0;
   display: block;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   cursor: pointer;
   overflow: auto;
 }
@@ -96,13 +97,12 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 110px;
+  height: 100px;
   cursor: pointer;
-  color: var(--color-text-inactive);
+  color: var(--color-text);
 }
 .header-mobile-menu-item:hover{
   background-color: var(--color-hover);
-  color: var(--color-text);
 }
 
 
@@ -111,61 +111,63 @@ export default defineComponent({
 
 .header-mobile-menu.show-mobile.enter-active{
   overflow: hidden;
-  animation: show-mobile 0.6s;
+  animation: show-mobile var(--header-anim-duration);
 }
 .header-mobile-menu.show-mobile.leave-active {
   overflow: hidden;
-  animation: show-mobile 0.6s reverse;
+  animation: show-mobile var(--header-anim-duration) reverse;
 }
 @keyframes show-mobile {
   from{
     height: 0;
+    background-color: transparent;
   }
   to{
     height: 95%;
+    background-color: var(--color-header-active);
   }
 }
 
 
 .header-mobile-menu.show-mobile.enter-active > a:nth-child(1){
-  animation: item-1  0.6s;
+  animation: item-1  var(--header-anim-duration);
 }
 .header-mobile-menu.show-mobile.leave-active > a:nth-child(1){
-  animation: item-1  0.6s reverse;
+  animation: item-1  var(--header-anim-duration) reverse;
 }
 
 .header-mobile-menu.show-mobile.enter-active > a:nth-child(2){
-  animation: item-2  0.6s;
+  animation: item-2  var(--header-anim-duration);
 }
 .header-mobile-menu.show-mobile.leave-active > a:nth-child(2){
-  animation: item-2  0.6s reverse;
+  animation: item-2  var(--header-anim-duration) reverse;
 }
 
 .header-mobile-menu.show-mobile.enter-active > a:nth-child(3){
-  animation: item-3  0.6s;
+  animation: item-3  var(--header-anim-duration);
 }
 .header-mobile-menu.show-mobile.leave-active > a:nth-child(3){
-  animation: item-3  0.6s reverse;
+  animation: item-3  var(--header-anim-duration) reverse;
 }
 
 .header-mobile-menu.show-mobile.enter-active > a:nth-child(4){
-  animation: item-4  0.6s;
+  animation: item-4  var(--header-anim-duration);
 }
 .header-mobile-menu.show-mobile.leave-active > a:nth-child(4){
-  animation: item-4  0.6s reverse;
+  animation: item-4  var(--header-anim-duration) reverse;
 }
 .header-mobile-menu.show-mobile.enter-active > a:nth-child(5){
-  animation: item-4  0.6s;
+  animation: item-4  var(--header-anim-duration);
 }
 .header-mobile-menu.show-mobile.leave-active > a:nth-child(5){
-  animation: item-4  0.6s reverse;
+  animation: item-4  var(--header-anim-duration) reverse;
 }
 
 .header-mobile-menu.show-mobile.enter-active > a:nth-child(6){
-  animation: item-4  0.6s;
+  animation: item-4  var(--header-anim-duration);
 }
 .header-mobile-menu.show-mobile.leave-active > a:nth-child(6){
-  animation: item-4  0.6s reverse;
+  animation: item-4  var(--header-anim-duration) reverse;
 }
 
 
