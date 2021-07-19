@@ -2,8 +2,6 @@ import axios  from "axios"
 import Store from "@/store/index"
 import app from '../../main'
 
-// #progressbar-line
-
 const Axios = axios.create({timeout: 15000})
 
 let token
@@ -22,17 +20,16 @@ Axios.interceptors.request.use(async function (config) {
     }
     return config;
 }, function (error) {
-
+    app.$elvenProgress.loadingFinish()
     return Promise.reject(error);
 });
 
 
 Axios.interceptors.response.use(function (response) {
-    // @ts-ignore
     app.$elvenProgress.loadingFinish()
     return response;
 }, function (error) {
-
+    app.$elvenProgress.loadingFinish()
     return Promise.reject(error);
 })
 

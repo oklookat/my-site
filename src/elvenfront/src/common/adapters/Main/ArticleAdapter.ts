@@ -1,4 +1,4 @@
-import Axios from '@/common/adapters/Axios'
+import Axios from '@/common/adapters/Axios.js'
 
 class ArticleAdapter {
 

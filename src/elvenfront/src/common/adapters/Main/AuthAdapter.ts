@@ -1,4 +1,4 @@
-import Axios from '@/common/adapters/Axios'
+import Axios from '@/common/adapters/Axios.js'
 import Store from "@/store/index"
 
 class AuthAdapter {

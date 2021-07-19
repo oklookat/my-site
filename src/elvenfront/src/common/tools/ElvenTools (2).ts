@@ -28,16 +28,11 @@ class ElvenTools{
                 date = `${hoursAgo} ${this.declensionOfNumbers(hoursAgo, hoursTitles)} назад`
             } else if(hoursAgo < 24){
                 // 24h-
-                const hours = this.numberWithZero(date.getHours())
-                const minutes = this.numberWithZero(date.getMinutes())
-                date = `сегодня в ${hours}:${minutes}`
+                date = `в ${date.getHours()}:${("0" + date.getMinutes()).slice(-2)}`
             }
         } else{
-            const day = this.numberWithZero(date.getDay())
-            const month = this.numberWithZero(date.getMonth())
-            const hours = this.numberWithZero(date.getHours())
-            const minutes = this.numberWithZero(date.getMinutes())
-            date = `${day}.${month}.${date.getFullYear()} в ${hours}:${minutes}`
+            console.log('хухухух')
+            date = `${("0" + date.getDay()).slice(-2)}.${("0" + date.getMonth()).slice(-2)}.${date.getFullYear()} в ${("0" + date.getHours()).slice(-2)}:${("0" + date.getMinutes()).slice(-2)}`
         }
         return date
     }
@@ -52,8 +47,8 @@ class ElvenTools{
         return titles[1]
     }
 
-    public static numberWithZero(date){
-        return ("0" + date).slice(-2)
+    private static numberWithZero(number){
+        return ("0" + number).slice(-2)
     }
 }
 

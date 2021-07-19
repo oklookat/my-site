@@ -22,7 +22,7 @@ export default {
       //// SETTINGS START ////
       // default settings
       progressBarHeight: '2px',
-      progressBarColor: 'red',
+      progressBarColor: 'blue',
       moveSpeed: 100,
       basicLoadingStartSpeed: 30,
       basicLoadingFinishSpeed: 5,
@@ -38,7 +38,7 @@ export default {
     },
     basicLoading: function () {
       this.basicLoadingFunc(this.basicLoading)
-    }
+    },
   },
   mounted() {
     this.progressBar = document.getElementById('elven-progressbar-line')
@@ -52,7 +52,7 @@ export default {
     this.closeBar()
   },
   methods: {
-    openBar(){
+    openBar() {
       this.percents = 0
       this.progressBar.style.width = '0'
       this.isProgressBarActive = true
