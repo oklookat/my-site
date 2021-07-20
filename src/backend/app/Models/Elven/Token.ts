@@ -6,7 +6,7 @@ export default class Token extends BaseModel {
   public id: number
 
   @column()
-  public user_id: bigint
+  public user_id: number
 
   @column()
   public last_ip: string

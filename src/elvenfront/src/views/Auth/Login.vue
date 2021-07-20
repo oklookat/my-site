@@ -71,6 +71,7 @@ input {
 }
 
 .auth-button {
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   justify-content: center;

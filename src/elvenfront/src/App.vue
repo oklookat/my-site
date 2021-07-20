@@ -5,7 +5,7 @@
 
 <style lang="scss">
 :root {
-  --header-height: 54px;
+  --header-height: 64px;
   --header-anim-height: 95%;
   --header-anim-duration: 0.4s;
 }
@@ -31,24 +31,27 @@
   :root {
     --color-text: black;
     --color-text-inactive: #303030;
-    --color-body: #E6E6E6;
-    --color-level-1: #F5F5F5;
+    --color-body: #E0E0E0;
+    --color-level-1: #FFFFFF;
     --color-level-2: #FFFFFF;
     --color-level-3: #FFFFFF;
-    --color-hover: rgba(0, 0, 0, 0.03);
+    --color-hover: rgba(255, 255, 255, 0.80);
     --color-border: #CCCCCC;
+    --color-scrollbar: #505050;
+    --color-scrollbar-hover: #707070;
     --color-header-active: #FFFFFF;
     --color-text-selection: #FF7C69;
   }
 }
-
+html{
+  height: 100%;
+}
 html,
 body {
   margin: 0;
   font-family: 'Helvetica', 'Arial', sans-serif;
   color: var(--color-text);
   background-color: var(--color-body);
-  height: 100vh;
 }
 
 ::-webkit-scrollbar {
@@ -72,11 +75,12 @@ a {
 }
 
 #app {
-  height: 100vh;
+
 }
 
 .container {
   word-break: break-word;
+  hyphens: auto;
 }
 
 input {
@@ -129,11 +133,10 @@ input:focus::placeholder {
 
 .item {
   cursor: pointer;
-  color: var(--color-text-inactive);
+  border-radius: 6px;
 }
 
 .item:hover {
-  color: var(--color-text);
   background-color: var(--color-hover);
 }
 
@@ -184,15 +187,14 @@ input:focus::placeholder {
 // EDITOR.JS LIGHT AND DARK THEME STYLING END //
 //// EDITOR.JS STYLING END ////
 
-@media screen and (min-width: 640px) {
+@media screen and (min-width: 512px) {
   .content {
-    width: 85%;
+    width: 500px;
   }
 }
-
-@media screen and (min-width: 960px) {
+@media screen and (min-width: 1024px) {
   .content {
-    width: 75%;
+    width: 812px;
   }
 }
 </style>

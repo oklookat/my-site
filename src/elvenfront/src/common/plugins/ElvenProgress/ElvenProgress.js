@@ -30,9 +30,6 @@ class theLogic {
         if (this.options.progressBarHeight) {
             ElvenProgress.componentData.progressBarHeight = this.options.progressBarHeight
         }
-        if (this.options.progressBarColor) {
-            ElvenProgress.componentData.progressBarColor = this.options.progressBarColor
-        }
         if (this.options.basicLoadingStartSpeed) {
             ElvenProgress.componentData.basicLoadingStartSpeed = this.options.basicLoadingStartSpeed
         }
@@ -54,6 +51,10 @@ class theLogic {
 
     static loadingFinish() {
         ElvenProgress.componentData.basicLoading = false
+    }
+
+    static close(){
+        ElvenProgress.componentData.closeBar = true
     }
 }
 

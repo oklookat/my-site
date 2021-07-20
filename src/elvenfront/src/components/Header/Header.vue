@@ -5,7 +5,7 @@
          @click.self="toggleMobileMenu"
          :class="{'mobile-menu-active': isMobileMenuActive}"
     >
-      <div class="logo-text" @click.self="toggleMobileMenu">{{ title }}</div>
+      <div class="logo-text" @click.self="toggleMobileMenu">elven</div>
       <transition
           name="show-mobile"
           enter-active-class="show-mobile enter-active"
@@ -35,7 +35,6 @@ export default defineComponent({
       scrollPos: 0,
     }
   },
-  props: ['title'],
   unmounted() {
     document.body.classList.remove('no-scroll')
   },

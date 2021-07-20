@@ -7,7 +7,7 @@ export default class Article extends BaseModel {
   public id: number
 
   @column()
-  public author_id: bigint
+  public author_id: number
 
   @column()
   public is_published: boolean

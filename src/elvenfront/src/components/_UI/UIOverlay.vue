@@ -41,43 +41,45 @@ export default defineComponent({
 })
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .ui-overlay-container{
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  top: 0; left: 0; right: 0; bottom: 0;
   background-color: rgba(0,0,0,0.5);
   z-index: 9998;
+  max-width: 100vw;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .ui-overlay{
-  z-index: 9999;
-  background-color: var(--color-level-1);
+  background-color: var(--color-body);
   border-radius: 12px;
-  position: absolute;
-  transform: translate(-50%,-50%);
-  top: 50%;
-  left: 50%;
-  margin-left: auto;
-  margin-right: auto;
-  width: 80%;
-  height: 50%;
+  z-index: 9999;
+  overflow: auto;
   max-width: 365px;
   max-height: 365px;
-  overflow: auto;
+  width: 90%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 .ui-overlay-content{
   box-sizing: border-box;
-  padding-top: 12px;
-  margin-left: 12px;
-  margin-right: 12px;
+  /*padding-top: 12px;*/
+  /*margin-left: 12px;*/
+  /*margin-right: 12px;*/
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 24px;
   font-size: 1.2rem;
   height: 100%;
+  width: 100%;
 }
 </style>

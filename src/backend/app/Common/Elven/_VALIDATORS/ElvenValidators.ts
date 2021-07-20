@@ -1,6 +1,7 @@
 import {RequestContract} from "@ioc:Adonis/Core/Request"
-import validator from "validator";
+import validator from "validator"
 import ElvenTools from "App/Common/Elven/_TOOLS/ElvenTools"
+import Article from "App/Models/Elven/Article";
 
 class ElvenValidators {
 
@@ -32,11 +33,14 @@ class ElvenValidators {
     return Promise.resolve({username: username, password: password})
   }
 
-  public static async articleValidate(request: RequestContract) {
+  public static async articleValidateCreate(request: RequestContract) {
     try{
       let {is_published, thumbnail, title, content} = request.all()
       if (!is_published) {
         is_published = false
+      }
+      if(!thumbnail){
+        thumbnail = null
       }
       if (!title) {
         title = 'Без названия'
@@ -52,10 +56,9 @@ class ElvenValidators {
         const err = await ElvenTools.errorConstructor('VALIDATION_ERROR', 'isPublished должен иметь тип bool.')
         return Promise.reject(err)
       }
-      if(typeof content == 'object' && content !== null){
-        content = JSON.stringify(content)
-      } else{
-        content = content.toString()
+      if(typeof content !== 'object' && content !== null){
+        const err = await ElvenTools.errorConstructor('VALIDATION_ERROR', 'content не является объектом.')
+        return Promise.reject(err)
       }
       return Promise.resolve({is_published: is_published, thumbnail: thumbnail, title: title, content: content})
     }
@@ -64,6 +67,23 @@ class ElvenValidators {
       const err = await ElvenTools.errorConstructor('VALIDATION_ERROR', error)
       return Promise.reject(err)
     }
+  }
+
+  public static async articleValidateUpdate(request: RequestContract, foundArticle: Article){
+    let {is_published, thumbnail, title, content} = request.all()
+    if(is_published !== true && is_published !== false){
+      is_published = foundArticle.is_published
+    }
+    if(!thumbnail){
+      thumbnail = foundArticle.thumbnail
+    }
+    if(!title){
+      title = foundArticle.title
+    }
+    if(!content){
+      content = foundArticle.content
+    }
+    return Promise.resolve({is_published: is_published, thumbnail: thumbnail, title: title, content: content})
   }
 
   public static async slugValidate(slug: string) {

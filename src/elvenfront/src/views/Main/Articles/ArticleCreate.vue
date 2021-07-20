@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <Header title="новая запись"></Header>
+    <Header></Header>
     <div class="content">
       <input id="article-title" type="text" v-model="article.title" @input="autoSave"/>
       <div class="editor-container">

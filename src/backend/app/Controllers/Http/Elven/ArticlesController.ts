@@ -8,21 +8,61 @@ const pageSize = 16
 export default class ArticlesController {
 
   // GET url/
+  // params:
+  // show = published, drafts, all
+  // by = created, published, title
+  // start = up (DESC), down (ASC)
   public async index(ctx: HttpContextContract) {
-    let page = ctx.request.input('page', 1)
-    let order = ctx.request.input('order', 'created_at')
-    let direction = ctx.request.input('direction', 'desc')
-    let articles
-    try {
-      if (ctx['user'] && ctx['user'].role === 'admin') {
-        articles = await Article.query().orderBy(order, direction).paginate(page, pageSize)
-      } else {
-        articles = await Article.query().where('is_published', 'true').orderBy(order, direction).paginate(page, pageSize)
+    const isAdmin = ctx['user'] && ctx['user'].role === 'admin'
+    // VALIDATION START //
+    let show = ctx.request.input('show', 'published')
+    show = show.toLowerCase()
+    if (show !== 'published' && show !== 'drafts') {
+      return ctx.response.status(400).send(await ElvenTools.publicErrorConstructor('show должен быть published, drafts или all'))
+    } else {
+      if ((show === 'drafts' || show === 'all') && !isAdmin) {
+        return ctx.response.status(403).send(await ElvenTools.publicErrorConstructor('Доступ запрещен.'))
       }
-    } catch (error) {
-      return ctx.response.forbidden(await ElvenTools.publicErrorConstructor('При получении записей произошла ошибка. Обратитесь к администратору.'))
     }
-    return ctx.response.status(200).send(articles)
+    let by = ctx.request.input('by', 'created')
+    by = by.toLowerCase()
+    if (by !== 'created' && by !== 'published' && by !== 'title') {
+      return ctx.response.status(400).send(await ElvenTools.publicErrorConstructor('by должен быть created, published или title'))
+    } else {
+      if (by === 'created') {
+        if (!isAdmin) {
+          return ctx.response.status(403).send(await ElvenTools.publicErrorConstructor('Доступ запрещен.'))
+        } else {
+          by = 'created_at'
+        }
+      } else if (by === 'published') {
+        by = 'published_at'
+      }
+    }
+    let start = ctx.request.input('start', 'up')
+    start = start.toLowerCase()
+    if (start !== 'up' && start !== 'down') {
+      return ctx.response.status(400).send(await ElvenTools.publicErrorConstructor('start должен быть up или down'))
+    } else {
+      if (start === 'up') {
+        start = 'DESC'
+      } else if (start === 'down') {
+        start = 'ASC'
+      }
+    }
+    // VALIDATION END //
+    let page = ctx.request.input('page', 1)
+    if (show === 'published') {
+      const articles = await Article.query().where('is_published', 'true').orderBy(by, start).paginate(page, pageSize)
+      return ctx.response.status(200).send(articles)
+    } else if (show === 'drafts') {
+      const articles = await Article.query().where('is_published', 'false').orderBy(by, start).paginate(page, pageSize)
+      return ctx.response.status(200).send(articles)
+    } else if (show === 'all') {
+      const articles = await Article.query().orderBy(by, start).paginate(page, pageSize)
+      return ctx.response.status(200).send(articles)
+    }
+    return ctx.response.status(500).send(await ElvenTools.publicErrorConstructor('Произошла ошибка.'))
   }
 
   // GET url/:id
@@ -37,12 +77,40 @@ export default class ArticlesController {
 
   // POST url/
   public async store(ctx: HttpContextContract) {
-    await this.postOrUpdate(ctx, true)
+    let article = new Article()
+    try {
+      Object.assign(article, await ElvenValidators.articleValidateCreate(ctx.request))
+    } catch (error) {
+      return ctx.response.badRequest(error)
+    }
+    const user = ctx['user']
+    try {
+      await user.related('articles').save(article)
+      return ctx.response.status(200).send(article)
+    } catch (error) {
+      return ctx.response.internalServerError(await ElvenTools.publicErrorConstructor('Не удалось создать запись.'))
+    }
   }
 
   // PUT OR PATCH url/:id
   public async update(ctx: HttpContextContract) {
-    await this.postOrUpdate(ctx, false)
+    let article = await Article.find(ctx.params.id)
+    if (!article) {
+      return ctx.response.notFound(await ElvenTools.publicErrorConstructor('Запись не найдена.'))
+    }
+    try {
+      Object.assign(article, await ElvenValidators.articleValidateUpdate(ctx.request, article))
+    } catch (error) {
+      return ctx.response.badRequest(error)
+    }
+    const user = ctx['user']
+    try {
+      await user.related('articles').save(article)
+      return ctx.response.status(200).send(article)
+    } catch (error) {
+      console.log(error)
+      return ctx.response.internalServerError(await ElvenTools.publicErrorConstructor('Не удалось сохранить запись.'))
+    }
   }
 
   // DELETE url/:id
@@ -55,42 +123,8 @@ export default class ArticlesController {
       await article.delete()
       return ctx.response.status(200).send(await ElvenTools.publicSuccessConstructor('Запись удалена.'))
     } catch (error) {
-      return ctx.response.badGateway(await ElvenTools.publicErrorConstructor('Ошибка при удалении записи. Обратитесь к администратору.'))
+      return ctx.response.internalServerError(await ElvenTools.publicErrorConstructor('Ошибка при удалении записи.'))
     }
   }
 
-
-  private async postOrUpdate(ctx: HttpContextContract, isPost: boolean) {
-    let data
-    try {
-      data = await ElvenValidators.articleValidate(ctx.request)
-    } catch (error) {
-      return ctx.response.badRequest(error)
-    }
-    let article
-    if (isPost) {
-      article = new Article()
-    } else {
-      article = await Article.find(ctx.params.id)
-      if (!article) {
-        return ctx.response.notFound(await ElvenTools.publicErrorConstructor('Запись не найдена.'))
-      }
-    }
-    article.is_published = data.is_published
-    if (data.thumbnail) {
-      article.thumbnail = data.thumbnail
-    }
-    if (data.title) {
-      article.title = data.title
-    }
-    article.content = data.content
-    const user = ctx['user']
-    try {
-      await user.related('articles').save(article)
-      return ctx.response.status(200).send(article)
-    } catch (error) {
-      console.log(error)
-      return ctx.response.badGateway(await ElvenTools.publicErrorConstructor('Не удалось сохранить запись.'))
-    }
-  }
 }

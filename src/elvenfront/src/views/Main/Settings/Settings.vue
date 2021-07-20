@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <Header title="настройки"></Header>
+    <Header></Header>
     <div class="content">
      settings
     </div>

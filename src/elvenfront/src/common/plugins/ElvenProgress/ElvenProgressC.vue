@@ -17,12 +17,12 @@ export default {
       basicLoading: false, // wrap
       setPercents: 0, // wrap
       percents: 0,
+      closeBar: false,
       // service vars end //
 
       //// SETTINGS START ////
       // default settings
       progressBarHeight: '2px',
-      progressBarColor: 'blue',
       moveSpeed: 100,
       basicLoadingStartSpeed: 30,
       basicLoadingFinishSpeed: 5,
@@ -39,6 +39,9 @@ export default {
     basicLoading: function () {
       this.basicLoadingFunc(this.basicLoading)
     },
+    closeBar: function (){
+      this.closeBarFunc()
+    }
   },
   mounted() {
     this.progressBar = document.getElementById('elven-progressbar-line')
@@ -46,10 +49,9 @@ export default {
 
     // user settings are applied here
     this.progressBar.style.height = this.progressBarHeight
-    this.progressBar.style.backgroundColor = this.progressBarColor
   },
   unmounted() {
-    this.closeBar()
+    this.closeBarFunc()
   },
   methods: {
     openBar() {
@@ -57,7 +59,7 @@ export default {
       this.progressBar.style.width = '0'
       this.isProgressBarActive = true
     },
-    closeBar() {
+    closeBarFunc() {
       this.percents = 0
       this.progressBar.style.width = '0'
       this.isProgressBarActive = false
@@ -95,7 +97,7 @@ export default {
             this.progressBar.style.width = `${this.percents}%`
           } else {
             clearInterval(intervalID)
-            this.closeBar()
+            this.closeBarFunc()
           }
         }, this.basicLoadingFinishSpeed)
       }
@@ -116,6 +118,17 @@ export default {
 #elven-progressbar-line {
   height: 100%;
   width: 0;
-  background-color: red;
+  background-color: white;
+}
+
+@media (prefers-color-scheme: light) {
+  #elven-progressbar-line{
+    background-color: black;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  #elven-progressbar-line{
+    background-color: white;
+  }
 }
 </style>

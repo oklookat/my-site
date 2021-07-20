@@ -1,6 +1,6 @@
 <template>
 <div class="container">
-  <Header title="elven"></Header>
+  <Header></Header>
   <div class="content">
 
   </div>

@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <Header title="файлы"></Header>
+    <Header></Header>
     <div class="content">
       files
     </div>

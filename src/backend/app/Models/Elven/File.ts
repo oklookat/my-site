@@ -6,7 +6,7 @@ export default class File extends BaseModel {
   public id: number
 
   @column()
-  public user_id: bigint
+  public user_id: number
 
   @column()
   public link: string
