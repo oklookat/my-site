@@ -31,7 +31,7 @@
   :root {
     --color-text: black;
     --color-text-inactive: #303030;
-    --color-body: #E0E0E0;
+    --color-body: #CCCCCC;
     --color-level-1: #FFFFFF;
     --color-level-2: #FFFFFF;
     --color-level-3: #FFFFFF;

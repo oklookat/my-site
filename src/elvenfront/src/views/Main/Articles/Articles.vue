@@ -27,7 +27,7 @@
           </div>
           <div class="article-item article-title">{{ article.title }}</div>
           <div class="article-item article-content-preview">
-            {{ showPreviewContent(article.content) }}
+            {{ article.content }}
           </div>
         </article>
       </div>
@@ -126,14 +126,6 @@ export default defineComponent({
     convertDateWrap(date) {
       return ElvenDates.convert(date)
     },
-    showPreviewContent(content){
-      content = JSON.parse(content)
-      let text = content.blocks[0].data.text
-      if(text.length > 408){
-        text = text.slice(0, 408) + '...'
-      }
-      return text
-    }
   }
 })
 </script>

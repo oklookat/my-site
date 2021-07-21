@@ -10,8 +10,9 @@ export default class ArticlesController {
   // GET url/
   // params:
   // show = published, drafts, all
-  // by = created, published, title
+  // by = created, updated, published, title
   // start = up (DESC), down (ASC)
+  // preview = true (content < 480 symbols), false (gives you full articles)
   public async index(ctx: HttpContextContract) {
     const isAdmin = ctx['user'] && ctx['user'].role === 'admin'
     // VALIDATION START //
@@ -24,16 +25,20 @@ export default class ArticlesController {
         return ctx.response.status(403).send(await ElvenTools.publicErrorConstructor('Доступ запрещен.'))
       }
     }
-    let by = ctx.request.input('by', 'created')
+    let by = ctx.request.input('by', 'published')
     by = by.toLowerCase()
-    if (by !== 'created' && by !== 'published' && by !== 'title') {
-      return ctx.response.status(400).send(await ElvenTools.publicErrorConstructor('by должен быть created, published или title'))
+    if (by !== 'created' && by !== 'published' && by !== 'updated' && by !== 'title') {
+      return ctx.response.status(400).send(await ElvenTools.publicErrorConstructor('by должен быть created, published, updated или title'))
     } else {
-      if (by === 'created') {
+      if (by === 'created' || by === 'updated') {
         if (!isAdmin) {
           return ctx.response.status(403).send(await ElvenTools.publicErrorConstructor('Доступ запрещен.'))
         } else {
-          by = 'created_at'
+          if (by === 'created') {
+            by = 'created_at'
+          } else if (by === 'updated') {
+            by = 'updated_at'
+          }
         }
       } else if (by === 'published') {
         by = 'published_at'
@@ -52,17 +57,35 @@ export default class ArticlesController {
     }
     // VALIDATION END //
     let page = ctx.request.input('page', 1)
+    let articles
     if (show === 'published') {
-      const articles = await Article.query().where('is_published', 'true').orderBy(by, start).paginate(page, pageSize)
-      return ctx.response.status(200).send(articles)
+      articles = await Article.query().where('is_published', 'true').orderBy(by, start).paginate(page, pageSize)
     } else if (show === 'drafts') {
-      const articles = await Article.query().where('is_published', 'false').orderBy(by, start).paginate(page, pageSize)
-      return ctx.response.status(200).send(articles)
+      articles = await Article.query().where('is_published', 'false').orderBy(by, start).paginate(page, pageSize)
     } else if (show === 'all') {
-      const articles = await Article.query().orderBy(by, start).paginate(page, pageSize)
-      return ctx.response.status(200).send(articles)
+      articles = await Article.query().orderBy(by, start).paginate(page, pageSize)
     }
-    return ctx.response.status(500).send(await ElvenTools.publicErrorConstructor('Произошла ошибка.'))
+    if (articles) {
+      let preview = ctx.request.input('page', 'false')
+      preview.toLowerCase()
+      //  if(preview === 'true'){
+      for (let i = 0; articles.length > i; i++) {
+        let content = articles[i].content
+        content = JSON.parse(content)
+        content = content.blocks[0].data.text
+        console.log(content.length > 408)
+        if (content.length > 408) {
+          content = content.slice(0, 408) + '...'
+          articles[i].content = content
+        } else {
+          articles[i].content = content
+        }
+      }
+      // }
+      return ctx.response.status(200).send(articles)
+    } else {
+      return ctx.response.status(500).send(await ElvenTools.publicErrorConstructor('При получении записей произошла ошибка.'))
+    }
   }
 
   // GET url/:id
