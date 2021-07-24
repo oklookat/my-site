@@ -21,7 +21,7 @@
     "@adonisjs/repl": "^3.1.5",
     "@types/crypto-js": "^4.0.1",
     "bcrypt": "^5.0.1",
-    "crypto-js": "^4.0.0",
+    "crypto-js": "^4.1.1",
     "luxon": "^2.0.1",
     "pg": "^8.6.0",
     "proxy-addr": "^2.0.6",
