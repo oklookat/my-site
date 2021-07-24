@@ -11,7 +11,7 @@ export default class ArticlesController {
   // params:
   // show = published, drafts, all
   // by = created, updated, published
-  // start = up (DESC), down (ASC)
+  // start = newest (DESC), oldest (ASC)
   // preview = true (content < 480 symbols), false (gives you full articles)
   public async index(ctx: HttpContextContract) {
     const isAdmin = ctx['user'] && ctx['user'].role === 'admin'
