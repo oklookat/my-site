@@ -5,7 +5,7 @@
       <input type="text" name="username" placeholder="Имя пользователя" v-model="username" @input="trackInput">
       <input type="password" name="password" placeholder="Пароль" v-model="password" @input="trackInput">
     </div>
-    <div class="auth-button" v-if="isAuthButton" @click="makeLogin">
+    <div class="auth-button" @click="makeLogin">
       Войти
     </div>
     <div class="error" v-if="isError">{{ error }}</div>
@@ -20,7 +20,6 @@ export default defineComponent({
   name: 'Login',
   data() {
     return {
-      isAuthButton: false,
       isError: false,
       error: '',
       username: '',
@@ -28,11 +27,6 @@ export default defineComponent({
     }
   },
   methods: {
-    trackInput() {
-      const usernameLength = this.username.length
-      const passwordLength = this.password.length
-      this.isAuthButton = usernameLength >= 4 && usernameLength <= 24 && passwordLength >= 8 && passwordLength <= 64
-    },
     async makeLogin() {
       this.isError = false
       await AuthAdapter.login(this.username, this.password)
@@ -78,7 +72,7 @@ input {
   align-items: center;
   user-select: none;
   cursor: pointer;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   width: 264px;
   height: 48px;
   color: var(--color-text-inactive);

@@ -43,7 +43,7 @@ export default defineComponent({
 
 <style scoped>
 .ui-overlay-container{
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0,0,0,0.7);
   z-index: 9998;
   max-width: 100vw;
   width: 100%;

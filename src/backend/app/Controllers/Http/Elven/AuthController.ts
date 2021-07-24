@@ -20,21 +20,11 @@ export default class AuthController {
       return response.status(200).send({token: token})
     } catch (error) {
       if (!error.type) {
-        console.log('--------- НЕОБРАБОТАННАЯ ОШИБКА ---------')
-        console.log(error)
-        console.log('--------- НЕОБРАБОТАННАЯ ОШИБКА ---------')
-        const err = await ElvenTools.publicErrorConstructor('Странная ошибка.')
+        const err = await ElvenTools.publicErrorConstructor('Произошла странная ошибка.')
         return response.status(500).send(err)
       }
       const type = error.type
-      const msg = error.message
-
-      const isValidationError = type === 'VALIDATION_ERROR'
-      if (isValidationError) {
-        const err = await ElvenTools.publicErrorConstructor(msg)
-        return response.badRequest(err)
-      }
-      const isWrongLogin = type === 'WRONG_PASSWORD' || type === 'USER_NOT_FOUND'
+      const isWrongLogin = type === 'WRONG_PASSWORD' || type === 'USER_NOT_FOUND' || type === 'VALIDATION_ERROR'
       if (isWrongLogin) {
         const err = await ElvenTools.publicErrorConstructor('Неверный логин или пароль.')
         return response.forbidden(err)

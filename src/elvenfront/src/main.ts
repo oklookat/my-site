@@ -5,5 +5,5 @@ import router from './router'
 import store from './store'
 import ElvenProgress from './common/plugins/ElvenProgress/ElvenProgress.js'
 
-const app = createApp(App).use(store).use(router).use(ElvenProgress, {progressBarColor: 'white'}).mount('#app')
+const app = createApp(App).use(store).use(router).use(ElvenProgress).mount('#app')
 export default app

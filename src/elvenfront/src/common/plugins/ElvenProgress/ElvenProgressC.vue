@@ -22,7 +22,7 @@ export default {
 
       //// SETTINGS START ////
       // default settings
-      progressBarHeight: '2px',
+      progressBarHeight: '3px',
       moveSpeed: 100,
       basicLoadingStartSpeed: 30,
       basicLoadingFinishSpeed: 5,
@@ -112,7 +112,7 @@ export default {
   cursor: default;
   position: absolute;
   width: 100%;
-  height: 2px;
+  height: 4px;
 }
 
 #elven-progressbar-line {
@@ -123,12 +123,12 @@ export default {
 
 @media (prefers-color-scheme: light) {
   #elven-progressbar-line{
-    background-color: black;
+    background-color: #8CE6E6;
   }
 }
 @media (prefers-color-scheme: dark) {
   #elven-progressbar-line{
-    background-color: white;
+    background-color: #8CE6E6;
   }
 }
 </style>

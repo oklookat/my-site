@@ -27,17 +27,19 @@ class theLogic {
     static options = null
 
     static init() {
-        if (this.options.progressBarHeight) {
-            ElvenProgress.componentData.progressBarHeight = this.options.progressBarHeight
-        }
-        if (this.options.basicLoadingStartSpeed) {
-            ElvenProgress.componentData.basicLoadingStartSpeed = this.options.basicLoadingStartSpeed
-        }
-        if (this.options.basicLoadingFinishSpeed) {
-            ElvenProgress.componentData.basicLoadingFinishSpeed = this.options.basicLoadingFinishSpeed
-        }
-        if (this.options.basicLoadingStartTo) {
-            ElvenProgress.componentData.basicLoadingStartTo = this.options.basicLoadingStartTo
+        if (this.options) {
+            if (this.options.progressBarHeight) {
+                ElvenProgress.componentData.progressBarHeight = this.options.progressBarHeight
+            }
+            if (this.options.basicLoadingStartSpeed) {
+                ElvenProgress.componentData.basicLoadingStartSpeed = this.options.basicLoadingStartSpeed
+            }
+            if (this.options.basicLoadingFinishSpeed) {
+                ElvenProgress.componentData.basicLoadingFinishSpeed = this.options.basicLoadingFinishSpeed
+            }
+            if (this.options.basicLoadingStartTo) {
+                ElvenProgress.componentData.basicLoadingStartTo = this.options.basicLoadingStartTo
+            }
         }
     }
 
@@ -53,7 +55,7 @@ class theLogic {
         ElvenProgress.componentData.basicLoading = false
     }
 
-    static close(){
+    static close() {
         ElvenProgress.componentData.closeBar = true
     }
 }

@@ -10,7 +10,7 @@ export default class ArticlesController {
   // GET url/
   // params:
   // show = published, drafts, all
-  // by = created, updated, published, title
+  // by = created, updated, published
   // start = up (DESC), down (ASC)
   // preview = true (content < 480 symbols), false (gives you full articles)
   public async index(ctx: HttpContextContract) {
@@ -27,8 +27,8 @@ export default class ArticlesController {
     }
     let by = ctx.request.input('by', 'published')
     by = by.toLowerCase()
-    if (by !== 'created' && by !== 'published' && by !== 'updated' && by !== 'title') {
-      return ctx.response.status(400).send(await ElvenTools.publicErrorConstructor('by должен быть created, published, updated или title'))
+    if (by !== 'created' && by !== 'published' && by !== 'updated') {
+      return ctx.response.status(400).send(await ElvenTools.publicErrorConstructor('by должен быть created, published или updated'))
     } else {
       if (by === 'created' || by === 'updated') {
         if (!isAdmin) {
@@ -44,16 +44,24 @@ export default class ArticlesController {
         by = 'published_at'
       }
     }
-    let start = ctx.request.input('start', 'up')
+    let start = ctx.request.input('start', 'newest')
     start = start.toLowerCase()
-    if (start !== 'up' && start !== 'down') {
-      return ctx.response.status(400).send(await ElvenTools.publicErrorConstructor('start должен быть up или down'))
+    if (start !== 'newest' && start !== 'oldest') {
+      return ctx.response.status(400).send(await ElvenTools.publicErrorConstructor('start должен быть newest или oldest'))
     } else {
-      if (start === 'up') {
+      if (start === 'newest') {
         start = 'DESC'
-      } else if (start === 'down') {
+      } else if (start === 'oldest') {
         start = 'ASC'
       }
+    }
+    let preview = ctx.request.input('preview', 'false')
+    if(preview !== 'false' && preview !== 'true'){
+      return ctx.response.status(400).send(await ElvenTools.publicErrorConstructor('preview должно быть true или false'))
+    } else if(preview === 'true'){
+      preview = true
+    } else if(preview === 'false'){
+      preview = false
     }
     // VALIDATION END //
     let page = ctx.request.input('page', 1)
@@ -66,22 +74,21 @@ export default class ArticlesController {
       articles = await Article.query().orderBy(by, start).paginate(page, pageSize)
     }
     if (articles) {
-      let preview = ctx.request.input('page', 'false')
+      let preview = ctx.request.input('preview', 'false')
       preview.toLowerCase()
-      //  if(preview === 'true'){
-      for (let i = 0; articles.length > i; i++) {
-        let content = articles[i].content
-        content = JSON.parse(content)
-        content = content.blocks[0].data.text
-        console.log(content.length > 408)
-        if (content.length > 408) {
-          content = content.slice(0, 408) + '...'
-          articles[i].content = content
-        } else {
-          articles[i].content = content
+      if (preview) {
+        for (let i = 0; articles.length > i; i++) {
+          let content = articles[i].content
+          content = JSON.parse(content)
+          content = content.blocks[0].data.text
+          if (content.length > 408) {
+            content = content.slice(0, 408) + '...'
+            articles[i].content = content
+          } else {
+            articles[i].content = content
+          }
         }
       }
-      // }
       return ctx.response.status(200).send(articles)
     } else {
       return ctx.response.status(500).send(await ElvenTools.publicErrorConstructor('При получении записей произошла ошибка.'))
@@ -131,7 +138,6 @@ export default class ArticlesController {
       await user.related('articles').save(article)
       return ctx.response.status(200).send(article)
     } catch (error) {
-      console.log(error)
       return ctx.response.internalServerError(await ElvenTools.publicErrorConstructor('Не удалось сохранить запись.'))
     }
   }

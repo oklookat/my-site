@@ -2,22 +2,8 @@ import Axios from '@/common/adapters/Axios.js'
 
 class ArticleAdapter {
 
-    public static async getPublished(page = '1') {
-        return await Axios.get('articles/', {params: {page: page, show: 'published'}})
-            .then(response => {
-                if (response.data) {
-                    return Promise.resolve(response.data)
-                } else {
-                    return Promise.reject('Нет данных.')
-                }
-            })
-            .catch(error => {
-                return Promise.reject(error)
-            })
-    }
-
-    public static async getDrafts(page = '1') {
-        return await Axios.get('articles/', {params: {page: page, show: 'drafts'}})
+    public static async getArticles(page = '1', show = 'published', sortBy = 'updated', start = 'newest') {
+        return await Axios.get('articles/', {params: {page: page, show: show, by: sortBy, start: start}})
             .then(response => {
                 if (response.data) {
                     return Promise.resolve(response.data)

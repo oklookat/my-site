@@ -3,16 +3,37 @@
     <Header></Header>
     <div class="content">
       <div class="articles-types">
-        <div class="articles-published" v-on:click="getPublished()"
-             :class="{'articles-types-active': !isShowDrafts}">
+        <div class="articles-published" v-on:click="getArticles(undefined, 'published')"
+             :class="{'active': show === 'published'}">
           Статьи
         </div>
-        <div class="articles-drafts" v-on:click="getDrafts()"
-             :class="{'articles-types-active': isShowDrafts}">
+        <div class="articles-drafts" v-on:click="getArticles(undefined, 'drafts')"
+             :class="{'active': show === 'drafts'}">
           Черновики
         </div>
       </div>
-      <!--      <div class="articles-sort-by">дата </div>-->
+      <div class="articles-sort-by">
+        <div class="articles-sort-by-link">
+          <div v-if="sortBy === 'created'" v-on:click="isSortOverlayActive = !isSortOverlayActive">дата создания</div>
+          <div v-if="sortBy === 'updated'" v-on:click="isSortOverlayActive = !isSortOverlayActive">последнее
+            редактирование
+          </div>
+          <div v-if="sortBy === 'published'" v-on:click="isSortOverlayActive = !isSortOverlayActive">дата публикации
+          </div>
+          <div class="the-underline"></div>
+        </div>
+        <div class="articles-sort-by-link">
+          <div v-if="sortFirst === 'newest'"
+               v-on:click="setSortDate('oldest')">
+            новые
+          </div>
+          <div v-if="sortFirst === 'oldest'"
+               v-on:click="setSortDate('newest')">
+            старые
+          </div>
+          <div class="the-underline"></div>
+        </div>
+      </div>
 
       <div class="articles-list">
         <article class="article" v-for="article in articles" :key="article.id" v-on:click="selectArticle(article)">
@@ -25,31 +46,53 @@
             </div>
             <div class="article-item article-is-draft" v-if="!article.is_published">Черновик</div>
           </div>
-          <div class="article-item article-title">{{ article.title }}</div>
-          <div class="article-item article-content-preview">
-            {{ article.content }}
+          <div class="article-main">
+            <div class="article-item article-title">{{ article.title }}</div>
+            <div class="article-item article-content-preview">
+              {{ article.content }}
+            </div>
           </div>
         </article>
       </div>
       <div class="articles-404" v-if="isArticlesLoaded && articles.length < 1">
         <div class="articles-404-1">Нет записей.</div>
         <div class="articles-404-2">
-          Но вы можете
-          <RouterLink class="articles-404-link" :to="{name: 'ArticleCreate'}">создать новую</RouterLink>.
+          <RouterLink class="articles-404-link" :to="{name: 'ArticleCreate'}">
+            Создать новую?
+            <div class="the-underline"></div>
+          </RouterLink>
         </div>
       </div>
     </div>
 
-    <UIOverlay v-bind:active="isOverlayActive" v-on:deactivated="isOverlayActive = false">
-      <div class="article-tools">
-        <div class="item article-action">
+    <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
+      <div class="overlay-article-tools">
+        <div class="ov-item article-action">
           <div class="article-make-draft" v-if="selectedArticle.is_published"
-               v-on:click="makeDraftArticle(selectedArticle)">Сделать черновиком
+               v-on:click="makeDraftArticle(selectedArticle)">
+            Сделать черновиком
           </div>
           <div class="article-publish" v-else v-on:click="publishArticle(selectedArticle)">Опубликовать</div>
         </div>
-        <div class="item article-edit" v-on:click="editArticle(selectedArticle)">Редактировать</div>
-        <div class="item article-delete" v-on:click="deleteArticle(selectedArticle)">Удалить</div>
+        <div class="ov-item article-edit" v-on:click="editArticle(selectedArticle)">Редактировать</div>
+        <div class="ov-item article-delete" v-on:click="deleteArticle(selectedArticle)">Удалить</div>
+      </div>
+    </UIOverlay>
+
+    <UIOverlay v-bind:active="isSortOverlayActive" v-on:deactivated="isSortOverlayActive = false">
+      <div class="overlay-article-sort">
+        <div class="ov-item asb-sort-by-created"
+             :class="{'active': sortBy === 'created'}"
+             v-on:click="setSort('created')">Дата создания
+        </div>
+        <div class="ov-item asb-sort-by-updated"
+             :class="{'active': sortBy === 'updated'}"
+             v-on:click="setSort('updated')">Дата последнего редактирования
+        </div>
+        <div class="ov-item asb-sort-by-published"
+             :class="{'active': sortBy === 'published'}"
+             v-on:click="setSort('published')">Дата публикации
+        </div>
       </div>
     </UIOverlay>
   </div>
@@ -67,34 +110,27 @@ export default defineComponent({
   components: {UIOverlay, Header},
   data() {
     return {
-      isShowDrafts: false,
-
-      isOverlayActive: false,
+      isArticlesLoaded: false,
+      show: 'published', // drafts or published
+      isToolsOverlayActive: false, // actions overlay
       articles: [],
       articlesMeta: [],
       selectedArticle: undefined,
-      elvenTools: undefined,
-      isArticlesLoaded: false,
+      currentPage: 1,
+
+      sortBy: 'updated', // see backend docs for more
+      sortFirst: 'newest',
+      isSortOverlayActive: false,
     }
   },
   async mounted() {
-    await this.getPublished()
+    await this.getArticles()
   },
   methods: {
-    async getPublished(page = '1'){
+    async getArticles(page = this.currentPage, show = this.show, sortBy = this.sortBy, sortFirst = this.sortFirst) {
+      this.show = show
       this.isArticlesLoaded = false;
-      this.isShowDrafts = false;
-      await ArticleAdapter.getPublished(page)
-          .then(result => {
-            this.articles = result.data
-            this.articlesMeta = result.meta
-            this.isArticlesLoaded = true;
-          })
-    },
-    async getDrafts(page = '1'){
-      this.isArticlesLoaded = false;
-      this.isShowDrafts = true;
-      await ArticleAdapter.getDrafts(page)
+      await ArticleAdapter.getArticles(page, show, sortBy, sortFirst)
           .then(result => {
             this.articles = result.data
             this.articlesMeta = result.meta
@@ -107,7 +143,7 @@ export default defineComponent({
         await ArticleAdapter.deleteArticle(article.id)
         const index = this.articles.indexOf(article)
         this.articles.splice(index, 1)
-        this.isOverlayActive = false
+        this.isToolsOverlayActive = false
       }
     },
     async editArticle(article) {
@@ -120,12 +156,21 @@ export default defineComponent({
       await ArticleAdapter.makeDraftArticle(article)
     },
     selectArticle(article) {
-      this.isOverlayActive = true
+      this.isToolsOverlayActive = true
       this.selectedArticle = article
     },
     convertDateWrap(date) {
       return ElvenDates.convert(date)
     },
+    async setSort(sort) {
+      this.sortBy = sort
+      await this.getArticles()
+      this.isSortOverlayActive = false
+    },
+    async setSortDate(age = 'newest'){
+      this.sortFirst = age
+      await this.getArticles()
+    }
   }
 })
 </script>
@@ -142,14 +187,16 @@ export default defineComponent({
 }
 
 .articles-types {
+  background-color: var(--color-level-1);
+  border-radius: 6px;
   height: 42px;
   width: 100%;
   display: flex;
   flex-direction: row;
-  gap: 24px;
 }
+
 .articles-types div {
-  border-radius: 6px;
+  border-radius: inherit;
   width: 100%;
   height: 100%;
   cursor: pointer;
@@ -157,12 +204,31 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
 }
-.articles-types div:hover{
+
+.articles-types div:hover {
   background-color: var(--color-hover);
 }
-.articles-types-active{
-  background-color: var(--color-hover);
+
+.articles-sort-by {
+  background-color: var(--color-level-1);
+  color: var(--color-text-inactive);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding-left: 12px;
+  font-size: 0.8rem;
+  min-height: 36px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
 }
+
+.articles-sort-by-link
+{
+  font-weight: bold;
+  cursor: pointer;
+}
+
 .articles-list {
   height: 100%;
   width: 100%;
@@ -175,24 +241,22 @@ export default defineComponent({
 .article {
   min-height: 164px;
   border-radius: 6px;
-  background-color: var(--color-level-2);
+  background-color: var(--color-level-1);
+  cursor: pointer;
   width: 100%;
   height: 100%;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   padding-bottom: 12px;
   gap: 8px;
 }
 
-.article:hover {
-  background-color: var(--color-hover);
-}
-.article-meta{
+.article-meta {
   display: flex;
   flex-direction: row;
   color: var(--color-text-inactive);
 }
+
 .article-item {
   font-size: 1.1rem;
   line-height: 1.5rem;
@@ -200,12 +264,15 @@ export default defineComponent({
   margin-left: 12px;
   margin-right: 12px;
 }
-.article-title{
+
+.article-title {
   font-size: 1.6rem;
 }
-.article-content-preview{
+
+.article-content-preview {
   height: 100%;
 }
+
 .article-updated-at,
 .article-published-at,
 .article-is-draft {
@@ -213,18 +280,25 @@ export default defineComponent({
 }
 
 
-.article-tools {
+.overlay-article-tools,
+.overlay-article-sort {
   width: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.item {
+.ov-item {
+  height: 64px;
+  width: 100%;
+  font-size: 1rem;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 64px;
-  width: 100%;
+}
+
+.ov-item:hover {
+  background-color: var(--color-hover);
 }
 
 .articles-404 {
@@ -234,17 +308,16 @@ export default defineComponent({
   justify-items: center;
   grid-gap: 24px;
 }
-.articles-404 a {
-  text-decoration: underline;
-}
+
 
 @media screen and (min-width: 512px) {
-  .article-content-preview{
+  .article-content-preview {
     width: 400px;
   }
 }
+
 @media screen and (min-width: 1024px) {
-  .article-content-preview{
+  .article-content-preview {
     width: 412px;
   }
 }

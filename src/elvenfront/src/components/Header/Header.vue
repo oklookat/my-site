@@ -65,6 +65,7 @@ export default defineComponent({
 }
 .header{
   height: var(--header-height);
+  background-color: var(--color-level-1);
   width: 100%;
 }
 .header-mobile{
@@ -87,7 +88,7 @@ export default defineComponent({
   position: absolute;
   top: var(--header-height); left: 0; bottom: 0; right: 0;
   display: block;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   cursor: pointer;
   overflow: auto;
 }

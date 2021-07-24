@@ -5,42 +5,48 @@
 
 <style lang="scss">
 :root {
-  --header-height: 64px;
+  --header-height: 52px;
   --header-anim-height: 95%;
   --header-anim-duration: 0.4s;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-text: white;
-    --color-text-inactive: #E6E6E6;
-    --color-body: #101010;
-    --color-level-1: #151515;
-    --color-level-2: #202020;
-    --color-level-3: #303030;
-    --color-hover: rgba(255, 255, 255, 0.06);
-    --color-border: #353535;
+    // MAIN UI START //
     --color-scrollbar: #707070;
     --color-scrollbar-hover: #909090;
     --color-header-active: #000000;
+    --color-text: white;
+    --color-text-inactive: #E6E6E6;
     --color-text-selection: #803E34;
+    --color-hover: rgba(255, 255, 255, 0.06);
+    --color-border: #202020;
+    --color-body: #101010;
+    --color-level-1: #202020;
+    --color-level-2: #252525;
+    --color-level-3: #303030;
+    // MAIN UI END //
+    --color-helper: #8CE6E6;
   }
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --color-text: black;
-    --color-text-inactive: #303030;
-    --color-body: #CCCCCC;
-    --color-level-1: #FFFFFF;
-    --color-level-2: #FFFFFF;
-    --color-level-3: #FFFFFF;
-    --color-hover: rgba(255, 255, 255, 0.80);
-    --color-border: #CCCCCC;
+    // MAIN UI START //
     --color-scrollbar: #505050;
     --color-scrollbar-hover: #707070;
     --color-header-active: #FFFFFF;
+    --color-text: black;
+    --color-text-inactive: #404040;
     --color-text-selection: #FF7C69;
+    --color-hover: rgba(0, 0, 0, 0.05);
+    --color-border: #F2F2F2;
+    --color-body: #E6E6E6;
+    --color-level-1: #FFFFFF;
+    --color-level-2: #FFFFFF;
+    --color-level-3: #FFFFFF;
+    // MAIN UI END //
+    --color-helper: #8CE6E6;
   }
 }
 html{
@@ -52,6 +58,7 @@ body {
   font-family: 'Helvetica', 'Arial', sans-serif;
   color: var(--color-text);
   background-color: var(--color-body);
+  text-underline-offset: 0.4em;
 }
 
 ::-webkit-scrollbar {
@@ -78,9 +85,22 @@ a {
 
 }
 
+.active{
+  background-color: var(--color-hover);
+  border: none;
+}
+.the-underline{
+  height: 1px;
+  border-bottom: 1px solid var(--color-text);
+}
+
 .container {
   word-break: break-word;
   hyphens: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 input {
