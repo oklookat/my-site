@@ -21,16 +21,6 @@
       </div>
       </transition>
     </div>
-
-    <div class="header-desktop">
-      <RouterLink class="header-mobile-menu-item" :to="{name: 'Index'}">Главная</RouterLink>
-      <RouterLink class="header-mobile-menu-item" :to="{name: 'ArticleCreate'}">Создать запись</RouterLink>
-      <RouterLink class="header-mobile-menu-item" :to="{name: 'Articles'}">Список записей</RouterLink>
-      <RouterLink class="header-mobile-menu-item" :to="{name: 'Files'}">Файлы</RouterLink>
-      <RouterLink class="header-mobile-menu-item" :to="{name: 'Settings'}">Настройки</RouterLink>
-      <RouterLink class="header-mobile-menu-item" :to="{name: 'Logout'}">Выход</RouterLink>
-    </div>
-
   </div>
 </template>
 
@@ -216,9 +206,5 @@ export default defineComponent({
   100%{
     opacity: 100;
   }
-}
-
-.header-desktop{
-  display: none;
 }
 </style>
