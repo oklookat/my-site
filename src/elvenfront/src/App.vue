@@ -19,6 +19,7 @@
     --color-text: white;
     --color-text-inactive: #E6E6E6;
     --color-text-selection: #803E34;
+    --color-placeholder: #666666;
     --color-hover: rgba(255, 255, 255, 0.06);
     --color-border: #202020;
     --color-body: #101010;
@@ -39,6 +40,7 @@
     --color-text: black;
     --color-text-inactive: #404040;
     --color-text-selection: #FF7C69;
+    --color-placeholder: #808080;
     --color-hover: rgba(0, 0, 0, 0.05);
     --color-border: #F2F2F2;
     --color-body: #E6E6E6;
@@ -49,9 +51,11 @@
     --color-helper: #8CE6E6;
   }
 }
-html{
+
+html {
   height: 100%;
 }
+
 html,
 body {
   margin: 0;
@@ -85,11 +89,12 @@ a {
 
 }
 
-.active{
+.active {
   background-color: var(--color-hover);
   border: none;
 }
-.the-underline{
+
+.the-underline {
   height: 1px;
   border-bottom: 1px solid var(--color-text);
 }
@@ -101,6 +106,13 @@ a {
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+
+textarea {
+  font-family: inherit;
+  color: inherit;
+  resize: none;
+  overflow: hidden;
 }
 
 input {
@@ -168,19 +180,21 @@ input:focus::placeholder {
   max-height: unset;
   max-width: unset;
 }
+
 // WIDTH AND HEIGHT END //
 // EDITOR.JS LIGHT AND DARK THEME STYLING START //
 .ce-inline-tool,
-.codex-editor svg{
+.codex-editor svg {
   color: var(--color-text);
 }
 
 .ce-inline-tool:hover,
 .ce-inline-toolbar__dropdown:hover,
 .ce-toolbar__settings-btn:hover,
-.ce-settings__button:hover{
+.ce-settings__button:hover {
   background-color: var(--color-hover);
 }
+
 .ce-inline-tool-input,
 .ce-inline-toolbar,
 .ce-conversion-toolbar,
@@ -190,20 +204,26 @@ input:focus::placeholder {
   background-color: var(--color-level-2);
   border: 1px solid var(--color-border);
 }
+
 .ce-conversion-tool__icon,
-.ce-toolbar__settings-btn{
+.ce-toolbar__settings-btn {
   background: var(--color-level-3);
 }
 
 .ce-inline-toolbar__actions input::placeholder,
-.ce-conversion-toolbar__label{
+.ce-conversion-toolbar__label {
   color: var(--color-text-inactive)
 }
 
+.codex-editor--narrow .ce-toolbox {
+  background-color: var(--color-level-1);
+}
+
 ::selection,
-.ce-block--selected .ce-block__content{
+.ce-block--selected .ce-block__content {
   background: var(--color-text-selection);
 }
+
 // EDITOR.JS LIGHT AND DARK THEME STYLING END //
 //// EDITOR.JS STYLING END ////
 
@@ -212,6 +232,7 @@ input:focus::placeholder {
     width: 500px;
   }
 }
+
 @media screen and (min-width: 1024px) {
   .content {
     width: 812px;

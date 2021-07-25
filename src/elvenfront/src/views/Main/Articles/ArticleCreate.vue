@@ -2,7 +2,12 @@
   <div class="container">
     <Header></Header>
     <div class="content">
-      <input id="article-title" type="text" v-model="article.title" @input="autoSave"/>
+      <textarea id="article-title"
+                placeholder="Если коротко..."
+                rows="1"
+                v-model="article.title"
+                @input="autoSave">
+      </textarea>
       <div class="editor-container">
         <div id="editor" @input="autoSave">
         </div>
@@ -25,7 +30,8 @@ import Header from "@/components/Header/Header"
 import EditorJS from '@editorjs/editorjs'
 import Head from '@editorjs/header'
 import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter"
-import UIOverlay from "@/components/_UI/UIOverlay";
+import UIOverlay from "@/components/_UI/UIOverlay"
+import TextareaResizer from "@/common/tools/TextareaResizer"
 
 export default defineComponent({
   name: 'ArticleCreate',
@@ -43,6 +49,8 @@ export default defineComponent({
       isEditorInitialized: false,
       isErrorOverlayActive: false,
       errorOverlayContent: '',
+
+      textareaResizer: undefined,
     }
   },
   async mounted() {
@@ -52,7 +60,7 @@ export default defineComponent({
     if (id) {
       this.article.id = id
       const isSuccess = await this.initEditArticle()
-      if(isSuccess){
+      if (isSuccess) {
         await this.setEditorData()
       } else {
         this.isEditorInitialized = true
@@ -60,20 +68,28 @@ export default defineComponent({
     } else {
       this.isEditorInitialized = true
     }
+    this.textareaResizer = new TextareaResizer('article-title')
+    this.textareaResizer.start()
   },
   async unmounted() {
     await window.editor.destroy()
+    this.textareaResizer.destroy()
   },
   methods: {
     async initEditor() {
       window.editor = new EditorJS({
         holder: 'editor',
         tools: {
+          paragraph: {
+            config: {
+              placeholder: 'Если развернуто...'
+            }
+          },
           header: {
             class: Head,
             inlineToolbar: true,
             config: {
-              placeholder: 'Превед медвед!',
+              placeholder: 'Заголовок',
               levels: [2, 3, 4],
               defaultLevel: 3
             }
@@ -118,11 +134,11 @@ export default defineComponent({
             this.article = article
             return Promise.resolve(true)
           })
-          .catch(async (error) =>{
-            if(error === 404){
+          .catch(async (error) => {
+            if (error === 404) {
               console.log('Запись не найдена')
               this.errorOverlayContent = 'Вы хотите отредактировать запись, которой не существует. Мы перенаправили вас на создание новой записи.'
-            } else{
+            } else {
               this.errorOverlayContent = `Произошла странная ошибка. Ошибка: ${error}`
             }
             this.article.id = undefined
@@ -157,22 +173,33 @@ export default defineComponent({
 .container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 32px;
 }
 
 .content {
-  display: grid;
-  height: calc(100% - var(--header-height));
-  grid-template-columns: 1fr;
-  grid-template-rows: 48px 1fr;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.editor-container{
+#article-title {
+  text-indent: 0;
+  border: none;
+  background-color: transparent;
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+
+.editor-container {
   height: 100%;
 }
 
+#editor {
+  height: 100%;
+}
 
-.error-ok-button{
+.error-ok-button {
   border-radius: 6px;
   background-color: var(--color-text);
   width: 25%;

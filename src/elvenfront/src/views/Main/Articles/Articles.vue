@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <div class="articles-list">
+      <div class="articles-list" v-if="articles.length > 0">
         <article class="article" v-for="article in articles" :key="article.id" v-on:click="selectArticle(article)">
           <div class="article-meta">
             <div class="article-item article-updated-at" v-if="!article.is_published">
@@ -55,7 +55,7 @@
         </article>
       </div>
       <div class="articles-404" v-if="isArticlesLoaded && articles.length < 1">
-        <div class="articles-404-1">Нет записей.</div>
+        <div class="articles-404-1">Нет записей :(</div>
         <div class="articles-404-2">
           <RouterLink class="articles-404-link" :to="{name: 'ArticleCreate'}">
             Создать новую?
@@ -141,8 +141,7 @@ export default defineComponent({
       const isDelete = confirm('Удалить запись?')
       if (isDelete) {
         await ArticleAdapter.deleteArticle(article.id)
-        const index = this.articles.indexOf(article)
-        this.articles.splice(index, 1)
+        this.deleteArticleFromArray(article)
         this.isToolsOverlayActive = false
       }
     },
@@ -151,9 +150,33 @@ export default defineComponent({
     },
     async publishArticle(article) {
       await ArticleAdapter.publishArticle(article)
+          .then(() => {
+            this.deleteArticleFromArray(article)
+            this.isToolsOverlayActive = false
+          })
     },
     async makeDraftArticle(article) {
       await ArticleAdapter.makeDraftArticle(article)
+          .then(() => {
+            this.deleteArticleFromArray(article)
+            this.isToolsOverlayActive = false
+          })
+    },
+    async setSort(sort) {
+      this.sortBy = sort
+      await this.getArticles()
+      this.isSortOverlayActive = false
+    },
+    async setSortDate(age = 'newest') {
+      this.sortFirst = age
+      await this.getArticles()
+    },
+
+    // SERVICE START //
+    deleteArticleFromArray(article) {
+      const index = this.articles.indexOf(article)
+      this.articles.splice(index, 1)
+      return true
     },
     selectArticle(article) {
       this.isToolsOverlayActive = true
@@ -162,15 +185,7 @@ export default defineComponent({
     convertDateWrap(date) {
       return ElvenDates.convert(date)
     },
-    async setSort(sort) {
-      this.sortBy = sort
-      await this.getArticles()
-      this.isSortOverlayActive = false
-    },
-    async setSortDate(age = 'newest'){
-      this.sortFirst = age
-      await this.getArticles()
-    }
+    // SERVICE END //
   }
 })
 </script>
@@ -188,7 +203,6 @@ export default defineComponent({
 
 .articles-types {
   background-color: var(--color-level-1);
-  border-radius: 6px;
   height: 42px;
   width: 100%;
   display: flex;
@@ -223,8 +237,7 @@ export default defineComponent({
   gap: 12px;
 }
 
-.articles-sort-by-link
-{
+.articles-sort-by-link {
   font-weight: bold;
   cursor: pointer;
 }
@@ -251,12 +264,6 @@ export default defineComponent({
   gap: 8px;
 }
 
-.article-meta {
-  display: flex;
-  flex-direction: row;
-  color: var(--color-text-inactive);
-}
-
 .article-item {
   font-size: 1.1rem;
   line-height: 1.5rem;
@@ -265,8 +272,22 @@ export default defineComponent({
   margin-right: 12px;
 }
 
+.article-meta {
+  display: flex;
+  flex-direction: row;
+  color: var(--color-text-inactive);
+}
+
+.article-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .article-title {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  letter-spacing: 0.0099rem;
 }
 
 .article-content-preview {
@@ -302,11 +323,14 @@ export default defineComponent({
 }
 
 .articles-404 {
-  display: grid;
-  grid-template-rows: repeat(2, 1fr);
-  grid-template-columns: 1fr;
-  justify-items: center;
-  grid-gap: 24px;
+  background-color: var(--color-level-1);
+  height: 240px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
 }
 
 
@@ -314,11 +338,17 @@ export default defineComponent({
   .article-content-preview {
     width: 400px;
   }
+  .article-main{
+    width: 400px;
+  }
 }
 
 @media screen and (min-width: 1024px) {
   .article-content-preview {
     width: 412px;
+  }
+  .article-main{
+    width: 75%;
   }
 }
 </style>
