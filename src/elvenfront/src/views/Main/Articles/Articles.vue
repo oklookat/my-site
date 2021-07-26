@@ -63,17 +63,43 @@
           </RouterLink>
         </div>
       </div>
+
+      <div class="elven-pagination" v-if="isPagination">
+        <div class="paginator">
+          <div class="prev-page">
+            <div class="prev-page-butt"
+                 v-if="currentPage !== 1" v-on:click="getArticles(currentPage - 1)">
+              назад
+            </div>
+          </div>
+          <div class="pages-numbers">
+            <div class="page-number"
+                 :class="{'active': currentPage === page}"
+                 v-bind:key="page"
+                 v-for="page in pagesNumbers"
+                 v-on:click="getArticles(page)">
+              {{ page }}
+            </div>
+          </div>
+          <div class="next-page">
+            <div class="next-page-butt"
+                 v-if="currentPage < pagesCount" v-on:click="getArticles(currentPage + 1)">
+              вперед
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
+
 
     <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
       <div class="overlay-article-tools">
-        <div class="ov-item article-action">
-          <div class="article-make-draft" v-if="selectedArticle.is_published"
-               v-on:click="makeDraftArticle(selectedArticle)">
-            Сделать черновиком
-          </div>
-          <div class="article-publish" v-else v-on:click="publishArticle(selectedArticle)">Опубликовать</div>
+        <div class="ov-item article-make-draft" v-if="selectedArticle.is_published"
+             v-on:click="makeDraftArticle(selectedArticle)">
+          Сделать черновиком
         </div>
+        <div class="ov-item article-publish" v-else v-on:click="publishArticle(selectedArticle)">Опубликовать</div>
         <div class="ov-item article-edit" v-on:click="editArticle(selectedArticle)">Редактировать</div>
         <div class="ov-item article-delete" v-on:click="deleteArticle(selectedArticle)">Удалить</div>
       </div>
@@ -116,7 +142,14 @@ export default defineComponent({
       articles: [],
       articlesMeta: [],
       selectedArticle: undefined,
+
+      // PAGINATION START //
+      isPagination: false,
+      pagesCount: 1,
       currentPage: 1,
+      perPage: 1,
+      pagesNumbers: [],
+      // PAGINATION END //
 
       sortBy: 'updated', // see backend docs for more
       sortFirst: 'newest',
@@ -131,11 +164,18 @@ export default defineComponent({
       this.show = show
       this.isArticlesLoaded = false;
       await ArticleAdapter.getArticles(page, show, sortBy, sortFirst)
-          .then(result => {
+          .then(async result => {
             this.articles = result.data
             this.articlesMeta = result.meta
-            this.isArticlesLoaded = true;
+            this.pagesCount = this.articlesMeta.total
+            this.perPage = this.articlesMeta.per_page
+            this.currentPage = this.articlesMeta.current_page
+            this.isPagination = this.pagesCount > 1
+            this.isArticlesLoaded = true
           })
+      if(this.isPagination){
+        this.generatePageNumbers()
+      }
     },
     async deleteArticle(article) {
       const isDelete = confirm('Удалить запись?')
@@ -164,11 +204,13 @@ export default defineComponent({
     },
     async setSort(sort) {
       this.sortBy = sort
+      this.currentPage = 1
       await this.getArticles()
       this.isSortOverlayActive = false
     },
     async setSortDate(age = 'newest') {
       this.sortFirst = age
+      this.currentPage = 1
       await this.getArticles()
     },
 
@@ -185,6 +227,34 @@ export default defineComponent({
     convertDateWrap(date) {
       return ElvenDates.convert(date)
     },
+    generatePageNumbers(){
+      // https://stackoverflow.com/a/35109214
+      const currentPage = this.currentPage
+      const totalPages = this.pagesCount
+      const pageSize = 10 // maximum elements in paginator (UI, not backend)
+      let startPage, endPage
+      if (totalPages <= pageSize) {
+        startPage = 1
+        endPage = totalPages
+      } else {
+        if (currentPage <= 6) {
+          startPage = 1
+          endPage = 10
+        } else if (currentPage + 4 >= totalPages) {
+          startPage = totalPages - 9
+          endPage = totalPages
+        } else {
+          startPage = currentPage - 5
+          endPage = currentPage + 4
+        }
+      }
+      let pages = []
+      for(let i = 0; startPage < endPage + 1; i++){
+        pages[i] = startPage
+        startPage++
+      }
+      this.pagesNumbers = pages
+    }
     // SERVICE END //
   }
 })
@@ -300,6 +370,75 @@ export default defineComponent({
   font-size: 0.9rem;
 }
 
+.articles-404 {
+  background-color: var(--color-level-1);
+  height: 240px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+.elven-pagination {
+  border-radius: 8px;
+  background-color: var(--color-level-1);
+  height: 64px;
+}
+
+.paginator {
+  border-radius: inherit;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.next-page,
+.prev-page {
+  border-radius: inherit;
+  width: 25%;
+}
+
+.next-page-butt,
+.prev-page-butt {
+  border-radius: inherit;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.next-page-butt:hover,
+.prev-page-butt:hover {
+  background-color: var(--color-hover);
+}
+
+.next-page-butt,
+.prev-page-butt,
+.pages-numbers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.pages-numbers {
+  width: 50%;
+}
+
+.pages-numbers > .page-number {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.page-number:hover {
+  background-color: var(--color-hover);
+}
 
 .overlay-article-tools,
 .overlay-article-sort {
@@ -322,23 +461,13 @@ export default defineComponent({
   background-color: var(--color-hover);
 }
 
-.articles-404 {
-  background-color: var(--color-level-1);
-  height: 240px;
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 24px;
-}
-
 
 @media screen and (min-width: 512px) {
   .article-content-preview {
     width: 400px;
   }
-  .article-main{
+
+  .article-main {
     width: 400px;
   }
 }
@@ -347,7 +476,8 @@ export default defineComponent({
   .article-content-preview {
     width: 412px;
   }
-  .article-main{
+
+  .article-main {
     width: 75%;
   }
 }

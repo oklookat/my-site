@@ -4,7 +4,7 @@
     <div class="content">
       <textarea id="article-title"
                 placeholder="Если коротко..."
-                rows="1"
+                rows="1" maxlength="124"
                 v-model="article.title"
                 @input="autoSave">
       </textarea>

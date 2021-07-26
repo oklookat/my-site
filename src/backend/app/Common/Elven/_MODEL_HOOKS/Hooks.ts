@@ -1,8 +1,8 @@
-import ElvenTools from "App/Common/Elven/_TOOLS/ElvenTools"
 import User from "App/Models/Elven/User"
 import Article from "App/Models/Elven/Article"
-import validator from "validator"
-import ElvenValidators from "App/Common/Elven/_VALIDATORS/ElvenValidators";
+import UserValidator from "App/Common/Elven/_VALIDATORS/UserValidator"
+import SlugValidator from "App/Common/Elven/_VALIDATORS/SlugValidator"
+import Slug from "App/Common/Elven/_TOOLS/Slug"
 
 const bcrypt = require('bcrypt')
 
@@ -17,32 +17,23 @@ class Hooks{
   }
 
   public static async userValidate(user: User){
-    let isUsername = validator.isLength(user.username, {min: 4, max: 24})
-    if (!isUsername) {
-      const err = new Error('Имя пользователя должно быть больше 4, и меньше 24 символов.')
-      return Promise.reject(err)
-    }
-    isUsername = validator.isAlphanumeric(user.username)
-    if (!isUsername) {
-      const err = new Error('Имя пользователя должно быть без странных символов, и только на английском языке.')
-      return Promise.reject(err)
-    }
-
-    const isPass = validator.isLength(user.password, {min: 8, max: 64})
-    if (!isPass) {
-      const err = new Error('Пароль должен быть больше 8, и меньше 64 символов.')
-      return Promise.reject(err)
-    }
-    return Promise.resolve(true)
+    return await UserValidator.validateReg(user)
+      .then(() =>{
+        return Promise.resolve(true)
+      })
+      .catch(error =>{
+        return Promise.reject(error)
+      })
   }
 
   public static async autoSlug(article: Article){
-    let slug = await ElvenTools.makeSlug(article.title)
-    const isValid = await ElvenValidators.slugValidate(slug)
+    let slug = await Slug.make(article.title)
+    const isValid = await SlugValidator.validate(slug)
     if(!isValid){
       slug = 'unknown'
-      slug = await ElvenTools.makeSlug(slug)
+      slug = await Slug.make(slug)
     }
+
     // reference
     // https://github.com/adonisjs/adonis-lucid-slugify/blob/develop/src/Strategies/dbIncrement.js
     const articleFound = await Article.query()

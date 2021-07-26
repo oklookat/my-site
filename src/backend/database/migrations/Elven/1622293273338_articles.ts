@@ -14,7 +14,7 @@ export default class Articles extends BaseSchema {
 
       table.boolean('is_published').notNullable().defaultTo(false)
       table.text('thumbnail').nullable()
-      table.text('title').notNullable().defaultTo('Без названия')
+      table.string('title', 124).notNullable().defaultTo('Без названия')
       table.text('content').notNullable()
       table.text('slug').notNullable().unique()
       table.dateTime('published_at').nullable()

@@ -32,7 +32,7 @@ class ElvenDates {
                 date = `сегодня в ${hours}:${minutes}`
             }
         } else if (isYesterday) {
-            date = `вчера в ${date.getHours()}:${date.getMinutes()}`
+            date = `вчера в ${this.numberWithZero(date.getHours())}:${this.numberWithZero(date.getMinutes())}`
         } else {
             const day = this.numberWithZero(date.getDay())
             const month = date.getMonth() // in JS Date() January starts with 0, not 1

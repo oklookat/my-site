@@ -1,9 +1,9 @@
 import {HttpContextContract} from '@ioc:Adonis/Core/HttpContext'
 import {RequestContract} from "@ioc:Adonis/Core/Request";
 import AuthMaster from "App/Common/Elven/Auth/AuthMaster";
-import ElvenTools from "App/Common/Elven/_TOOLS/ElvenTools";
 import User from "App/Models/Elven/User";
 import Token from "App/Models/Elven/Token";
+import ErrorConstructors from "App/Common/Elven/_TOOLS/ErrorConstructors";
 
 const readOnlyMethods = ['GET', 'OPTIONS', 'HEAD']
 const access = { // если админ, то категории доступа игнорируются
@@ -27,7 +27,7 @@ export default class Perm {
       isAllow = false
     }
     if (!isAllow) {
-      const err = await ElvenTools.publicErrorConstructor('Доступ запрещен.')
+      const err = await ErrorConstructors.publicError('Доступ запрещен.')
       return ctx.response.forbidden(err)
     }
     return await next()

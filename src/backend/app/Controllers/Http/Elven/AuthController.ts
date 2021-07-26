@@ -1,8 +1,8 @@
 import {HttpContextContract} from '@ioc:Adonis/Core/HttpContext'
 import {RequestContract} from '@ioc:Adonis/Core/Request'
 import AuthMaster from "App/Common/Elven/Auth/AuthMaster"
-import ElvenValidators from "App/Common/Elven/_VALIDATORS/ElvenValidators";
-import ElvenTools from "App/Common/Elven/_TOOLS/ElvenTools";
+import ErrorConstructors from "App/Common/Elven/_TOOLS/ErrorConstructors"
+import UserValidator from "App/Common/Elven/_VALIDATORS/UserValidator";
 
 export default class AuthController {
 
@@ -20,16 +20,16 @@ export default class AuthController {
       return response.status(200).send({token: token})
     } catch (error) {
       if (!error.type) {
-        const err = await ElvenTools.publicErrorConstructor('Произошла странная ошибка.')
+        const err = await ErrorConstructors.publicError('Произошла странная ошибка.')
         return response.status(500).send(err)
       }
       const type = error.type
       const isWrongLogin = type === 'WRONG_PASSWORD' || type === 'USER_NOT_FOUND' || type === 'VALIDATION_ERROR'
       if (isWrongLogin) {
-        const err = await ElvenTools.publicErrorConstructor('Неверный логин или пароль.')
+        const err = await ErrorConstructors.publicError('Неверный логин или пароль.')
         return response.forbidden(err)
       }
-      const err = await ElvenTools.publicErrorConstructor('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
+      const err = await ErrorConstructors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
       return response.forbidden(err)
     }
   }
@@ -38,7 +38,7 @@ export default class AuthController {
     await AuthMaster.logout(request)
       .catch(async error =>{
         console.log(error)
-        const err = await ElvenTools.publicErrorConstructor('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
+        const err = await ErrorConstructors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
         return response.forbidden(err)
       })
     return response.status(200).send('')
@@ -46,7 +46,7 @@ export default class AuthController {
 
   private async authRiver(request: RequestContract, adminLogin: boolean) {
     let validated
-    await ElvenValidators.userValidate(request)
+    await UserValidator.validateCredentials(request)
       .then(data => {
         validated = data
       })
