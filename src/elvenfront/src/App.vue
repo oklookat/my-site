@@ -8,6 +8,7 @@
   --header-height: 52px;
   --header-anim-height: 95%;
   --header-anim-duration: 0.4s;
+  --border-radius: 6px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -124,9 +125,13 @@ input {
   text-indent: 6px;
 }
 
-input:focus::placeholder {
-  opacity: 15%;
+input::placeholder{
+  opacity: 20%;
 }
+input:focus::placeholder {
+  opacity: 10%;
+}
+
 
 ::placeholder {
   color: var(--color-text);
@@ -166,6 +171,14 @@ input:focus::placeholder {
 .item {
   cursor: pointer;
   border-radius: 6px;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.cursor-pointer{
+  cursor: pointer;
 }
 
 .item:hover {

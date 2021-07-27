@@ -20,6 +20,7 @@
     "vuex-persistedstate": "^4.0.0"
   },
   "devDependencies": {
+    "@editorjs/image": "^2.6.0",
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",
     "@vue/cli-plugin-babel": "~4.5.0",

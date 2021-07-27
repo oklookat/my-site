@@ -27,11 +27,12 @@
 import {defineComponent} from "vue"
 import {useRoute} from 'vue-router'
 import Header from "@/components/Header/Header"
-import EditorJS from '@editorjs/editorjs'
-import Head from '@editorjs/header'
 import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter"
 import UIOverlay from "@/components/_UI/UIOverlay"
 import TextareaResizer from "@/common/tools/TextareaResizer"
+import EditorJS from '@editorjs/editorjs'
+import Head from '@editorjs/header'
+import ImageTool from '@editorjs/image'
 
 export default defineComponent({
   name: 'ArticleCreate',
@@ -50,7 +51,9 @@ export default defineComponent({
       isErrorOverlayActive: false,
       errorOverlayContent: '',
 
+      // SERVICE START //
       textareaResizer: undefined,
+      // SERVICE END //
     }
   },
   async mounted() {
@@ -92,6 +95,15 @@ export default defineComponent({
               placeholder: 'Заголовок',
               levels: [2, 3, 4],
               defaultLevel: 3
+            }
+          },
+          image: {
+            class: ImageTool,
+            config: {
+              endpoints: {
+                byFile: 'http://localhost:8008/uploadFile', // Your backend file uploader endpoint
+                byUrl: 'http://localhost:8008/fetchUrl', // Your endpoint that provides uploading by Url
+              }
             }
           },
         },
@@ -200,7 +212,7 @@ export default defineComponent({
 }
 
 .error-ok-button {
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   background-color: var(--color-text);
   width: 25%;
   height: 10%;

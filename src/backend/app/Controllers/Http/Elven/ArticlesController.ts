@@ -3,7 +3,7 @@ import Article from "App/Models/Elven/Article"
 import ArticleValidator from "App/Common/Elven/_VALIDATORS/ArticleValidator"
 import ErrorConstructors from "App/Common/Elven/_TOOLS/ErrorConstructors"
 
-const pageSize = 1 // 16
+const pageSize = 16 // default: 16
 
 export default class ArticlesController {
 
@@ -63,8 +63,11 @@ export default class ArticlesController {
     } else if(preview === 'false'){
       preview = false
     }
-    // VALIDATION END //
     let page = ctx.request.input('page', 1)
+    if(page < 1){
+      return ctx.response.status(400).send(await ErrorConstructors.publicError('page не может быть меньше нуля'))
+    }
+    // VALIDATION END //
     let articles
     if (show === 'published') {
       articles = await Article.query().where('is_published', 'true').orderBy(by, start).paginate(page, pageSize)

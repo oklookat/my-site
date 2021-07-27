@@ -64,32 +64,11 @@
         </div>
       </div>
 
-      <div class="elven-pagination" v-if="isPagination">
-        <div class="paginator">
-          <div class="prev-page">
-            <div class="prev-page-butt"
-                 v-if="currentPage !== 1" v-on:click="getArticles(currentPage - 1)">
-              назад
-            </div>
-          </div>
-          <div class="pages-numbers">
-            <div class="page-number"
-                 :class="{'active': currentPage === page}"
-                 v-bind:key="page"
-                 v-for="page in pagesNumbers"
-                 v-on:click="getArticles(page)">
-              {{ page }}
-            </div>
-          </div>
-          <div class="next-page">
-            <div class="next-page-butt"
-                 v-if="currentPage < pagesCount" v-on:click="getArticles(currentPage + 1)">
-              вперед
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <UIPagination
+          :total-pages="totalPages"
+          :current-page="currentPage"
+          v-on:page-changed="getArticles($event)">
+      </UIPagination>
     </div>
 
 
@@ -97,14 +76,13 @@
       <div class="overlay-article-tools">
         <div class="ov-item article-make-draft" v-if="selectedArticle.is_published"
              v-on:click="makeDraftArticle(selectedArticle)">
-          Сделать черновиком
+          В черновики
         </div>
         <div class="ov-item article-publish" v-else v-on:click="publishArticle(selectedArticle)">Опубликовать</div>
         <div class="ov-item article-edit" v-on:click="editArticle(selectedArticle)">Редактировать</div>
         <div class="ov-item article-delete" v-on:click="deleteArticle(selectedArticle)">Удалить</div>
       </div>
     </UIOverlay>
-
     <UIOverlay v-bind:active="isSortOverlayActive" v-on:deactivated="isSortOverlayActive = false">
       <div class="overlay-article-sort">
         <div class="ov-item asb-sort-by-created"
@@ -121,6 +99,8 @@
         </div>
       </div>
     </UIOverlay>
+
+
   </div>
 </template>
 
@@ -130,52 +110,67 @@ import Header from "@/components/Header/Header";
 import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter";
 import UIOverlay from "@/components/_UI/UIOverlay";
 import ElvenDates from "@/common/tools/ElvenDates";
+import UIPagination from "@/components/_UI/UIPagination";
 
 export default defineComponent({
   name: 'Articles',
-  components: {UIOverlay, Header},
+  components: {UIPagination, UIOverlay, Header},
   data() {
     return {
       isArticlesLoaded: false,
-      show: 'published', // drafts or published
-      isToolsOverlayActive: false, // actions overlay
+      isToolsOverlayActive: false,
+      isSortOverlayActive: false,
+      show: 'published', // see backend docs for more
+      sortBy: 'updated', // see backend docs for more
+      sortFirst: 'newest',
       articles: [],
       articlesMeta: [],
       selectedArticle: undefined,
-
-      // PAGINATION START //
-      isPagination: false,
-      pagesCount: 1,
+      totalPages: 1,
       currentPage: 1,
-      perPage: 1,
-      pagesNumbers: [],
-      // PAGINATION END //
-
-      sortBy: 'updated', // see backend docs for more
-      sortFirst: 'newest',
-      isSortOverlayActive: false,
     }
   },
   async mounted() {
     await this.getArticles()
   },
+  watch: {},
   methods: {
     async getArticles(page = this.currentPage, show = this.show, sortBy = this.sortBy, sortFirst = this.sortFirst) {
+      if (show !== this.show || this.currentPage < 1) {
+        this.currentPage = 1
+        page = this.currentPage
+      }
       this.show = show
       this.isArticlesLoaded = false;
       await ArticleAdapter.getArticles(page, show, sortBy, sortFirst)
           .then(async result => {
             this.articles = result.data
             this.articlesMeta = result.meta
-            this.pagesCount = this.articlesMeta.total
             this.perPage = this.articlesMeta.per_page
             this.currentPage = this.articlesMeta.current_page
-            this.isPagination = this.pagesCount > 1
+            this.totalPages = Math.ceil(this.articlesMeta.total / this.articlesMeta.per_page)
             this.isArticlesLoaded = true
           })
-      if(this.isPagination){
-        this.generatePageNumbers()
+    },
+    async refreshArticles() {
+      // refresh is need when for ex. you deleted all articles on current page
+      // and we need to check, is data on current page exists?
+      // if page > 1 and no data, we moving back (currentPage--) and get new articles
+      let isTrueArticles = this.isArticlesLoaded && this.articles.length < 1
+      if (isTrueArticles) { // no articles in current page
+        while (isTrueArticles) {
+          // moving back until the pages ends or data appears
+          this.currentPage--
+          await this.getArticles()
+          if (this.currentPage <= 1) {
+            break
+          }
+          isTrueArticles = this.isArticlesLoaded && this.articles.length < 1
+        }
       }
+    },
+    async editArticle(article) {
+      await this.$router.push({name: 'ArticleCreate', params: {id: article.id}})
     },
     async deleteArticle(article) {
       const isDelete = confirm('Удалить запись?')
@@ -183,10 +178,8 @@ export default defineComponent({
         await ArticleAdapter.deleteArticle(article.id)
         this.deleteArticleFromArray(article)
         this.isToolsOverlayActive = false
+        await this.refreshArticles()
       }
-    },
-    async editArticle(article) {
-      await this.$router.push({name: 'ArticleCreate', params: {id: article.id}})
     },
     async publishArticle(article) {
       await ArticleAdapter.publishArticle(article)
@@ -194,6 +187,7 @@ export default defineComponent({
             this.deleteArticleFromArray(article)
             this.isToolsOverlayActive = false
           })
+      await this.refreshArticles()
     },
     async makeDraftArticle(article) {
       await ArticleAdapter.makeDraftArticle(article)
@@ -201,6 +195,7 @@ export default defineComponent({
             this.deleteArticleFromArray(article)
             this.isToolsOverlayActive = false
           })
+      await this.refreshArticles()
     },
     async setSort(sort) {
       this.sortBy = sort
@@ -227,34 +222,6 @@ export default defineComponent({
     convertDateWrap(date) {
       return ElvenDates.convert(date)
     },
-    generatePageNumbers(){
-      // https://stackoverflow.com/a/35109214
-      const currentPage = this.currentPage
-      const totalPages = this.pagesCount
-      const pageSize = 10 // maximum elements in paginator (UI, not backend)
-      let startPage, endPage
-      if (totalPages <= pageSize) {
-        startPage = 1
-        endPage = totalPages
-      } else {
-        if (currentPage <= 6) {
-          startPage = 1
-          endPage = 10
-        } else if (currentPage + 4 >= totalPages) {
-          startPage = totalPages - 9
-          endPage = totalPages
-        } else {
-          startPage = currentPage - 5
-          endPage = currentPage + 4
-        }
-      }
-      let pages = []
-      for(let i = 0; startPage < endPage + 1; i++){
-        pages[i] = startPage
-        startPage++
-      }
-      this.pagesNumbers = pages
-    }
     // SERVICE END //
   }
 })
@@ -297,7 +264,7 @@ export default defineComponent({
   background-color: var(--color-level-1);
   color: var(--color-text-inactive);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   padding-left: 12px;
   font-size: 0.8rem;
   min-height: 36px;
@@ -323,7 +290,7 @@ export default defineComponent({
 
 .article {
   min-height: 164px;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   background-color: var(--color-level-1);
   cursor: pointer;
   width: 100%;
@@ -373,7 +340,7 @@ export default defineComponent({
 .articles-404 {
   background-color: var(--color-level-1);
   height: 240px;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -381,64 +348,6 @@ export default defineComponent({
   gap: 24px;
 }
 
-.elven-pagination {
-  border-radius: 8px;
-  background-color: var(--color-level-1);
-  height: 64px;
-}
-
-.paginator {
-  border-radius: inherit;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-}
-
-.next-page,
-.prev-page {
-  border-radius: inherit;
-  width: 25%;
-}
-
-.next-page-butt,
-.prev-page-butt {
-  border-radius: inherit;
-  cursor: pointer;
-  width: 100%;
-  height: 100%;
-}
-
-.next-page-butt:hover,
-.prev-page-butt:hover {
-  background-color: var(--color-hover);
-}
-
-.next-page-butt,
-.prev-page-butt,
-.pages-numbers {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-
-.pages-numbers {
-  width: 50%;
-}
-
-.pages-numbers > .page-number {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.page-number:hover {
-  background-color: var(--color-hover);
-}
 
 .overlay-article-tools,
 .overlay-article-sort {

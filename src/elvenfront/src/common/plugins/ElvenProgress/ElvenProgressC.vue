@@ -123,12 +123,12 @@ export default {
 
 @media (prefers-color-scheme: light) {
   #elven-progressbar-line{
-    background-color: #8CE6E6;
+    background-color: #FF7C69;
   }
 }
 @media (prefers-color-scheme: dark) {
   #elven-progressbar-line{
-    background-color: #8CE6E6;
+    background-color: #FF7C69;
   }
 }
 </style>
