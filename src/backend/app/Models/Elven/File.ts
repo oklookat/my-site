@@ -9,10 +9,22 @@ export default class File extends BaseModel {
   public user_id: number
 
   @column()
-  public link: string
+  public hash: string
 
   @column()
-  public extension: string
+  public path: string
+
+  @column()
+  public original_name: string | undefined
+
+  @column()
+  public name: string
+
+  @column()
+  public extension: string | undefined
+
+  @column()
+  public size: string
 
   @column.dateTime({ autoCreate: true })
   public created_at: DateTime

@@ -109,7 +109,7 @@ import {defineComponent} from "vue";
 import Header from "@/components/Header/Header";
 import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter";
 import UIOverlay from "@/components/_UI/UIOverlay";
-import ElvenDates from "@/common/tools/ElvenDates";
+import Dates from "@/common/tools/Dates";
 import UIPagination from "@/components/_UI/UIPagination";
 
 export default defineComponent({
@@ -141,7 +141,7 @@ export default defineComponent({
         page = this.currentPage
       }
       this.show = show
-      this.isArticlesLoaded = false;
+      this.isArticlesLoaded = false
       await ArticleAdapter.getArticles(page, show, sortBy, sortFirst)
           .then(async result => {
             this.articles = result.data
@@ -220,7 +220,7 @@ export default defineComponent({
       this.selectedArticle = article
     },
     convertDateWrap(date) {
-      return ElvenDates.convert(date)
+      return Dates.convert(date)
     },
     // SERVICE END //
   }

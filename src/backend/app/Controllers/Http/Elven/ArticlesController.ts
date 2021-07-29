@@ -1,9 +1,11 @@
+import Env from '@ioc:Adonis/Core/Env'
 import {HttpContextContract} from '@ioc:Adonis/Core/HttpContext'
 import Article from "App/Models/Elven/Article"
 import ArticleValidator from "App/Common/Elven/_VALIDATORS/ArticleValidator"
 import ErrorConstructors from "App/Common/Elven/_TOOLS/ErrorConstructors"
 
-const pageSize = 16 // default: 16
+
+const pageSize = Env.get('PAGINATION_SIZE') // default: 16
 
 export default class ArticlesController {
 

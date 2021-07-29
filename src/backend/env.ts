@@ -25,6 +25,7 @@ export default Env.rules({
   PG_USER: Env.schema.string(),
   PG_PASSWORD: Env.schema.string.optional(),
   PG_DB_NAME: Env.schema.string(),
+  PAGINATION_SIZE: Env.schema.number(),
   AES_SECRET: Env.schema.string(),
 	NODE_ENV: Env.schema.enum(['development', 'production', 'testing'] as const),
 })

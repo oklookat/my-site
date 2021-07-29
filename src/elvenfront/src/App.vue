@@ -16,15 +16,15 @@
     // MAIN UI START //
     --color-scrollbar: #707070;
     --color-scrollbar-hover: #909090;
-    --color-header-active: #000000;
+    --color-header-active: #050505;
     --color-text: white;
     --color-text-inactive: #E6E6E6;
     --color-text-selection: #803E34;
     --color-placeholder: #666666;
     --color-hover: rgba(255, 255, 255, 0.06);
     --color-border: #202020;
-    --color-body: #101010;
-    --color-level-1: #202020;
+    --color-body: #000000;
+    --color-level-1: #151515;
     --color-level-2: #252525;
     --color-level-3: #303030;
     // MAIN UI END //

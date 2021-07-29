@@ -20,25 +20,24 @@ export default class AuthController {
       return response.status(200).send({token: token})
     } catch (error) {
       if (!error.type) {
-        const err = await ErrorConstructors.publicError('Произошла странная ошибка.')
+        const err = ErrorConstructors.publicError('Произошла странная ошибка.')
         return response.status(500).send(err)
       }
       const type = error.type
       const isWrongLogin = type === 'WRONG_PASSWORD' || type === 'USER_NOT_FOUND' || type === 'VALIDATION_ERROR'
       if (isWrongLogin) {
-        const err = await ErrorConstructors.publicError('Неверный логин или пароль.')
+        const err = ErrorConstructors.publicError('Неверный логин или пароль.')
         return response.forbidden(err)
       }
-      const err = await ErrorConstructors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
+      const err = ErrorConstructors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
       return response.forbidden(err)
     }
   }
 
   public async logout({request, response}: HttpContextContract) {
     await AuthMaster.logout(request)
-      .catch(async error =>{
-        console.log(error)
-        const err = await ErrorConstructors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
+      .catch(() =>{
+        const err = ErrorConstructors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
         return response.forbidden(err)
       })
     return response.status(200).send('')

@@ -3,7 +3,7 @@ const minTitles = ['минуту', 'минуты', 'минут']
 const secTitles = ['секунду', 'секунды', 'секунд']
 const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'ноя', 'дек']
 
-class ElvenDates {
+class Dates {
     public static convert(date) {
         date = new Date(date)
         const currentDate = new Date()
@@ -62,4 +62,4 @@ class ElvenDates {
     }
 }
 
-export default ElvenDates
+export default Dates
