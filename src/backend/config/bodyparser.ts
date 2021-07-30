@@ -51,7 +51,7 @@ const bodyParserConfig: BodyParserConfig = {
 
     /*
     |--------------------------------------------------------------------------
-    | EL_Files to be processed manually
+    | Files to be processed manually
     |--------------------------------------------------------------------------
     |
     | You can turn off `autoProcess` for certain routes by defining
