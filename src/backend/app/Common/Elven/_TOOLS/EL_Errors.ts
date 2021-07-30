@@ -1,4 +1,4 @@
-export default class ErrorConstructors{
+export default class EL_Errors {
   public static async privateError(type: string, message: string){
     return {type: type, message: message}
   }

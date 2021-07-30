@@ -9,7 +9,7 @@ const slugifyOptions = {
 }
 
 
-export default class Slug {
+export default class EL_Slug {
   public static async make(text: string) {
     return Promise.resolve(slugify(text, slugifyOptions))
   }

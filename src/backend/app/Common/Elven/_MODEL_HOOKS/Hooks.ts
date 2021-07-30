@@ -2,7 +2,7 @@ import User from "App/Models/Elven/User"
 import Article from "App/Models/Elven/Article"
 import UserValidator from "App/Common/Elven/_VALIDATORS/UserValidator"
 import SlugValidator from "App/Common/Elven/_VALIDATORS/SlugValidator"
-import Slug from "App/Common/Elven/_TOOLS/Slug"
+import EL_Slug from "App/Common/Elven/_TOOLS/EL_Slug"
 
 const bcrypt = require('bcrypt')
 
@@ -27,11 +27,11 @@ class Hooks{
   }
 
   public static async autoSlug(article: Article){
-    let slug = await Slug.make(article.title)
+    let slug = await EL_Slug.make(article.title)
     const isValid = await SlugValidator.validate(slug)
     if(!isValid){
       slug = 'unknown'
-      slug = await Slug.make(slug)
+      slug = await EL_Slug.make(slug)
     }
 
     // reference

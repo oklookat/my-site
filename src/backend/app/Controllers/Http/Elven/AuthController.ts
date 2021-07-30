@@ -1,7 +1,7 @@
 import {HttpContextContract} from '@ioc:Adonis/Core/HttpContext'
 import {RequestContract} from '@ioc:Adonis/Core/Request'
 import AuthMaster from "App/Common/Elven/Auth/AuthMaster"
-import ErrorConstructors from "App/Common/Elven/_TOOLS/ErrorConstructors"
+import EL_Errors from "App/Common/Elven/_TOOLS/EL_Errors"
 import UserValidator from "App/Common/Elven/_VALIDATORS/UserValidator";
 
 export default class AuthController {
@@ -20,16 +20,16 @@ export default class AuthController {
       return response.status(200).send({token: token})
     } catch (error) {
       if (!error.type) {
-        const err = ErrorConstructors.publicError('Произошла странная ошибка.')
+        const err = EL_Errors.publicError('Произошла странная ошибка.')
         return response.status(500).send(err)
       }
       const type = error.type
       const isWrongLogin = type === 'WRONG_PASSWORD' || type === 'USER_NOT_FOUND' || type === 'VALIDATION_ERROR'
       if (isWrongLogin) {
-        const err = ErrorConstructors.publicError('Неверный логин или пароль.')
+        const err = EL_Errors.publicError('Неверный логин или пароль.')
         return response.forbidden(err)
       }
-      const err = ErrorConstructors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
+      const err = EL_Errors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
       return response.forbidden(err)
     }
   }
@@ -37,7 +37,7 @@ export default class AuthController {
   public async logout({request, response}: HttpContextContract) {
     await AuthMaster.logout(request)
       .catch(() =>{
-        const err = ErrorConstructors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
+        const err = EL_Errors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
         return response.forbidden(err)
       })
     return response.status(200).send('')

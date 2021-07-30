@@ -2,8 +2,8 @@ import Axios from '@/common/adapters/Axios.js'
 
 export default class FileAdapter {
 
-    public static async getFiles(page = '1', sortBy = 'created', start = 'newest'){
-        return await Axios.get('files/', {params: {page: page, by: sortBy, start: start}})
+    public static async getFiles(page = '1', start = 'newest'){
+        return await Axios.get('files/', {params: {page: page, start: start}})
             .then(response => {
                 if (response.data) {
                     return Promise.resolve(response.data)
@@ -29,5 +29,15 @@ export default class FileAdapter {
                 }
             })
         }
+    }
+
+    public static async delete(id){
+        return await Axios.delete(`files/${id}`)
+            .then(() => {
+                return Promise.resolve(true)
+            })
+            .catch(error => {
+                return Promise.reject(error)
+            })
     }
 }

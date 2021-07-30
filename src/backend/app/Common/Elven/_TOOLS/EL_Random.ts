@@ -1,6 +1,7 @@
 const randomstring = require("randomstring")
 
-export default class MakeRandom {
+export default class EL_Random {
+
   public static async randInt(min, max): Promise<number> {
     min = Math.ceil(min)
     max = Math.floor(max)
@@ -8,7 +9,7 @@ export default class MakeRandom {
   }
 
   public static async randString(length: number, charset: string): Promise<string> {
-    // charsets
+    // charsets:
     // alphanumeric, alphabetic, numeric, hex, binary, octal, custom
     // https://www.npmjs.com/package/randomstring
     let random
@@ -18,9 +19,9 @@ export default class MakeRandom {
         charset: charset
       })
     } catch (error) {
-      console.log(error)
-      random = await randomstring.generate({length: length})
+      throw error
     }
     return Promise.resolve(random)
   }
+
 }

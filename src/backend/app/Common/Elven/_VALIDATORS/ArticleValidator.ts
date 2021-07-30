@@ -1,7 +1,7 @@
 import {RequestContract} from "@ioc:Adonis/Core/Request";
 import validator from "validator";
 import Article from "App/Models/Elven/Article";
-import ErrorConstructors from "App/Common/Elven/_TOOLS/ErrorConstructors";
+import EL_Errors from "App/Common/Elven/_TOOLS/EL_Errors";
 
 export default class ArticleValidator{
 
@@ -19,28 +19,28 @@ export default class ArticleValidator{
       } else {
         title = title.toString()
         if(title.length > 124){
-          const err = await ErrorConstructors.privateError('VALIDATION_ERROR', 'Заголовок должен быть меньше 124 символов.')
+          const err = await EL_Errors.privateError('VALIDATION_ERROR', 'Заголовок должен быть меньше 124 символов.')
           return Promise.reject(err)
         }
       }
       if (!content) {
-        const err = await ErrorConstructors.privateError('VALIDATION_ERROR', 'Контент не может быть пустым.')
+        const err = await EL_Errors.privateError('VALIDATION_ERROR', 'Контент не может быть пустым.')
         return Promise.reject(err)
       }
       is_published = is_published.toString()
       if (!validator.isBoolean(is_published)) {
-        const err = await ErrorConstructors.privateError('VALIDATION_ERROR', 'isPublished должен иметь тип bool.')
+        const err = await EL_Errors.privateError('VALIDATION_ERROR', 'isPublished должен иметь тип bool.')
         return Promise.reject(err)
       }
       if(typeof content !== 'object' && content !== null){
-        const err = await ErrorConstructors.privateError('VALIDATION_ERROR', 'content не является объектом.')
+        const err = await EL_Errors.privateError('VALIDATION_ERROR', 'content не является объектом.')
         return Promise.reject(err)
       }
       return Promise.resolve({is_published: is_published, thumbnail: thumbnail, title: title, content: content})
     }
     catch (error){
       console.log(error)
-      const err = await ErrorConstructors.privateError('VALIDATION_ERROR', error)
+      const err = await EL_Errors.privateError('VALIDATION_ERROR', error)
       return Promise.reject(err)
     }
   }
@@ -57,7 +57,7 @@ export default class ArticleValidator{
       title = foundArticle.title
     } else{
       if(title.length > 124){
-        const err = await ErrorConstructors.privateError('VALIDATION_ERROR', 'Заголовок должен быть меньше 124 символов.')
+        const err = await EL_Errors.privateError('VALIDATION_ERROR', 'Заголовок должен быть меньше 124 символов.')
         return Promise.reject(err)
       }
     }

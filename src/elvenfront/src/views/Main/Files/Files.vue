@@ -11,14 +11,14 @@
       </div>
 
       <div class="files-list" v-if="isFilesLoaded && files.length > 0">
-        <div class="file" v-for="file in files" :key="file.id">
+        <div class="file" v-for="file in files" :key="file.id" v-on:click="selectFile(file)">
           <div class="file-meta">
             <div class="file-item file-loaded-at">
               {{ convertDateWrap(file.created_at) }}
             </div>
           </div>
           <div class="file-main">
-            <div class="file-item file-preview" v-if="isToolsOverlayActive"></div>
+            <div class="file-item file-preview">превью файла</div>
             <div class="file-item file-name">{{ file.original_name }}</div>
             <div class="file-item file-size">{{ convertSizeWrap(file.size) }}</div>
           </div>
@@ -28,6 +28,13 @@
       <div class="files-404" v-if="isFilesLoaded && files.length < 1">
         <div class="files-404-1">Нет файлов :(</div>
       </div>
+
+      <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
+        <div class="overlay-file-tools">
+          <div class="ov-item file-copy-link" v-on:click="copyLink(selectedFile)">Скопировать ссылку</div>
+          <div class="ov-item file-delete" v-on:click="deleteFile(selectedFile)">Удалить</div>
+        </div>
+      </UIOverlay>
 
     </div>
   </div>
@@ -39,10 +46,11 @@ import Header from "@/components/Header/Header"
 import FileAdapter from "@/common/adapters/Main/FileAdapter"
 import Dates from "@/common/tools/Dates"
 import Sizes from "@/common/tools/Sizes.js"
+import UIOverlay from "@/components/_UI/UIOverlay";
 
 export default defineComponent({
   name: 'Files',
-  components: {Header},
+  components: {UIOverlay, Header},
   data() {
     return {
       isFilesLoaded: false,
@@ -62,13 +70,13 @@ export default defineComponent({
   },
   methods: {
     // GET FUNCTIONS START //
-    async getFiles(page = this.currentPage, sortBy = this.sortBy, sortFirst = this.sortFirst) {
+    async getFiles(page = this.currentPage, sortFirst = this.sortFirst) {
       if (this.currentPage < 1) {
         this.currentPage = 1
         page = this.currentPage
       }
       this.isFilesLoaded = false
-      await FileAdapter.getFiles(page, sortBy, sortFirst)
+      await FileAdapter.getFiles(page, sortFirst)
           .then(result => {
             this.files = result.data
             this.filesMeta = result.meta
@@ -77,6 +85,29 @@ export default defineComponent({
             this.totalPages = Math.ceil(this.filesMeta.total / this.filesMeta.per_page)
             this.isFilesLoaded = true
           })
+    },
+    async refreshFiles() {
+      let isTrueFiles = this.isFilesLoaded && this.files.length < 1
+      if (isTrueFiles) { // no articles in current page
+        while (isTrueFiles) {
+          // moving back until the pages ends or data appears
+          this.currentPage--
+          await this.getFiles()
+          if (this.currentPage <= 1) {
+            break
+          }
+          isTrueFiles = this.isFilesLoaded && this.files.length < 1
+        }
+      }
+    },
+    async deleteFile(file){
+      const isDelete = confirm('Удалить файл?')
+      if (isDelete) {
+        await FileAdapter.delete(file.id)
+        this.deleteFileFromArray(file)
+        this.isToolsOverlayActive = false
+        await this.refreshFiles()
+      }
     },
     // GET FUNCTIONS END //
 
@@ -96,12 +127,28 @@ export default defineComponent({
     // UPLOAD FUNCTIONS END //
 
     // SERVICE START //
+    async copyLink(file){
+      const url = `${process.env.VUE_APP_USER_FILES_BACKEND_API_URL}/${file.path}`
+      await navigator.clipboard.writeText(url)
+          .then(() =>{
+            this.isToolsOverlayActive = false
+          })
+    },
+    deleteFileFromArray(file) {
+      const index = this.files.indexOf(file)
+      this.files.splice(index, 1)
+      return true
+    },
+    selectFile(file){
+      this.isToolsOverlayActive = true
+      this.selectedFile = file
+    },
     convertDateWrap(date) {
       return Dates.convert(date)
     },
     convertSizeWrap(size){
       return Sizes.convert(size)
-    }
+    },
     // SERVICE END //
   },
 })
@@ -180,4 +227,30 @@ export default defineComponent({
 .file-size{
   font-size: 1rem;
 }
+
+.files-404 {
+  background-color: var(--color-level-1);
+  height: 240px;
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+.ov-item {
+  height: 64px;
+  width: 100%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ov-item:hover {
+  background-color: var(--color-hover);
+}
+
 </style>

@@ -13,7 +13,7 @@ Route.group(() => {
       '*': ['elvenPerm:readOnly'],
     })
   Route.resource('/files', 'Elven/FilesController')
-    .except(['create', 'edit', 'update'])
+    .except(['create', 'edit', 'update', 'show'])
     .middleware({
       '*': ['elvenPerm:readOnly'],
     })
