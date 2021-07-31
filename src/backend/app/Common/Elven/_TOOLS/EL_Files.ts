@@ -33,7 +33,7 @@ export default class EL_Files {
     }
   }
 
-  public static async deleteEmptyDirsRecursive(basePath: string, relativePathToFile: string) {
+  public static deleteEmptyDirsRecursive(basePath: string, relativePathToFile: string) {
     /**
      * @param string path like 'D:\Test\'
      * @param string path like '123\456\789\music.flac' or '123\456\789\'
@@ -63,7 +63,7 @@ export default class EL_Files {
       // it.1 D:\Test\123\456\789\
       // it.2 D:\Test\123\456\
       // it.3 D:\Test\123\
-      await EL_Files.deleteDirIfEmpty(path)
+      EL_Files.deleteDirIfEmpty(path)
     }
   }
 

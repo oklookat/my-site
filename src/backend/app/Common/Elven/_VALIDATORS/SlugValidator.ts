@@ -1,6 +1,7 @@
 import validator from "validator";
 
 export default class SlugValidator {
+
   public static validate(slug: string) {
     if (!validator.isAscii(slug)) {
       return Promise.resolve(false)
@@ -10,4 +11,5 @@ export default class SlugValidator {
     }
     return Promise.resolve(true)
   }
+
 }

@@ -5,7 +5,6 @@ import {cuid} from '@ioc:Adonis/Core/Helpers'
 import File from "App/Models/Elven/File"
 import EL_Errors from "App/Common/Elven/_TOOLS/EL_Errors"
 import EL_Files from "App/Common/Elven/_TOOLS/EL_Files"
-import path from 'path'
 
 const pageSize = Env.get('PAGINATION_SIZE') // default: 16
 const _uploadsPath = Application.tmpPath(`uploads`)
@@ -108,7 +107,7 @@ export default class FilesController {
     }
     try {
       await EL_Files.deleteFile(`${_uploadsPath}/${file.path}`)
-      await EL_Files.deleteEmptyDirsRecursive(_uploadsPath, file.path)
+      EL_Files.deleteEmptyDirsRecursive(_uploadsPath, file.path)
       await file.delete()
       return ctx.response.status(200).send(await EL_Errors.publicError('File deleted.'))
     } catch (error) {

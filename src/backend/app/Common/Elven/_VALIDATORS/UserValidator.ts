@@ -4,6 +4,7 @@ import User from "App/Models/Elven/User"
 import EL_Errors from "App/Common/Elven/_TOOLS/EL_Errors";
 
 export default class UserValidator {
+
   public static async validateCredentials(request: RequestContract) {
     const {username, password} = request.all()
     if (!username) {
@@ -50,4 +51,5 @@ export default class UserValidator {
     }
     return Promise.resolve(true)
   }
+
 }
