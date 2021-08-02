@@ -2,6 +2,11 @@ import {RequestContract} from "@ioc:Adonis/Core/Request";
 import validator from "validator";
 import Article from "App/Models/Elven/Article";
 import {EL_ErrorCollector} from "App/Common/Elven/_TOOLS/EL_Errors"
+import {
+  EL_IError_VALIDATION_FORBIDDEN,
+  EL_IError_VALIDATION_MINMAX,
+  EL_IError_VALIDATION_MUSTBE
+} from "App/Common/Elven/_TOOLS/EL_Interfaces";
 
 export default class ArticleValidator {
 
@@ -18,7 +23,7 @@ export default class ArticleValidator {
       title = 'Без названия'
     } else {
       title = title.toString()
-      if (title.length > 124) {
+      if (title.length > 124) { // todo: оформить в соответствии с EL_Errors
         errorCollector.addError('VALIDATION', 400, '«title» must be less than 124 symbols.')
       }
     }
@@ -26,7 +31,7 @@ export default class ArticleValidator {
       errorCollector.addError('VALIDATION', 400, '«content» can not be empty.')
     }
     is_published = is_published.toString()
-    if (!validator.isBoolean(is_published)) {
+    if (!validator.isBoolean(is_published)) { // todo: вместо проверки на bool, проверять isPublished === true || isPublished === false
       errorCollector.addError('VALIDATION', 400, '«isPublished» must be type bool.')
     }
     if (typeof content !== 'object' && content !== null) {
@@ -51,7 +56,12 @@ export default class ArticleValidator {
       title = foundArticle.title
     } else {
       if (title.length > 124) {
-        errorCollector.addError('VALIDATION', 400, '«title» must be less than 124 symbols.')
+        const minmax: EL_IError_VALIDATION_MINMAX = {
+          errorCode: 'E_VALIDATION_MINMAX',
+          issuer: 'title',
+          max: '124'
+        }
+        errorCollector.addError(minmax)
       }
     }
     if (!content) {
@@ -70,20 +80,38 @@ export default class ArticleValidator {
     let show = request.input('show', 'published')
     show = show.toLowerCase()
     if (show !== 'published' && show !== 'drafts') {
-      errorCollector.addError('VALIDATION', 400, '«show» must be published, drafts or all.')
+      const mustbe: EL_IError_VALIDATION_MUSTBE = {
+        errorCode: 'E_VALIDATION_MUSTBE',
+        issuer: 'show',
+        available: ['drafts', 'all']
+      }
+      errorCollector.addError(mustbe)
     } else {
       if ((show === 'drafts' || show === 'all') && !isAdmin) {
-        errorCollector.addError('VALIDATION', 403, '«drafts» or «all» can see only admin.')
+        const forbidden: EL_IError_VALIDATION_FORBIDDEN = {
+          errorCode: 'E_VALIDATION_FORBIDDEN',
+          issuer: ['drafts', 'all']
+        }
+        errorCollector.addError(forbidden)
       }
     }
     let by = request.input('by', 'published')
     by = by.toLowerCase()
     if (by !== 'created' && by !== 'published' && by !== 'updated') {
-      errorCollector.addError('VALIDATION', 400, '«by» must be created, published or updated.')
+      const mustbe: EL_IError_VALIDATION_MUSTBE = {
+        errorCode: 'E_VALIDATION_MUSTBE',
+        issuer: 'by',
+        available: ['created', 'published', 'updated']
+      }
+      errorCollector.addError(mustbe)
     } else {
       if (by === 'created' || by === 'updated') {
         if (!isAdmin) {
-          errorCollector.addError('VALIDATION', 403, 'by «created» or «updated» can see only admin.')
+          const forbidden: EL_IError_VALIDATION_FORBIDDEN = {
+            errorCode: 'E_VALIDATION_FORBIDDEN',
+            issuer: 'by',
+          }
+          errorCollector.addError(forbidden)
         } else {
           if (by === 'created') {
             by = 'created_at'
@@ -98,7 +126,12 @@ export default class ArticleValidator {
     let start = request.input('start', 'newest')
     start = start.toLowerCase()
     if (start !== 'newest' && start !== 'oldest') {
-      errorCollector.addError('VALIDATION', 400, '«start» must be newest or oldest.')
+      const mustbe: EL_IError_VALIDATION_MUSTBE = {
+        errorCode: 'E_VALIDATION_MUSTBE',
+        issuer: 'start',
+        available: ['newest', 'oldest']
+      }
+      errorCollector.addError(mustbe)
     } else {
       if (start === 'newest') {
         start = 'DESC'
@@ -109,7 +142,12 @@ export default class ArticleValidator {
     let preview = request.input('preview', 'true')
     preview = preview.toLowerCase()
     if (preview !== 'false' && preview !== 'true') {
-      errorCollector.addError('VALIDATION', 400, '«preview» must be true or false.')
+      const mustbe: EL_IError_VALIDATION_MUSTBE = {
+        errorCode: 'E_VALIDATION_MUSTBE',
+        issuer: 'preview',
+        available: ['true', 'false']
+      }
+      errorCollector.addError(mustbe)
     } else if (preview === 'true') {
       preview = true
     } else if (preview === 'false') {
@@ -117,7 +155,12 @@ export default class ArticleValidator {
     }
     let page = request.input('page', 1)
     if (page < 1) {
-      errorCollector.addError('VALIDATION', 400, '«page» cannot be less than one.')
+      const minmax: EL_IError_VALIDATION_MINMAX = {
+        errorCode: 'E_VALIDATION_MINMAX',
+        issuer: 'page',
+        min: '1'
+      }
+      errorCollector.addError(minmax)
     }
 
     if (errorCollector.hasErrors()) {

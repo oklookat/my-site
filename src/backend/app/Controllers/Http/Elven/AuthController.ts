@@ -1,8 +1,7 @@
 import {HttpContextContract} from '@ioc:Adonis/Core/HttpContext'
 import {RequestContract} from '@ioc:Adonis/Core/Request'
 import AuthMaster from "App/Common/Elven/Auth/AuthMaster"
-import EL_Errors from "App/Common/Elven/_TOOLS/EL_Errors"
-import UserValidator from "App/Common/Elven/_VALIDATORS/UserValidator";
+import UserValidator from "App/Common/Elven/_VALIDATORS/UserValidator"
 
 export default class AuthController {
 
@@ -20,27 +19,23 @@ export default class AuthController {
       return response.status(200).send({token: token})
     } catch (error) {
       if (!error.type) {
-        const err = EL_Errors.publicError('Произошла странная ошибка.')
-        return response.status(500).send(err)
+        return response.status(500).send('Произошла странная ошибка.')
       }
       const type = error.type
       const isWrongLogin = type === 'WRONG_PASSWORD' || type === 'USER_NOT_FOUND' || type === 'VALIDATION_ERROR'
       if (isWrongLogin) {
-        const err = EL_Errors.publicError('Неверный логин или пароль.')
-        return response.forbidden(err)
+        return response.status(401).send('Неверный логин или пароль.')
       }
-      const err = EL_Errors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
-      return response.forbidden(err)
+      return response.status(500).send('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
     }
   }
 
   public async logout({request, response}: HttpContextContract) {
     await AuthMaster.logout(request)
       .catch(() =>{
-        const err = EL_Errors.publicError('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
-        return response.forbidden(err)
+        return response.status(500).send('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
       })
-    return response.status(200).send('')
+    return response.status(200).send('Успешный выход.')
   }
 
   private async authRiver(request: RequestContract, adminLogin: boolean) {

@@ -2,7 +2,6 @@ import Env from '@ioc:Adonis/Core/Env'
 import {HttpContextContract} from '@ioc:Adonis/Core/HttpContext'
 import Article from "App/Models/Elven/Article"
 import ArticleValidator from "App/Common/Elven/_VALIDATORS/ArticleValidator"
-import EL_Errors from "App/Common/Elven/_TOOLS/EL_Errors"
 
 
 const pageSize = Env.get('PAGINATION_SIZE') // default: 16
@@ -22,7 +21,6 @@ export default class ArticlesController {
     try {
       validatedParams = await ArticleValidator.requestParams(ctx.request, isAdmin)
     } catch (errors) {
-      console.log(errors)
       return ctx.response.status(400).send(errors)
     }
     let {page, show, by, start, preview} = validatedParams
@@ -48,10 +46,8 @@ export default class ArticlesController {
           }
         }
       }
-      return ctx.response.status(200).send(articles)
-    } else {
-      return ctx.response.status(500).send(await EL_Errors.publicError('Error while getting articles.'))
     }
+    return ctx.response.status(200).send(articles)
   }
 
   // GET url/:id
@@ -60,7 +56,7 @@ export default class ArticlesController {
     if (article) {
       return ctx.response.status(200).send(article)
     } else {
-      return ctx.response.notFound(await EL_Errors.publicError('Article not found.'))
+      return ctx.response.status(404).send('Article not found.')
     }
   }
 
@@ -68,16 +64,17 @@ export default class ArticlesController {
   public async store(ctx: HttpContextContract) {
     let article = new Article()
     try {
-      Object.assign(article, await ArticleValidator.whenCreate(ctx.request))
-    } catch (error) {
-      return ctx.response.badRequest(error)
+      const validated = await ArticleValidator.whenCreate(ctx.request)
+      Object.assign(article, validated)
+    } catch (errors) {
+      return ctx.response.status(400).send(errors)
     }
     const user = ctx['user']
     try {
       await user.related('articles').save(article)
       return ctx.response.status(200).send(article)
     } catch (error) {
-      return ctx.response.internalServerError(await EL_Errors.publicError('Error while creating article.'))
+      return ctx.response.status(500).send('Error while creating article.')
     }
   }
 
@@ -85,19 +82,19 @@ export default class ArticlesController {
   public async update(ctx: HttpContextContract) {
     let article = await Article.find(ctx.params.id)
     if (!article) {
-      return ctx.response.notFound(await EL_Errors.publicError('Article not found.'))
+      return ctx.response.status(404).send('Article not found.')
     }
     try {
       Object.assign(article, await ArticleValidator.whenUpdate(ctx.request, article))
-    } catch (error) {
-      return ctx.response.badRequest(error)
+    } catch (errors) {
+      return ctx.response.status(400).send(errors)
     }
     const user = ctx['user']
     try {
       await user.related('articles').save(article)
       return ctx.response.status(200).send(article)
     } catch (error) {
-      return ctx.response.internalServerError(await EL_Errors.publicError('Error while saving article.'))
+      return ctx.response.internalServerError('Error while saving article.')
     }
   }
 
@@ -105,13 +102,13 @@ export default class ArticlesController {
   public async destroy(ctx: HttpContextContract) {
     const article = await Article.find(ctx.params.id)
     if (!article) {
-      return ctx.response.notFound(await EL_Errors.publicError('Article not found.'))
+      return ctx.response.status(404).send('Article not found.')
     }
     try {
       await article.delete()
-      return ctx.response.status(200).send(await EL_Errors.publicError('Article deleted.'))
+      return ctx.response.status(200).send('Article deleted.')
     } catch (error) {
-      return ctx.response.internalServerError(await EL_Errors.publicError('Error while deleting article.'))
+      return ctx.response.status(500).send('Error while deleting article.')
     }
   }
 

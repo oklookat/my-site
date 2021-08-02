@@ -19,9 +19,9 @@ export default class EL_Files {
     return Promise.resolve()
   }
 
-  public static async deleteDirIfEmpty(path: string) {
+  public static deleteDirIfEmpty(path: string) {
     let error
-    await fs.rm(path, {recursive: true}, (err) => {
+    fs.rm(path, {recursive: true}, (err) => {
       if (err) {
         error = err
       }
