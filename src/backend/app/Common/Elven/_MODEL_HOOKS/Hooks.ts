@@ -34,8 +34,7 @@ class Hooks{
       slug = await EL_Slug.make(slug)
     }
 
-    // reference
-    // https://github.com/adonisjs/adonis-lucid-slugify/blob/develop/src/Strategies/dbIncrement.js
+    // reference: https://github.com/adonisjs/adonis-lucid-slugify/blob/develop/src/Strategies/dbIncrement.js
     const articleFound = await Article.query()
       .whereRaw(`?? ~* ?`, ['slug', `^${slug}(-[0-9]*)?$`])
       .orderBy('id', 'desc')

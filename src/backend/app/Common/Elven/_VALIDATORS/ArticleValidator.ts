@@ -1,12 +1,12 @@
-import {RequestContract} from "@ioc:Adonis/Core/Request";
-import validator from "validator";
-import Article from "App/Models/Elven/Article";
-import {EL_ErrorCollector} from "App/Common/Elven/_TOOLS/EL_Errors"
+import {RequestContract} from "@ioc:Adonis/Core/Request"
+import Article from "App/Models/Elven/Article"
+import {EL_ErrorCollector} from "App/Common/Elven/_ERRORS/EL_ErrorCollector"
 import {
-  EL_IError_VALIDATION_FORBIDDEN,
-  EL_IError_VALIDATION_MINMAX,
-  EL_IError_VALIDATION_MUSTBE
-} from "App/Common/Elven/_TOOLS/EL_Interfaces";
+  E_AUTH_FORBIDDEN,
+  E_VALIDATION_EMPTY,
+  E_VALIDATION_MINMAX,
+  E_VALIDATION_MUSTBE
+} from "App/Common/Elven/_ERRORS/EL_Errors";
 
 export default class ArticleValidator {
 
@@ -16,6 +16,14 @@ export default class ArticleValidator {
     if (!is_published) {
       is_published = false
     }
+    if(is_published !== 'true' && is_published !== 'false' && is_published !== true && is_published !== false){
+      const mustbe = new E_VALIDATION_MUSTBE(['is_published'], ['true', 'false'])
+      errorCollector.addError(mustbe)
+    } else if(is_published === 'true'){
+      is_published = true
+    } else if(is_published === 'false'){
+      is_published = false
+    }
     if (!thumbnail) {
       thumbnail = null
     }
@@ -23,19 +31,14 @@ export default class ArticleValidator {
       title = 'Без названия'
     } else {
       title = title.toString()
-      if (title.length > 124) { // todo: оформить в соответствии с EL_Errors
-        errorCollector.addError('VALIDATION', 400, '«title» must be less than 124 symbols.')
+      if (title.length > 124) {
+        const minmax = new E_VALIDATION_MINMAX(['title'], undefined, 124)
+        errorCollector.addError(minmax)
       }
     }
     if (!content) {
-      errorCollector.addError('VALIDATION', 400, '«content» can not be empty.')
-    }
-    is_published = is_published.toString()
-    if (!validator.isBoolean(is_published)) { // todo: вместо проверки на bool, проверять isPublished === true || isPublished === false
-      errorCollector.addError('VALIDATION', 400, '«isPublished» must be type bool.')
-    }
-    if (typeof content !== 'object' && content !== null) {
-      errorCollector.addError('VALIDATION', 400, '«content» must be an object.')
+      const empty = new E_VALIDATION_EMPTY(['content'])
+      errorCollector.addError(empty)
     }
     if(errorCollector.hasErrors()){
       return Promise.reject(errorCollector.getErrors())
@@ -56,11 +59,7 @@ export default class ArticleValidator {
       title = foundArticle.title
     } else {
       if (title.length > 124) {
-        const minmax: EL_IError_VALIDATION_MINMAX = {
-          errorCode: 'E_VALIDATION_MINMAX',
-          issuer: 'title',
-          max: '124'
-        }
+        const minmax = new E_VALIDATION_MINMAX(['title'], undefined, 124)
         errorCollector.addError(minmax)
       }
     }
@@ -80,37 +79,23 @@ export default class ArticleValidator {
     let show = request.input('show', 'published')
     show = show.toLowerCase()
     if (show !== 'published' && show !== 'drafts') {
-      const mustbe: EL_IError_VALIDATION_MUSTBE = {
-        errorCode: 'E_VALIDATION_MUSTBE',
-        issuer: 'show',
-        available: ['drafts', 'all']
-      }
+      const mustbe = new E_VALIDATION_MUSTBE(['show'], ['drafts', 'all'])
       errorCollector.addError(mustbe)
     } else {
       if ((show === 'drafts' || show === 'all') && !isAdmin) {
-        const forbidden: EL_IError_VALIDATION_FORBIDDEN = {
-          errorCode: 'E_VALIDATION_FORBIDDEN',
-          issuer: ['drafts', 'all']
-        }
+        const forbidden = new E_AUTH_FORBIDDEN(['show'], 'show = drafts or show = all not allowed')
         errorCollector.addError(forbidden)
       }
     }
     let by = request.input('by', 'published')
     by = by.toLowerCase()
     if (by !== 'created' && by !== 'published' && by !== 'updated') {
-      const mustbe: EL_IError_VALIDATION_MUSTBE = {
-        errorCode: 'E_VALIDATION_MUSTBE',
-        issuer: 'by',
-        available: ['created', 'published', 'updated']
-      }
+      const mustbe = new E_VALIDATION_MUSTBE(['by'], ['created', 'published', 'updated'])
       errorCollector.addError(mustbe)
     } else {
       if (by === 'created' || by === 'updated') {
         if (!isAdmin) {
-          const forbidden: EL_IError_VALIDATION_FORBIDDEN = {
-            errorCode: 'E_VALIDATION_FORBIDDEN',
-            issuer: 'by',
-          }
+          const forbidden = new E_AUTH_FORBIDDEN(['by'], 'by = created or by = updated not allowed')
           errorCollector.addError(forbidden)
         } else {
           if (by === 'created') {
@@ -126,11 +111,7 @@ export default class ArticleValidator {
     let start = request.input('start', 'newest')
     start = start.toLowerCase()
     if (start !== 'newest' && start !== 'oldest') {
-      const mustbe: EL_IError_VALIDATION_MUSTBE = {
-        errorCode: 'E_VALIDATION_MUSTBE',
-        issuer: 'start',
-        available: ['newest', 'oldest']
-      }
+      const mustbe = new E_VALIDATION_MUSTBE(['start'], ['newest', 'oldest'])
       errorCollector.addError(mustbe)
     } else {
       if (start === 'newest') {
@@ -142,11 +123,7 @@ export default class ArticleValidator {
     let preview = request.input('preview', 'true')
     preview = preview.toLowerCase()
     if (preview !== 'false' && preview !== 'true') {
-      const mustbe: EL_IError_VALIDATION_MUSTBE = {
-        errorCode: 'E_VALIDATION_MUSTBE',
-        issuer: 'preview',
-        available: ['true', 'false']
-      }
+      const mustbe = new E_VALIDATION_MUSTBE(['preview'], ['true', 'false'])
       errorCollector.addError(mustbe)
     } else if (preview === 'true') {
       preview = true
@@ -155,11 +132,7 @@ export default class ArticleValidator {
     }
     let page = request.input('page', 1)
     if (page < 1) {
-      const minmax: EL_IError_VALIDATION_MINMAX = {
-        errorCode: 'E_VALIDATION_MINMAX',
-        issuer: 'page',
-        min: '1'
-      }
+      const minmax = new E_VALIDATION_MINMAX(['page'], 1)
       errorCollector.addError(minmax)
     }
 

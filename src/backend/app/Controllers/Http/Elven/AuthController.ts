@@ -1,60 +1,41 @@
 import {HttpContextContract} from '@ioc:Adonis/Core/HttpContext'
-import {RequestContract} from '@ioc:Adonis/Core/Request'
-import AuthMaster from "App/Common/Elven/Auth/AuthMaster"
+import EL_Auth from "App/Common/Elven/_TOOLS/EL_Auth"
 import UserValidator from "App/Common/Elven/_VALIDATORS/UserValidator"
+import {EL_ErrorCollector} from "App/Common/Elven/_ERRORS/EL_ErrorCollector";
+import {E_AUTH_INCORRECT, E_UNKNOWN} from "App/Common/Elven/_ERRORS/EL_Errors";
 
 export default class AuthController {
 
   public async login({request, response}: HttpContextContract) {
     const {type} = request.all()
     if (!type) {
-      return response.badRequest()
+      return response.status(400).send('')
     }
-    let isAdminLogin = false
-    if (type === 'admin') {
-      isAdminLogin = true
+    let isAdminLogin = type === 'admin'
+    let username, password
+    try {
+      const data = await UserValidator.validateCredentials(request)
+      username = data.username
+      password = data.password
+    } catch (errors){
+      return response.status(400).send(errors)
     }
     try {
-      const token = await this.authRiver(request, isAdminLogin)
+      const token = await EL_Auth.login(username, password, isAdminLogin, request)
       return response.status(200).send({token: token})
-    } catch (error) {
-      if (!error.type) {
-        return response.status(500).send('Произошла странная ошибка.')
+    } catch (error){
+      if(error === 'PIPE_TOKEN_SAVING_ERROR'){
+        const unknown = new E_UNKNOWN(['AUTH'], 'Server error during auth.')
+        return response.status(500).send(EL_ErrorCollector.singleError(unknown))
+      } else {
+        const wrong = new E_AUTH_INCORRECT(['AUTH'], 'Wrong username or password.')
+        return response.status(403).send(EL_ErrorCollector.singleError(wrong))
       }
-      const type = error.type
-      const isWrongLogin = type === 'WRONG_PASSWORD' || type === 'USER_NOT_FOUND' || type === 'VALIDATION_ERROR'
-      if (isWrongLogin) {
-        return response.status(401).send('Неверный логин или пароль.')
-      }
-      return response.status(500).send('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
     }
   }
 
   public async logout({request, response}: HttpContextContract) {
-    await AuthMaster.logout(request)
-      .catch(() =>{
-        return response.status(500).send('Применена магия вне Хогвартса, или сервер сошел с ума. Попробуйте очистить данные сайта.')
-      })
-    return response.status(200).send('Успешный выход.')
+    await EL_Auth.logout(request)
+    return response.status(200).send('')
   }
-
-  private async authRiver(request: RequestContract, adminLogin: boolean) {
-    let validated
-    await UserValidator.validateCredentials(request)
-      .then(data => {
-        validated = data
-      })
-      .catch(error => {
-        return Promise.reject(error)
-      })
-    return await AuthMaster.login(validated.username, validated.password, adminLogin, request)
-      .then(token => {
-        return Promise.resolve(token)
-      })
-      .catch(error => {
-        return Promise.reject(error)
-      })
-  }
-
-
 }

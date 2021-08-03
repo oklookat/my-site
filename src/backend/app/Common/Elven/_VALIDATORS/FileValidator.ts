@@ -1,5 +1,6 @@
-import {RequestContract} from "@ioc:Adonis/Core/Request";
-import {EL_ErrorCollector} from "App/Common/Elven/_TOOLS/EL_Errors"
+import {RequestContract} from "@ioc:Adonis/Core/Request"
+import {EL_ErrorCollector} from "App/Common/Elven/_ERRORS/EL_ErrorCollector"
+import {E_VALIDATION_MINMAX, E_VALIDATION_MUSTBE} from "App/Common/Elven/_ERRORS/EL_Errors"
 
 export default class FileValidator {
 
@@ -8,7 +9,8 @@ export default class FileValidator {
     let start = request.input('start', 'newest')
     start = start.toLowerCase()
     if (start !== 'newest' && start !== 'oldest') {
-      errorCollector.addError('VALIDATION', 400, '«start» must be newest or oldest.')
+      const mustbe = new E_VALIDATION_MUSTBE(['start'], ['newest', 'oldest'])
+      errorCollector.addError(mustbe)
     } else {
       if (start === 'newest') {
         start = 'DESC'
@@ -18,7 +20,8 @@ export default class FileValidator {
     }
     let page = request.input('page', 1)
     if (page < 1) {
-      errorCollector.addError('VALIDATION', 400, '«page» cannot be less than one.')
+      const minmax = new E_VALIDATION_MINMAX(['page'], 1)
+      errorCollector.addError(minmax)
     }
     if (errorCollector.hasErrors()) {
       return Promise.reject(errorCollector.getErrors())

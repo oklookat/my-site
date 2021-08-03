@@ -2,6 +2,8 @@ import Env from '@ioc:Adonis/Core/Env'
 import {HttpContextContract} from '@ioc:Adonis/Core/HttpContext'
 import Article from "App/Models/Elven/Article"
 import ArticleValidator from "App/Common/Elven/_VALIDATORS/ArticleValidator"
+import {EL_ErrorCollector} from "App/Common/Elven/_ERRORS/EL_ErrorCollector"
+import {E_NOTFOUND, E_UNKNOWN} from "App/Common/Elven/_ERRORS/EL_Errors";
 
 
 const pageSize = Env.get('PAGINATION_SIZE') // default: 16
@@ -56,7 +58,8 @@ export default class ArticlesController {
     if (article) {
       return ctx.response.status(200).send(article)
     } else {
-      return ctx.response.status(404).send('Article not found.')
+      const notFound = new E_NOTFOUND(['articles'], 'Article not found.')
+      return ctx.response.status(404).send(EL_ErrorCollector.singleError(notFound))
     }
   }
 
@@ -74,7 +77,31 @@ export default class ArticlesController {
       await user.related('articles').save(article)
       return ctx.response.status(200).send(article)
     } catch (error) {
-      return ctx.response.status(500).send('Error while creating article.')
+      // if(error.code){
+      //   while(error.code === '23505'){
+      //     // code 23505 mean what id exists
+      //     // it happens when you import data direct to database
+      //     // for example: in you imported data last id = 42, but in ORM or etc counter id = 1 (as I understand)
+      //     // and he try create article, but in database article with id = 1 exists, and he gives errors
+      //     // if you try to save again, he try save it, but with id = 2, etc. In this cycle he saving and saving again, to moment, when ORM counter go to actual id in imported data.
+      //     // its not good solution, but it seems to work
+      //     // and idk about performance. What if you have 100000 articles?
+      //     // but what if really all id's busy? idk, maybe this cycle goes to infinity
+      //     // uncomment this if you import data to DB, and now you try to create article, but he gives you 500 error. Maybe it helps.
+      //     try {
+      //       await user.related('articles').save(article)
+      //       return ctx.response.status(200).send(article)
+      //     } catch (error){
+      //       if(error.code){
+      //         if(error.code !== '23505'){
+      //           break
+      //         }
+      //       }
+      //     }
+      //   }
+      // }
+      const unknown = new E_UNKNOWN(['articles'], 'Error while creating article.')
+      return ctx.response.status(500).send(EL_ErrorCollector.singleError(unknown))
     }
   }
 
@@ -82,7 +109,8 @@ export default class ArticlesController {
   public async update(ctx: HttpContextContract) {
     let article = await Article.find(ctx.params.id)
     if (!article) {
-      return ctx.response.status(404).send('Article not found.')
+      const notFound = new E_NOTFOUND(['articles'], 'Article not found.')
+      return ctx.response.status(404).send(EL_ErrorCollector.singleError(notFound))
     }
     try {
       Object.assign(article, await ArticleValidator.whenUpdate(ctx.request, article))
@@ -94,7 +122,8 @@ export default class ArticlesController {
       await user.related('articles').save(article)
       return ctx.response.status(200).send(article)
     } catch (error) {
-      return ctx.response.internalServerError('Error while saving article.')
+      const unknown = new E_UNKNOWN(['articles'], 'Error while saving article.')
+      return ctx.response.status(500).send(EL_ErrorCollector.singleError(unknown))
     }
   }
 
@@ -102,13 +131,15 @@ export default class ArticlesController {
   public async destroy(ctx: HttpContextContract) {
     const article = await Article.find(ctx.params.id)
     if (!article) {
-      return ctx.response.status(404).send('Article not found.')
+      const notFound = new E_NOTFOUND(['articles'], 'Article not found.')
+      return ctx.response.status(404).send(EL_ErrorCollector.singleError(notFound))
     }
     try {
       await article.delete()
       return ctx.response.status(200).send('Article deleted.')
     } catch (error) {
-      return ctx.response.status(500).send('Error while deleting article.')
+      const unknown = new E_UNKNOWN(['articles'], 'Error while deleting article.')
+      return ctx.response.status(500).send(EL_ErrorCollector.singleError(unknown))
     }
   }
 

@@ -38,7 +38,6 @@ export default class EL_Files {
      * @param string path like 'D:\Test\'
      * @param string path like '123\456\789\music.flac' or '123\456\789\'
      * in summary: 'D:\Test\123\456\789\music.flac'
-     * @return Promise
      * deletes the file, then goes up to the basePath, along the way deleting relativePath directories if they are empty
      */
     relativePathToFile = relativePathToFile.replace(Path.basename(relativePathToFile), '') // remove filename from path (music.flac)
@@ -115,10 +114,9 @@ export default class EL_Files {
   }
 
   public static async getHash(path: string): Promise<string> {
-    // SHA-512
     return new Promise((resolve, reject) => {
-      // https://github.com/kodie/md5-file/blob/master/index.js but sha512
-      const output = crypto.createHash('sha512')
+      // https://github.com/kodie/md5-file/blob/master/index.js
+      const output = crypto.createHash('md5') // can be sha512
       const input = fs.createReadStream(path, {encoding: 'utf-8'})
       input.on('error', (err) => {
         reject(err)
@@ -131,12 +129,10 @@ export default class EL_Files {
   }
 
   public static generateDirectoriesByHash(hash: string): string {
-    // hash 0 - 16 to first folder name
-    // hash 16 - 32 to second folder name
-    // and 32 - hash.length to third folder name
-    const hash_firstTwo1 = hash.slice(0, 16)
-    const hash_firstTwo2 = hash.slice(16, 32)
-    const hash_other = hash.slice(32, hash.length)
+    // MD5: hash 0 - 2 to first folder name, hash 2 - 4 to second folder name, and 4 - hash.length to third folder name
+    const hash_firstTwo1 = hash.slice(0, 2)
+    const hash_firstTwo2 = hash.slice(2, 4)
+    const hash_other = hash.slice(4, hash.length)
     return `${hash_firstTwo1}/${hash_firstTwo2}/${hash_other}`
   }
 
