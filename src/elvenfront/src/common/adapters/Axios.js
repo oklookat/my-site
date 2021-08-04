@@ -7,7 +7,7 @@ const Axios = axios.create({timeout: 15000})
 let token
 
 
-Axios.defaults.baseURL = process.env.VUE_APP_AXIOS_BACKEND_API_URL
+Axios.defaults.baseURL = process.env.VUE_APP_API_URL
 Axios.defaults.headers['Content-Type'] = 'application/json'
 
 Axios.interceptors.request.use(async function (config) {

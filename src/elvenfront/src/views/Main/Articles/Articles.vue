@@ -1,7 +1,5 @@
 <template>
-  <div class="container">
-    <Header></Header>
-    <div class="content">
+    <div class="articles-main">
       <div class="articles-types">
         <div class="articles-published" v-on:click="getArticles(undefined, 'published')"
              :class="{'active': show === 'published'}">
@@ -99,14 +97,10 @@
         </div>
       </div>
     </UIOverlay>
-
-
-  </div>
 </template>
 
 <script>
 import {defineComponent} from "vue";
-import Header from "@/components/Header/Header";
 import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter";
 import UIOverlay from "@/components/_UI/UIOverlay";
 import Dates from "@/common/tools/Dates";
@@ -114,7 +108,7 @@ import UIPagination from "@/components/_UI/UIPagination";
 
 export default defineComponent({
   name: 'Articles',
-  components: {UIPagination, UIOverlay, Header},
+  components: {UIPagination, UIOverlay},
   data() {
     return {
       isArticlesLoaded: false,
@@ -228,11 +222,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.container {
-
-}
-
-.content {
+.articles-main {
   display: flex;
   flex-direction: column;
   gap: 14px;

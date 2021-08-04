@@ -70,7 +70,7 @@ const bodyParserConfig: BodyParserConfig = {
     | ```
     */
 
-    processManually: [],
+    processManually: [], // '/api/elven/files'
 
     encoding: 'utf-8',
 
@@ -78,7 +78,7 @@ const bodyParserConfig: BodyParserConfig = {
 
     maxFields: 1000,
 
-    limit: '128mb',
+    limit: '242mb',
 
     types: [
       'multipart/form-data',

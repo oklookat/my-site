@@ -68,6 +68,7 @@ export default defineComponent({
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  border: var(--color-border) 1px solid;
 }
 .ui-overlay-content{
   box-sizing: border-box;

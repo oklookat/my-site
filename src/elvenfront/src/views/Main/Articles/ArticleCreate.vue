@@ -1,16 +1,13 @@
 <template>
-  <div class="container">
-    <Header></Header>
-    <div class="content">
+  <div class="articles-create-main">
       <textarea id="article-title"
                 placeholder="Если коротко..."
                 rows="1" maxlength="124"
                 v-model="article.title"
                 @input="autoSave">
       </textarea>
-      <div class="editor-container">
-        <div id="editor" @input="autoSave">
-        </div>
+    <div class="editor-container">
+      <div id="editor" @input="autoSave">
       </div>
     </div>
 
@@ -26,7 +23,6 @@
 <script>
 import {defineComponent} from "vue"
 import {useRoute} from 'vue-router'
-import Header from "@/components/Header/Header"
 import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter"
 import UIOverlay from "@/components/_UI/UIOverlay"
 import TextareaResizer from "@/common/tools/TextareaResizer"
@@ -36,7 +32,7 @@ import ImageTool from '@editorjs/image'
 
 export default defineComponent({
   name: 'ArticleCreate',
-  components: {UIOverlay, Header},
+  components: {UIOverlay},
   data() {
     return {
       article: {
@@ -182,14 +178,8 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.content {
-  height: 100%;
+.articles-create-main {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -205,6 +195,7 @@ export default defineComponent({
 
 .editor-container {
   height: 100%;
+  width: 95%;
 }
 
 #editor {

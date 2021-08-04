@@ -1,6 +1,5 @@
 <template>
 <div class="container">
-  <Header></Header>
   <div class="content">
 
   </div>
@@ -9,11 +8,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import Header from "@/components/Header/Header.vue";
 
 export default defineComponent({
   name: 'Index',
-  components: {Header}
+  components: {}
 })
 </script>
 

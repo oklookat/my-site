@@ -1,56 +1,57 @@
 <template>
-  <div class="container">
-    <Header></Header>
-    <div class="content">
-      <div class="files-tools">
-        <div class="files-tools-upload cursor-pointer">
-          <div class="files-tools-upload-butt" v-on:click="onUploadClick">Загрузить</div>
-          <div class="the-underline"></div>
-          <input id="input-upload" type="file" multiple style="display: none" @input="onFileInputChange"/>
-        </div>
+  <div class="files-main">
+    <div class="files-tools">
+      <div class="files-tools-upload cursor-pointer">
+        <div class="files-tools-upload-butt" v-on:click="onUploadClick">Загрузить</div>
+        <div class="the-underline"></div>
+        <input id="input-upload" type="file" multiple style="display: none" @input="onFileInputChange"/>
       </div>
-
-      <div class="files-list" v-if="isFilesLoaded && files.length > 0">
-        <div class="file" v-for="file in files" :key="file.id" v-on:click="selectFile(file)">
-          <div class="file-meta">
-            <div class="file-item file-loaded-at">
-              {{ convertDateWrap(file.created_at) }}
-            </div>
-          </div>
-          <div class="file-main">
-            <div class="file-item file-preview">превью файла</div>
-            <div class="file-item file-name">{{ file.original_name }}</div>
-            <div class="file-item file-size">{{ convertSizeWrap(file.size) }}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="files-404" v-if="isFilesLoaded && files.length < 1">
-        <div class="files-404-1">Нет файлов :(</div>
-      </div>
-
-      <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
-        <div class="overlay-file-tools">
-          <div class="ov-item file-copy-link" v-on:click="copyLink(selectedFile)">Скопировать ссылку</div>
-          <div class="ov-item file-delete" v-on:click="deleteFile(selectedFile)">Удалить</div>
-        </div>
-      </UIOverlay>
-
     </div>
+
+    <div class="files-list" v-if="isFilesLoaded && files.length > 0">
+      <div class="file" v-for="file in files" :key="file.id" v-on:click="selectFile(file)">
+        <div class="file-meta">
+          <div class="file-item file-loaded-at">
+            {{ convertDateWrap(file.created_at) }}
+          </div>
+        </div>
+        <div class="file-main">
+          <div class="file-item file-preview" v-on:click.stop>
+            <img :src="convertPreviewPath(file.path)" v-if="readableExtensionWrap(file.extension) === 'IMAGE'">
+            <video controls loop :src="convertPreviewPath(file.path)"
+                   v-if="readableExtensionWrap(file.extension) === 'VIDEO'" autoplay muted></video>
+
+          </div>
+          <div class="file-item file-name">{{ file.original_name }}</div>
+          <div class="file-item file-size">{{ convertSizeWrap(file.size) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="files-404" v-if="isFilesLoaded && files.length < 1">
+      <div class="files-404-1">Нет файлов :(</div>
+    </div>
+
+    <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
+      <div class="overlay-file-tools">
+        <div class="ov-item file-copy-link" v-on:click="copyLink(selectedFile)">Скопировать ссылку</div>
+        <div class="ov-item file-delete" v-on:click="deleteFile(selectedFile)">Удалить</div>
+      </div>
+    </UIOverlay>
   </div>
 </template>
 
 <script>
 import {defineComponent} from "vue"
-import Header from "@/components/Header/Header"
 import FileAdapter from "@/common/adapters/Main/FileAdapter"
 import Dates from "@/common/tools/Dates"
 import Sizes from "@/common/tools/Sizes.js"
-import UIOverlay from "@/components/_UI/UIOverlay";
+import UIOverlay from "@/components/_UI/UIOverlay"
+import Extensions from "@/common/tools/Extensions"
 
 export default defineComponent({
   name: 'Files',
-  components: {UIOverlay, Header},
+  components: {UIOverlay},
   data() {
     return {
       isFilesLoaded: false,
@@ -85,6 +86,13 @@ export default defineComponent({
             this.totalPages = Math.ceil(this.filesMeta.total / this.filesMeta.per_page)
             this.isFilesLoaded = true
           })
+      if (this.isFilesLoaded) {
+        for (let file of this.files) {
+          if (this.readableExtensionWrap(file.extension) === 'AUDIO') {
+            this.$elvenPlayer.addSource(this.convertPreviewPath(file.path))
+          }
+        }
+      }
     },
     async refreshFiles() {
       let isTrueFiles = this.isFilesLoaded && this.files.length < 1
@@ -100,7 +108,7 @@ export default defineComponent({
         }
       }
     },
-    async deleteFile(file){
+    async deleteFile(file) {
       const isDelete = confirm('Удалить файл?')
       if (isDelete) {
         await FileAdapter.delete(file.id)
@@ -127,10 +135,10 @@ export default defineComponent({
     // UPLOAD FUNCTIONS END //
 
     // SERVICE START //
-    async copyLink(file){
+    async copyLink(file) {
       const url = `${process.env.VUE_APP_USER_FILES_BACKEND_API_URL}/${file.path}`
       await navigator.clipboard.writeText(url)
-          .then(() =>{
+          .then(() => {
             this.isToolsOverlayActive = false
           })
     },
@@ -139,15 +147,21 @@ export default defineComponent({
       this.files.splice(index, 1)
       return true
     },
-    selectFile(file){
+    selectFile(file) {
       this.isToolsOverlayActive = true
       this.selectedFile = file
     },
     convertDateWrap(date) {
       return Dates.convert(date)
     },
-    convertSizeWrap(size){
+    convertSizeWrap(size) {
       return Sizes.convert(size)
+    },
+    readableExtensionWrap(extension) {
+      return Extensions.getReadable(extension)
+    },
+    convertPreviewPath(path) {
+      return `${process.env.VUE_APP_UPLOADS_URL}/${path}`
     },
     // SERVICE END //
   },
@@ -155,7 +169,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.content {
+.files-main {
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -199,7 +213,7 @@ export default defineComponent({
 }
 
 .file-item {
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1.5rem;
   margin-top: 8px;
   margin-left: 12px;
@@ -219,12 +233,12 @@ export default defineComponent({
 }
 
 .file-name {
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 2rem;
   letter-spacing: 0.0099rem;
 }
 
-.file-size{
+.file-size {
   font-size: 1rem;
 }
 
@@ -237,6 +251,10 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   gap: 24px;
+}
+
+.overlay-file-tools {
+  width: 100%;
 }
 
 .ov-item {

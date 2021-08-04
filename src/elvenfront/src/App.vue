@@ -1,6 +1,14 @@
 <template>
-  <elven-progress></elven-progress>
-  <router-view/>
+  <div class="container">
+    <elven-progress></elven-progress>
+    <div class="content">
+      <div style="height: 16px;"></div>
+      <router-view/>
+      <div style="height: 64px;"></div>
+    </div>
+    <elven-player></elven-player>
+    <Header v-if="$route.name !== 'Login' && $route.name !== 'Logout'"></Header>
+  </div>
 </template>
 
 <style lang="scss">
@@ -13,7 +21,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    // MAIN UI START //
+    /* MAIN UI START */
     --color-scrollbar: #707070;
     --color-scrollbar-hover: #909090;
     --color-header-active: #050505;
@@ -27,14 +35,14 @@
     --color-level-1: #151515;
     --color-level-2: #252525;
     --color-level-3: #303030;
-    // MAIN UI END //
+    /* MAIN UI END */
     --color-helper: #8CE6E6;
   }
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    // MAIN UI START //
+    /* MAIN UI START */
     --color-scrollbar: #505050;
     --color-scrollbar-hover: #707070;
     --color-header-active: #FFFFFF;
@@ -48,7 +56,7 @@
     --color-level-1: #FFFFFF;
     --color-level-2: #FFFFFF;
     --color-level-3: #FFFFFF;
-    // MAIN UI END //
+    /* MAIN UI END */
     --color-helper: #8CE6E6;
   }
 }
@@ -67,8 +75,8 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -103,10 +111,20 @@ a {
 .container {
   word-break: break-word;
   hyphens: auto;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr var(--header-height);
+}
 
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+.content {
+  overflow: auto;
+  height: 100%;
+  margin: auto;
+  width: 95%;
+  font-size: 1.1rem;
+  line-height: 1.46rem;
+  letter-spacing: 0.0007rem;
 }
 
 textarea {
@@ -125,9 +143,10 @@ input {
   text-indent: 6px;
 }
 
-input::placeholder{
+input::placeholder {
   opacity: 20%;
 }
+
 input:focus::placeholder {
   opacity: 10%;
 }
@@ -158,16 +177,6 @@ input:focus::placeholder {
   user-select: none;
 }
 
-.content {
-  height: calc(100% - var(--header-height));
-  margin: auto;
-  padding-bottom: 16px;
-  width: 95%;
-  font-size: 1.1rem;
-  line-height: 1.46rem;
-  letter-spacing: 0.0007rem;
-}
-
 .item {
   cursor: pointer;
   border-radius: 6px;
@@ -177,7 +186,7 @@ input:focus::placeholder {
   align-items: center;
 }
 
-.cursor-pointer{
+.cursor-pointer {
   cursor: pointer;
 }
 
@@ -237,8 +246,32 @@ input:focus::placeholder {
   background: var(--color-text-selection);
 }
 
+img,
+video {
+  min-height: 240px;
+  min-width: 240px;
+  object-fit: fill;
+  border-radius: var(--border-radius);
+}
+
 // EDITOR.JS LIGHT AND DARK THEME STYLING END //
 //// EDITOR.JS STYLING END ////
+
+@media screen and (min-width: 1px) {
+  img,
+  video {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@media screen and (min-width: 604px) {
+  img,
+  video {
+    width: 80%;
+    height: 80%;
+  }
+}
 
 @media screen and (min-width: 512px) {
   .content {
@@ -246,7 +279,18 @@ input:focus::placeholder {
   }
 }
 
-@media screen and (min-width: 1024px) {
+@media screen and (min-width: 1000px) {
+  .content {
+    width: 612px;
+  }
+}
+
+@media screen and (min-width: 1366px) {
+  img,
+  video {
+    width: 40%;
+    height: 40%;
+  }
   .content {
     width: 812px;
   }
@@ -254,7 +298,18 @@ input:focus::placeholder {
 </style>
 
 <script>
+import Header from '@/components/Header/Header'
+import UIAudioPlayer from "@/common/plugins/ElvenPlayer/ElvenPlayerC"
+
 export default {
   name: 'App',
+  components: {Header},
+  data() {
+    return {
+      isPageLoaded: false,
+      audioPlayerSources: undefined,
+    }
+  }
 }
 </script>
+
