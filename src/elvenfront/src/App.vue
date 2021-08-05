@@ -114,7 +114,8 @@ a {
   height: 100vh;
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr var(--header-height);
+  grid-template-rows: 1fr;
+  grid-auto-rows: auto;
 }
 
 .content {
@@ -299,7 +300,6 @@ video {
 
 <script>
 import Header from '@/components/Header/Header'
-import UIAudioPlayer from "@/common/plugins/ElvenPlayer/ElvenPlayerC"
 
 export default {
   name: 'App',

@@ -91,7 +91,6 @@ export default defineComponent({
   font-size: 1.1rem;
   cursor: pointer;
   overflow: auto;
-  border-radius: var(--border-radius);
 }
 
 .header-mobile-menu-item {

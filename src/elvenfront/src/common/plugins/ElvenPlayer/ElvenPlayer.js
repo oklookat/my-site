@@ -2,18 +2,16 @@
 // https://github.com/oklookat
 
 import ElvenPlayerC from './ElvenPlayerC'
+import {methods, state} from './core/Shared'
 
 export default class ElvenPlayer {
-    static componentData = null
 
     static install(app, options) {
         app.component('elven-player', ElvenPlayerC)
         // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const instance = this
         app.mixin({
             created() {
-                if (this.SERVICE === 'ELVEN_PLAYER_C') {
-                    instance.componentData = this
+                if (state.SERVICE === 'ELVEN_PLAYER_C') {
                     theLogic.options = options
                    // theLogic.init()
                     app.config.globalProperties.$elvenPlayer = theLogic
@@ -33,13 +31,8 @@ class theLogic {
     //     }
     // }
 
-    static setSources(sources) {
-        ElvenPlayer.componentData.sources = sources
-        return true
-    }
-
     static addSource(source){
-        ElvenPlayer.componentData.addSource = source
+        methods.addSource(source)
         return true
     }
 }
