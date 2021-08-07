@@ -2,10 +2,11 @@
 // https://github.com/oklookat
 
 import ElvenPlayerC from './ElvenPlayerC'
-import {methods} from './core/Shared'
+import ElvenPlayerCore from "@/common/plugins/ElvenPlayer/core/ElvenPlayerCore";
 
 export default class ElvenPlayer {
     static componentData = null
+    static audioPlayer = null
 
     static install(app, options) {
         app.component('elven-player', ElvenPlayerC)
@@ -20,11 +21,16 @@ export default class ElvenPlayer {
                     app.config.globalProperties.$elvenPlayer = theLogic
                 }
             },
+            mounted() {
+                if (this.SERVICE === 'ELVEN_PLAYER_C') {
+                    instance.audioPlayer = new ElvenPlayerCore()
+                }
+            },
         })
     }
 }
 
-class theLogic {
+export class theLogic {
 
     static options = null
 
@@ -34,17 +40,20 @@ class theLogic {
         }
     }
 
-    static addToPlaylist(url){
-        methods.addToPlaylist(url)
-        const playlistLength = methods.getPlaylistLength()
-        if(playlistLength > 0){
-            ElvenPlayer.componentData.showFunc(true)
-        }
+    static addToPlaylist(url) {
+        ElvenPlayer.audioPlayer.addToPlaylist(url)
     }
 
-    static playSingleAudio(url){
-        methods.setPlaylist(url)
-        methods.play()
-        ElvenPlayer.componentData.showFunc(true)
+    static setPlaylist(playlist){
+        ElvenPlayer.audioPlayer.setPlaylist(playlist)
+    }
+
+    static play(url){
+        theLogic.setPlaylist([url])
+        ElvenPlayer.audioPlayer.play()
+    }
+
+    static destroy(){
+        ElvenPlayer.audioPlayer.destroy()
     }
 }

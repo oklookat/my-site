@@ -18,9 +18,9 @@
         <div class="file-main">
           <div class="file-item file-preview" v-on:click.stop>
             <img :src="convertPreviewPath(file.path)" v-if="readableExtensionWrap(file.extension) === 'IMAGE'">
-            <video controls loop :src="convertPreviewPath(file.path)"
-                   v-if="readableExtensionWrap(file.extension) === 'VIDEO'" autoplay muted></video>
-
+            <video controls :src="convertPreviewPath(file.path)"
+                   v-if="readableExtensionWrap(file.extension) === 'VIDEO'"></video>
+            <audio controls :src="convertPreviewPath(file.path)" v-if="readableExtensionWrap(file.extension) === 'AUDIO'"></audio>
           </div>
           <div class="file-item file-name">{{ file.original_name }}</div>
           <div class="file-item file-size">{{ convertSizeWrap(file.size) }}</div>
@@ -34,14 +34,11 @@
 
     <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
       <div class="overlay-file-tools">
-        <div class="ov-item file-play" v-if="readableExtensionWrap(selectedFile.extension) === 'AUDIO'"
-             v-on:click="playSingleAudio(selectedFile)">
-          Воспроизвести
-        </div>
         <div class="ov-item file-copy-link" v-on:click="copyLink(selectedFile)">Скопировать ссылку</div>
         <div class="ov-item file-delete" v-on:click="deleteFile(selectedFile)">Удалить</div>
       </div>
     </UIOverlay>
+
   </div>
 </template>
 
@@ -93,7 +90,7 @@ export default defineComponent({
     },
     async refreshFiles() {
       let isTrueFiles = this.isFilesLoaded && this.files.length < 1
-      if (isTrueFiles) { // no articles in current page
+      if (isTrueFiles) { // no files in current page
         while (isTrueFiles) {
           // moving back until the pages ends or data appears
           this.currentPage--
@@ -123,6 +120,7 @@ export default defineComponent({
         return 0
       }
       await FileAdapter.upload(files)
+      await this.getFiles()
     },
     onUploadClick() {
       const inputUpload = document.getElementById('input-upload')
@@ -159,9 +157,6 @@ export default defineComponent({
     },
     convertPreviewPath(path) {
       return `${process.env.VUE_APP_UPLOADS_URL}/${path}`
-    },
-    playSingleAudio(file){
-      this.$elvenPlayer.playSingleAudio(this.convertPreviewPath(file.path))
     },
     // SERVICE END //
   },

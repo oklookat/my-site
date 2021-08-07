@@ -6,9 +6,8 @@
       <router-view/>
       <div style="height: 64px;"></div>
     </div>
-    <div class="service">
-      <elven-player></elven-player>
-      <Header v-if="$route.name !== 'Login' && $route.name !== 'Logout'"></Header>
+    <div class="service" v-if="$route.name !== 'Login' && $route.name !== 'Logout'">
+      <Header></Header>
     </div>
   </div>
 </template>

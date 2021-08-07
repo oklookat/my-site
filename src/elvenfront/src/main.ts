@@ -4,7 +4,6 @@ import './registerServiceWorker'
 import router from './router'
 import store from './store'
 import ElvenProgress from './common/plugins/ElvenProgress/ElvenProgress.js'
-import ElvenPlayer from './common/plugins/ElvenPlayer/ElvenPlayer.js'
 
-const app = createApp(App).use(store).use(router).use(ElvenProgress).use(ElvenPlayer).mount('#app')
+const app = createApp(App).use(store).use(router).use(ElvenProgress).mount('#app')
 export default app
