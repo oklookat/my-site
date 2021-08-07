@@ -112,7 +112,7 @@ export default {
   cursor: default;
   position: absolute;
   width: 100%;
-  height: 4px;
+  height: 6px;
 }
 
 #elven-progressbar-line {
@@ -123,12 +123,12 @@ export default {
 
 @media (prefers-color-scheme: light) {
   #elven-progressbar-line{
-    background-color: #FF7C69;
+    background-color: #9D6A89;
   }
 }
 @media (prefers-color-scheme: dark) {
   #elven-progressbar-line{
-    background-color: #FF7C69;
+    background-color: #9D6A89;
   }
 }
 </style>

@@ -1,63 +1,79 @@
 <template>
-<div class="audio-player-container">
-  <div class="audio-player-item audio-player-progress" v-on:click="setDurationOnClickWrap">
-    <div class="audio-player-progressbar"></div>
+  <div class="audio-player-container" v-show="show">
+    <div class="audio-player-item audio-player-progress" v-on:click="setDurationOnClickWrap">
+      <div class="audio-player-progressbar"></div>
+      <div class="audio-player-buffered"></div>
+    </div>
+    <div class="audio-player-main">
+      <div class="audio-player-item audio-player-prev" v-on:click="prevTrackWrap">
+        <svg id="prev_butt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 406.76 169.37"><path d="M180.76,320.07V179.49A14.38,14.38,0,0,0,159.29,167l-124,70.29a14.38,14.38,0,0,0,0,25l124,70.29A14.38,14.38,0,0,0,180.76,320.07Z" transform="translate(-28 -165.09)"/><path d="M434.76,320.07V179.49A14.38,14.38,0,0,0,413.29,167l-124,70.29a14.38,14.38,0,0,0,0,25l124,70.29A14.38,14.38,0,0,0,434.76,320.07Z" transform="translate(-28 -165.09)"/></svg>
+      </div>
+      <div class="audio-player-item audio-player-play-pause" v-on:click="playPauseWrap">
+        <svg v-if="isPlaying" id="pause_butt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 207 310"><rect width="70" height="310"/><rect x="137" width="70" height="310"/></svg>
+        <svg v-if="!isPlaying" id="play_butt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 152.76 169.37"><path d="M173.62,320.29V179.71a14.38,14.38,0,0,1,21.47-12.51l124,70.29a14.38,14.38,0,0,1,0,25l-124,70.29A14.38,14.38,0,0,1,173.62,320.29Z" transform="translate(-173.62 -165.31)"/></svg>
+      </div>
+      <div class="audio-player-item audio-player-next" v-on:click="nextTrackWrap">
+        <svg id="next_butt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 406.76 169.37"><path d="M308,320.07V179.49A14.37,14.37,0,0,1,329.46,167l124,70.29a14.38,14.38,0,0,1,0,25l-124,70.29A14.37,14.37,0,0,1,308,320.07Z" transform="translate(-54 -165.09)"/><path d="M54,320.07V179.49A14.37,14.37,0,0,1,75.46,167l124,70.29a14.38,14.38,0,0,1,0,25l-124,70.29A14.37,14.37,0,0,1,54,320.07Z" transform="translate(-54 -165.09)"/></svg>
+      </div>
+      <div class="audio-player-item audio-player-close" v-on:click="closePlayer">
+        <svg id="close_butt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 245 270"><path d="M127.21,365h0c-12.2-15.67-11.28-40,2-54.33L308.81,117.62c13.33-14.34,34-13.26,46.24,2.41h0c12.2,15.67,11.28,40-2.05,54.33L173.45,367.44C160.11,381.78,139.41,380.7,127.21,365Z" transform="translate(-118.63 -107.53)"/><path d="M351.24,368.93h0A35.14,35.14,0,0,0,355,319L181.4,119.8A36,36,0,0,0,131,116.13h0a35.15,35.15,0,0,0-3.7,49.9L300.86,365.26A36,36,0,0,0,351.24,368.93Z" transform="translate(-118.63 -107.53)"/></svg>
+      </div>
+    </div>
   </div>
-  <div class="audio-player-main">
-    <div class="audio-player-item audio-player-prev" v-on:click="prevTrackWrap">
-      <svg id="player_prev_button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 417.11 190.55"><path d="M33.58,245.64a3.76,3.76,0,0,0,0,6.51L191.8,343.5a3.76,3.76,0,0,0,5.64-3.26V157.55a3.76,3.76,0,0,0-5.64-3.26ZM191.87,337.1,39.09,248.89l152.78-88.2Z" transform="translate(-31.7 -153.79)"/><polygon points="7.39 95.1 160.17 183.31 160.17 6.9 7.39 95.1"/><path d="M285,246a3.77,3.77,0,0,0,0,6.52l158.22,91.34a3.72,3.72,0,0,0,3.76,0,3.77,3.77,0,0,0,1.88-3.25V157.88a3.76,3.76,0,0,0-5.64-3.26Zm158.29,91.47L290.46,249.23,443.24,161Z" transform="translate(-31.7 -153.79)"/><polygon points="258.76 95.44 411.54 183.65 411.54 7.23 258.76 95.44"/></svg>
-    </div>
-    <div class="audio-player-item audio-player-play-pause" v-on:click="playPauseWrap">
-      <svg id="player_play_button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 243 278.89"><path d="M369.24,218.06a5.52,5.52,0,0,1,0,9.56l-232,133.92a5.52,5.52,0,0,1-8.27-4.77V88.91a5.52,5.52,0,0,1,8.27-4.78ZM137.17,352.17l224-129.33-224-129.33Z" transform="translate(-129 -83.39)"/><polygon points="232.18 139.44 8.17 268.77 8.17 10.12 232.18 139.44"/></svg>
-    </div>
-    <div class="audio-player-item audio-player-next" v-on:click="nextTrackWrap">
-      <svg id="player_prev_button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 417.11 190.55"><polygon points="256.94 6.9 409.73 95.1 256.94 183.31 256.94 6.9"/><path d="M461.43,248.89l-152.78-88.2V337.1ZM308.72,343.5a3.77,3.77,0,0,1-5.65-3.26V157.55a3.77,3.77,0,0,1,5.65-3.26l158.21,91.35a3.75,3.75,0,0,1,0,6.51Z" transform="translate(-51.7 -153.79)"/><polygon points="158.35 95.44 5.57 183.65 5.57 7.23 158.35 95.44"/><path d="M57.27,161V337.44l152.79-88.21Zm158.29,91.47L57.34,343.83a3.72,3.72,0,0,1-3.76,0,3.79,3.79,0,0,1-1.88-3.25V157.88a3.76,3.76,0,0,1,5.64-3.26L215.56,246a3.77,3.77,0,0,1,0,6.52Z" transform="translate(-51.7 -153.79)"/></svg>
-    </div>
-  </div>
-</div>
 </template>
 
 <script>
-import {methods, state} from "@/common/plugins/ElvenPlayer/core/Shared";
+import {methods, state} from "@/common/plugins/ElvenPlayer/core/Shared"
 
 export default {
   name: "ElvenPlayerC",
   data() {
     return {
+      SERVICE: 'ELVEN_PLAYER_C',
+      show: false,
       sharedState: state,
+      isPlaying: false,
     }
   },
   mounted() {
     methods.mounted()
+    state.audioPlayerControls.addEventListener('playPause', (event) =>{
+      this.isPlaying = event
+    })
   },
   methods: {
-    playPauseWrap(){
-      this.sharedState.audioPlayer.playPause()
+    showFunc(isShow) {
+      this.show = isShow
     },
-    nextTrackWrap(){
-      this.sharedState.audioPlayer.next()
+    playPauseWrap() {
+      this.isPlaying = this.sharedState.audioPlayerControls.playPause()
     },
-    prevTrackWrap(){
-      this.sharedState.audioPlayer.prev()
+    nextTrackWrap() {
+      this.sharedState.audioPlayerControls.next()
     },
-    setDurationOnClickWrap(event){
-      this.sharedState.audioPlayer.setDurationOnClick(event)
+    prevTrackWrap() {
+      this.sharedState.audioPlayerControls.prev()
     },
-    test(){
-      console.log('MOUSE UP')
-    }
+    setDurationOnClickWrap(event) {
+      this.sharedState.audioPlayerControls.setDurationOnClick(event)
+    },
+    closePlayer(){
+      this.sharedState.audioPlayerControls.stop()
+      this.show = false
+    },
   },
 }
 </script>
 
 <style scoped>
 .audio-player-container {
- display: flex;
+  display: flex;
   flex-direction: column;
 
 }
-.audio-player-main{
-  background-color: var(--color-level-1);
+
+.audio-player-main {
+  background-color: rgba(0, 0, 0, 0.5);
   width: 100%;
   height: 54px;
   z-index: 5;
@@ -67,35 +83,67 @@ export default {
   justify-content: center;
   gap: 18px;
 }
-.audio-player-progress{
-  height: 6px;
-}
-.audio-player-progressbar{
-  height: 100%;
-  width: 0;
-  background-color: red;
-  transition: width 0.8s;
-}
+
 .audio-player-item {
   cursor: pointer;
 }
-.audio-player-item svg {
-  max-height: 25px;
-  max-width: 25px;
-  height: 25px;
-  width: 25px;
+
+.audio-player-progress {
+  transition: height 0.1s;
+  height: 6px;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.8);
 }
-.audio-player-play-pause {
+
+.audio-player-progress:hover {
+  height: 24px;
+}
+
+.audio-player-progressbar,
+.audio-player-buffered {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  transition: width 0.1s;
+}
+
+.audio-player-progressbar {
+  background-color: #F8F272;
+  z-index: 1;
+}
+
+.audio-player-buffered {
+  background-color: #999999;
+}
+
+.audio-player-item svg {
+  max-height: 20px;
+  max-width: 20px;
+  height: 20px;
+  width: 20px;
+  fill: white;
+}
+
+
+
+
+@media screen and (prefers-color-scheme: dark) {
+  .audio-player-progressbar{
+    background-color: #9D6A89;
+  }
+  .audio-player-buffered{
+    background-color: #999999;
+  }
 }
 
 @media screen and (prefers-color-scheme: light) {
-  .audio-player-item svg {
-    fill: black;
+  .audio-player-progressbar{
+    background-color: #9D6A89;
   }
-}
-@media screen and (prefers-color-scheme: dark) {
-  .audio-player-item svg {
-    fill: white;
+  .audio-player-buffered{
+    background-color: #999999;
   }
 }
 </style>

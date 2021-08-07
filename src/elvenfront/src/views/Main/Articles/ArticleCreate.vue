@@ -195,7 +195,7 @@ export default defineComponent({
 
 .editor-container {
   height: 100%;
-  width: 95%;
+  width: 100%;
 }
 
 #editor {

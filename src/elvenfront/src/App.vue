@@ -6,8 +6,10 @@
       <router-view/>
       <div style="height: 64px;"></div>
     </div>
-    <elven-player></elven-player>
-    <Header v-if="$route.name !== 'Login' && $route.name !== 'Logout'"></Header>
+    <div class="service">
+      <elven-player></elven-player>
+      <Header v-if="$route.name !== 'Login' && $route.name !== 'Logout'"></Header>
+    </div>
   </div>
 </template>
 
@@ -24,10 +26,15 @@
     /* MAIN UI START */
     --color-scrollbar: #707070;
     --color-scrollbar-hover: #909090;
+    // HEADER START //
+    --color-header: #111111;
     --color-header-active: #050505;
+    --color-header-text: #FFFFFF;
+    --color-header-hover: rgba(255, 255, 255, 0.04);
+    // HEADER END //
     --color-text: white;
     --color-text-inactive: #E6E6E6;
-    --color-text-selection: #803E34;
+    --color-text-selection: #7C506D;
     --color-placeholder: #666666;
     --color-hover: rgba(255, 255, 255, 0.06);
     --color-border: #202020;
@@ -45,14 +52,19 @@
     /* MAIN UI START */
     --color-scrollbar: #505050;
     --color-scrollbar-hover: #707070;
+    // HEADER START //
+    --color-header: #F2F4F8;
     --color-header-active: #FFFFFF;
+    --color-header-text: #000000;
+    --color-header-hover: rgba(0, 0, 0, 0.03);
+    // HEADER END //
     --color-text: black;
     --color-text-inactive: #404040;
-    --color-text-selection: #FF7C69;
+    --color-text-selection: #D7C1D0;
     --color-placeholder: #808080;
     --color-hover: rgba(0, 0, 0, 0.05);
     --color-border: #F2F2F2;
-    --color-body: #E6E6E6;
+    --color-body: #E0E0E0;
     --color-level-1: #FFFFFF;
     --color-level-2: #FFFFFF;
     --color-level-3: #FFFFFF;
@@ -61,12 +73,9 @@
   }
 }
 
-html {
-  height: 100%;
-}
-
 html,
 body {
+  min-height: 100vh;
   margin: 0;
   font-family: 'Helvetica', 'Arial', sans-serif;
   color: var(--color-text);
@@ -95,7 +104,7 @@ a {
 }
 
 #app {
-
+  min-height: 100vh;
 }
 
 .active {
@@ -109,17 +118,21 @@ a {
 }
 
 .container {
+  min-height: 100vh;
   word-break: break-word;
   hyphens: auto;
-  height: 100vh;
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
-  grid-auto-rows: auto;
+  grid-template-rows: 1fr min-content;
+  grid-auto-rows: 1px;
+  flex-direction: column;
+}
+
+.service{
+  position: sticky;
+  bottom: 0;
 }
 
 .content {
-  overflow: auto;
   height: 100%;
   margin: auto;
   width: 95%;
@@ -197,14 +210,17 @@ input:focus::placeholder {
 
 
 //// EDITOR.JS STYLING START ////
-// WIDTH AND HEIGHT START //
+// MAIN START //
+.codex-editor{
+  z-index: unset;
+}
 .ce-block__content,
 .ce-toolbar__content {
   max-height: unset;
   max-width: unset;
 }
 
-// WIDTH AND HEIGHT END //
+// MAIN END //
 // EDITOR.JS LIGHT AND DARK THEME STYLING START //
 .ce-inline-tool,
 .codex-editor svg {

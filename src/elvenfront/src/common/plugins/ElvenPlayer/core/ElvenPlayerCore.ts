@@ -2,94 +2,186 @@ let _global_this
 
 export default class ElvenPlayerCore {
 
-    private initialized = false
+    private registered = {}
+    public initialized = false
     public isPlaying = false
-    private audioSources: string[]
-    private audioPlayer: HTMLAudioElement
-    private progressBar: Element
 
-    private totalTracks = -1
+    private playlist: string[]
     private currentPlaying = {
         index: 0,
     }
 
+    private audioPlayer: HTMLAudioElement
+    private progressBar: Element
+    private bufferedBar: Element
+
+    public addEventListener(name, callback) {
+        if (!this.registered[name]) this.registered[name] = []
+        this.registered[name].push(callback)
+    }
+
+    private triggerEvent(name, args) {
+        this.registered[name]?.forEach(fnc => fnc.apply(this, args))
+    }
+
     constructor() {
-        _global_this = this
+        this.initElements()
         this.audioPlayer = new Audio('')
-        this.audioPlayer.addEventListener('timeupdate', onPlaying)
-        this.audioPlayer.addEventListener('playing', () =>{
-            this.isPlaying = true
-        })
+        this.initEvents()
+        this.playlist = []
+        _global_this = this
+    }
+
+    private initElements(){
         const progress = document.querySelector('.audio-player-progressbar')
-        if(progress){
+        const buffered = document.querySelector('.audio-player-buffered')
+        if (progress && buffered) {
             this.progressBar = progress
+            this.bufferedBar = buffered
         } else {
-            throw Error('audio-player-progressbar class not found.')
+            throw Error('audio-player-progressbar or audio-player-buffered classes not found.')
         }
-        this.audioSources = []
     }
 
-    public addSource(url: string){
-        this.audioSources.push(url)
-        this.totalTracks++
+    private initEvents() {
+        this.audioPlayer.addEventListener('playing', () => {
+            this.isPlaying = true
+            this.triggerEvent('playPause', [this.isPlaying])
+        })
+        this.audioPlayer.addEventListener('pause', () => {
+            this.isPlaying = false
+            this.triggerEvent('playPause', [this.isPlaying])
+        })
+        this.audioPlayer.addEventListener('ended', onEnded)
+        this.audioPlayer.addEventListener('timeupdate', onTimeUpdate)
+        this.audioPlayer.addEventListener('error', onError)
     }
 
-    private async setSource(sourceIndex = this.currentPlaying.index){
-        this.audioPlayer.src = this.audioSources[sourceIndex]
+    public getPlaylistLength() {
+        return this.playlist.length
     }
+
+    public setPlaylist(playlist: string []) {
+        this.currentPlaying.index = 0
+        this.initialized = false
+        this.playlist = playlist
+    }
+
+    public addToPlaylist(url: string) {
+        this.playlist.push(url)
+    }
+
+    private setCurrentAudio(sourceIndex = this.currentPlaying.index) {
+        if (this.playlist.length < 1) {
+            return Error('PLAYLIST_EMPTY')
+        }
+        this.audioPlayer.src = this.playlist[sourceIndex]
+        return true
+    }
+
+    private isHasNextAudio() {
+        const isHas = this.playlist[this.currentPlaying.index + 1]
+        return !!isHas
+    }
+
+    private async repeat() {
+        this.setCurrentAudio()
+        this.audioPlayer.currentTime = 0
+        await this.play()
+    }
+
 
     // PLAYBACK CONTROLS START //
-
-    public async play(){
-        if(!this.initialized){
-            await this.setSource()
+    public async play() {
+        if (!this.initialized) {
+            this.setCurrentAudio()
             this.initialized = true
         }
         await this.audioPlayer.play()
     }
 
-    public async pause(){
-        await this.audioPlayer.pause()
-        this.isPlaying = false
+    public pause() {
+        this.audioPlayer.pause()
     }
 
-    public async next(){
-        console.log('NEXT')
-        if(!this.audioSources[this.currentPlaying.index + 1]){
-           return Promise.reject('NEXT_NO_TRACKS')
+    public async next() {
+        if (!this.isHasNextAudio()) {
+            await this.repeat()
+        } else {
+            this.currentPlaying.index++
+            this.setCurrentAudio()
+            await this.audioPlayer.play()
         }
-        this.currentPlaying.index++
-        await this.setSource()
-        await this.audioPlayer.play()
     }
 
-    public async previous(){
-        console.log('PREV')
-        if(!this.audioSources[this.currentPlaying.index - 1]){
-            return Promise.reject('PREV_NO_TRACKS')
+    public async previous() {
+        const durationCF = this.audioPlayer.duration / 4
+        if (this.audioPlayer.currentTime > durationCF) {
+            this.audioPlayer.currentTime = 0
+            return
+        }
+        if (!this.playlist[this.currentPlaying.index - 1]) {
+            this.audioPlayer.currentTime = 0
+            return
         }
         this.currentPlaying.index--
-        await this.setSource()
+        this.setCurrentAudio()
         await this.audioPlayer.play()
     }
 
-    public async setDurationOnClick(event){
-        let parentWidth = this.progressBar.parentElement.clientWidth
-        if(!parentWidth){
+    public stop(){
+        this.playlist = []
+        this.audioPlayer.src = ''
+    }
+
+    public async setDurationOnClick(event) {
+        let parentWidth
+        if (!this.progressBar.parentElement) {
             parentWidth = window.screenX
+        } else {
+            parentWidth = this.progressBar.parentElement.clientWidth
         }
         const percents = Math.ceil((event.screenX * 100) / parentWidth)
-        const _calc = Math.ceil((this.audioPlayer.duration * percents) / 100)
-        this.audioPlayer.currentTime = _calc
+        this.audioPlayer.currentTime = Math.ceil((this.audioPlayer.duration * percents) / 100)
     }
+
     // PLAYBACK CONTROLS END //
 
 }
 
 
-
-function onPlaying(){
+function onTimeUpdate() {
     const currentTime = Math.ceil(_global_this.audioPlayer.currentTime)
-    const duration = Math.ceil(_global_this.audioPlayer.duration)
-    _global_this.progressBar.style.width = `${Math.ceil((currentTime * 100) / duration)}%`
+    const duration = _global_this.audioPlayer.duration
+    let progressPercents = (currentTime / duration) * 100
+    if(progressPercents >= 100){
+        progressPercents = 100
+    }
+    if (duration > 0) {
+        _global_this.progressBar.style.width = `${progressPercents}%`
+        for (let i = 0; i < _global_this.audioPlayer.buffered.length; i++) {
+            const len = _global_this.audioPlayer.buffered.length - 1 - i
+            if (_global_this.audioPlayer.buffered.start(len) < currentTime) {
+                let bufferPercents = (_global_this.audioPlayer.buffered.end(len) / duration) * 100
+                if(bufferPercents >= 100){
+                    bufferPercents = 100
+                }
+                _global_this.bufferedBar.style.width = `${bufferPercents}%`
+                break
+            }
+        }
+    }
+}
+
+function onEnded() {
+    _global_this.next()
+}
+
+function onError() {
+    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/networkState
+    const networkState = _global_this.audioPlayer.networkState
+    if (networkState === 3) {
+        return
+    }
+    throw Error('При загрузке аудио произошла ошибка')
 }

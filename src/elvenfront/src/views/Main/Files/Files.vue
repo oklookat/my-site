@@ -34,6 +34,10 @@
 
     <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
       <div class="overlay-file-tools">
+        <div class="ov-item file-play" v-if="readableExtensionWrap(selectedFile.extension) === 'AUDIO'"
+             v-on:click="playSingleAudio(selectedFile)">
+          Воспроизвести
+        </div>
         <div class="ov-item file-copy-link" v-on:click="copyLink(selectedFile)">Скопировать ссылку</div>
         <div class="ov-item file-delete" v-on:click="deleteFile(selectedFile)">Удалить</div>
       </div>
@@ -86,13 +90,6 @@ export default defineComponent({
             this.totalPages = Math.ceil(this.filesMeta.total / this.filesMeta.per_page)
             this.isFilesLoaded = true
           })
-      if (this.isFilesLoaded) {
-        for (let file of this.files) {
-          if (this.readableExtensionWrap(file.extension) === 'AUDIO') {
-            this.$elvenPlayer.addSource(this.convertPreviewPath(file.path))
-          }
-        }
-      }
     },
     async refreshFiles() {
       let isTrueFiles = this.isFilesLoaded && this.files.length < 1
@@ -162,6 +159,9 @@ export default defineComponent({
     },
     convertPreviewPath(path) {
       return `${process.env.VUE_APP_UPLOADS_URL}/${path}`
+    },
+    playSingleAudio(file){
+      this.$elvenPlayer.playSingleAudio(this.convertPreviewPath(file.path))
     },
     // SERVICE END //
   },

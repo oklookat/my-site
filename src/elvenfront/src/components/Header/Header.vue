@@ -11,7 +11,7 @@
           enter-active-class="show-mobile enter-active"
           leave-active-class="show-mobile leave-active"
       >
-        <div class="header-mobile-menu" v-if="isMobileMenuActive" v-on:click="isMobileMenuActive = !isMobileMenuActive">
+        <div class="header-mobile-menu" v-if="isMobileMenuActive" v-on:click="toggleMobileMenu">
           <RouterLink class="header-mobile-menu-item" :to="{name: 'Index'}">Главная</RouterLink>
           <RouterLink class="header-mobile-menu-item" :to="{name: 'ArticleCreate'}">Создать запись</RouterLink>
           <RouterLink class="header-mobile-menu-item" :to="{name: 'Articles'}">Список записей</RouterLink>
@@ -45,10 +45,10 @@ export default defineComponent({
     },
 
     toggleBodyScroll() {
-      if (document.body.classList.contains('no-scroll')) {
-        document.body.classList.remove('no-scroll')
-      } else {
+      if(this.isMobileMenuActive){
         document.body.classList.add('no-scroll')
+      } else {
+        document.body.classList.remove('no-scroll')
       }
     },
 
@@ -59,7 +59,8 @@ export default defineComponent({
 <style lang="scss">
 .header {
   height: var(--header-height);
-  background-color: var(--color-level-1);
+  background-color: var(--color-header);
+  color: var(--color-header-text);
   width: 100%;
 }
 
@@ -82,11 +83,9 @@ export default defineComponent({
   background-color: var(--color-header-active);
   z-index: 9999;
   width: 100%;
-  position: absolute;
+  height: calc(100% - var(--header-height));
+  position: fixed;
   bottom: var(--header-height);
-  left: 0;
-  top: 0;
-  right: 0;
   display: block;
   font-size: 1.1rem;
   cursor: pointer;
@@ -100,11 +99,10 @@ export default defineComponent({
   align-items: center;
   height: 100px;
   cursor: pointer;
-  color: var(--color-text);
 }
 
 .header-mobile-menu-item:hover {
-  background-color: var(--color-hover);
+  background-color: var(--color-header-hover);
 }
 
 
@@ -120,11 +118,13 @@ export default defineComponent({
 
 @keyframes show-mobile {
   from {
-    top: 100%;
+    bottom: 5%;
+    height: 5%;
     background-color: transparent;
   }
   to {
-    top: 0;
+    height: calc(100% - var(--header-height));
+    bottom: var(--header-height);
     background-color: var(--color-header-active);
   }
 }
