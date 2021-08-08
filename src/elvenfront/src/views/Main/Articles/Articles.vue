@@ -1,5 +1,8 @@
 <template>
     <div class="articles-main">
+      <div class="articles-create">
+        <RouterLink :to="{name: 'ArticleCreate'}">Создать</RouterLink>
+      </div>
       <div class="articles-types">
         <div class="articles-published" v-on:click="getArticles(undefined, 'published')"
              :class="{'active': show === 'published'}">
@@ -10,15 +13,13 @@
           Черновики
         </div>
       </div>
-      <div class="articles-sort-by">
+      <div class="articles-toolbar">
         <div class="articles-sort-by-link">
-          <div v-if="sortBy === 'created'" v-on:click="isSortOverlayActive = !isSortOverlayActive">дата создания</div>
-          <div v-if="sortBy === 'updated'" v-on:click="isSortOverlayActive = !isSortOverlayActive">последнее
-            редактирование
+          <div v-if="sortBy === 'created'" v-on:click="isSortOverlayActive = !isSortOverlayActive">создано</div>
+          <div v-if="sortBy === 'updated'" v-on:click="isSortOverlayActive = !isSortOverlayActive">изменено
           </div>
-          <div v-if="sortBy === 'published'" v-on:click="isSortOverlayActive = !isSortOverlayActive">дата публикации
+          <div v-if="sortBy === 'published'" v-on:click="isSortOverlayActive = !isSortOverlayActive">опубликовано
           </div>
-          <div class="the-underline"></div>
         </div>
         <div class="articles-sort-by-link">
           <div v-if="sortFirst === 'newest'"
@@ -29,7 +30,6 @@
                v-on:click="setSortDate('newest')">
             старые
           </div>
-          <div class="the-underline"></div>
         </div>
       </div>
 
@@ -57,7 +57,6 @@
         <div class="articles-404-2">
           <RouterLink class="articles-404-link" :to="{name: 'ArticleCreate'}">
             Создать новую?
-            <div class="the-underline"></div>
           </RouterLink>
         </div>
       </div>
@@ -89,7 +88,7 @@
         </div>
         <div class="ov-item asb-sort-by-updated"
              :class="{'active': sortBy === 'updated'}"
-             v-on:click="setSort('updated')">Дата последнего редактирования
+             v-on:click="setSort('updated')">Дата изменения
         </div>
         <div class="ov-item asb-sort-by-published"
              :class="{'active': sortBy === 'published'}"
@@ -228,12 +227,20 @@ export default defineComponent({
   gap: 14px;
 }
 
-.articles-types {
+.articles-types,
+.articles-create{
   background-color: var(--color-level-1);
   height: 42px;
   width: 100%;
   display: flex;
   flex-direction: row;
+}
+
+.articles-create > *{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .articles-types div {
@@ -250,11 +257,12 @@ export default defineComponent({
   background-color: var(--color-hover);
 }
 
-.articles-sort-by {
+.articles-toolbar{
   background-color: var(--color-level-1);
   color: var(--color-text-inactive);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
+  text-decoration: underline;
   padding-left: 12px;
   font-size: 0.8rem;
   min-height: 36px;
@@ -262,9 +270,6 @@ export default defineComponent({
   flex-direction: row;
   align-items: center;
   gap: 12px;
-}
-
-.articles-sort-by-link {
   font-weight: bold;
   cursor: pointer;
 }
@@ -336,6 +341,10 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   gap: 24px;
+}
+
+.articles-404-link{
+  text-decoration: underline;
 }
 
 

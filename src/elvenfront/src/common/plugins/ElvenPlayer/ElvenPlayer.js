@@ -52,8 +52,4 @@ export class theLogic {
         theLogic.setPlaylist([url])
         ElvenPlayer.audioPlayer.play()
     }
-
-    static destroy(){
-        ElvenPlayer.audioPlayer.destroy()
-    }
 }

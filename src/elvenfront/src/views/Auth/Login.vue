@@ -44,7 +44,7 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 36px;
+  gap: 18px;
 }
 
 .login-inputs {
@@ -64,6 +64,7 @@ input {
 }
 
 .auth-button {
+  background-color: var(--color-level-1);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -74,11 +75,6 @@ input {
   font-size: 1.2rem;
   width: 264px;
   height: 48px;
-  color: var(--color-text-inactive);
 }
 
-.auth-button:hover {
-  color: var(--color-text);
-  background-color: var(--color-hover);
-}
 </style>

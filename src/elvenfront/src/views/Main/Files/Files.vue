@@ -3,7 +3,6 @@
     <div class="files-tools">
       <div class="files-tools-upload cursor-pointer">
         <div class="files-tools-upload-butt" v-on:click="onUploadClick">Загрузить</div>
-        <div class="the-underline"></div>
         <input id="input-upload" type="file" multiple style="display: none" @input="onFileInputChange"/>
       </div>
     </div>
@@ -20,7 +19,6 @@
             <img :src="convertPreviewPath(file.path)" v-if="readableExtensionWrap(file.extension) === 'IMAGE'">
             <video controls :src="convertPreviewPath(file.path)"
                    v-if="readableExtensionWrap(file.extension) === 'VIDEO'"></video>
-            <audio controls :src="convertPreviewPath(file.path)" v-if="readableExtensionWrap(file.extension) === 'AUDIO'"></audio>
           </div>
           <div class="file-item file-name">{{ file.original_name }}</div>
           <div class="file-item file-size">{{ convertSizeWrap(file.size) }}</div>
@@ -32,12 +30,23 @@
       <div class="files-404-1">Нет файлов :(</div>
     </div>
 
+    <UIPagination
+        :total-pages="totalPages"
+        :current-page="currentPage"
+        v-on:page-changed="getFiles($event)">
+    </UIPagination>
+
+
     <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
       <div class="overlay-file-tools">
+        <div class="ov-item file-play"
+             v-if="readableExtensionWrap(selectedFile.extension) === 'AUDIO'"
+             v-on:click="playAudio(selectedFile)">Воспроизвести</div>
         <div class="ov-item file-copy-link" v-on:click="copyLink(selectedFile)">Скопировать ссылку</div>
         <div class="ov-item file-delete" v-on:click="deleteFile(selectedFile)">Удалить</div>
       </div>
     </UIOverlay>
+
 
   </div>
 </template>
@@ -49,10 +58,11 @@ import Dates from "@/common/tools/Dates"
 import Sizes from "@/common/tools/Sizes.js"
 import UIOverlay from "@/components/_UI/UIOverlay"
 import Extensions from "@/common/tools/Extensions"
+import UIPagination from "@/components/_UI/UIPagination"
 
 export default defineComponent({
   name: 'Files',
-  components: {UIOverlay},
+  components: {UIPagination, UIOverlay},
   data() {
     return {
       isFilesLoaded: false,
@@ -158,6 +168,10 @@ export default defineComponent({
     convertPreviewPath(path) {
       return `${process.env.VUE_APP_UPLOADS_URL}/${path}`
     },
+    playAudio(file){
+      const converted = this.convertPreviewPath(file.path)
+      this.$elvenPlayer.play(converted)
+    }
     // SERVICE END //
   },
 })
@@ -171,6 +185,7 @@ export default defineComponent({
 }
 
 .files-tools {
+  text-decoration: underline;
   background-color: var(--color-level-1);
   font-size: 1rem;
   width: 100%;
@@ -195,6 +210,7 @@ export default defineComponent({
 }
 
 .file {
+  box-shadow: 0px 0px 41px 0px rgba(0, 0, 0, 0.05);
   min-height: 164px;
   border-radius: var(--border-radius);
   background-color: var(--color-level-1);

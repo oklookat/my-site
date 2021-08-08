@@ -1,13 +1,16 @@
 <template>
   <div class="container">
     <elven-progress></elven-progress>
+    <div class="service" v-if="$route.name !== 'Login' && $route.name !== 'Logout'">
+      <Header></Header>
+    </div>
     <div class="content">
       <div style="height: 16px;"></div>
       <router-view/>
       <div style="height: 64px;"></div>
     </div>
-    <div class="service" v-if="$route.name !== 'Login' && $route.name !== 'Logout'">
-      <Header></Header>
+    <div class="service-2" v-if="$route.name !== 'Login' && $route.name !== 'Logout'">
+      <elven-player></elven-player>
     </div>
   </div>
 </template>
@@ -26,8 +29,8 @@
     --color-scrollbar: #707070;
     --color-scrollbar-hover: #909090;
     // HEADER START //
-    --color-header: #111111;
-    --color-header-active: #050505;
+    --color-header: #202020;
+    --color-header-active: #000000;
     --color-header-text: #FFFFFF;
     --color-header-hover: rgba(255, 255, 255, 0.04);
     // HEADER END //
@@ -37,12 +40,16 @@
     --color-placeholder: #666666;
     --color-hover: rgba(255, 255, 255, 0.06);
     --color-border: #202020;
-    --color-body: #000000;
-    --color-level-1: #151515;
+    --color-body: #121212;
+    --color-level-1: #202020;
     --color-level-2: #252525;
     --color-level-3: #303030;
     /* MAIN UI END */
     --color-helper: #8CE6E6;
+  }
+  .router-link-active > svg,
+  .router-link-exact-active > svg {
+    fill: #FFFFFF;
   }
 }
 
@@ -70,13 +77,17 @@
     /* MAIN UI END */
     --color-helper: #8CE6E6;
   }
+  .router-link-active > svg,
+  .router-link-exact-active > svg {
+    fill: #000000;
+  }
 }
 
 html,
 body {
   min-height: 100vh;
   margin: 0;
-  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: var(--color-text);
   background-color: var(--color-body);
   text-underline-offset: 0.4em;
@@ -111,23 +122,26 @@ a {
   border: none;
 }
 
-.the-underline {
-  height: 1px;
-  border-bottom: 1px solid var(--color-text);
-}
-
 .container {
   min-height: 100vh;
   word-break: break-word;
   hyphens: auto;
   display: grid;
-  grid-template-rows: 1fr min-content;
+  grid-template-rows: min-content 1fr min-content;
   grid-auto-rows: 1px;
   flex-direction: column;
 }
 
-.service{
+.service, .service-2 {
   position: sticky;
+  z-index: 9999;
+}
+
+.service {
+  top: 0;
+}
+
+.service-2 {
   bottom: 0;
 }
 
@@ -161,7 +175,7 @@ input::placeholder {
 }
 
 input:focus::placeholder {
-  opacity: 10%;
+  color: transparent;
 }
 
 
@@ -176,11 +190,6 @@ input:focus::placeholder {
 
 .no-scroll {
   overflow: hidden;
-}
-
-.router-link-active,
-.router-link-exact-active {
-  background-color: var(--color-hover);
 }
 
 .logo-text {
@@ -210,9 +219,15 @@ input:focus::placeholder {
 
 //// EDITOR.JS STYLING START ////
 // MAIN START //
-.codex-editor{
+.codex-editor {
   z-index: unset;
+  height: 100%;
 }
+
+.codex-editor__redactor {
+  height: 100%;
+}
+
 .ce-block__content,
 .ce-toolbar__content {
   max-height: unset;
@@ -221,6 +236,21 @@ input:focus::placeholder {
 
 // MAIN END //
 // EDITOR.JS LIGHT AND DARK THEME STYLING START //
+.cdx-button {
+  background: var(--color-level-1);
+  color: var(--color-text-inactive);
+  border: 1px solid var(--color-border);
+}
+
+.cdx-button:hover {
+  background: var(--color-hover);
+  border: 1px solid var(--color-hover);
+}
+
+.cdx-settings-button:hover {
+  background-color: var(--color-hover);
+}
+
 .ce-inline-tool,
 .codex-editor svg {
   color: var(--color-text);
@@ -262,6 +292,9 @@ input:focus::placeholder {
   background: var(--color-text-selection);
 }
 
+// EDITOR.JS LIGHT AND DARK THEME STYLING END //
+//// EDITOR.JS STYLING END ////
+
 img,
 video {
   min-height: 240px;
@@ -269,9 +302,6 @@ video {
   object-fit: fill;
   border-radius: var(--border-radius);
 }
-
-// EDITOR.JS LIGHT AND DARK THEME STYLING END //
-//// EDITOR.JS STYLING END ////
 
 @media screen and (min-width: 1px) {
   img,
@@ -284,8 +314,8 @@ video {
 @media screen and (min-width: 604px) {
   img,
   video {
-    width: 80%;
-    height: 80%;
+    max-width: 60%;
+    max-height: 60%;
   }
 }
 

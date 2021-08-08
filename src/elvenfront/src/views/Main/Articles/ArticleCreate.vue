@@ -96,12 +96,82 @@ export default defineComponent({
           image: {
             class: ImageTool,
             config: {
+              captionPlaceholder: 'Описание',
               endpoints: {
                 byFile: 'http://localhost:8008/uploadFile', // Your backend file uploader endpoint
                 byUrl: 'http://localhost:8008/fetchUrl', // Your endpoint that provides uploading by Url
-              }
+              },
             }
           },
+        },
+        i18n: {
+          messages: {
+            ui: {
+              "blockTunes": {
+                "toggler": {
+                  "Click to tune": "Нажмите, чтобы настроить",
+                  "or drag to move": "или перетащите"
+                },
+              },
+              "inlineToolbar": {
+                "converter": {
+                  "Convert to": "Конвертировать в"
+                }
+              },
+              "toolbar": {
+                "toolbox": {
+                  "Add": "Добавить"
+                }
+              }
+            },
+            toolNames: {
+              "Text": "Параграф",
+              "Heading": "Заголовок",
+              "List": "Список",
+              "Warning": "Примечание",
+              "Checklist": "Чеклист",
+              "Quote": "Цитата",
+              "Code": "Код",
+              "Delimiter": "Разделитель",
+              "Raw HTML": "HTML-фрагмент",
+              "Table": "Таблица",
+              "Link": "Ссылка",
+              "Marker": "Маркер",
+              "Bold": "Полужирный",
+              "Italic": "Курсив",
+              "InlineCode": "Моноширинный",
+            },
+            tools: {
+              "warning": {
+                "Title": "Название",
+                "Message": "Сообщение",
+              },
+              "link": {
+                "Add a link": "Вставьте ссылку"
+              },
+              "stub": {
+                'The block can not be displayed correctly.': 'Блок не может быть отображен'
+              },
+              image: {
+                'Select an Image': 'Загрузить изображение',
+                'Couldn’t upload image. Please try another.': 'Не удалось загрузить изображение.'
+              }
+            },
+            blockTunes: {
+              "image": {
+
+              },
+              "delete": {
+                "Delete": "Удалить"
+              },
+              "moveUp": {
+                "Move up": "Переместить вверх"
+              },
+              "moveDown": {
+                "Move down": "Переместить вниз"
+              }
+            },
+          }
         },
         minHeight: 0,
         data: {}
@@ -180,12 +250,14 @@ export default defineComponent({
 <style scoped>
 .articles-create-main {
   width: 100%;
+  height: 95%;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
 #article-title {
+  min-height: 38px;
   text-indent: 0;
   border: none;
   background-color: transparent;

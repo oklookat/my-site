@@ -3,7 +3,7 @@ export default class Extensions {
     static getReadable(extension: string): string {
         extension = extension.toUpperCase()
         const isImage = extension === 'JPEG' || extension === 'JPG' ||
-            extension === 'GIF' || extension === 'PNG' || extension === 'BMP' || extension === 'SVG'
+            extension === 'GIF' || extension === 'PNG' || extension === 'BMP' || extension === 'SVG' || extension === 'WEBP'
         if (isImage) {
             return 'IMAGE'
         }

@@ -1,17 +1,12 @@
-let _global_this
+let _this
 
 export default class ElvenPlayerCore {
 
     private registered = {}
     public initialized = false
 
-    public isPlaying = false
-    private playlist: string[]
-    private currentPlaying = {
-        index: 0,
-    }
-
     // ELEMENTS START //
+    private isElements = false
     private audioPlayerEL: HTMLAudioElement
     private containerEL: HTMLElement
     private progressContainerEL: HTMLElement
@@ -24,25 +19,23 @@ export default class ElvenPlayerCore {
     private closeEL: HTMLElement
     // ELEMENTS END //
 
+    // PLAYBACK START //
+    public isPlaying = false
+    private playlist: string[]
+    private currentPlaying = {
+        index: 0,
+    }
+    // PLAYBACK END //
+
+    //////////////// SERVICE START
     private progressMouseDown = false
     private progressMouseDownTempTime = 0
 
-
-    public addEventListener(name, callback) {
-        if (!this.registered[name]) this.registered[name] = []
-        this.registered[name].push(callback)
-    }
-
-    private triggerEvent(name, args) {
-        this.registered[name]?.forEach(fnc => fnc.apply(this, args))
-    }
-
     constructor() {
+        _this = this
         this.initElements()
         this.audioPlayerEL = new Audio('')
-        this.initEvents()
         this.playlist = []
-        _global_this = this
     }
 
     private initElements() {
@@ -65,88 +58,48 @@ export default class ElvenPlayerCore {
             this.nextEL = next
             this.prevEL = prev
             this.closeEL = close
+            this.isElements = true
         } else {
+            this.isElements = false
             throw Error('E_INIT_ELEMENTS')
         }
     }
 
     private initEvents() {
-        // INIT STATE START //
-        this.audioPlayerEL.addEventListener('playing', () => {
-            this.isPlaying = true
-            this.switchPlayPauseButtons()
-        })
-        this.audioPlayerEL.addEventListener('pause', () => {
-            this.isPlaying = false
-            this.switchPlayPauseButtons()
-        })
-        // INIT STATE END //
-
-        // INIT PROGRESS AND ERROR HANDLING START //
-        this.audioPlayerEL.addEventListener('ended', onEnded)
-        this.audioPlayerEL.addEventListener('timeupdate', () =>{
-            if(!this.progressMouseDown){
-                computeProgress()
-                computeBuffered()
-            }
-        })
+        if (!this.isElements) {
+            this.initElements()
+        }
+        this.progressContainerEL.addEventListener('mousedown', progressContainerELMousedown, {passive: false})
+        this.progressContainerEL.addEventListener('touchstart', progressContainerELMousedown, {passive: false})
+        this.audioPlayerEL.addEventListener('playing', audioPlayerELPlaying)
+        this.audioPlayerEL.addEventListener('pause', audioPlayerELPause)
+        this.audioPlayerEL.addEventListener('ended', audioPlayerELEnded)
+        this.audioPlayerEL.addEventListener('timeupdate', audioPlayerELTimeupdate)
         this.audioPlayerEL.addEventListener('error', onError)
-        // INIT PROGRESS AND ERROR HANDLING END //
-
-        // INIT UI CONTROLS START //
-        this.progressContainerEL.addEventListener("mousedown", (event) =>{
-            event.preventDefault()
-            this.progressMouseDown = true
-            this.computeClickProgress(event)
-        })
-        document.addEventListener("mousemove", (event) =>{
-            if(this.progressMouseDown){
-                this.computeClickProgress(event)
-            }
-        })
-        document.addEventListener('mouseup', () =>{
-            if(this.progressMouseDown){
-                this.progressMouseDown = false
-                this.audioPlayerEL.currentTime = this.progressMouseDownTempTime
-            }
-        })
-        this.playEL.addEventListener('click', () => {
-            this.play()
-            this.switchPlayPauseButtons()
-        })
-        this.pauseEL.addEventListener('click', () => {
-            this.pause()
-            this.switchPlayPauseButtons()
-        })
-        this.nextEL.addEventListener('click', () => {
-            this.next()
-        })
-        this.prevEL.addEventListener('click', () => {
-            this.previous()
-        })
-        this.closeEL.addEventListener('click', () => {
-            this.destroy()
-        })
-        // INIT UI CONTROLS END //
+        this.playEL.addEventListener('click', playELClick)
+        this.pauseEL.addEventListener('click', pauseELClick)
+        this.nextEL.addEventListener('click', nextELClick)
+        this.prevEL.addEventListener('click', prevELClick)
+        this.closeEL.addEventListener('click', closeELClick)
     }
 
-    private computeClickProgress(event){
-        if(this.progressMouseDown){
-            const clickPosition = (event.pageX - this.progressContainerEL.offsetLeft) / this.progressContainerEL.offsetWidth
-            this.progressMouseDownTempTime = clickPosition * this.audioPlayerEL.duration
-            computeProgress(this.progressMouseDownTempTime)
-        }
+    private destroyEvents() {
+        this.progressContainerEL.removeEventListener('mousedown', progressContainerELMousedown)
+        this.progressContainerEL.removeEventListener('touchstart', progressContainerELMousedown)
+        this.audioPlayerEL.removeEventListener('playing', audioPlayerELPlaying)
+        this.audioPlayerEL.removeEventListener('pause', audioPlayerELPause)
+        this.audioPlayerEL.removeEventListener('ended', audioPlayerELEnded)
+        this.audioPlayerEL.removeEventListener('timeupdate', audioPlayerELTimeupdate)
+        this.audioPlayerEL.removeEventListener('error', onError)
+        this.playEL.removeEventListener('click', playELClick)
+        this.pauseEL.removeEventListener('click', pauseELClick)
+        this.nextEL.removeEventListener('click', nextELClick)
+        this.prevEL.removeEventListener('click', prevELClick)
+        this.closeEL.removeEventListener('click', closeELClick)
     }
 
-    private switchPlayPauseButtons() {
-        if (this.isPlaying) {
-            this.playEL.style.display = "none"
-            this.pauseEL.style.display = "block"
-        } else {
-            this.pauseEL.style.display = "none"
-            this.playEL.style.display = "block"
-        }
-    }
+    //////////////// SERVICE END
+
 
     private setCurrentAudio(playlistIndex = this.currentPlaying.index) {
         if (this.playlist.length < 1) {
@@ -156,7 +109,7 @@ export default class ElvenPlayerCore {
         return true
     }
 
-    private isAudioNotInStart(){
+    private isAudioNotInStart() {
         const isNotInStart = this.audioPlayerEL.duration / 4
         return this.audioPlayerEL.currentTime > isNotInStart
     }
@@ -173,13 +126,18 @@ export default class ElvenPlayerCore {
 
 
     // PLAYBACK CONTROLS START //
+
     public async play() {
         if (!this.initialized) {
+            this.initEvents()
             this.containerEL.style.display = 'flex'
             this.setCurrentAudio()
             this.initialized = true
         }
         await this.audioPlayerEL.play()
+            .catch(() =>{
+               this.stop()
+            })
     }
 
     public pause() {
@@ -192,7 +150,7 @@ export default class ElvenPlayerCore {
         } else {
             this.currentPlaying.index++
             this.setCurrentAudio()
-            await this.audioPlayerEL.play()
+            await this.play()
         }
     }
 
@@ -205,7 +163,7 @@ export default class ElvenPlayerCore {
         }
         this.currentPlaying.index--
         this.setCurrentAudio()
-        await this.audioPlayerEL.play()
+        await this.play()
     }
 
     public async stop() {
@@ -219,6 +177,7 @@ export default class ElvenPlayerCore {
         this.playlist = []
         this.audioPlayerEL.src = ''
         this.containerEL.style.display = 'none'
+        this.destroyEvents()
         this.initialized = false
     }
 
@@ -231,51 +190,174 @@ export default class ElvenPlayerCore {
     public addToPlaylist(url: string) {
         this.playlist.push(url)
     }
+
     // PLAYBACK CONTROLS END //
 
 }
 
+function onError(event) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/networkState
+    switch (event.target.error.code) {
+        case event.target.error.MEDIA_ERR_ABORTED:
+            console.error('Audio: aborted')
+            break
+        case event.target.error.MEDIA_ERR_NETWORK:
+            console.error('Audio: network error')
+            break
+        case event.target.error.MEDIA_ERR_DECODE:
+            console.error('Audio: decode error. Audio damaged or not supported.')
+            break
+        case event.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            console.error('Audio: source not supported')
+            break
+        default:
+            console.error('Audio: unknown error')
+            break
+    }
+    _this.stop()
+}
 
-
-function computeProgress(currentTime = _global_this.audioPlayerEL.currentTime){
+function computeProgress(currentTime = _this.audioPlayerEL.currentTime) {
     currentTime = Math.round(currentTime)
-    const duration = _global_this.audioPlayerEL.duration
+    const duration = _this.audioPlayerEL.duration
     let progressPercents = (currentTime / duration) * 100
     if (progressPercents >= 100) {
         progressPercents = 100
     }
-    if(duration > 0){
-        _global_this.progressBarEL.style.width = `${progressPercents}%`
+    if (duration > 0) {
+        _this.progressBarEL.style.width = `${progressPercents}%`
     }
 }
 
-function computeBuffered(currentTime = _global_this.audioPlayerEL.currentTime){
+
+function computeMoveProgress(event) {
+    if (!_this.progressMouseDown) {
+        return
+    }
+    let pageX
+    if (event.type.includes('touch') && event.touches && event.touches.length > 0) {
+        // if move by touchscreen
+        for (const touch of event.touches) {
+            if (touch.pageX) {
+                pageX = touch.pageX
+                break
+            }
+        }
+    } else if (event.type.includes('mouse')) {
+        // if move by mouse
+        pageX = event.pageX
+    } else {
+        documentMouseup()
+    }
+    if (!pageX) {
+        return
+    }
+    const clickPosition = (pageX - _this.progressContainerEL.offsetLeft) / _this.progressContainerEL.offsetWidth
+    _this.progressMouseDownTempTime = clickPosition * _this.audioPlayerEL.duration
+    computeProgress(_this.progressMouseDownTempTime)
+}
+
+
+function computeBuffered(currentTime = _this.audioPlayerEL.currentTime) {
     currentTime = Math.round(currentTime)
-    const duration = _global_this.audioPlayerEL.duration
+    const duration = _this.audioPlayerEL.duration
     if (duration > 0) {
-        for (let i = 0; i < _global_this.audioPlayerEL.buffered.length; i++) {
-            const len = _global_this.audioPlayerEL.buffered.length - 1 - i
-            if (_global_this.audioPlayerEL.buffered.start(len) < currentTime) {
-                let bufferPercents = (_global_this.audioPlayerEL.buffered.end(len) / duration) * 100
+        for (let i = 0; i < _this.audioPlayerEL.buffered.length; i++) {
+            const len = _this.audioPlayerEL.buffered.length - 1 - i
+            if (_this.audioPlayerEL.buffered.start(len) < currentTime) {
+                let bufferPercents = (_this.audioPlayerEL.buffered.end(len) / duration) * 100
                 if (bufferPercents >= 100) {
                     bufferPercents = 100
                 }
-                _global_this.bufferedBarEL.style.width = `${bufferPercents}%`
+                _this.bufferedBarEL.style.width = `${bufferPercents}%`
                 break
             }
         }
     }
 }
 
-function onEnded() {
-    _global_this.next()
+function progressContainerELMousedown(event) {
+    event.preventDefault()
+    _this.progressMouseDown = true
+    computeMoveProgress(event)
+    document.addEventListener("mousemove", documentMousemove, {passive: false})
+    document.addEventListener('mouseup', documentMouseup, {passive: false})
+    document.addEventListener("touchmove", documentMousemove, {passive: false})
+    document.addEventListener("touchend", documentMouseup, {passive: false})
+    document.addEventListener("touchcancel", documentMouseup, {passive: false})
 }
 
-function onError() {
-    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/networkState
-    const networkState = _global_this.audioPlayerEL.networkState
-    if (networkState === 3) {
-        return
+function documentMousemove(event) {
+    if (_this.progressMouseDown) {
+        event.preventDefault()
+        computeMoveProgress(event)
     }
-    throw Error('E_AUDIO_LOADING')
+}
+
+function documentMouseup(event?) {
+    if (_this.progressMouseDown) {
+        if (event && event.cancelable) {
+            event.preventDefault()
+        }
+        document.removeEventListener("mousemove", documentMousemove)
+        document.removeEventListener('mouseup', documentMouseup)
+        document.removeEventListener("touchmove", documentMousemove)
+        document.removeEventListener("touchend", documentMouseup)
+        _this.progressMouseDown = false
+        _this.audioPlayerEL.currentTime = _this.progressMouseDownTempTime
+    }
+}
+
+function switchPlayPauseButtons() {
+    if (_this.isPlaying) {
+        _this.playEL.style.display = "none"
+        _this.pauseEL.style.display = "block"
+    } else {
+        _this.pauseEL.style.display = "none"
+        _this.playEL.style.display = "block"
+    }
+}
+
+function audioPlayerELPlaying() {
+    _this.isPlaying = true
+    switchPlayPauseButtons()
+}
+
+function audioPlayerELPause() {
+    _this.isPlaying = false
+    switchPlayPauseButtons()
+}
+
+function audioPlayerELEnded() {
+    _this.next()
+}
+
+function audioPlayerELTimeupdate() {
+    if (!_this.progressMouseDown) {
+        computeProgress()
+        computeBuffered()
+    }
+}
+
+
+function playELClick() {
+    _this.play()
+    switchPlayPauseButtons()
+}
+
+function pauseELClick() {
+    _this.pause()
+    switchPlayPauseButtons()
+}
+
+function nextELClick() {
+    _this.next()
+}
+
+function prevELClick() {
+    _this.previous()
+}
+
+function closeELClick() {
+    _this.destroy()
 }

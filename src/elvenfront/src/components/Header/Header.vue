@@ -1,26 +1,21 @@
 <template>
-  <div class="header">
+  <div class="header-container">
 
-    <div class="header-mobile"
-         @click.self="toggleMobileMenu"
-         :class="{'mobile-menu-active': isMobileMenuActive}"
-    >
-      <div class="logo-text" @click.self="toggleMobileMenu">elven</div>
-      <transition
-          name="show-mobile"
-          enter-active-class="show-mobile enter-active"
-          leave-active-class="show-mobile leave-active"
-      >
-        <div class="header-mobile-menu" v-if="isMobileMenuActive" v-on:click="toggleMobileMenu">
-          <RouterLink class="header-mobile-menu-item" :to="{name: 'Index'}">Главная</RouterLink>
-          <RouterLink class="header-mobile-menu-item" :to="{name: 'ArticleCreate'}">Создать запись</RouterLink>
-          <RouterLink class="header-mobile-menu-item" :to="{name: 'Articles'}">Список записей</RouterLink>
-          <RouterLink class="header-mobile-menu-item" :to="{name: 'Files'}">Файлы</RouterLink>
-          <RouterLink class="header-mobile-menu-item" :to="{name: 'Settings'}">Настройки</RouterLink>
-          <RouterLink class="header-mobile-menu-item" :to="{name: 'Logout'}">Выход</RouterLink>
-        </div>
-      </transition>
+    <div class="header">
+      <nav class="header-navigation">
+        <RouterLink class="header-mobile-menu-item" :to="{name: 'Index'}">
+          <svg id="home_butt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 275 310.58"><path d="M373,153.25H126.93c-8,0-14.47,5.76-14.47,12.88V347.39c0,7.12,6.48,12.89,14.47,12.89h80.94V231h84.18V360.28H373c8,0,14.46-5.77,14.46-12.89V166.13C387.46,159,381,153.25,373,153.25Z" transform="translate(-112.46 -49.7)"/><path d="M255.45,51.66,382.13,155.09a8.68,8.68,0,0,1-5.49,15.41H123.29a8.69,8.69,0,0,1-5.5-15.41L244.47,51.66A8.68,8.68,0,0,1,255.45,51.66Z" transform="translate(-112.46 -49.7)"/></svg>
+        </RouterLink>
+        <RouterLink class="header-mobile-menu-item" :to="{name: 'Articles'}">
+          <svg id="Слой_1" data-name="Слой 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 315.43 310"><path d="M416.83,113.5H115.49c-3.89,0-7,3.89-7,8.7V414.8c0,4.81,3.15,8.7,7,8.7H416.83c3.89,0,7.05-3.89,7.05-8.7V122.2C423.88,117.39,420.72,113.5,416.83,113.5ZM202,360.89c0,2.52-1.65,4.56-3.7,4.56H135.7c-2,0-3.7-2-3.7-4.56V339.14c0-2.52,1.65-4.56,3.7-4.56h62.6c2,0,3.7,2,3.7,4.56Zm25-63c0,2.52-1.65,4.56-3.7,4.56H135.7c-2,0-3.7-2-3.7-4.56V276.15c0-2.52,1.65-4.56,3.7-4.56h87.6c2,0,3.7,2,3.7,4.56Zm35-61.75c0,2.52-1.65,4.56-3.7,4.56H135.7c-2,0-3.7-2-3.7-4.56V214.4c0-2.52,1.65-4.57,3.7-4.57H258.3c2.05,0,3.7,2,3.7,4.57Zm60-60.52c0,2.52-1.65,4.56-3.7,4.56H135.7c-2,0-3.7-2-3.7-4.56v-34.1c0-2.52,1.65-4.56,3.7-4.56H318.3c2.05,0,3.7,2,3.7,4.56Z" transform="translate(-108.45 -113.5)"/></svg>
+        </RouterLink>
+        <RouterLink class="header-mobile-menu-item" :to="{name: 'Files'}">
+          <svg id="files_butt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 285.19 310"><path d="M380.37,132.14h-260a12.31,12.31,0,0,0-12.32,12.29V392.22a12.3,12.3,0,0,0,12.32,12.28h260a12.3,12.3,0,0,0,12.32-12.28V144.43A12.31,12.31,0,0,0,380.37,132.14ZM352,337.5a12.2,12.2,0,0,1-12.22,12.18H160.22A12.2,12.2,0,0,1,148,337.5V332a12.2,12.2,0,0,1,12.22-12.18H339.78A12.2,12.2,0,0,1,352,332Zm0-54.83a12.2,12.2,0,0,1-12.22,12.18H160.22A12.2,12.2,0,0,1,148,282.67v-5.54A12.2,12.2,0,0,1,160.22,265H339.78A12.2,12.2,0,0,1,352,277.13Zm0-54.82A12.2,12.2,0,0,1,339.78,240H160.22A12.2,12.2,0,0,1,148,227.85v-5.54a12.2,12.2,0,0,1,12.22-12.18H339.78A12.2,12.2,0,0,1,352,222.31Z" transform="translate(-107.5 -94.5)"/><rect width="142.31" height="85.11" rx="17.59"/></svg>
+        </RouterLink>
+      </nav>
     </div>
+
+
   </div>
 </template>
 
@@ -30,197 +25,60 @@ import {defineComponent} from 'vue'
 export default defineComponent({
   name: 'Header',
   data() {
-    return {
-      isMobileMenuActive: false,
-      scrollPos: 0,
-    }
-  },
-  unmounted() {
-    document.body.classList.remove('no-scroll')
-  },
-  methods: {
-    toggleMobileMenu() {
-      this.isMobileMenuActive = !this.isMobileMenuActive
-      this.toggleBodyScroll()
-    },
-
-    toggleBodyScroll() {
-      if(this.isMobileMenuActive){
-        document.body.classList.add('no-scroll')
-      } else {
-        document.body.classList.remove('no-scroll')
-      }
-    },
-
+    return {}
   }
 })
 </script>
 
 <style lang="scss">
-.header {
-  height: var(--header-height);
+.header-container {
   background-color: var(--color-header);
   color: var(--color-header-text);
+  height: var(--header-height);
   width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
-.header-mobile {
+.header{
+  height: 100%;
+  max-width: 975px;
+}
+
+.header-navigation {
   height: 100%;
   width: 100%;
-  transition: background-color var(--header-anim-duration);
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   background-color: transparent;
+  gap: 48px;
 }
 
-.header-mobile.mobile-menu-active {
-  background-color: var(--color-header-active);
+.header-navigation svg {
+  width: 20px;
+  height: 20px;
 }
 
-.header-mobile-menu {
-  background-color: var(--color-header-active);
-  z-index: 9999;
-  width: 100%;
-  height: calc(100% - var(--header-height));
-  position: fixed;
-  bottom: var(--header-height);
-  display: block;
-  font-size: 1.1rem;
-  cursor: pointer;
-  overflow: auto;
+@media screen and (prefers-color-scheme: dark) {
+  .header-navigation svg {
+    fill: #CCCCCC;
+  }
 }
+@media screen and (prefers-color-scheme: light) {
+  .header-navigation svg {
+    fill: #444444;
+  }
+}
+
 
 .header-mobile-menu-item {
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100px;
+  height: 100%;
   cursor: pointer;
-}
-
-.header-mobile-menu-item:hover {
-  background-color: var(--color-header-hover);
-}
-
-
-.header-mobile-menu.show-mobile.enter-active {
-  overflow: hidden;
-  animation: show-mobile var(--header-anim-duration);
-}
-
-.header-mobile-menu.show-mobile.leave-active {
-  overflow: hidden;
-  animation: show-mobile var(--header-anim-duration) reverse;
-}
-
-@keyframes show-mobile {
-  from {
-    bottom: 5%;
-    height: 5%;
-    background-color: transparent;
-  }
-  to {
-    height: calc(100% - var(--header-height));
-    bottom: var(--header-height);
-    background-color: var(--color-header-active);
-  }
-}
-
-
-.header-mobile-menu.show-mobile.enter-active > a:nth-child(1) {
-  animation: item-1 var(--header-anim-duration);
-}
-
-.header-mobile-menu.show-mobile.leave-active > a:nth-child(1) {
-  animation: item-1 var(--header-anim-duration) reverse;
-}
-
-.header-mobile-menu.show-mobile.enter-active > a:nth-child(2) {
-  animation: item-2 var(--header-anim-duration);
-}
-
-.header-mobile-menu.show-mobile.leave-active > a:nth-child(2) {
-  animation: item-2 var(--header-anim-duration) reverse;
-}
-
-.header-mobile-menu.show-mobile.enter-active > a:nth-child(3) {
-  animation: item-3 var(--header-anim-duration);
-}
-
-.header-mobile-menu.show-mobile.leave-active > a:nth-child(3) {
-  animation: item-3 var(--header-anim-duration) reverse;
-}
-
-.header-mobile-menu.show-mobile.enter-active > a:nth-child(4) {
-  animation: item-4 var(--header-anim-duration);
-}
-
-.header-mobile-menu.show-mobile.leave-active > a:nth-child(4) {
-  animation: item-4 var(--header-anim-duration) reverse;
-}
-
-.header-mobile-menu.show-mobile.enter-active > a:nth-child(5) {
-  animation: item-4 var(--header-anim-duration);
-}
-
-.header-mobile-menu.show-mobile.leave-active > a:nth-child(5) {
-  animation: item-4 var(--header-anim-duration) reverse;
-}
-
-.header-mobile-menu.show-mobile.enter-active > a:nth-child(6) {
-  animation: item-4 var(--header-anim-duration);
-}
-
-.header-mobile-menu.show-mobile.leave-active > a:nth-child(6) {
-  animation: item-4 var(--header-anim-duration) reverse;
-}
-
-
-@keyframes item-1 {
-  0%, 10% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 100;
-  }
-}
-
-@keyframes item-2 {
-  0%, 35% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 100;
-  }
-}
-
-@keyframes item-3 {
-  0%, 45% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 100;
-  }
-}
-
-@keyframes item-4 {
-  0%, 55% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 100;
-  }
-}
-
-@keyframes item-5 {
-  0%, 65% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 100;
-  }
 }
 </style>

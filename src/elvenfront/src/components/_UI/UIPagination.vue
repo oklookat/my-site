@@ -126,7 +126,7 @@ export default {
 .ui-pagination-pages-input > input {
   border: none;
   background-color: transparent;
-  width: inherit;
+  width: 100%;
   height: inherit;
   text-align: center;
   font-size: 1.2rem;
