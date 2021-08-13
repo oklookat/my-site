@@ -46,8 +46,8 @@
           </div>
           <div class="article-main">
             <div class="article-item article-title">{{ article.title }}</div>
-            <div class="article-item article-content-preview">
-              {{ article.content }}
+            <div v-if="article.content.blocks[0]" class="article-item article-content-preview">
+              <div v-html="article.content.blocks[0].data.text"></div>
             </div>
           </div>
         </article>
@@ -236,11 +236,15 @@ export default defineComponent({
   flex-direction: row;
 }
 
-.articles-create > *{
+.articles-create > a{
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
+}
+
+.articles-create > a:hover{
+  background-color: var(--color-hover);
 }
 
 .articles-types div {

@@ -8,10 +8,12 @@ export default class AuthController {
 
   public async login({request, response}: HttpContextContract) {
     const {type} = request.all()
+	let isAdminLogin
     if (!type) {
-      return response.status(400).send('')
-    }
-    let isAdminLogin = type === 'admin'
+	  isAdminLogin = false
+    } else {
+		isAdminLogin = type === 'admin'
+	}
     let username, password
     try {
       const data = await UserValidator.validateCredentials(request)

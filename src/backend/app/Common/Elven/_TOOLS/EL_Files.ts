@@ -3,6 +3,7 @@ import mkdirp from 'mkdirp'
 import Path = require('path')
 
 const crypto = require('crypto')
+const rimraf = require("rimraf")
 
 export default class EL_Files {
 
@@ -19,17 +20,27 @@ export default class EL_Files {
     return Promise.resolve()
   }
 
-  public static deleteDirIfEmpty(path: string) {
+  public static async deleteDirIfEmpty(path: string) {
     let error
-    fs.rm(path, {recursive: true}, (err) => {
-      if (err) {
+    try {
+      const files = fs.readdirSync(path)
+      if (files.length > 0) {
+        return 'DIR_NOT_EMPTY'
+      }
+    } catch (err) {
+      error = err
+    }
+    if (!error) {
+      try {
+        fs.rmSync(path, {recursive: true})
+      } catch (err) {
         error = err
       }
-    })
+    }
     if (!error) {
-      return Promise.resolve(null)
+      return error
     } else {
-      return Promise.reject(error)
+      return Error(error)
     }
   }
 
@@ -50,7 +61,7 @@ export default class EL_Files {
         // it.1 D:\Test\123\
         // it.2 D:\Test\123\456\
         // it.3 D:\Test\123\456\789\
-        goDeep = goDeep + '/' + piece
+        goDeep = `${goDeep}/${piece}`
         // then add to array, and then reverse this array, because for now we have a wrong order of paths
         let _p = `${basePath}/${goDeep}`
         _p = Path.normalize(_p)

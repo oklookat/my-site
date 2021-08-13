@@ -36,16 +36,29 @@ export default class ArticlesController {
     }
     if (articles) {
       if (preview) {
+        // generate preview
         for (let i = 0; articles.length > i; i++) {
-          let content = articles[i].content
-          content = JSON.parse(content)
-          content = content.blocks[0].data.text
-          if (content.length > 408) {
-            content = content.slice(0, 408) + '...'
-            articles[i].content = content
-          } else {
-            articles[i].content = content
+          // articles[i] = one article
+          let content = JSON.parse(articles[i].content)
+          for(let i = 0; content.blocks.length > i; i++){
+            // content.blocks[i] = one block in article content
+            const block = content.blocks[i]
+            const blockType = block.type
+            if(blockType === 'paragraph'){
+              let text = block.data.text
+              if (text.length > 408) {
+                // if block text length > 408 we cut text and quit
+                text = text.slice(0, 408) + '...'
+                content.blocks[i].data.text = text
+              }
+              // cut all blocks except paragraph
+              content.blocks = {0: content.blocks[i]}
+              break
+            } else {
+              delete content.blocks[i]
+            }
           }
+          articles[i].content = content
         }
       }
     }
