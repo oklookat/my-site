@@ -1,7 +1,7 @@
 <template>
   <div class="container">
-    <elven-progress></elven-progress>
     <div class="service" v-if="$route.name !== 'Login' && $route.name !== 'Logout'">
+      <elven-progress></elven-progress>
       <Header></Header>
     </div>
     <div class="content">

@@ -106,6 +106,7 @@ export default class ElvenPlayerCore {
             return Error('E_PLAYLIST_EMPTY')
         }
         this.audioPlayerEL.src = this.playlist[playlistIndex]
+        switchPlayPauseButtons()
         return true
     }
 
@@ -169,6 +170,9 @@ export default class ElvenPlayerCore {
     public async stop() {
         await this.pause()
         this.audioPlayerEL.currentTime = 0
+        // reset all for recover in future. If no set this, after an error you will have to reload the page to try again
+        this.initialized = false
+        this.isPlaying = false
     }
 
     public destroy() {
@@ -247,7 +251,7 @@ function computeMoveProgress(event) {
         // if move by mouse
         pageX = event.pageX
     } else {
-        documentMouseup()
+        documentMouseup() // if move by unknown - reset
     }
     if (!pageX) {
         return
@@ -304,7 +308,12 @@ function documentMouseup(event?) {
         document.removeEventListener("touchmove", documentMousemove)
         document.removeEventListener("touchend", documentMouseup)
         _this.progressMouseDown = false
-        _this.audioPlayerEL.currentTime = _this.progressMouseDownTempTime
+        try {
+            _this.audioPlayerEL.currentTime = _this.progressMouseDownTempTime
+        }
+        catch (err){
+            return
+        }
     }
 }
 

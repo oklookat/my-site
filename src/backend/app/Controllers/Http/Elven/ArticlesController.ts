@@ -47,8 +47,8 @@ export default class ArticlesController {
             if(blockType === 'paragraph'){
               let text = block.data.text
               if (text.length > 408) {
-                // if block text length > 408 we cut text and quit
-                text = text.slice(0, 408) + '...'
+                // if block text length > 304 we cut text and quit
+                text = text.slice(0, 304) + '...'
                 content.blocks[i].data.text = text
               }
               // cut all blocks except paragraph

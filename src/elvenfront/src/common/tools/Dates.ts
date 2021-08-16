@@ -7,8 +7,8 @@ class Dates {
     public static convert(date) {
         date = new Date(date)
         const currentDate = new Date()
-        const isYesterday = currentDate.getFullYear() === date.getFullYear() && currentDate.getMonth() === date.getMonth() && currentDate.getDay() > date.getDay() && currentDate.getDay() - date.getDay() === 1
-        const isToday = currentDate.getFullYear() === date.getFullYear() && currentDate.getMonth() === date.getMonth() && currentDate.getDay() === date.getDay()
+        const isYesterday = currentDate.getFullYear() === date.getFullYear() && currentDate.getMonth() === date.getMonth() && currentDate.getDate() > date.getDate() && currentDate.getDate() - date.getDate() === 1
+        const isToday = currentDate.getFullYear() === date.getFullYear() && currentDate.getMonth() === date.getMonth() && currentDate.getDate() === date.getDate()
         if (isToday) {
             const secondsAgo = Math.round((currentDate.getTime() - date.getTime()) / 1000)
             const minutesAgo = Math.round(secondsAgo / 60)
