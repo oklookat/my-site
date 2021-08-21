@@ -15,7 +15,23 @@
   </div>
 </template>
 
-<style lang="scss">
+<script lang="ts">
+import { defineComponent } from 'vue'
+import Header from '@/components/Header/Header.vue'
+
+export default defineComponent({
+  name: 'App',
+  components: {Header},
+  data() {
+    return {
+      isPageLoaded: false,
+      audioPlayerSources: undefined,
+    }
+  }
+})
+</script>
+
+<style>
 :root {
   --header-height: 52px;
   --header-anim-height: 95%;
@@ -28,12 +44,12 @@
     /* MAIN UI START */
     --color-scrollbar: #707070;
     --color-scrollbar-hover: #909090;
-    // HEADER START //
+    /* HEADER START */
     --color-header: #202020;
     --color-header-active: #000000;
     --color-header-text: #FFFFFF;
     --color-header-hover: rgba(255, 255, 255, 0.04);
-    // HEADER END //
+    /* HEADER END */
     --color-text: white;
     --color-text-inactive: #E6E6E6;
     --color-text-selection: #7C506D;
@@ -58,23 +74,23 @@
     /* MAIN UI START */
     --color-scrollbar: #505050;
     --color-scrollbar-hover: #707070;
-    // HEADER START //
-    --color-header: #F2F4F8;
-    --color-header-active: #FFFFFF;
-    --color-header-text: #000000;
-    --color-header-hover: rgba(0, 0, 0, 0.03);
-    // HEADER END //
-    --color-text: black;
-    --color-text-inactive: #404040;
-    --color-text-selection: #D7C1D0;
-    --color-placeholder: #808080;
-    --color-hover: rgba(0, 0, 0, 0.05);
-    --color-border: #F2F2F2;
-    --color-body: #E0E0E0;
-    --color-level-1: #FFFFFF;
-    --color-level-2: #FFFFFF;
-    --color-level-3: #FFFFFF;
-    /* MAIN UI END */
+    /* HEADER START */
+   --color-header: #F2F4F8;
+   --color-header-active: #FFFFFF;
+   --color-header-text: #000000;
+   --color-header-hover: rgba(0, 0, 0, 0.03);
+    /* HEADER END */
+   --color-text: black;
+   --color-text-inactive: #404040;
+   --color-text-selection: #D7C1D0;
+   --color-placeholder: #808080;
+   --color-hover: rgba(0, 0, 0, 0.05);
+   --color-border: #F2F2F2;
+   --color-body: #E0E0E0;
+   --color-level-1: #FFFFFF;
+   --color-level-2: #FFFFFF;
+   --color-level-3: #FFFFFF;
+   /* MAIN UI END */
     --color-helper: #8CE6E6;
   }
   .router-link-active > svg,
@@ -217,8 +233,8 @@ input:focus::placeholder {
 }
 
 
-//// EDITOR.JS STYLING START ////
-// MAIN START //
+/* EDITOR.JS STYLING START */
+/* MAIN START */
 .codex-editor {
   z-index: unset;
   height: 100%;
@@ -234,8 +250,8 @@ input:focus::placeholder {
   max-width: unset;
 }
 
-// MAIN END //
-// EDITOR.JS LIGHT AND DARK THEME STYLING START //
+/* MAIN END */
+/* EDITOR.JS LIGHT AND DARK THEME STYLING START */
 .cdx-button {
   background: var(--color-level-1);
   color: var(--color-text-inactive);
@@ -267,7 +283,7 @@ input:focus::placeholder {
 .ce-inline-toolbar,
 .ce-conversion-toolbar,
 .ce-settings,
-.ce-toolbar--opened,
+.ce-toolbar--opened
 {
   background-color: var(--color-level-2);
   border: 1px solid var(--color-border);
@@ -292,8 +308,8 @@ input:focus::placeholder {
   background: var(--color-text-selection);
 }
 
-// EDITOR.JS LIGHT AND DARK THEME STYLING END //
-//// EDITOR.JS STYLING END ////
+/* EDITOR.JS LIGHT AND DARK THEME STYLING END */
+/* EDITOR.JS STYLING END */
 
 img,
 video {
@@ -342,19 +358,3 @@ video {
   }
 }
 </style>
-
-<script>
-import Header from '@/components/Header/Header'
-
-export default {
-  name: 'App',
-  components: {Header},
-  data() {
-    return {
-      isPageLoaded: false,
-      audioPlayerSources: undefined,
-    }
-  }
-}
-</script>
-

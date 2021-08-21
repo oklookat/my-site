@@ -20,11 +20,11 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import {defineComponent} from "vue"
 import {useRoute} from 'vue-router'
 import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter"
-import UIOverlay from "@/components/_UI/UIOverlay"
+import UIOverlay from "@/components/_UI/UIOverlay.vue"
 import TextareaResizer from "@/common/tools/TextareaResizer"
 import EditorJS from '@editorjs/editorjs'
 import Head from '@editorjs/header'

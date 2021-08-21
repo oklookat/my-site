@@ -98,12 +98,12 @@
     </UIOverlay>
 </template>
 
-<script>
+<script lang="ts">
 import {defineComponent} from "vue";
 import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter";
-import UIOverlay from "@/components/_UI/UIOverlay";
+import UIOverlay from "@/components/_UI/UIOverlay.vue";
 import Dates from "@/common/tools/Dates";
-import UIPagination from "@/components/_UI/UIPagination";
+import UIPagination from "@/components/_UI/UIPagination.vue";
 
 export default defineComponent({
   name: 'Articles',

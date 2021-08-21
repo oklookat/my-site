@@ -51,14 +51,14 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import {defineComponent} from "vue"
 import FileAdapter from "@/common/adapters/Main/FileAdapter"
 import Dates from "@/common/tools/Dates"
 import Sizes from "@/common/tools/Sizes.js"
-import UIOverlay from "@/components/_UI/UIOverlay"
+import UIOverlay from "@/components/_UI/UIOverlay.vue"
 import Extensions from "@/common/tools/Extensions"
-import UIPagination from "@/components/_UI/UIPagination"
+import UIPagination from "@/components/_UI/UIPagination.vue"
 
 export default defineComponent({
   name: 'Files',
@@ -141,7 +141,7 @@ export default defineComponent({
 
     // SERVICE START //
     async copyLink(file) {
-      const url = `${process.env.VUE_APP_USER_FILES_BACKEND_API_URL}/${file.path}`
+      const url = `${import.meta.env.VITE_UPLOADS_URL}/${file.path}`
       await navigator.clipboard.writeText(url)
           .then(() => {
             this.isToolsOverlayActive = false
@@ -166,7 +166,7 @@ export default defineComponent({
       return Extensions.getReadable(extension)
     },
     convertPreviewPath(path) {
-      return `${process.env.VUE_APP_UPLOADS_URL}/${path}`
+      return `${import.meta.env.VITE_UPLOADS_URL}/${path}`
     },
     playAudio(file){
       const converted = this.convertPreviewPath(file.path)
@@ -210,7 +210,7 @@ export default defineComponent({
 }
 
 .file {
-  box-shadow: 0px 0px 41px 0px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 41px 0 rgba(0, 0, 0, 0.05);
   min-height: 164px;
   border-radius: var(--border-radius);
   background-color: var(--color-level-1);

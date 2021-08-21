@@ -1,17 +1,16 @@
 import axios  from "axios"
 import Store from "@/store/index"
-import app from '../../main'
+// import app from '@/main'
+
 
 const Axios = axios.create({timeout: 15000})
 
 let token
 
-
-Axios.defaults.baseURL = process.env.VUE_APP_API_URL
+Axios.defaults.baseURL = import.meta.env.VITE_API_URL
 Axios.defaults.headers['Content-Type'] = 'application/json'
-
 Axios.interceptors.request.use(async function (config) {
-    app.$elvenProgress.loadingStart()
+    window.app.$elvenProgress.loadingStart()
     const isAuth = await Store.getters.checkAuth
     if(isAuth){
         token = await Store.getters.getToken
@@ -19,7 +18,7 @@ Axios.interceptors.request.use(async function (config) {
     }
     return config;
 }, function (error) {
-    app.$elvenProgress.loadingFinish()
+    window.app.$elvenProgress.loadingFinish()
     return Promise.reject(error);
 });
 

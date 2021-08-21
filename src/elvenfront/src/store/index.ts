@@ -1,6 +1,6 @@
 import { createStore } from 'vuex'
 import createPersistedState from "vuex-persistedstate"
-import {authStore} from "@/store/modules";
+import {authStore} from "./modules";
 
 const authState = createPersistedState({
   key: 'elven',

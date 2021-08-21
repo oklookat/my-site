@@ -1,7 +1,4 @@
-// Elven Player (Vue 3)
-// https://github.com/oklookat
-
-import ElvenPlayerC from './ElvenPlayerC'
+import ElvenPlayerC from './ElvenPlayerC.vue'
 import ElvenPlayerCore from "@/common/plugins/ElvenPlayer/core/ElvenPlayerCore";
 
 export default class ElvenPlayer {

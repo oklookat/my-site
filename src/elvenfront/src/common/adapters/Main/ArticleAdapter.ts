@@ -1,5 +1,6 @@
 import Axios from '@/common/adapters/Axios.js'
 
+
 class ArticleAdapter {
 
     public static async getArticles(page = '1', show = 'published', sortBy = 'updated', start = 'newest') {

@@ -30,7 +30,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss">
+<style>
 .header-container {
   background-color: var(--color-header);
   color: var(--color-header-text);

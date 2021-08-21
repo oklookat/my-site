@@ -1,7 +1,4 @@
-// Elven Progressbar (Vue 3)
-// https://github.com/oklookat
-
-import ElvenProgressC from './ElvenProgressC'
+import ElvenProgressC from './ElvenProgressC.vue'
 
 class ElvenProgress {
     static componentData = null
