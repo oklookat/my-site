@@ -1,0 +1,16 @@
+{
+  "Debug": true,
+  "Timezone": "Europe/Moscow",
+  "Host": "localhost",
+  "Port": "9999",
+  "DB": {
+    "Driver": "Postgres",
+    "Postgres": {
+      "Host": "localhost",
+      "Port": "5432",
+      "User": "postgres",
+      "Password": "root",
+      "Database": "elven_go"
+    }
+  }
+}
