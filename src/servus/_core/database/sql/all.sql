@@ -2,17 +2,12 @@
 
 -- DROP TABLE public.users;
 
-DROP SEQUENCE IF EXISTS users_id_seq CASCADE;
-CREATE SEQUENCE users_id_seq
-    start 1
-    increment 1
-    NO MAXVALUE
-    CACHE 1;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 DROP TYPE IF EXISTS user_roles CASCADE;
 CREATE TYPE user_roles AS ENUM ('user', 'admin');
 CREATE TABLE public.users
 (
-    id bigint DEFAULT nextval('users_id_seq'::regclass) NOT NULL,
+    id uuid PRIMARY KEY default gen_random_uuid(),
     role user_roles DEFAULT 'user'::user_roles NOT NULL,
     username character varying(24) COLLATE pg_catalog."default" NOT NULL,
     password character varying(64) COLLATE pg_catalog."default" NOT NULL,
@@ -20,7 +15,6 @@ CREATE TABLE public.users
     reg_agent character varying(128) COLLATE pg_catalog."default" DEFAULT 'unknown'::character varying,
     created_at timestamp with time zone default current_timestamp NOT NULL,
     updated_at timestamp with time zone,
-    CONSTRAINT users_pkey PRIMARY KEY (id),
     CONSTRAINT users_username_key UNIQUE (username),
 	CONSTRAINT username_min_length check (length(username) >= 4),
 	CONSTRAINT password_min_length check (length(password) >= 8)
@@ -69,20 +63,14 @@ CREATE TRIGGER user_before_update BEFORE UPDATE ON users FOR EACH ROW EXECUTE PR
 -------- BASIC FUNCTIONS END
 
 
+
 -- Table: public.tokens
-
 -- DROP TABLE public.tokens;
-
-DROP SEQUENCE IF EXISTS tokens_id_seq CASCADE;
-CREATE SEQUENCE tokens_id_seq
-    start 1
-    increment 1
-    NO MAXVALUE
-    CACHE 1;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE public.tokens
 (
-    id bigint NOT NULL DEFAULT nextval('tokens_id_seq'::regclass),
-    user_id bigint NOT NULL,
+    id uuid PRIMARY KEY default gen_random_uuid(),
+    user_id uuid NOT NULL,
     token text COLLATE pg_catalog."default" NOT NULL,
     last_ip character varying(32) COLLATE pg_catalog."default" DEFAULT 'unknown'::character varying,
     last_agent character varying(128) COLLATE pg_catalog."default" DEFAULT 'unknown'::character varying,
@@ -90,7 +78,6 @@ CREATE TABLE public.tokens
     auth_agent character varying(128) COLLATE pg_catalog."default" DEFAULT 'unknown'::character varying,
     created_at timestamp with time zone default current_timestamp,
     updated_at timestamp with time zone,
-    CONSTRAINT tokens_pkey PRIMARY KEY (id),
     CONSTRAINT fk_users_tokens FOREIGN KEY (user_id)
         REFERENCES public.users (id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -102,8 +89,6 @@ TABLESPACE pg_default;
 ALTER TABLE public.tokens
     OWNER to postgres;
 	
-
-
 
 -------- BASIC FUNCTIONS START
 CREATE OR REPLACE FUNCTION before_insert_or_update()   
@@ -142,22 +127,14 @@ $$ language 'plpgsql';
 CREATE TRIGGER token_before_update BEFORE UPDATE ON tokens FOR EACH ROW EXECUTE PROCEDURE before_update();
 -------- BASIC FUNCTIONS END
 
+
 -- Table: public.files
-
 -- DROP TABLE public.files;
-
-DROP SEQUENCE IF EXISTS files_id_seq CASCADE;
-CREATE SEQUENCE files_id_seq
-    start 1
-    increment 1
-    NO MAXVALUE
-    CACHE 1;
-	
-
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE public.files
 (
-    id bigint NOT NULL DEFAULT nextval('files_id_seq'::regclass),
-    user_id bigint NOT NULL,
+    id uuid PRIMARY KEY default gen_random_uuid(),
+    user_id uuid NOT NULL,
     hash text COLLATE pg_catalog."default" NOT NULL,
     path text COLLATE pg_catalog."default" NOT NULL,
     name text COLLATE pg_catalog."default" NOT NULL,
@@ -166,7 +143,6 @@ CREATE TABLE public.files
     size text COLLATE pg_catalog."default" NOT NULL,
     created_at timestamp with time zone default current_timestamp,
     updated_at timestamp with time zone,
-    CONSTRAINT files_pkey PRIMARY KEY (id),
     CONSTRAINT fk_users_files FOREIGN KEY (user_id)
         REFERENCES public.users (id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -218,20 +194,14 @@ $$ language 'plpgsql';
 CREATE TRIGGER file_before_update BEFORE UPDATE ON files FOR EACH ROW EXECUTE PROCEDURE before_update();
 -------- BASIC FUNCTIONS END
 
+
 -- Table: public.articles
-
 -- DROP TABLE public.articles;
-
-DROP SEQUENCE IF EXISTS articles_id_seq CASCADE;
-CREATE SEQUENCE articles_id_seq
-    start 1
-    increment 1
-    NO MAXVALUE
-    CACHE 1;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE public.articles
 (
-    id bigint NOT NULL DEFAULT nextval('articles_id_seq'::regclass),
-    user_id bigint NOT NULL,
+    id uuid PRIMARY KEY default gen_random_uuid(),
+    user_id uuid NOT NULL,
     is_published boolean DEFAULT false,
     title character varying(124) COLLATE pg_catalog."default" DEFAULT 'Без названия'::character varying,
     content text COLLATE pg_catalog."default" NOT NULL,
@@ -239,7 +209,6 @@ CREATE TABLE public.articles
     published_at timestamp with time zone,
     created_at timestamp with time zone default current_timestamp,
     updated_at timestamp with time zone,
-    CONSTRAINT articles_pkey PRIMARY KEY (id),
     CONSTRAINT articles_slug_key UNIQUE (slug),
     CONSTRAINT fk_users_articles FOREIGN KEY (user_id)
         REFERENCES public.users (id) MATCH SIMPLE
@@ -252,9 +221,7 @@ TABLESPACE pg_default;
 ALTER TABLE public.articles
     OWNER to postgres;
 	
-	
 
-	
 -------- BASIC FUNCTIONS START
 CREATE OR REPLACE FUNCTION before_insert_or_update()   
 RETURNS TRIGGER AS $$

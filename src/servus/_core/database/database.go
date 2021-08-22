@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
-	"os"
 	"servus/_core/logger"
 )
 
@@ -14,10 +15,14 @@ var pConnection *pgx.Conn
 
 func New(connectionStr string, _logger *logger.Logger) *DB {
 	pLogger = _logger
-	db, err := pgx.Connect(context.Background(), connectionStr)
+	var ctx = context.Background()
+	db, err := pgx.Connect(ctx, connectionStr)
 	if err != nil {
-		pLogger.Error(fmt.Sprintf("%v\n", err))
-		os.Exit(1)
+		pLogger.Panic(err)
+	}
+	err = db.Ping(ctx)
+	if err != nil {
+		pLogger.Panic(err)
 	}
 	pConnection = db
 	return &DB{
@@ -31,62 +36,37 @@ type DB struct {
 	User       UserObject
 }
 
-// UserObject logic start
-type UserObject struct {
-	userService
-}
-
-type userService interface {
-	Create(user User) error
-	FindBy(user User) error
-	Read(user User)
-	Update(user User)
-	Delete(user User)
-}
-
-type User struct {
-	ID       uint
-	Role     string
-	Username string
-	Password string
-	RegIP    string
-	RegAgent string
-}
-
-func (obj *UserObject) Create(user User) error {
-	if (User{}) == user {
-		return structEmptyErr()
-	}
-	var qu = fmt.Sprintf("insert into users (role, username, password, reg_ip, reg_agent) values ($1,  $2,  $3,  $4, $5) RETURNING id")
-	result, err := pConnection.Exec(context.Background(), qu, user.Role, user.Username, user.Password, user.RegIP, user.RegAgent)
-	println(result)
-	if !checkErr(err){
-		return err
-	}
-	return nil
-}
-func (obj *UserObject) FindBy(user User) error{
-	if (User{}) == user {
-		return structEmptyErr()
-	}
-	for _, d:= range user {
-		//do something with the d
-	}
-}
-
-// User logic end
-
 // Service start
 func structEmptyErr() error {
 	return errors.New("STRUCT_EMPTY")
 }
 
-func checkErr(err error) bool {
+
+func errorHandler(err error) error {
+	var errReadable error = nil
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			defer debugPrinter(err)
+			switch pgErr.Code {
+			case pgerrcode.ConnectionException:
+				pLogger.Panic(err)
+			case pgerrcode.UniqueViolation: // for ex. username already exists
+				return errors.New("E_EXISTS")
+			case pgerrcode.NotNullViolation: // null value provided for NOT NULL
+				return errors.New("E_NOT_NULL")
+			case pgerrcode.CheckViolation: // for ex. username has min length 4
+				return errors.New("E_CHECK")
+			default:
+				return errors.New("E_UNKNOWN")
+			}
+		}
 		pLogger.Error(fmt.Sprintf("%v\n", err))
-		return false
-	} else {
-		return true
 	}
+	return errReadable
+}
+
+func debugPrinter(err error){
+	pLogger.Debug(fmt.Sprintf("%v\n", err))
 }
 // Service end

@@ -10,16 +10,20 @@ import (
 )
 
 func main(){
-	log.Println("booting core...")
+	log.Println("core: booting")
 	var servus = _core.Boot()
-	servus.Logger.Info("booting cmd...")
+	servus.Logger.Info("cmd: booting")
 	_cmd.BootCmd(servus)
-	servus.Logger.Info("booting app...")
+	servus.Logger.Info("cmd: booted")
+	servus.Logger.Info("app: booting")
 	_app.Boot(servus)
+	servus.Logger.Info("app: booted")
 	var host = servus.Config.Host
 	var port = servus.Config.Port
-	err := http.ListenAndServe(fmt.Sprintf("%v:%v", host, port), nil)
+	var listen = fmt.Sprintf("%v:%v", host, port)
+	servus.Logger.Info(fmt.Sprintf("servus: listen on http://%v", listen))
+	err := http.ListenAndServe(listen, nil)
 	if err != nil {
-		servus.Logger.Panic(err.Error())
+		servus.Logger.Panic(err)
 	}
 }

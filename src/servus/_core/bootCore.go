@@ -5,13 +5,12 @@ import (
 )
 
 
-// тут будить CMD, если есть args. И результат передавать через context
 func Boot() *Servus{
-	log.Printf("booting utils...")
+	log.Println("booting utils...")
 	servus.Utils = Utils{}
-	log.Printf("booting config...")
+	log.Println("booting config...")
 	servus.Config = bootConfig()
-	log.Printf("booting logger...")
+	log.Println("booting logger...")
 	servus.Logger = bootLogger()
 	servus.Logger.Info("booting database...")
 	servus.DB = bootDB(servus.Config, &servus.Logger)

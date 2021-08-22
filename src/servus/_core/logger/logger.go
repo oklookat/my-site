@@ -38,7 +38,7 @@ type loggerI interface {
 	Info(message string)
 	Warn(message string)
 	Error(message string)
-	Panic(message string)
+	Panic(err error)
 }
 
 // Config config
@@ -96,9 +96,9 @@ func (l *Logger) Error(message string) {
 	logWriter(l, ErrorLevel, message)
 }
 
-func (l *Logger) Panic(message string) {
-	logWriter(l, PanicLevel, message)
-	panic(message)
+func (l *Logger) Panic(err error) {
+	logWriter(l, PanicLevel, err.Error())
+	os.Exit(1)
 }
 
 func initFileWriter(config *Config, info *fileWriterInfo) error {
