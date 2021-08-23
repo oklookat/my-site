@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
@@ -12,6 +13,7 @@ import (
 
 var pLogger *logger.Logger
 var pConnection *pgx.Conn
+var validate *validator.Validate
 
 func New(connectionStr string, _logger *logger.Logger) *DB {
 	pLogger = _logger
@@ -25,6 +27,7 @@ func New(connectionStr string, _logger *logger.Logger) *DB {
 		pLogger.Panic(err)
 	}
 	pConnection = db
+	validate = validator.New()
 	return &DB{
 		Connection: pConnection,
 		User:       UserObject{},
@@ -47,18 +50,18 @@ func errorHandler(err error) error {
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			defer debugPrinter(err)
+			defer warnPrinter(err)
 			switch pgErr.Code {
 			case pgerrcode.ConnectionException:
 				pLogger.Panic(err)
 			case pgerrcode.UniqueViolation: // for ex. username already exists
-				return errors.New("E_EXISTS")
+				return errors.New("DB_E_EXISTS")
 			case pgerrcode.NotNullViolation: // null value provided for NOT NULL
-				return errors.New("E_NOT_NULL")
+				return errors.New("DB_E_NOT_NULL")
 			case pgerrcode.CheckViolation: // for ex. username has min length 4
-				return errors.New("E_CHECK")
+				return errors.New("DB_E_CHECK")
 			default:
-				return errors.New("E_UNKNOWN")
+				return errors.New("DB_E_UNKNOWN")
 			}
 		}
 		pLogger.Error(fmt.Sprintf("%v\n", err))
@@ -66,7 +69,15 @@ func errorHandler(err error) error {
 	return errReadable
 }
 
-func debugPrinter(err error){
-	pLogger.Debug(fmt.Sprintf("%v\n", err))
+func warnPrinter(err error){
+	pLogger.Warn(fmt.Sprintf("%v", err))
+}
+
+func DerefString(s *string) string {
+	if s != nil {
+		return *s
+	}
+
+	return ""
 }
 // Service end

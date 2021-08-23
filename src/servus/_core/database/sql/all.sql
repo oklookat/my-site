@@ -11,7 +11,7 @@ CREATE TABLE public.users
     role user_roles DEFAULT 'user'::user_roles NOT NULL,
     username character varying(24) COLLATE pg_catalog."default" NOT NULL,
     password character varying(64) COLLATE pg_catalog."default" NOT NULL,
-    reg_ip character varying(32) COLLATE pg_catalog."default" DEFAULT 'unknown'::character varying,
+    reg_ip character varying(54) COLLATE pg_catalog."default" DEFAULT 'unknown'::character varying,
     reg_agent character varying(128) COLLATE pg_catalog."default" DEFAULT 'unknown'::character varying,
     created_at timestamp with time zone default current_timestamp NOT NULL,
     updated_at timestamp with time zone,
