@@ -14,11 +14,3 @@ const app = createApp(App)
     .mount('#app')
 
 window.app = app
-// const app =
-//     createApp(App)
-//         .use(store)
-//         .use(router)
-//         .use(ElvenProgress)
-//         .use(ElvenPlayer)
-//         .mount('#app')
-// export default app
