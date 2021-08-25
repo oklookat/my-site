@@ -3,10 +3,10 @@ import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class File extends BaseModel {
   @column({ isPrimary: true })
-  public id: number
+  public id: string
 
   @column()
-  public user_id: number
+  public user_id: string
 
   @column()
   public hash: string
@@ -26,9 +26,9 @@ export default class File extends BaseModel {
   @column()
   public size: string
 
-  @column.dateTime({ autoCreate: true })
+  @column.dateTime()
   public created_at: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  @column.dateTime()
   public updated_at: DateTime
 }

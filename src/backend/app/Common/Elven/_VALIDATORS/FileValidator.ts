@@ -4,7 +4,7 @@ import {E_VALIDATION_MINMAX, E_VALIDATION_MUSTBE} from "App/Common/Elven/_ERRORS
 
 export default class FileValidator {
 
-  public static async requestParams(request: RequestContract) {
+  public static requestParams(request: RequestContract) {
     const errorCollector = new EL_ErrorCollector()
     let start = request.input('start', 'newest')
     start = start.toLowerCase()
@@ -24,9 +24,9 @@ export default class FileValidator {
       errorCollector.addError(minmax)
     }
     if (errorCollector.hasErrors()) {
-      return Promise.reject(errorCollector.getErrors())
+      throw errorCollector.getErrors()
     }
-    return Promise.resolve({page: page, start: start})
+    return {page: page, start: start}
   }
 
 }

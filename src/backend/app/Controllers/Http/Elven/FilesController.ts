@@ -21,7 +21,7 @@ export default class FilesController {
   public async index(ctx: HttpContextContract) {
     let validatedParams
     try {
-      validatedParams = await FileValidator.requestParams(ctx.request)
+      validatedParams = FileValidator.requestParams(ctx.request)
     } catch (errors) {
       return ctx.response.status(400).send(errors)
     }
@@ -36,7 +36,7 @@ export default class FilesController {
       size: '242mb'
     })
     if (!file) {
-      const empty = new E_VALIDATION_EMPTY(['files'], 'request does not contains file.')
+      const empty = new E_VALIDATION_EMPTY(['files'])
       return ctx.response.status(400).send(EL_ErrorCollector.singleError(empty))
     }
     if (!file.isValid) {

@@ -1,5 +1,5 @@
 // like 500 error
-export class E_UNKNOWN {
+export class E_UNKNOWN{
   constructor(issuers: string [], message?: string) {
     return {
       statusCode: 500,
@@ -25,88 +25,88 @@ export class E_CUSTOM {
 
 // like 'wrong username or password'
 export class E_AUTH_INCORRECT {
-  constructor(issuers: string [], message?: string) {
+  constructor(issuers: string []) {
     return {
       statusCode: 403,
       errorCode: 'E_AUTH_INCORRECT',
       issuers: issuers,
-      message: message
+      message: 'Wrong credentials.'
     }
   }
 }
 
 // like 'only admins'
 export class E_AUTH_FORBIDDEN {
-  constructor(issuers: string [], message?: string) {
+  constructor(issuers: string []) {
     return {
       statusCode: 403,
       errorCode: 'E_AUTH_FORBIDDEN',
       issuers: issuers,
-      message: message
+      message: 'Access denied.'
     }
   }
 }
 
 // like 'article not found'
 export class E_NOTFOUND {
-  constructor(issuers: string [], message?: string) {
+  constructor(issuers: string []) {
     return {
       statusCode: 404,
       errorCode: 'E_NOTFOUND',
       issuers: issuers,
-      message: message
+      message: 'Not found.'
     }
   }
 }
 
 // like 'is_published must be true or false'
 export class E_VALIDATION_MUSTBE {
-  constructor(issuers: string [], available: string [], message?: string) {
+  constructor(issuers: string [], available: string []) {
     return {
       statusCode: 400,
       errorCode: 'E_VALIDATION_MUSTBE',
       issuers: issuers,
       available: available,
-      message: message,
+      message: 'Value not in range.',
     }
   }
 }
 
 // like 'min length for username is 4 symbols'
 export class E_VALIDATION_MINMAX {
-  constructor(issuers: string [], min?: number, max?: number, message?: string) {
+  constructor(issuers: string [], min?: number, max?: number) {
     return {
       statusCode: 400,
       errorCode: 'E_VALIDATION_MINMAX',
       issuers: issuers,
       min: min,
       max: max,
-      message: message,
+      message: 'Too many or not enough characters.',
     }
   }
 }
 
 // like 'title cannot be empty'
 export class E_VALIDATION_EMPTY {
-  constructor(issuers: string [], message?: string) {
+  constructor(issuers: string []) {
     return {
       statusCode: 400,
       errorCode: 'E_VALIDATION_EMPTY',
       issuers: issuers,
-      message: message,
+      message: 'These things cannot be empty.',
     }
   }
 }
 
 // like 'allowed only numbers'
 export class E_VALIDATION_ALLOWED {
-  constructor(issuers: string [], allowed: string [], message?: string) {
+  constructor(issuers: string [], allowed: string []) {
     return {
       statusCode: 400,
       errorCode: 'E_VALIDATION_ALLOWED',
       issuers: issuers,
       allowed: allowed,
-      message: message,
+      message: 'These things not allowed.',
     }
   }
 }

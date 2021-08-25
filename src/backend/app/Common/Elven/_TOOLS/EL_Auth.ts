@@ -9,7 +9,7 @@ const bcrypt = require("bcrypt")
 
 const secret = Env.get('AES_SECRET')
 
-// * PIPE errors using only in backend, don't show this for users
+// * PIPE errors using only in backend and may be used for debug, don't show this errors to users
 
 class EL_Auth {
 
@@ -26,14 +26,14 @@ class EL_Auth {
       return Promise.reject('PIPE_WRONG_PASSWORD')
     }
     // GENERATE TOKEN START //
-    const length = await EL_Random.randInt(8, 24)
-    const trash = await EL_Random.randString(length, 'hex')
+    const length = EL_Random.randInt(8, 24)
+    const trash = EL_Random.randString(length, 'hex')
     const userID = user.id // ObjectID
     const userData = {
       id: userID,
       trash: trash
     }
-    const encryptedToken = await CryptoJS.AES.encrypt(JSON.stringify(userData), secret).toString()
+    const encryptedToken = CryptoJS.AES.encrypt(JSON.stringify(userData), secret).toString()
     const decryptedBytes = await CryptoJS.AES.decrypt(encryptedToken, secret)
     const decryptedString = decryptedBytes.toString()
     let token = new Token()
@@ -50,7 +50,7 @@ class EL_Auth {
 
   public static async logout(request: RequestContract) {
     try {
-      const token = await this.getAuthHeader(request)
+      const token = this.getAuthHeader(request.header('Authorization'))
       const userAndToken = await this.getUserAndTokenInstances(token)
       await userAndToken.token.delete()
       return Promise.resolve()
@@ -59,13 +59,11 @@ class EL_Auth {
     }
   }
 
-  public static async getAuthHeader(request: RequestContract): Promise<string> {
-    let authHeader = request.header('Authorization')
+  public static getAuthHeader(authHeader: string | undefined): string {
     if (authHeader && authHeader.startsWith("Elven ")) {
-      const token = authHeader.substring(6, authHeader.length)
-      return Promise.resolve(token)
+      return authHeader.substring(6, authHeader.length)
     }
-    return Promise.reject('PIPE_NO_AUTH_HEADER')
+    throw 'PIPE_NO_AUTH_HEADER'
   }
 
   public static async getUserAndTokenInstances(token: string) {
@@ -76,7 +74,7 @@ class EL_Auth {
       // decrypting token, get decrypted object and string with bytes
       decryptedBytes = await CryptoJS.AES.decrypt(token, secret)
       decryptedString = decryptedBytes.toString()
-      decrypted = await JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8))
+      decrypted = JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8))
     } catch (error) {
       return Promise.reject('PIPE_TOKEN_DAMAGED')
     }
@@ -106,22 +104,26 @@ class EL_Auth {
 
   public static async isAdmin(request: RequestContract) {
     try {
-      const token = await EL_Auth.getAuthHeader(request)
+      const token = EL_Auth.getAuthHeader(request.header('Authorization'))
       const userAndToken = await EL_Auth.getUserAndTokenInstances(token)
-      return Promise.resolve({isAdmin: userAndToken.user.role === 'admin', user: userAndToken.user, token: userAndToken.token})
+      return Promise.resolve({
+        isAdmin: userAndToken.user.role === 'admin',
+        user: userAndToken.user,
+        token: userAndToken.token
+      })
     } catch (error) {
       return Promise.reject(error)
     }
   }
 
-  public static async tokenWriteLastAgents(request, token: Token){
+  public static async tokenWriteLastAgents(request, token: Token) {
     token.last_ip = request.ip()
     token.last_agent = request.header('User-Agent')
     await token.save()
     return Promise.resolve(true)
   }
 
-  private static async tokenWriteRegAgents(request, token: Token){
+  private static async tokenWriteRegAgents(request, token: Token) {
     token.auth_ip = request.ip()
     token.auth_agent = request.header('User-Agent')
     token.last_ip = token.auth_ip

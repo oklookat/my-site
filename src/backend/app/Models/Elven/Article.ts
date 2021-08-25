@@ -4,16 +4,13 @@ import Hooks from "App/Common/Elven/_MODEL_HOOKS/Hooks";
 
 export default class Article extends BaseModel {
   @column({ isPrimary: true })
-  public id: number
+  public id: string
 
   @column()
-  public author_id: number
+  public user_id: string
 
   @column()
   public is_published: boolean
-
-  @column()
-  public thumbnail: string
 
   @column()
   public title: string
@@ -22,21 +19,21 @@ export default class Article extends BaseModel {
   public content: string
 
   @column()
-  public slug: string
+  public slug: string | undefined
 
   @column()
   public published_at: Date
 
-  @column.dateTime({ autoCreate: true})
+  @column.dateTime()
   public created_at: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true})
+  @column.dateTime()
   public updated_at: DateTime
 
   @beforeSave()
   public static async hooksBefore (article: Article) {
-    article.slug = await Hooks.autoSlug(article)
-    article.published_at = await Hooks.setPublishedDate(article)
+    article.slug = Hooks.autoSlug(article)
+    article.published_at = Hooks.setPublishedDate(article)
   }
 
   // @afterSave()

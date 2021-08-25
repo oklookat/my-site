@@ -1,9 +1,8 @@
 import fs from "fs"
 import mkdirp from 'mkdirp'
 import Path = require('path')
-
 const crypto = require('crypto')
-const rimraf = require("rimraf")
+
 
 export default class EL_Files {
 

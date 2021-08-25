@@ -7,37 +7,39 @@ import {E_AUTH_INCORRECT, E_UNKNOWN} from "App/Common/Elven/_ERRORS/EL_Errors";
 export default class AuthController {
 
   public async login({request, response}: HttpContextContract) {
-    const {type} = request.all()
-	let isAdminLogin
+    let {type, username, password} = request.all()
+    let isAdminLogin
     if (!type) {
-	  isAdminLogin = false
+      isAdminLogin = false
     } else {
-		isAdminLogin = type === 'admin'
-	}
-    let username, password
+      isAdminLogin = type === 'admin'
+    }
     try {
-      const data = await UserValidator.validateCredentials(request)
+      const data = UserValidator.validateCredentials(username, password)
       username = data.username
       password = data.password
-    } catch (errors){
+    } catch (errors) {
       return response.status(400).send(errors)
     }
     try {
       const token = await EL_Auth.login(username, password, isAdminLogin, request)
       return response.status(200).send({token: token})
-    } catch (error){
-      if(error === 'PIPE_TOKEN_SAVING_ERROR'){
+    } catch (error) {
+      if (error === 'PIPE_TOKEN_SAVING_ERROR') {
         const unknown = new E_UNKNOWN(['AUTH'], 'Server error during auth.')
         return response.status(500).send(EL_ErrorCollector.singleError(unknown))
       } else {
-        const wrong = new E_AUTH_INCORRECT(['AUTH'], 'Wrong username or password.')
+        const wrong = new E_AUTH_INCORRECT(['AUTH'])
         return response.status(403).send(EL_ErrorCollector.singleError(wrong))
       }
     }
   }
 
   public async logout({request, response}: HttpContextContract) {
-    await EL_Auth.logout(request)
+    try {
+      await EL_Auth.logout(request)
+    } catch (err) {
+    }
     return response.status(200).send('')
   }
 }

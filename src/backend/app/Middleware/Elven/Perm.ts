@@ -28,7 +28,7 @@ export default class Perm {
       isAllow = false
     }
     if (!isAllow) {
-      const forbidden = new E_AUTH_FORBIDDEN(['AUTH'], 'Access denied.')
+      const forbidden = new E_AUTH_FORBIDDEN(['AUTH'])
       return ctx.response.status(403).send(EL_ErrorCollector.singleError(forbidden))
     }
     return await next()

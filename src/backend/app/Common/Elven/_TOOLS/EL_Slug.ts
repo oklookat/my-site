@@ -10,7 +10,16 @@ const slugifyOptions = {
 
 
 export default class EL_Slug {
-  public static async make(text: string) {
-    return Promise.resolve(slugify(text, slugifyOptions))
+  public static make(text: string) {
+    let slug = slugify(text, slugifyOptions)
+    let arr = slug.split("")
+    if (arr[0] == "-") {
+      arr[0] = ""
+    }
+    if (arr[arr.length - 1] == "-") {
+      arr[arr.length - 1] = ""
+    }
+    slug = arr.join("")
+    return slug
   }
 }

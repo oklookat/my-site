@@ -7,7 +7,7 @@ import Hooks from "App/Common/Elven/_MODEL_HOOKS/Hooks";
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
-  public id: number
+  public id: string
 
   @hasMany(() => Token, {
     foreignKey: 'user_id',
@@ -15,7 +15,7 @@ export default class User extends BaseModel {
   public tokens: HasMany<typeof Token>
 
   @hasMany(() => Article, {
-    foreignKey: 'author_id',
+    foreignKey: 'user_id',
   })
   public articles: HasMany<typeof Article>
 
@@ -39,14 +39,14 @@ export default class User extends BaseModel {
   @column()
   public reg_agent: string
 
-  @column.dateTime({ autoCreate: true })
+  @column.dateTime()
   public created_at: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  @column.dateTime()
   public updated_at: DateTime
 
   @beforeSave()
-  public static async hashPassword (user: User) {
+  public static async beforeSave (user: User) {
     await Hooks.userValidate(user)
     user.password = await Hooks.hashPassword(user)
   }
