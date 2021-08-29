@@ -7,6 +7,8 @@ import Articles from '@/views/Main/Articles/Articles.vue'
 import ArticleCreate from '@/views/Main/Articles/ArticleCreate.vue'
 import Files from '@/views/Main/Files/Files.vue'
 import Settings from '@/views/Main/Settings/Settings.vue'
+import AuthAdapter from "@/common/adapters/Main/AuthAdapter";
+import Fetcher from "@/common/adapters/Fetcher";
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -55,18 +57,22 @@ const routes: Array<RouteRecordRaw> = [
 
 
 const router = createRouter({
-    history: createWebHistory('elven/'),
+    history: createWebHistory(''),
     routes
 })
 
 router.beforeEach(async (to, from, next) => {
     if (to.meta.auth) {
+        let authorized = false
+        await AuthAdapter.check()
+            .then((result) => authorized = result)
+            .catch(err =>{
+            })
         const auth = to.meta.auth
-        const isAuth = await Store.getters.checkAuth
-        if (auth === 'yes' && !isAuth) { // не даем войти неавторизированным на страницы для авторизированных
+        if (auth === 'yes' && !authorized) { // не даем войти неавторизированным на страницы для авторизированных
             return next({name: 'Login'})
         }
-        if(auth === 'no' && isAuth){ // не даем войти авторизированному на страницы для неавторизированных
+        if(auth === 'no' && authorized){ // не даем войти авторизированному на страницы для неавторизированных
             return next({name: 'Index'})
         }
     }

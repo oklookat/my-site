@@ -5,8 +5,12 @@ Route.get('/', async () => {
 })
 
 Route.group(() => {
+  // auth
   Route.post('/auth/login', 'Elven/AuthController.login')
   Route.post('/auth/logout', 'Elven/AuthController.logout')
+  Route.post('/auth/check', 'Elven/AuthController.check').middleware(['elvenPerm:adminOnly'])
+
+  // content
   Route.resource('/articles', 'Elven/ArticlesController')
     .except(['create', 'edit'])
     .middleware({
@@ -15,6 +19,6 @@ Route.group(() => {
   Route.resource('/files', 'Elven/FilesController')
     .except(['create', 'edit', 'update', 'show'])
     .middleware({
-      '*': ['elvenPerm:readOnly'],
+      '*': ['elvenPerm:adminOnly'],
     })
-}).prefix('/api/elven')
+}).prefix('/elven')

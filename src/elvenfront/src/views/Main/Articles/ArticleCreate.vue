@@ -1,22 +1,24 @@
 <template>
-  <div class="articles-create-main">
+  <div class="articles-create-container">
+    <div class="articles-create-main">
       <textarea id="article-title"
                 placeholder="Если коротко..."
                 rows="1" maxlength="124"
                 v-model="article.title"
                 @input="autoSave">
       </textarea>
-    <div class="editor-container">
-      <div id="editor" @input="autoSave">
+      <div class="editor-container">
+        <div id="editor" @input="autoSave">
+        </div>
       </div>
+
+
+      <UIOverlay v-bind:active="isErrorOverlayActive" v-on:deactivated="isErrorOverlayActive = false">
+        {{ errorOverlayContent }}
+        <div class="error-ok-button" v-on:click="isErrorOverlayActive = false">Ок</div>
+      </UIOverlay>
+
     </div>
-
-
-    <UIOverlay v-bind:active="isErrorOverlayActive" v-on:deactivated="isErrorOverlayActive = false">
-      {{ errorOverlayContent }}
-      <div class="error-ok-button" v-on:click="isErrorOverlayActive = false">Ок</div>
-    </UIOverlay>
-
   </div>
 </template>
 
@@ -247,16 +249,24 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
-.articles-create-main {
+<style>
+.articles-create-container{
   width: 100%;
+  background-color: white;
+  border-radius: 6px;
+  padding-bottom: 24px;
+}
+.articles-create-main {
+  width: 85%;
   height: 95%;
+  margin: auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
 #article-title {
+  margin-top: 12px;
   min-height: 38px;
   text-indent: 0;
   border: none;
@@ -265,8 +275,11 @@ export default defineComponent({
   font-weight: bold;
 }
 
+textarea{
+  text-align: center;
+}
+
 .editor-container {
-  height: 100%;
   width: 100%;
 }
 
@@ -287,5 +300,12 @@ export default defineComponent({
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+@media screen and (max-width: 1023px){
+  .articles-create-main {
+    width: 95%;
+    height: 95%;
+  }
 }
 </style>

@@ -1,8 +1,8 @@
 <template>
   <div class="container">
     <div class="service" v-if="$route.name !== 'Login' && $route.name !== 'Logout'">
-      <elven-progress></elven-progress>
       <Header></Header>
+      <elven-progress></elven-progress>
     </div>
     <div class="content">
       <div style="height: 16px;"></div>
@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import {defineComponent} from 'vue'
 import Header from '@/components/Header/Header.vue'
 
 export default defineComponent({
@@ -34,69 +34,36 @@ export default defineComponent({
 <style>
 :root {
   --header-height: 52px;
-  --header-anim-height: 95%;
-  --header-anim-duration: 0.4s;
   --border-radius: 6px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* MAIN UI START */
-    --color-scrollbar: #707070;
-    --color-scrollbar-hover: #909090;
-    /* HEADER START */
-    --color-header: #202020;
-    --color-header-active: #000000;
-    --color-header-text: #FFFFFF;
-    --color-header-hover: rgba(255, 255, 255, 0.04);
-    /* HEADER END */
-    --color-text: white;
-    --color-text-inactive: #E6E6E6;
-    --color-text-selection: #7C506D;
-    --color-placeholder: #666666;
-    --color-hover: rgba(255, 255, 255, 0.06);
-    --color-border: #202020;
-    --color-body: #121212;
-    --color-level-1: #202020;
-    --color-level-2: #252525;
-    --color-level-3: #303030;
-    /* MAIN UI END */
-    --color-helper: #8CE6E6;
-  }
-  .router-link-active > svg,
-  .router-link-exact-active > svg {
-    fill: #FFFFFF;
-  }
+:root {
+  /* MAIN UI START */
+  --color-scrollbar: #505050;
+  --color-scrollbar-hover: #707070;
+  /* HEADER START */
+  --color-header: #FFFFFF;
+  --color-header-active: #FFFFFF;
+  --color-header-text: #000000;
+  --color-header-hover: rgba(0, 0, 0, 0.03);
+  /* HEADER END */
+  --color-text: black;
+  --color-text-inactive: #404040;
+  --color-text-selection: #BAB0FF;
+  --color-placeholder: #808080;
+  --color-hover: rgba(0, 0, 0, 0.05);
+  --color-border: #F2F2F2;
+  --color-body: #E6E6E6;
+  --color-level-1: #FFFFFF;
+  --color-level-2: #FFFFFF;
+  --color-level-3: #FFFFFF;
+  /* MAIN UI END */
+  --color-helper: #8CE6E6;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    /* MAIN UI START */
-    --color-scrollbar: #505050;
-    --color-scrollbar-hover: #707070;
-    /* HEADER START */
-   --color-header: #F2F4F8;
-   --color-header-active: #FFFFFF;
-   --color-header-text: #000000;
-   --color-header-hover: rgba(0, 0, 0, 0.03);
-    /* HEADER END */
-   --color-text: black;
-   --color-text-inactive: #404040;
-   --color-text-selection: #D7C1D0;
-   --color-placeholder: #808080;
-   --color-hover: rgba(0, 0, 0, 0.05);
-   --color-border: #F2F2F2;
-   --color-body: #E0E0E0;
-   --color-level-1: #FFFFFF;
-   --color-level-2: #FFFFFF;
-   --color-level-3: #FFFFFF;
-   /* MAIN UI END */
-    --color-helper: #8CE6E6;
-  }
-  .router-link-active > svg,
-  .router-link-exact-active > svg {
-    fill: #000000;
-  }
+.router-link-active > svg,
+.router-link-exact-active > svg {
+  fill: #000000;
 }
 
 html,
@@ -150,11 +117,12 @@ a {
 
 .service, .service-2 {
   position: sticky;
-  z-index: 9999;
+  z-index: 7777;
 }
 
 .service {
   top: 0;
+  box-shadow: 0px 8px 8px 0px rgba(35, 60, 80, 0.1);
 }
 
 .service-2 {
@@ -237,11 +205,6 @@ input:focus::placeholder {
 /* MAIN START */
 .codex-editor {
   z-index: unset;
-  height: 100%;
-}
-
-.codex-editor__redactor {
-  height: 100%;
 }
 
 .ce-block__content,
@@ -283,8 +246,7 @@ input:focus::placeholder {
 .ce-inline-toolbar,
 .ce-conversion-toolbar,
 .ce-settings,
-.ce-toolbar--opened
-{
+.ce-toolbar--opened {
   background-color: var(--color-level-2);
   border: 1px solid var(--color-border);
 }
@@ -322,8 +284,14 @@ video {
 @media screen and (min-width: 1px) {
   img,
   video {
-    width: 100%;
-    height: 100%;
+    max-width: 100%;
+    max-height: 320px;
+  }
+}
+
+@media screen and (min-width: 512px) {
+  .content {
+    width: 500px;
   }
 }
 
@@ -334,27 +302,15 @@ video {
     max-height: 60%;
   }
 }
-
-@media screen and (min-width: 512px) {
-  .content {
-    width: 500px;
-  }
-}
-
-@media screen and (min-width: 1000px) {
-  .content {
-    width: 612px;
-  }
-}
-
-@media screen and (min-width: 1366px) {
+@media screen and (min-width: 1365px) {
   img,
   video {
     width: 40%;
     height: 40%;
   }
   .content {
-    width: 812px;
+    width: 712px;
   }
+
 }
 </style>

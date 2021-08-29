@@ -3,11 +3,77 @@ import vue from '@vitejs/plugin-vue'
 import * as path from "path"
 
 // https://vitejs.dev/config/
+const privateKey = `
+-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDjtsklb/PStw8N
+b1G4tITWnpHQbT4SgGl/aJwxjn+qjnl6osoZfVJTFVJgDN76+yPBqh7nsUQdWf+x
+qoZzLwI8WOm29oOpcrWCmTz9W4jk3Oc8KnxoFG9HQnQUfSBK+QDsDpBrCFrD6ose
+LtAfQXTSVWKsdGD44ZtWPmqOamqgtuPdoYY2kuJrxy5qVA7fpMEJBxRBMhF2Ch0N
+Hol9tMkAE52mvkuBri4y3VZEda3aOu4mrag1YzWNkEucLU3iRODohmiPgwtwnhBW
+MJdNXJyMxgxRkvX4j0EFerY9sxUNm1e9WU1zSFLgnjo2HPjswe6x0C75qzFwuQhT
++mo9Qdd/AgMBAAECggEBAJRDnB4rEXc+R6e4tl3r854F6uzpZAQJ5ibVxvUhUhCL
+6Z6mxa3pAiQketkdKEYEJNjg2nSC39W4lppobFgs4GjIf4voX/uBO5uICMTxx2U0
+S77J7uyZeYbNRuVcPx1xmV8ZcICwFOEBIomJc2sWZGjavX+J2uXRhyGVTC3kLf7r
+O2okiR9O/ce5Cd6OULLARxpeZA0TskPwHGJlxN84yhFukOOn7n/kE2btsox9TgkE
+yr5Rckqlj3E+u2NdmAaQc9qFll4UH1LDXmQh02s3gUklIOPcdGXawrL0YWrmpJji
+EHocv/ukiNzOhMIHYLpsj4qelxQYuzcjCaQf3yseBnECgYEA9Q7kXW1Y63QhGwtS
+NE7qr7DAwhnglsB8pv8/0CSeId/N3y3RkBjdTow77LXUv0UrFPWrVhjsb1Q/HBf2
+PABn6iCIosRdfn+2ttvo2JlMe/4TN8Jtf2gtVwK1HLWy/tpM3sw/Qy5IG92MMsYt
+QukZhYM7UTm6m4UiIYszufQydxcCgYEA7eGkriKrsEpPNoMRh1XcZzRICMKeubYD
+JKzmpD+KA2zkkeneznoALt3ohrgUTZe6B07fdevGF3sWYDNwfmFb/JCVk2y2nQg2
+k5jEkinkOHqlZ0lMozpEKnIskKaE1Q5N6AT7eoilmNkXJKUewnno/Q9S6q4qLAIA
+bRXuZA0bY9kCgYEAn5Jh6+BPPYqyH/0gO0WEFoFfE0VsdF3FDa06LVwayG4GjaQ1
+SMKYIRS51KqWbTIqGozaU8cI9nmCWtXTlkChadhjgLGjO8MIBExwc9Jm9np8oxts
+18DLfVQbASXj94XI9m9DZoiVleeO6mUXhfFpmAHbN0oDFE/96J/PP/AeiGMCgYBW
+cSONn82x7x7f2TsaacoAus/eVxKku45i2m2pi+lUG1Ln7wtnDpBYd40Sv3upQpR4
+KWIskLPYPoNADBE565koq0WfX+bwI1bpxZ7Q2mYzW+YVJV6zBe5VWk31dn1Yiq0m
+vgDAYz2B0ImHaHVICFLw+ouP+iAbA9Mx0MFjHBwy6QKBgBVsQHPw4Yc7kEW+hWdm
+kyT/FhDPpzvKYBO9VqX7LUEOAgDjHQf8Jgow/w68+G9EfUgu1Be82G9oxGEMyrRH
+AHBgMDxOpHAGC1OCKvZyK2HxqKMq9T8rN4WKbK8oErRZstaccZLgMvcIfS6ZXUT6
+BFjiI9XIcJHsIzuYajbSj2m7
+-----END PRIVATE KEY-----
+`
+
+
+const certificate = `
+-----BEGIN CERTIFICATE-----
+MIIERzCCAq+gAwIBAgIQD9NxP8F1sh9/MnZafz3FwzANBgkqhkiG9w0BAQsFADB7
+MR4wHAYDVQQKExVta2NlcnQgZGV2ZWxvcG1lbnQgQ0ExKDAmBgNVBAsMH0NPTVBV
+VEVSXHN0ZWxzQGNvbXB1dGVyICgwMCAwMCkxLzAtBgNVBAMMJm1rY2VydCBDT01Q
+VVRFUlxzdGVsc0Bjb21wdXRlciAoMDAgMDApMB4XDTIxMDgyODE2MjczNFoXDTIz
+MTEyODE2MjczNFowUzEnMCUGA1UEChMebWtjZXJ0IGRldmVsb3BtZW50IGNlcnRp
+ZmljYXRlMSgwJgYDVQQLDB9DT01QVVRFUlxzdGVsc0Bjb21wdXRlciAoMDAgMDAp
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA47bJJW/z0rcPDW9RuLSE
+1p6R0G0+EoBpf2icMY5/qo55eqLKGX1SUxVSYAze+vsjwaoe57FEHVn/saqGcy8C
+PFjptvaDqXK1gpk8/VuI5NznPCp8aBRvR0J0FH0gSvkA7A6Qawhaw+qLHi7QH0F0
+0lVirHRg+OGbVj5qjmpqoLbj3aGGNpLia8cualQO36TBCQcUQTIRdgodDR6JfbTJ
+ABOdpr5Lga4uMt1WRHWt2jruJq2oNWM1jZBLnC1N4kTg6IZoj4MLcJ4QVjCXTVyc
+jMYMUZL1+I9BBXq2PbMVDZtXvVlNc0hS4J46Nhz47MHusdAu+asxcLkIU/pqPUHX
+fwIDAQABo28wbTAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEw
+HwYDVR0jBBgwFoAURDdprZrbtvnH5wmKZVH5ZpCmdmwwJQYDVR0RBB4wHIILb2ts
+b29rYXQucnWCDSoub2tsb29rYXQucnUwDQYJKoZIhvcNAQELBQADggGBAFOGuYZe
+Q3mexbkc6L+/N8rkG9Xva9x1aTFERrQT1JKgzjBucFfeYYBMzKG5eOOM2KMy6xv7
+VaRgWVx+796H3CHpzeEJPG2dieZSCLaZBGxTplZqJfH5jVbKkmtGSm4u8AMALKLn
+bkgkljZHAlJyLTBoYNv6IcfZE8D2vcITQnhqob0h3duOqqPf2eVteyD2RGlPjZRW
+nI4NniYhjSW6+qDG9DT+Sp60ujghrhXflsbu9NSQTPfQSDfr9oOzLmquR4ejUXb1
+B7s3T5UqhWBOWJp1IzHZIxzboudrffslzdfoIqnI4AjSvueI5qgUEgYr5IUw1Fm9
+wkTSkI1H9GZNarntbx9gXFpY+13rg+9TE0wbp+cmhrShWkggtUM6ooqtpd1ZxxsT
+yiFv+65ohqMwruVepT7TgG/64g4ATzF61IS9S95sbfXHUhtBz3almXw36broj5go
+8BIQH7ZPjf/JnCF2nHeHOW+KJ5qbCkKbAPdqEKK+ObQVEM5BpEiGnpMh/g==
+-----END CERTIFICATE-----
+`
+
+const credentials = {key: privateKey, cert: certificate}
+
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: [
       { find: '@', replacement: path.resolve(__dirname, 'src') },
     ],
+  },
+  server: {
+    open: true,
+    https: credentials,
   },
 })

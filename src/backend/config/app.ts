@@ -16,78 +16,48 @@ export const http: ServerConfig = {
 
   subdomainOffset: 2,
 
-  /*
-  |--------------------------------------------------------------------------
-  | Request Ids
-  |--------------------------------------------------------------------------
-  |
-  | Setting this value to `true` will generate a unique request id for each
-  | HTTP request and set it as `x-request-id` header.
-  |
-  */
+
   generateRequestId: false,
 
-  /*
-  |--------------------------------------------------------------------------
-  | Trusting proxy servers
-  |--------------------------------------------------------------------------
-  |
-  | Define the proxy servers that AdonisJs must trust for reading `X-Forwarded`
-  | headers.
-  |
-  */
+
   trustProxy: proxyAddr.compile('loopback'),
 
-  /*
-  |--------------------------------------------------------------------------
-  | Generating Etag
-  |--------------------------------------------------------------------------
-  |
-  | Whether or not to generate an etag for every response.
-  |
-  */
+
   etag: false,
 
 
   jsonpCallbackName: 'callback',
 
-
+  // very useful: https://stackoverflow.com/questions/46288437/set-cookies-for-cross-origin-requests
   cookie: {
-    domain: '',
+    domain: 'oklookat.ru',
     path: '/',
-    maxAge: '2h',
+    maxAge: '9999d',
     httpOnly: true,
-    secure: false,
-    sameSite: false,
+    secure: true,
+    sameSite: 'none',
   },
 
 
   forceContentNegotiationTo: 'application/json',
 }
 
-/*
-|--------------------------------------------------------------------------
-| Logger
-|--------------------------------------------------------------------------
-*/
+
 export const logger: LoggerConfig = {
 
   name: Env.get('APP_NAME'),
 
-
   enabled: true,
 
-
   level: Env.get('LOG_LEVEL', 'info'),
-
 
   prettyPrint: Env.get('NODE_ENV') === 'development',
 }
 
 
 export const profiler: ProfilerConfig = {
-  enabled: true,
 
+  enabled: true,
 
   blacklist: [],
 

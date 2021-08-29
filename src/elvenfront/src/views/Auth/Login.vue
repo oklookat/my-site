@@ -29,7 +29,10 @@ export default defineComponent({
   methods: {
     async makeLogin() {
       this.isError = false
-      await AuthAdapter.login(this.username, this.password)
+      AuthAdapter.login(this.username, this.password)
+          .then(() =>{
+            this.$router.push({name: 'Index'})
+          })
           .catch(error => {
             this.isError = true
             this.error = error
@@ -61,9 +64,15 @@ export default defineComponent({
 input {
   height: 48px;
   width: 264px;
+  box-shadow: 0px 0px 19px 0px rgba(34, 60, 80, 0.02);
 }
 
 .auth-button {
+  box-shadow: 0px 0px 19px 0px rgba(34, 60, 80, 0.02);
+
+
+
+
   background-color: var(--color-level-1);
   border-radius: 8px;
   display: flex;

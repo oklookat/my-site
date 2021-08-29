@@ -60,10 +60,11 @@ export default {
       this.isProgressBarActive = true
     },
     closeBarFunc() {
-      this.percents = 0
-      this.progressBar.style.width = '0'
       this.isProgressBarActive = false
       this.basicLoading = false
+
+      this.percents = 0
+      this.progressBar.style.width = '0'
     },
     move() {
       const intervalID = setInterval(() => {
@@ -108,6 +109,19 @@ export default {
 </script>
 
 <style scoped>
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+.slide-fade-leave-active {
+  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-fade-enter, .slide-fade-leave-to
+  /* .slide-fade-leave-active for <2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
+}
+
+
 .elven-progressbar {
   cursor: default;
   position: absolute;
@@ -118,17 +132,6 @@ export default {
 #elven-progressbar-line {
   height: 100%;
   width: 0;
-  background-color: white;
-}
-
-@media (prefers-color-scheme: light) {
-  #elven-progressbar-line{
-    background-color: #9D6A89;
-  }
-}
-@media (prefers-color-scheme: dark) {
-  #elven-progressbar-line{
-    background-color: #9D6A89;
-  }
+  background-color: #A097DC;
 }
 </style>

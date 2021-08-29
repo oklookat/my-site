@@ -225,6 +225,8 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-shadow: 0px 0px 35px 9px rgba(34, 60, 80, 0.1);
+  border-radius: 6px;
 }
 
 .articles-types,
@@ -234,6 +236,7 @@ export default defineComponent({
   width: 100%;
   display: flex;
   flex-direction: row;
+  border-radius: inherit;
 }
 
 .articles-create > a{

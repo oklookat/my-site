@@ -1,5 +1,6 @@
 import Axios from '@/common/adapters/Axios.js'
-import Store from "@/store/index"
+import router from "@/router";
+import Fetcher from "@/common/adapters/Fetcher";
 
 class AuthAdapter {
 
@@ -7,16 +8,11 @@ class AuthAdapter {
         const data = {
             username: username,
             password: password,
-            type: 'admin',
+            type: 'cookie',
         }
         return await Axios.post('auth/login', data)
-            .then(async response => {
-                const token = response.data.token
-                if (token) {
-                    await Store.dispatch('setToken', token)
-                    return Promise.resolve()
-                }
-                return Promise.reject('Ошибка при получении токена.')
+            .then(() => {
+                return Promise.resolve()
             })
             .catch(error => {
                 if (!error.response) {
@@ -33,7 +29,17 @@ class AuthAdapter {
 
     public static async logout() {
         await Axios.post('auth/logout')
-        await Store.dispatch('setLogout')
+        await router.push({name: 'Login'})
+    }
+
+    public static async check(){
+        return await Fetcher.check()
+            .then((result) =>{
+                return Promise.resolve(result)
+            })
+            .catch((error) =>{
+                return Promise.reject(error)
+            })
     }
 }
 

@@ -1,6 +1,5 @@
 import Env from '@ioc:Adonis/Core/Env'
 import {HttpContextContract} from "@ioc:Adonis/Core/HttpContext"
-import Application from "@ioc:Adonis/Core/Application"
 import {cuid} from '@ioc:Adonis/Core/Helpers'
 import File from "App/Models/Elven/File"
 import EL_Files from "App/Common/Elven/_TOOLS/EL_Files"
@@ -9,8 +8,8 @@ import {EL_ErrorCollector} from "App/Common/Elven/_ERRORS/EL_ErrorCollector";
 import {E_UNKNOWN, E_VALIDATION_EMPTY, E_VALIDATION_INVALID} from "App/Common/Elven/_ERRORS/EL_Errors";
 
 const pageSize = Env.get('PAGINATION_SIZE') // default: 16
-const _uploadsPath = Application.tmpPath(`uploads`)
-const _tempPath = Application.tmpPath(`uploads/temp`)
+const _uploadsPath = EL_Files._uploadsPath
+const _tempPath = EL_Files._tempPath
 
 export default class FilesController {
 
@@ -32,8 +31,9 @@ export default class FilesController {
 
   // POST url/
   public async store(ctx: HttpContextContract) {
+    // validation
     const file = ctx.request.file('file', {
-      size: '242mb'
+      size: '256mb'
     })
     if (!file) {
       const empty = new E_VALIDATION_EMPTY(['files'])
@@ -43,23 +43,24 @@ export default class FilesController {
       const invalid = new E_VALIDATION_INVALID(['files'], 'File is invalid. Maybe broken?')
       return ctx.response.status(400).send(invalid)
     }
-    const user = ctx['user']
+    const user = ctx.user
+    if(!user){
+      return FilesController.send505(ctx, 'Error while saving file.')
+    }
+    // create file
     const extension = file.extname
     const originalFileName = file.clientName
     const newFileName = `${cuid()}.${extension}`
-    const _tempPathOfFile = `${_tempPath}/${newFileName}`
     await file.move(_tempPath, {
       name: newFileName
     })
+    const _tempPathOfFile = `${_tempPath}/${newFileName}`
     const fileHash = await EL_Files.getHash(_tempPathOfFile)
     const foundFile = await File.findBy('hash', fileHash)
     if (foundFile) {
       // if file exists
-      try {
-        await EL_Files.deleteFile(_tempPathOfFile) // delete file from temp folder
-      } catch (error){
-        return FilesController.send505(ctx)
-      }
+      EL_Files.deleteFile(_tempPathOfFile) // delete file from temp folder
+        .catch(() => {})
       return ctx.response.status(200).send(foundFile)
     }
     const foldersGen = EL_Files.generateDirectoriesByHash(fileHash)
@@ -71,8 +72,9 @@ export default class FilesController {
       await FilesController.send505(ctx)
     }
     if (!isFolderExists) {
-      const error = await EL_Files.createDirectory(_newFolder)
-      if (error) {
+      try {
+        await EL_Files.createDirectory(_newFolder)
+      } catch (error){
         await FilesController.send505(ctx)
       }
     }
@@ -101,7 +103,7 @@ export default class FilesController {
       return ctx.response.notFound('File not found.')
     }
     try {
-      await EL_Files.deleteFile(`${_uploadsPath}/${file.path}`)
+      await EL_Files.deleteFile(`${_uploadsPath}/${file.path}`).catch(() =>{})
       EL_Files.deleteEmptyDirsRecursive(_uploadsPath, file.path)
       await file.delete()
       return ctx.response.status(200).send('File deleted.')

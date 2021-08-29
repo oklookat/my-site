@@ -15,11 +15,14 @@
           </div>
         </div>
         <div class="file-main">
-          <div class="file-item file-preview" v-on:click.stop>
+
+          <div class="file-item file-preview" v-on:click.stop v-if="readableExtensionWrap(file.extension) === 'IMAGE'">
             <img :src="convertPreviewPath(file.path)" v-if="readableExtensionWrap(file.extension) === 'IMAGE'">
-            <video controls :src="convertPreviewPath(file.path)"
-                   v-if="readableExtensionWrap(file.extension) === 'VIDEO'"></video>
           </div>
+          <div class="file-item file-preview" v-on:click.stop v-if="readableExtensionWrap(file.extension) === 'VIDEO'">
+            <video controls :src="convertPreviewPath(file.path)"></video>
+          </div>
+
           <div class="file-item file-name">{{ file.original_name }}</div>
           <div class="file-item file-size">{{ convertSizeWrap(file.size) }}</div>
         </div>
@@ -211,7 +214,7 @@ export default defineComponent({
 
 .file {
   box-shadow: 0 0 41px 0 rgba(0, 0, 0, 0.05);
-  min-height: 164px;
+  min-height: 42px;
   border-radius: var(--border-radius);
   background-color: var(--color-level-1);
   cursor: pointer;
@@ -244,7 +247,7 @@ export default defineComponent({
 }
 
 .file-name {
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 2rem;
   letter-spacing: 0.0099rem;
 }

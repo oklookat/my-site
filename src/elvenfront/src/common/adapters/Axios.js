@@ -1,21 +1,17 @@
 import axios  from "axios"
 import Store from "@/store/index"
-// import app from '@/main'
-
 
 const Axios = axios.create({timeout: 15000})
 
 let token
+const apiURL = import.meta.env.VITE_API_URL
 
-Axios.defaults.baseURL = import.meta.env.VITE_API_URL
+
+Axios.defaults.baseURL = apiURL
 Axios.defaults.headers['Content-Type'] = 'application/json'
 Axios.interceptors.request.use(async function (config) {
     window.app.$elvenProgress.loadingStart()
-    const isAuth = await Store.getters.checkAuth
-    if(isAuth){
-        token = await Store.getters.getToken
-        config.headers.common['Authorization'] = `Elven ${token}`
-    }
+    config.withCredentials = true
     return config;
 }, function (error) {
     window.app.$elvenProgress.loadingFinish()
@@ -32,3 +28,5 @@ Axios.interceptors.response.use(function (response) {
 })
 
 export default Axios
+
+

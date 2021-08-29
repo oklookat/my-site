@@ -49,27 +49,6 @@ const bodyParserConfig: BodyParserConfig = {
 
     autoProcess: true,
 
-    /*
-    |--------------------------------------------------------------------------
-    | Files to be processed manually
-    |--------------------------------------------------------------------------
-    |
-    | You can turn off `autoProcess` for certain routes by defining
-    | routes inside the following array.
-    |
-    | NOTE: Make sure the route pattern starts with a leading slash.
-    |
-    | Correct
-    | ```js
-    | /projects/:id/file
-    | ```
-    |
-    | Incorrect
-    | ```js
-    | projects/:id/file
-    | ```
-    */
-
     processManually: [], // '/api/elven/files'
 
     encoding: 'utf-8',
@@ -78,7 +57,7 @@ const bodyParserConfig: BodyParserConfig = {
 
     maxFields: 1000,
 
-    limit: '242mb',
+    limit: '256mb',
 
     types: [
       'multipart/form-data',

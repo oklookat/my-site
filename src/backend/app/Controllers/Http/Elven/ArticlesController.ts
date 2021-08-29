@@ -18,7 +18,12 @@ export default class ArticlesController {
   // start = newest (DESC), oldest (ASC)
   // preview = true (content < 480 symbols), false (gives you full articles)
   public async index(ctx: HttpContextContract) {
-    const isAdmin = ctx['user'] && ctx['user'].role === 'admin'
+    let isAdmin = false
+    if(ctx.user){
+      if(ctx.user.role === 'admin'){
+        isAdmin = true
+      }
+    }
     let validatedParams
     try {
       validatedParams = ArticleValidator.requestParams(ctx.request, isAdmin)
@@ -89,8 +94,11 @@ export default class ArticlesController {
     } catch (errors) {
       return ctx.response.status(400).send(errors)
     }
-    const user = ctx['user']
     try {
+      const user = ctx.user
+      if (!user){
+        throw 'PIPE_MISSING_USER'
+      }
       await user.related('articles').save(article)
       return ctx.response.status(200).send(article)
     } catch (error) {
@@ -111,8 +119,11 @@ export default class ArticlesController {
     } catch (errors) {
       return ctx.response.status(400).send(errors)
     }
-    const user = ctx['user']
     try {
+      const user = ctx.user
+      if(!user){
+        throw 'PIPE_MISSING_USER'
+      }
       await user.related('articles').save(article)
       return ctx.response.status(200).send(article)
     } catch (error) {

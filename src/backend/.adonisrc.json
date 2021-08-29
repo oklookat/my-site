@@ -24,5 +24,8 @@
   ],
   "aceProviders": [
     "@adonisjs/repl"
+  ],
+  "metaFiles": [
+    "start/ssl/*"
   ]
 }
