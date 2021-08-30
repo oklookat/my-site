@@ -54,7 +54,6 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   background-color: transparent;
-  gap: 48px;
 }
 
 
@@ -63,6 +62,7 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   height: 100%;
+  width: 84px;
   cursor: pointer;
 }
 </style>

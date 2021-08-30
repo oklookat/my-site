@@ -1,6 +1,7 @@
 <template>
   <div class="container">
     <div class="service" v-if="$route.name !== 'Login' && $route.name !== 'Logout'">
+      <elven-notify></elven-notify>
       <Header></Header>
       <elven-progress></elven-progress>
     </div>
@@ -24,9 +25,10 @@ export default defineComponent({
   components: {Header},
   data() {
     return {
-      isPageLoaded: false,
-      audioPlayerSources: undefined,
     }
+  },
+  mounted() {
+    this.$elvenNotify.error('message')
   }
 })
 </script>
@@ -61,9 +63,9 @@ export default defineComponent({
   --color-helper: #8CE6E6;
 }
 
-.router-link-active > svg,
-.router-link-exact-active > svg {
-  fill: #000000;
+.router-link-active,
+.router-link-exact-active {
+  background-color: var(--color-hover);
 }
 
 html,

@@ -226,7 +226,6 @@ export default defineComponent({
   flex-direction: column;
   gap: 14px;
   box-shadow: 0px 0px 35px 9px rgba(34, 60, 80, 0.1);
-  border-radius: 6px;
 }
 
 .articles-types,
@@ -236,7 +235,6 @@ export default defineComponent({
   width: 100%;
   display: flex;
   flex-direction: row;
-  border-radius: inherit;
 }
 
 .articles-create > a{
@@ -251,7 +249,6 @@ export default defineComponent({
 }
 
 .articles-types div {
-  border-radius: inherit;
   width: 100%;
   height: 100%;
   cursor: pointer;
@@ -268,7 +265,6 @@ export default defineComponent({
   background-color: var(--color-level-1);
   color: var(--color-text-inactive);
   border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
   text-decoration: underline;
   padding-left: 12px;
   font-size: 0.8rem;
