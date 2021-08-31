@@ -1,17 +1,20 @@
 <template>
   <div class="notify-container">
-    <transition-group class="notifications" name="notification-list" tag="ul">
-        <li class="notification" :key="notification" v-for="notification in notifications"
-              :class="(notification.self.type === 'error') ? 'not-error': ''">
-          {{ notification.execute() }}
-          <div class="not-message">
-            {{ notification.self.message }}
+    <transition-group class="notifications" name="notification-list" tag="p">
+      <span class="notification" v-on:click="deleteNotificationByID(notification.id)"
+            :key="notification" v-for="notification in notifications"
+            :class="classSetter(notification.self.type)">
+        {{ notification.execute() }}
+        <div class="not-message">
+          {{ notification.self.message }}
+        </div>
+        <div class="not-timer-wrap">
+          <div class="not-timer" v-if="notification.percents"
+               v-bind:style="{
+               transform: `scaleX(${notification.percents / 100})`}">
           </div>
-          <div class="not-timer-wrap">
-            <div class="not-timer" v-bind:style="{ width: `${notification.percents}%` }">
-            </div>
-          </div>
-        </li>
+        </div>
+      </span>
     </transition-group>
   </div>
 </template>
@@ -19,67 +22,92 @@
 <script lang="ts">
 import {defineComponent} from "vue";
 
-interface INotification {
-  type: string
-  message: string
-}
-
 export default defineComponent({
   name: "ElvenNotifyC",
   data() {
     return {
-      // service vars start //
       SERVICE: 'ELVEN_NOTIFY_C',
-      warn: false,
-      error: false,
-      info: false,
-      success: false,
-      // service vars end //
       notifications: [],
       notificationsCounter: 0,
+      deletedIn: 5000,
     }
   },
   methods: {
-    addError(message) {
-      const notification: INotification = {
-        type: 'error',
+    classSetter(errorType) {
+      switch (errorType) {
+        case 'error':
+          return 'not-error'
+        case 'warn':
+          return 'not-warn'
+        case 'info':
+          return 'not-info'
+        case 'success':
+          return 'not-success'
+        default:
+          return 'not-unknown'
+      }
+    },
+    addNotification(type, message) {
+      const notification = {
+        type: type,
         message: message
+      }
+      if (this.notifications.length < 1) {
+        this.notificationsCounter = 0
+      }
+      if (this.notifications.length > 7) {
+        this.deleteNotificationByID(this.notifications[0].id)
       }
       this.setNotification(notification)
     },
-    setNotification(notification: INotification) {
+    setNotification(notification) {
       const _this = this
-      this.notifications.push({
+      const fullNotification = {
         id: this.notificationsCounter,
         timeoutID: null,
         intervalID: null, // need for calc progress
         timeWhenGone: null, // ms when timeout ends
-        percents: 0,
+        percents: null,
         self: notification, // notification object
+        executed: false,
         execute: function () {
-          if (this.timeoutID) {
+          if (this.executed) {
             // ---- already initialized
             return
           }
           // ---- init
-          const deletedIn = 4000 // ms
-
           this.timeoutID = setTimeout(() => {
             // delete himself from array
-            const index = _this.notifications.findIndex(obj => obj.id === this.id)
-            _this.notifications.splice(index, 1)
-            _this.notificationsCounter--
-          }, deletedIn)
-
+            _this.deleteNotification(this)
+          }, _this.deletedIn)
           // calc time to notification deleted
-          this.timeWhenGone = new Date().getTime() + deletedIn // set time once item deleted
+          this.timeWhenGone = new Date().getTime() + _this.deletedIn // set time once item deleted
           this.intervalID = setInterval(() => {
-            _this.calcPercents(this, deletedIn)
-          }, 200)
-
+            _this.calcPercents(this, _this.deletedIn)
+          }, 100) // time = performance and timer transition time = this time + 20ms
           _this.notificationsCounter++
+          this.executed = true
         }
-      })
+      }
+      this.notifications.push(fullNotification)
+    },
+    deleteNotification(objContext) {
+      const index = this.notifications.findIndex(obj => obj.id === objContext.id)
+      if (index > -1) {
+        this.clearTimeouts(index)
+        this.notifications.splice(index, 1)
+      }
+    },
+    deleteNotificationByID(id) {
+      const index = this.notifications.findIndex(obj => obj.id === id)
+      if (index > -1) {
+        this.clearTimeouts(index)
+        this.notifications.splice(index, 1)
+      }
+    },
+    clearTimeouts(index) {
+      clearTimeout(this.notifications[index].timeoutID)
+      clearInterval(this.notifications[index].intervalID)
     },
     calcPercents(objContext, deletedIn) {
       const now = new Date().getTime()
@@ -90,7 +118,7 @@ export default defineComponent({
       // get the difference between current date and time when item deleted
       const diff = Math.abs(now - objContext.timeWhenGone)
       // get how much is left as a percentage. deletedIn = 100%
-      objContext.percents = Math.round((diff / deletedIn) * 100)
+      objContext.percents = (diff / deletedIn) * 100
     },
 
   }
@@ -99,70 +127,147 @@ export default defineComponent({
 
 <style scoped>
 .notify-container {
-  position: absolute;
-  top: 0;
+  /*pointer-events: none;*/
+  position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 9999;
   width: 100%;
-  margin-top: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
 }
 
+
 .notifications {
+  height: max-content;
+  width: 100%;
   display: flex;
-  align-items: center;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: column-reverse;
+  gap: 8px;
+  box-sizing: border-box;
+  position: relative;
 }
 
 .notification {
-  width: 220px;
-  height: 52px;
-  border-radius: 12px;
+  cursor: pointer;
+  align-self: center;
+  width: 240px;
+  min-height: 52px;
+  border-radius: 6px;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr min-content;
+  position: fixed;
 }
 
 .not-message {
-  margin-top: 2px;
+  margin-top: 4px;
   margin-left: 12px;
+  margin-right: 8px;
 }
 
 .not-timer-wrap {
   width: 50%;
-  display: flex;
-  margin-bottom: 6px;
   justify-self: center;
+  margin-bottom: 12px;
+  margin-top: 12px;
 }
 
 .not-timer {
-  transition: width 500ms linear;
-  background-color: white;
-  border-radius: 6px;
+  border-radius: 4px;
+  transition: transform 120ms linear;
+  background-color: rgba(255, 255, 255, 0.8);
   height: 4px;
 }
 
-.notification.not-error {
-  background-color: #FF0000;
-  color: white;
+/* NOT TYPES STYLING START */
+.notification {
+  color: black;
+  /*border: 1px solid rgba(255, 255, 255, 0.325);*/
+  backdrop-filter: blur(15px) saturate(180%);
+  border-radius: 6px;
+
 }
 
+.not-error {
+  background-color: rgba(255, 0, 0, 0.35);
+  border: 1px solid rgba(255, 0, 0, 0.25);
+}
 
-/* animations start */
+.notification.not-error > .not-timer-wrap > .not-timer {
+  background-color: rgba(190, 13, 20, 1);
+}
+
+.not-warn {
+  background-color: rgba(255, 240, 0, 0.75);
+  border: 1px solid rgba(191, 179, 0, 0.35);
+}
+
+.notification.not-warn > .not-timer-wrap > .not-timer {
+  background-color: rgba(190, 180, 0, 1);
+}
+
+.not-info {
+  background-color: rgba(100, 200, 255, 0.75);
+  border: 1px solid rgba(75, 150, 191, 0.35);
+}
+
+.notification.not-info > .not-timer-wrap > .not-timer {
+  background-color: rgba(75, 150, 190, 1);
+}
+
+.not-success {
+  background-color: rgba(140, 255, 50, 0.75);
+  border: 1px solid rgba(105, 191, 38, 0.35);
+}
+
+.notification.not-success > .not-timer-wrap > .not-timer {
+  background-color: rgba(105, 190, 140, 1);
+}
+
+/* NOT TYPES STYLING START */
+
+
+/* ANIMATIONS START */
 .notification {
   transition: all 0.4s;
 }
+
 .notification-list-enter-from,
 .notification-list-leave-to {
   opacity: 0;
-  float: left;
-  width: 0;
 }
 
 .notification-list-leave-active {
-  position: absolute;
+
 }
-/* animations end */
+
+/* ANIMATIONS END */
+
+/* ADAPTIVE START */
+@media screen and (min-width: 765px) {
+  .notify-container {
+    margin-right: 12px;
+    height: min-content;
+    width: 224px;
+    right: 0;
+    bottom: 0;
+  }
+
+  .notifications {
+    height: max-content;
+    width: max-content;
+    flex-direction: column;
+  }
+
+  .notification {
+    position: relative;
+    width: 214px;
+    min-height: 52px;
+  }
+
+  .not-timer-wrap {
+    margin-bottom: 8px;
+    margin-top: 8px;
+  }
+}
+/* ADAPTIVE END */
 </style>

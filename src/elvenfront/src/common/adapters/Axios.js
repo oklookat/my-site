@@ -1,9 +1,7 @@
 import axios  from "axios"
-import Store from "@/store/index"
 
 const Axios = axios.create({timeout: 15000})
 
-let token
 const apiURL = import.meta.env.VITE_API_URL
 
 

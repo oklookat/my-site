@@ -1,6 +1,6 @@
 <template>
-  <div class="elven-progressbar">
-    <div id="elven-progressbar-line">
+  <div class="progressbar-container">
+    <div id="progressbar-line">
     </div>
   </div>
 </template>
@@ -39,12 +39,12 @@ export default {
     basicLoading: function () {
       this.basicLoadingFunc(this.basicLoading)
     },
-    closeBar: function (){
+    closeBar: function () {
       this.closeBarFunc()
     }
   },
   mounted() {
-    this.progressBar = document.getElementById('elven-progressbar-line')
+    this.progressBar = document.getElementById('progressbar-line')
     this.openBar()
 
     // user settings are applied here
@@ -109,29 +109,29 @@ export default {
 </script>
 
 <style scoped>
-.slide-fade-enter-active {
-  transition: all .3s ease;
-}
-.slide-fade-leave-active {
-  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
-}
-.slide-fade-enter, .slide-fade-leave-to
-  /* .slide-fade-leave-active for <2.1.8 */ {
-  transform: translateX(10px);
-  opacity: 0;
-}
-
-
-.elven-progressbar {
+.progressbar-container {
   cursor: default;
   position: absolute;
   width: 100%;
   height: 6px;
 }
 
-#elven-progressbar-line {
+#progressbar-line {
   height: 100%;
   width: 0;
   background-color: #A097DC;
+}
+
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+
+.slide-fade-leave-active {
+  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateX(10px);
+  opacity: 0;
 }
 </style>

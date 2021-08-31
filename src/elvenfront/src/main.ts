@@ -11,7 +11,7 @@ const app = createApp(App)
     .use(router)
     .use(ElvenProgress)
     .use(ElvenPlayer)
-    .use(ElvenNotify)
+    .use(ElvenNotify, {timer: 4000})
     .mount('#app')
 
 window.app = app

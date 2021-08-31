@@ -28,7 +28,7 @@ export default defineComponent({
     }
   },
   mounted() {
-    this.$elvenNotify.error('message')
+    this.$elvenNotify.error('Крутяк, это работает, всем привет!')
   }
 })
 </script>
@@ -79,8 +79,7 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-thumb {

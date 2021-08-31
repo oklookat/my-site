@@ -1,18 +1,24 @@
 import ElvenNotifyC from './ElvenNotifyC.vue'
 
+/*
+Options:
+timer = time in milliseconds when notification deleted
+*/
+
 export default class ElvenNotify {
+
     static componentData = null
 
     static install(app, options) {
         app.component('elven-notify', ElvenNotifyC)
         // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const instance = this
+        const _this = this
         app.mixin({
             created() {
                 if (this.SERVICE === 'ELVEN_NOTIFY_C') {
+                    _this.componentData = this
                     theLogic.options = options
                     theLogic.init()
-                    instance.componentData = this
                     app.config.globalProperties.$elvenNotify = theLogic
                 }
             },
@@ -26,21 +32,26 @@ export class theLogic {
 
     static init() {
         if (this.options) {
-            return null
+            if (this.options.timer) {
+               ElvenNotify.componentData.deletedIn = this.options.timer
+            }
         }
     }
 
     static error(message){
-      // ElvenNotify.componentData.addError(message)
-        let cnt = 0
-        const inter = setInterval(() =>{
-            if(cnt >= 10){
-                clearInterval(inter)
-            } else {
-                cnt++
-                ElvenNotify.componentData.addError(`сообщение: ${cnt}`)
-            }
-        }, 500)
+      ElvenNotify.componentData.addNotification('error', message)
+    }
+
+    static warn(message){
+        ElvenNotify.componentData.addNotification('warn', message)
+    }
+
+    static info(message){
+        ElvenNotify.componentData.addNotification('info', message)
+    }
+
+    static success(message){
+        ElvenNotify.componentData.addNotification('success', message)
     }
 
 }
