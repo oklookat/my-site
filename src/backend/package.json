@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@adonisjs/core": "^5.3.2",
-    "@adonisjs/lucid": "^15.0.3",
+    "@adonisjs/lucid": "^16.0.0",
     "@adonisjs/repl": "^3.1.6",
     "@types/crypto-js": "^4.0.1",
     "bcrypt": "^5.0.1",
