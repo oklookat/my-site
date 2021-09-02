@@ -14,21 +14,11 @@ class AuthAdapter {
             .then(() => {
                 return Promise.resolve()
             })
-            .catch(error => {
-                if (!error.response) {
-                    return Promise.reject('Произошла ошибка. Попробуйте позже.')
-                }
-                const readableErr = error.response.data.error
-                if(readableErr){
-                    return Promise.reject(readableErr)
-                } else{
-                    return Promise.reject(error.response.status)
-                }
-            })
+            .catch(() => {})
     }
 
     public static async logout() {
-        await Axios.post('auth/logout')
+        await Axios.post('auth/logout').catch(() => {})
         await router.push({name: 'Login'})
     }
 
@@ -38,7 +28,6 @@ class AuthAdapter {
                 return Promise.resolve(result)
             })
             .catch((error) =>{
-                return Promise.reject(error)
             })
     }
 }

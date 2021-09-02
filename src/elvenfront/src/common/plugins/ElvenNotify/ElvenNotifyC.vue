@@ -30,6 +30,8 @@ export default defineComponent({
       notifications: [],
       notificationsCounter: 0,
       deletedIn: 5000,
+      maxNotificationsD: 8, // desktop
+      maxNotificationsM: 2, // mobile
     }
   },
   methods: {
@@ -55,7 +57,13 @@ export default defineComponent({
       if (this.notifications.length < 1) {
         this.notificationsCounter = 0
       }
-      if (this.notifications.length > 7) {
+      let isMaxNotifications = false
+      if(window.screen.width > 765){
+        isMaxNotifications = this.notifications.length > this.maxNotificationsD - 1
+      } else {
+        isMaxNotifications = this.notifications.length > this.maxNotificationsM - 1
+      }
+      if (isMaxNotifications) {
         this.deleteNotificationByID(this.notifications[0].id)
       }
       this.setNotification(notification)
@@ -155,7 +163,6 @@ export default defineComponent({
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr min-content;
-  position: fixed;
 }
 
 .not-message {

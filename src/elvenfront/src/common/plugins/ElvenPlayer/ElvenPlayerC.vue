@@ -5,6 +5,13 @@
       <div id="audio-player-buffered"></div>
     </div>
     <div class="audio-player-main">
+      <div class="audio-player-volume-control">
+<!--        <div class="audio-player-mute">Mute</div>-->
+        <div class="volume-slider-container" id="volume-container">
+          <div id="volume-slider"></div>
+          <div id="volume-slider-bubble"></div>
+        </div>
+      </div>
       <div class="audio-player-item" id="audio-player-prev">
         <svg id="audio-player-prev-butt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 406.76 169.37">
           <path
@@ -121,6 +128,32 @@ export default {
 
 #audio-player-buffered {
   background-color: #999999;
+}
+
+.volume-slider-container{
+  position: relative;
+  width: 164px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+}
+#volume-slider{
+  position: absolute;
+  border-radius: 2px;
+  width: 100%;
+  height: 100%;
+  background-color: red;
+  top: auto;
+  bottom: 0;
+}
+#volume-slider-bubble{
+  position: absolute;
+  background-color: blueviolet;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  left: 100%;
+  margin-left: -3px;
 }
 
 .audio-player-item svg {

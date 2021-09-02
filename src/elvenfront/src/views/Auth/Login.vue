@@ -5,10 +5,9 @@
       <input type="text" name="username" placeholder="Имя пользователя" v-model="username" @input="trackInput">
       <input type="password" name="password" placeholder="Пароль" v-model="password" @input="trackInput">
     </div>
-    <div class="auth-button" @click="makeLogin">
+    <button :disabled="!username || !password" class="auth-button" @click="makeLogin">
       Войти
-    </div>
-    <div class="error" v-if="isError">{{ error }}</div>
+    </button>
   </div>
 </template>
 
@@ -20,8 +19,6 @@ export default defineComponent({
   name: 'Login',
   data() {
     return {
-      isError: false,
-      error: '',
       username: '',
       password: '',
     }
@@ -32,10 +29,6 @@ export default defineComponent({
       AuthAdapter.login(this.username, this.password)
           .then(() =>{
             this.$router.push({name: 'Index'})
-          })
-          .catch(error => {
-            this.isError = true
-            this.error = error
           })
     }
   }
@@ -64,15 +57,12 @@ export default defineComponent({
 input {
   height: 48px;
   width: 264px;
-  box-shadow: 0px 0px 19px 0px rgba(34, 60, 80, 0.02);
+  box-shadow: 0 0 19px 0 rgba(34, 60, 80, 0.02);
 }
 
 .auth-button {
-  box-shadow: 0px 0px 19px 0px rgba(34, 60, 80, 0.02);
-
-
-
-
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 19px 0 rgba(34, 60, 80, 0.02);
   background-color: var(--color-level-1);
   border-radius: 8px;
   display: flex;

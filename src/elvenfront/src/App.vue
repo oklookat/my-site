@@ -1,7 +1,7 @@
 <template>
   <div class="container">
+    <elven-notify></elven-notify>
     <div class="service" v-if="$route.name !== 'Login' && $route.name !== 'Logout'">
-      <elven-notify></elven-notify>
       <Header></Header>
       <elven-progress></elven-progress>
     </div>
@@ -28,7 +28,6 @@ export default defineComponent({
     }
   },
   mounted() {
-    this.$elvenNotify.error('Крутяк, это работает, всем привет!')
   }
 })
 </script>
