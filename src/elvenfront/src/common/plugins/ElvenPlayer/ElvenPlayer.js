@@ -1,4 +1,4 @@
-import ElvenPlayerC from './ElvenPlayerC.vue'
+import ElvenPlayerC from './components/ElvenPlayerC.vue'
 import ElvenPlayerCore from "@/common/plugins/ElvenPlayer/core/ElvenPlayerCore";
 
 export default class ElvenPlayer {

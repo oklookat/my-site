@@ -1,5 +1,4 @@
 import ElvenPlayerCore from "@/common/plugins/ElvenPlayer/core/ElvenPlayerCore";
-import * as buffer from "buffer";
 
 export default class ElvenPlayerWorker {
 
@@ -15,19 +14,33 @@ export default class ElvenPlayerWorker {
     private isElementsInitialized: boolean = false
     public audioPlayerEL: HTMLAudioElement
     public containerEL: HTMLElement
-    private progressContainerEL: HTMLElement
-    private progressBarEL: HTMLElement
-    private bufferedBarEL: HTMLElement
     private playEL: HTMLElement
     private pauseEL: HTMLElement
     private nextEL: HTMLElement
     private prevEL: HTMLElement
     private closeEL: HTMLElement
-    private volumeContainerEL: HTMLElement
+
+    private progressSliderContainerEL: HTMLElement
+    private progressSliderEL: HTMLElement
+    private bufferedSliderEL: HTMLElement
+    private progressSliderBubbleEL: HTMLElement
+
+    private volumeSliderContainerEL: HTMLElement
     private volumeSliderEL: HTMLElement
     private volumeSliderBubbleEL: HTMLElement
 
     // saved events links (for cleanup)
+    private _onPlaying = this.onPlaying.bind(this)
+    private _onPause = this.onPause.bind(this)
+    private _onEnded = this.onEnded.bind(this)
+    private _onTimeUpdate = this.onTimeUpdate.bind(this)
+    private _onError = this.onError.bind(this)
+    private _onPlayClick = this.onPlayClick.bind(this)
+    private _onPauseClick = this.onPauseClick.bind(this)
+    private _onNextClick = this.onNextClick.bind(this)
+    private _onPrevClick = this.onPrevClick.bind(this)
+    private _onCloseClick = this.onCloseClick.bind(this)
+    private _onMovingMouseDown = this.onMovingMouseDown.bind(this)
     private _documentMouseMove = this.onDocumentMouseMove.bind(this)
     private _documentMouseUp = this.onDocumentMouseUp.bind(this)
 
@@ -36,39 +49,51 @@ export default class ElvenPlayerWorker {
         this.core = coreContext
         this.initElements()
         this.audioPlayerEL = new Audio('')
+        this.setVolume(this.audioPlayerEL.volume * 100)
     }
 
     // initialize
 
     public initElements() {
         const container = document.getElementById('audio-player-container')
-        const progressContainer = document.getElementById('audio-player-progress-container')
-        const progress = document.getElementById('audio-player-progressbar')
-        const buffered = document.getElementById('audio-player-buffered')
         const play = document.getElementById('audio-player-play-butt')
         const pause = document.getElementById('audio-player-pause-butt')
         const next = document.getElementById('audio-player-next-butt')
         const prev = document.getElementById('audio-player-prev-butt')
         const close = document.getElementById('audio-player-close-butt')
-        const volumeContainer = document.getElementById('volume-container')
-        const volumeSlider = document.getElementById('volume-slider')
-        const volumeSliderBubble = document.getElementById('volume-slider-bubble')
-        const isElements = container && progressContainer && progress
-            && buffered && play && pause && next && prev && close && volumeContainer
-            && volumeSlider && volumeSliderBubble
+
+
+        const progressContainer = document.querySelector('.playback-progressbar')
+        if(progressContainer){
+            this.progressSliderContainerEL = progressContainer
+            const buffered = progressContainer.querySelector('.sl-buffered')
+            const slider = progressContainer.querySelector('.sl-slider')
+            const sliderBubble = progressContainer.querySelector('.sl-slider-bubble')
+            if(buffered && slider && sliderBubble){
+                this.bufferedSliderEL = buffered
+                this.progressSliderEL = slider
+                this.progressSliderBubbleEL = sliderBubble
+            }
+        }
+        const volumeSliderContainer = document.querySelector('.volume-slider')
+        if(volumeSliderContainer){
+            this.volumeSliderContainerEL = volumeSliderContainer
+            const slider = volumeSliderContainer.querySelector('.sl-slider')
+            const sliderBubble = volumeSliderContainer.querySelector('.sl-slider-bubble')
+            if(slider && sliderBubble){
+                this.volumeSliderEL = slider
+                this.volumeSliderBubbleEL = sliderBubble
+            }
+        }
+
+        const isElements = container && play && pause && next && prev && close
         if (isElements) {
             this.containerEL = container
-            this.progressContainerEL = progressContainer
-            this.progressBarEL = progress
-            this.bufferedBarEL = buffered
             this.playEL = play
             this.pauseEL = pause
             this.nextEL = next
             this.prevEL = prev
             this.closeEL = close
-            this.volumeContainerEL = volumeContainer
-            this.volumeSliderEL = volumeSlider
-            this.volumeSliderBubbleEL = volumeSliderBubble
             this.isElementsInitialized = true
         } else {
             this.isElementsInitialized = false
@@ -80,42 +105,56 @@ export default class ElvenPlayerWorker {
         if (!this.isElementsInitialized) {
             this.initElements()
         }
-        this.audioPlayerEL.addEventListener('playing', this.onPlaying.bind(this))
-        this.audioPlayerEL.addEventListener('pause', this.onPause.bind(this))
-        this.audioPlayerEL.addEventListener('ended', this.onEnded.bind(this))
-        this.audioPlayerEL.addEventListener('timeupdate', this.onTimeupdate.bind(this))
-        this.audioPlayerEL.addEventListener('error', this.onError.bind(this))
+        // audio element events
+        this.audioPlayerEL.addEventListener('playing', this._onPlaying)
+        this.audioPlayerEL.addEventListener('pause', this._onPause)
+        this.audioPlayerEL.addEventListener('ended', this._onEnded)
+        this.audioPlayerEL.addEventListener('timeupdate', this._onTimeUpdate)
+        this.audioPlayerEL.addEventListener('error', this._onError)
         // playback controls
-        this.playEL.addEventListener('click', this.onPlayClick.bind(this))
-        this.pauseEL.addEventListener('click', this.onPauseClick.bind(this))
-        this.nextEL.addEventListener('click', this.onNextClick.bind(this))
-        this.prevEL.addEventListener('click', this.onPrevClick.bind(this))
-        this.closeEL.addEventListener('click', this.onCloseClick.bind(this))
-        // rewind on progress click
-        this.progressContainerEL.addEventListener('mousedown', this.onMovingMousedown.bind(this), {passive: false})
-        this.progressContainerEL.addEventListener('touchstart', this.onMovingMousedown.bind(this), {passive: false})
-        // volume on slider click
-        this.volumeSliderEL.addEventListener('mousedown', this.onMovingMousedown.bind(this), {passive: false})
-        this.volumeSliderEL.addEventListener('touchstart', this.onMovingMousedown.bind(this), {passive: false})
+        this.playEL.addEventListener('click', this._onPlayClick)
+        this.pauseEL.addEventListener('click', this._onPauseClick)
+        this.nextEL.addEventListener('click', this._onNextClick)
+        this.prevEL.addEventListener('click', this._onPrevClick)
+        this.closeEL.addEventListener('click', this._onCloseClick)
+
+        // rewind on progress click / press
+        this.progressSliderContainerEL.addEventListener('mousedown', this._onMovingMouseDown, {passive: false})
+        this.progressSliderContainerEL.addEventListener('touchstart', this._onMovingMouseDown, {passive: false})
+        this.progressSliderBubbleEL.addEventListener('mousedown', this._onMovingMouseDown, {passive: false})
+        this.progressSliderBubbleEL.addEventListener('touchstart', this._onMovingMouseDown, {passive: false})
+        // volume slider click / press
+        this.volumeSliderContainerEL.addEventListener('mousedown', this._onMovingMouseDown, {passive: false})
+        this.volumeSliderEL.addEventListener('mousedown', this._onMovingMouseDown, {passive: false})
+        this.volumeSliderEL.addEventListener('touchstart', this._onMovingMouseDown, {passive: false})
+        this.volumeSliderBubbleEL.addEventListener('mousedown', this._onMovingMouseDown, {passive: false})
+        this.volumeSliderBubbleEL.addEventListener('touchstart', this._onMovingMouseDown, {passive: false})
     }
 
     // cleanup
 
     public destroyEvents() {
-        this.audioPlayerEL.removeEventListener('playing', this.onPlaying)
-        this.audioPlayerEL.removeEventListener('pause', this.onPause)
-        this.audioPlayerEL.removeEventListener('ended', this.onEnded)
-        this.audioPlayerEL.removeEventListener('timeupdate', this.onTimeupdate)
-        this.audioPlayerEL.removeEventListener('error', this.onError)
-        this.playEL.removeEventListener('click', this.onPlayClick)
-        this.pauseEL.removeEventListener('click', this.onPauseClick)
-        this.nextEL.removeEventListener('click', this.onNextClick)
-        this.prevEL.removeEventListener('click', this.onPrevClick)
-        this.closeEL.removeEventListener('click', this.onCloseClick)
-        this.progressContainerEL.removeEventListener('mousedown', this.onMovingMousedown)
-        this.progressContainerEL.removeEventListener('touchstart', this.onMovingMousedown)
-        this.volumeSliderEL.removeEventListener('mousedown', this.onMovingMousedown)
-        this.volumeSliderEL.removeEventListener('touchstart', this.onMovingMousedown)
+        // audio element events
+        this.audioPlayerEL.removeEventListener('playing', this._onPlaying)
+        this.audioPlayerEL.removeEventListener('pause', this._onPause)
+        this.audioPlayerEL.removeEventListener('ended', this._onEnded)
+        this.audioPlayerEL.removeEventListener('timeupdate', this._onTimeUpdate)
+        this.audioPlayerEL.removeEventListener('error', this._onError)
+        // playback controls
+        this.playEL.removeEventListener('click', this._onPlayClick)
+        this.pauseEL.removeEventListener('click', this._onPauseClick)
+        this.nextEL.removeEventListener('click', this._onNextClick)
+        this.prevEL.removeEventListener('click', this._onPrevClick)
+        this.closeEL.removeEventListener('click', this._onCloseClick)
+        // rewind on progress click / press
+        this.progressSliderContainerEL.removeEventListener('mousedown', this._onMovingMouseDown)
+        this.progressSliderContainerEL.removeEventListener('touchstart', this._onMovingMouseDown)
+        // volume slider click / press
+        this.volumeSliderContainerEL.removeEventListener('mousedown', this._onMovingMouseDown)
+        this.volumeSliderEL.removeEventListener('mousedown', this._onMovingMouseDown)
+        this.volumeSliderEL.removeEventListener('touchstart', this._onMovingMouseDown)
+        this.volumeSliderBubbleEL.removeEventListener('mousedown', this._onMovingMouseDown)
+        this.volumeSliderBubbleEL.removeEventListener('touchstart', this._onMovingMouseDown)
     }
 
     // playback
@@ -156,10 +195,11 @@ export default class ElvenPlayerWorker {
         await this.core.next()
     }
 
-    private onTimeupdate() {
+    private onTimeUpdate() {
         if (!this.isProgressMouseDown) {
             const percents = this.computePercents(this.audioPlayerEL.currentTime, this.audioPlayerEL.duration)
-            this.progressBarEL.style.width = `${percents}%`
+            this.progressSliderEL.style.width = `${percents}%`
+            this.progressSliderBubbleEL.style.left = `${percents}%`
             this.computeBuffered()
         }
     }
@@ -200,7 +240,7 @@ export default class ElvenPlayerWorker {
 
     // moving stuff
 
-    private onMovingMousedown(event: MouseEvent | TouchEvent) {
+    private onMovingMouseDown(event: MouseEvent | TouchEvent) {
         // on user move audio progressbar or volume slider
         /// progress:
         // when user move mouse or finger down
@@ -210,12 +250,14 @@ export default class ElvenPlayerWorker {
         // difference with progress - we need set volume immediately, without preview
         switch (event.target) {
             // audio progress triggered
-            case this.progressContainerEL:
-            case this.progressBarEL:
-            case this.bufferedBarEL:
+            case this.progressSliderContainerEL:
+            case this.progressSliderEL:
+            case this.bufferedSliderEL:
+            case this.progressSliderBubbleEL:
                 this.isProgressMouseDown = true
                 break
             // volume slider triggered
+            case this.volumeSliderContainerEL:
             case this.volumeSliderEL:
             case this.volumeSliderBubbleEL:
                 this.isVolumeMouseDown = true
@@ -275,33 +317,69 @@ export default class ElvenPlayerWorker {
         }
     }
 
+    // progressbar, on user move mouse
     private computeProgressPreview(pageX: number) {
-        const clickPosition = this.getClickPosition(pageX, this.progressContainerEL)
+        const clickPosition = this.getClickPosition(pageX, this.progressSliderContainerEL)
         this.progressPreviewTime = clickPosition * this.audioPlayerEL.duration
-        const percents = this.computePercents(this.progressPreviewTime, this.audioPlayerEL.duration)
-        this.progressBarEL.style.width = `${percents}%`
+        let percents = this.computePercents(this.progressPreviewTime, this.audioPlayerEL.duration)
+        if(percents > 100){
+            percents = 100
+        }
+        if(percents < 0){
+            percents = 0
+        }
+        this.progressSliderEL.style.width = `${percents}%`
+        this.progressSliderBubbleEL.style.left = `calc(${percents}% - 6px)`
     }
 
+    // computing how much buffered
+    private computeBuffered(currentTime = this.audioPlayerEL.currentTime) {
+        currentTime = Math.round(currentTime)
+        const duration = this.audioPlayerEL.duration
+        if (duration > 0) {
+            for (let i = 0; i < this.audioPlayerEL.buffered.length; i++) {
+                const len = this.audioPlayerEL.buffered.length - 1 - i
+                if (this.audioPlayerEL.buffered.start(len) < currentTime) {
+                    const percents = this.computePercents(this.audioPlayerEL.buffered.end(len), duration)
+                    this.bufferedSliderEL.style.width = `${percents}%`
+                    break
+                }
+            }
+        }
+    }
+
+    // VOLUME EVENTS START //
     private computeVolume(pageX: number) {
-        const clickPosition = this.getClickPosition(pageX, this.volumeContainerEL)
-        this.volume = Math.round(clickPosition * (this.audioPlayerEL.volume * 100))
-        if(this.volume > 100){
-            this.volume = 100
-        }
-        if(this.volume < 1){
-            this.volume = 1
-        }
+        const clickPosition = this.getClickPosition(pageX, this.volumeSliderContainerEL)
+        this.volume = Math.round(clickPosition * 100)
         const percents = this.computePercents(this.volume, 100)
-        this.volumeSliderEL.style.width = `${percents}%`
-        this.volume = this.volume / 100
-        if(this.volume < 0.1){
-            this.volume = 0.1
-        }
-        this.audioPlayerEL.volume = this.volume
+        this.setVolume(percents)
         console.log(`volume in player: ${this.volume}`)
     }
 
+    private setVolume(percents: number){
+        if(percents > 100){
+            percents = 100
+            this.volume = 100
+        }
+        if(percents < 0){
+            percents = 0
+            this.volume = 0
+        }
+        this.volumeSliderEL.style.width = `${percents}%`
+        this.volumeSliderBubbleEL.style.left = `calc(${percents}% - 6px)` // -6 = margin
+        this.volume = percents / 100
+        if(this.volume > 1){
+            this.volume = 1
+        } else if(this.volume < 0){
+            this.volume = 0
+        }
+        this.audioPlayerEL.volume = this.volume
+    }
+    // VOLUME EVENTS END //
 
+
+    // SERVICE START //
     // get pageX (horizontal mouse position) by touch or mouse event
     private getPageX(event): number | null {
         let pageX = null
@@ -326,7 +404,6 @@ export default class ElvenPlayerWorker {
         return pageX
     }
 
-
     // compute audio progress by duration and current time (percents)
     private computePercents(current: number, total: number): number {
         current = Math.round(current)
@@ -344,23 +421,7 @@ export default class ElvenPlayerWorker {
         const clickPosition = (pageX - element.offsetLeft) / element.offsetWidth
         return clickPosition
     }
-
-
-    // computing how much buffered
-    private computeBuffered(currentTime = this.audioPlayerEL.currentTime) {
-        currentTime = Math.round(currentTime)
-        const duration = this.audioPlayerEL.duration
-        if (duration > 0) {
-            for (let i = 0; i < this.audioPlayerEL.buffered.length; i++) {
-                const len = this.audioPlayerEL.buffered.length - 1 - i
-                if (this.audioPlayerEL.buffered.start(len) < currentTime) {
-                    const percents = this.computePercents(this.audioPlayerEL.buffered.end(len), duration)
-                    this.bufferedBarEL.style.width = `${percents}%`
-                    break
-                }
-            }
-        }
-    }
+    // SERVICE END //
 
 
 }

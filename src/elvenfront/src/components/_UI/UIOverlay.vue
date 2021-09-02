@@ -1,7 +1,7 @@
 <template>
-  <div class="ui-overlay-container" v-if="active" v-on:click.self="deactivate">
-    <div class="ui-overlay">
-      <div class="ui-overlay-content">
+  <div class="overlay-container" v-if="active" v-on:click.self="deactivate">
+    <div class="overlay">
+      <div class="content">
         <slot></slot>
       </div>
     </div>
@@ -42,7 +42,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.ui-overlay-container{
+.overlay-container{
   background-color: rgba(0,0,0,0.7);
   z-index: 9998;
   max-width: 100vw;
@@ -55,22 +55,22 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
 }
-.ui-overlay{
-  background-color: var(--color-body);
+.overlay{
+  background-color: white;
   border-radius: 12px;
   z-index: 9999;
   overflow: auto;
   max-width: 365px;
   max-height: 365px;
-  width: 90%;
-  height: 100%;
+  width: 250px;
+  height: 250px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   border: var(--color-border) 1px solid;
 }
-.ui-overlay-content{
+.content{
   box-sizing: border-box;
   /*padding-top: 12px;*/
   /*margin-left: 12px;*/
