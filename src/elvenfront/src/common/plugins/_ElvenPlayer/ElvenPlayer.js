@@ -3,6 +3,7 @@ import ElvenPlayerCore from "@/common/plugins/ElvenPlayer/core/ElvenPlayerCore";
 
 export default class ElvenPlayer {
     static componentData = null
+    static audioPlayer = null
 
     static install(app, options) {
         app.component('elven-player', ElvenPlayerC)
@@ -15,6 +16,11 @@ export default class ElvenPlayer {
                     theLogic.init()
                     instance.componentData = this
                     app.config.globalProperties.$elvenPlayer = theLogic
+                }
+            },
+            mounted() {
+                if (this.SERVICE === 'ELVEN_PLAYER_C') {
+                    instance.audioPlayer = new ElvenPlayerCore()
                 }
             },
         })
@@ -32,16 +38,15 @@ export class theLogic {
     }
 
     static addToPlaylist(url) {
-        ElvenPlayer.componentData.player.addToPlaylist(url)
+        ElvenPlayer.audioPlayer.addToPlaylist(url)
     }
 
     static setPlaylist(playlist){
-        ElvenPlayer.componentData.player.setPlaylist(playlist)
+        ElvenPlayer.audioPlayer.setPlaylist(playlist)
     }
 
-    static async play(url){
+    static play(url){
         theLogic.setPlaylist([url])
-        ElvenPlayer.componentData.player.audioPlayer.active = true
-        await ElvenPlayer.componentData.player.play()
+        ElvenPlayer.audioPlayer.play()
     }
 }

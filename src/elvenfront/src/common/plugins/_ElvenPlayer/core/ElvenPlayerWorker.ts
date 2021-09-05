@@ -36,7 +36,6 @@ export default class ElvenPlayerWorker {
     private _onEnded = this.onEnded.bind(this)
     private _onTimeUpdate = this.onTimeUpdate.bind(this)
     private _onError = this.onError.bind(this)
-
     private _onPlayClick = this.onPlayClick.bind(this)
     private _onPauseClick = this.onPauseClick.bind(this)
     private _onNextClick = this.onNextClick.bind(this)

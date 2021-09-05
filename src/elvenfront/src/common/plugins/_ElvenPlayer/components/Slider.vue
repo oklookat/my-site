@@ -52,9 +52,4 @@ export default {
   margin-left: -6px;
   transition: width, height 100ms;
 }
-
-.sl-slider-bubble:hover{
-  width: 25px;
-  height: 25px;
-}
 </style>
