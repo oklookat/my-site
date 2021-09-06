@@ -18,6 +18,7 @@ const props = defineProps({
 }
 
 .ps-progress{
+  border-radius: inherit;
   height: 100%;
   width: 0;
   background-color: #404040;

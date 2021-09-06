@@ -1,5 +1,4 @@
-import ElvenPlayerC from './components/ElvenPlayerC.vue'
-import ElvenPlayerCore from "@/common/plugins/ElvenPlayer/core/ElvenPlayerCore";
+import ElvenPlayerC from './components/Player/Component.vue'
 
 export default class ElvenPlayer {
     static componentData = null
@@ -31,17 +30,17 @@ export class theLogic {
         }
     }
 
-    static addToPlaylist(url) {
-        ElvenPlayer.componentData.player.addToPlaylist(url)
+    static async addToPlaylist(url) {
+        await ElvenPlayer.componentData.player.addToPlaylist(url)
     }
 
-    static setPlaylist(playlist){
-        ElvenPlayer.componentData.player.setPlaylist(playlist)
+    static async setPlaylist(playlist){
+        await ElvenPlayer.componentData.player.setPlaylist(playlist)
     }
 
     static async play(url){
-        theLogic.setPlaylist([url])
         ElvenPlayer.componentData.player.audioPlayer.active = true
+        await theLogic.setPlaylist([url])
         await ElvenPlayer.componentData.player.play()
     }
 }
