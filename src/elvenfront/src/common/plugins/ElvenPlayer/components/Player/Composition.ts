@@ -31,7 +31,7 @@ export default class Composition {
     private _onEnded = this.onEnded.bind(this)
     private _onTimeUpdate = this.onTimeUpdate.bind(this)
     private _onError = this.onError.bind(this)
-    private playPromise = undefined
+    private playPromise: Promise<void> | undefined = undefined
 
     constructor() {
         this.audioPlayer = {

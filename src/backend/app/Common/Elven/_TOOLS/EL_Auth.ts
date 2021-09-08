@@ -128,7 +128,7 @@ class EL_Auth {
   }
 
   private static tokenWriteAuthAgents(request: RequestContract, token: Token): Token {
-    // remember: this method don't saving token, you need save it manual
+    // this method don't saving token, you need save it manual
     const ip = request.ip()
     const agent = request.header('User-Agent')
     token.auth_ip = ip
@@ -138,11 +138,11 @@ class EL_Auth {
     return token
   }
 
-  public static tokenWriteLastAgents(request: RequestContract, token: Token): Token {
-    // remember: this method don't saving token, you need save it manual
+  public static async tokenWriteLastAgents(request: RequestContract, token: Token): Promise<Token> {
     token.last_ip = request.ip()
     token.last_agent = request.header('User-Agent')
-    return token
+    await token.save().catch(() => {})
+    return Promise.resolve(token)
   }
 }
 

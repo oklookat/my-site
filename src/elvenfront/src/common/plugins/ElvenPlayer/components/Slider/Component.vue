@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, onUnmounted, reactive, ref, toRefs, watch, defineExpose, toRef} from "vue"
+import {onMounted, onUnmounted, reactive, ref, toRefs, watch, toRef} from "vue"
 import Composition from "@/common/plugins/ElvenPlayer/components/Slider/Composition"
 
 interface IProps {

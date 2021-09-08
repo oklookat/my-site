@@ -27,7 +27,7 @@ export default class Perm {
 
   public async handle(ctx: HttpContextContract, next: () => Promise<void>, perm: string[]) {
     if (perm.length < 1 || !perms.accessTypes.includes(perm[0])) {
-      Logger.fatal("wrong access type in perm middleware args")
+      Logger.fatal("[perm middleware] wrong access type in args")
     }
     let isAccessGranted: boolean
     const accessType = perm[0]
@@ -36,8 +36,7 @@ export default class Perm {
       isAccessGranted = data.access
       if (data.user && data.token) {
         ctx.user = data.user // after this middleware you be have ctx.user with user instance (if user logged in, of course)
-        data.token = EL_Auth.tokenWriteLastAgents(ctx.request, data.token)
-        data.token.save().catch(() => {})
+        data.token = await EL_Auth.tokenWriteLastAgents(ctx.request, data.token)
       }
     } catch (error) {
       // all errors in this middleware be here. For debug paste console.log(error).

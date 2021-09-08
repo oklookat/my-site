@@ -74,6 +74,7 @@ import Progress from '../Progress/Component.vue'
 import {onMounted, onUnmounted, ref, toRefs, watch} from "vue"
 import Composition from "@/common/plugins/ElvenPlayer/components/Player/Composition";
 import PlaybackControls from "@/common/plugins/ElvenPlayer/components/Player/PlaybackControls.vue";
+
 const props = defineProps({
   player: Composition,
 })

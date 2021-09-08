@@ -1,0 +1,22 @@
+{
+  "Debug": true,
+  "Timezone": "Europe/Moscow",
+  "Host": "localhost",
+  "Port": "9999",
+  "DB": {
+    "driver": "Postgres",
+    "postgres": {
+      "host": "localhost",
+      "port": "5432",
+      "user": "postgres",
+      "password": "root",
+      "database": "elven_go"
+    }
+  },
+  "Logger": {
+    "writeToConsole": true,
+    "writeToFile": true,
+    "maxLogSize": 10000000,
+    "maxLogDirSize": 10000000
+  }
+}
