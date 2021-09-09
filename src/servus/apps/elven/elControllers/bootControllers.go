@@ -1,4 +1,4 @@
-package controllers
+package elControllers
 
 import "servus/core"
 

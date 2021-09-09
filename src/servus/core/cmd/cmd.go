@@ -32,21 +32,6 @@ func BootCmd(_servus *core.Servus) {
 	}
 }
 
-func menuMaster() {
-	menuDrawer("Servus", []string{"Exit", "Continue booting", "Create superuser"})
-	var selected string
-	scanner(&selected)
-	switch selected {
-	case "0": os.Exit(1)
-	case "1": return
-	case "2": createSuperuser()
-	default:
-		fmt.Println("Wrong selection. Try again.")
-		menuMaster()
-	}
-	return
-}
-
 func menuDrawer(title string, items []string){
 	var upper = fmt.Sprintf( "--- %v ---", title)
 	fmt.Println(upper)
@@ -62,6 +47,22 @@ func menuDrawer(title string, items []string){
 	fmt.Println(bottom)
 	fmt.Println("Type: ")
 }
+
+func menuMaster() {
+	menuDrawer("Servus", []string{"Exit", "Continue booting", "elven: create superuser"})
+	var selected string
+	scanner(&selected)
+	switch selected {
+	case "0": os.Exit(1)
+	case "1": return
+	case "2": createSuperuser()
+	default:
+		fmt.Println("Wrong selection. Try again.")
+		menuMaster()
+	}
+	return
+}
+
 
 func createSuperuser(){
 	fmt.Println("Username: ")

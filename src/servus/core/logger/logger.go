@@ -15,10 +15,7 @@ import (
 // New create new logger
 func New(config Config) Logger {
 	var logger = Logger{Config: config}
-	var err = newFileWriter(&logger, time.Now())
-	if err != nil {
-		panic(err)
-	}
+	newFileWriter(&logger, time.Now())
 	return logger
 }
 
@@ -108,37 +105,33 @@ func logFileWriter(l *Logger, calledLevelString string, at string, message strin
 	}
 }
 
-func logFileWriterOptimizer(l *Logger, currentDate time.Time) (bool, error) {
+func logFileWriterOptimizer(l *Logger, currentDate time.Time){
 	// create new log file if new day
 	var _, _, fileDay = l.fileWriterInfo.fileDate.Date()
 	var _, _, currentDay = currentDate.Date()
 	if fileDay != currentDay{
-		err := newFileWriter(l, currentDate)
-		if err != nil {
-			return false, err
-		}
+		newFileWriter(l, currentDate)
 	}
 	// create new log if current log size very big
 	logFileStat, err := l.fileWriterInfo.file.Stat()
 	if err != nil {
-		log.Println(err)
-		return false, err
+		panic(err)
 	}
-	// log size > * bytes
-	if logFileStat.Size() > l.Config.maxLogSize {
+	// log size > some bytes
+	if logFileStat.Size() > l.Config.WriteToFile.MaxLogSize {
 		l.fileWriterInfo.file, err = os.Create(l.fileWriterInfo.fullPath)
 		if err != nil {
-			log.Println(err)
-			return false, err
+			panic(err)
 		}
 	}
-	return true, nil
+	return
 }
 
-func newFileWriter(l *Logger, date time.Time) error {
+func newFileWriter(l *Logger, date time.Time) {
 	if !l.Config.WriteToFile.Activated {
-		return nil
+		return
 	}
+	// if old file open, we close it
 	if l.fileWriterInfo.file != nil {
 		err := l.fileWriterInfo.file.Close()
 		if err != nil {
@@ -146,27 +139,22 @@ func newFileWriter(l *Logger, date time.Time) error {
 	}
 	var dirPath = l.Config.WriteToFile.Dir
 	l.fileWriterInfo.fileDate = date
-	var currentTime = date.Format("02.01.2006")
-	currentTime = strings.Replace(currentTime, ".", "_", -1)
-	var fileName = fmt.Sprintf("log_%v.txt", currentTime)
+	var fileName = fmt.Sprintf("log_%v.txt", date.Unix())
 	var filePath = fmt.Sprintf("%v/%v", dirPath, fileName)
 	l.fileWriterInfo.fullPath = filePath
-	// create dir if no exists
-	var err error
-	if _, err = os.Stat(dirPath); os.IsNotExist(err) {
+	// create log dir if no exists
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
 		err = os.MkdirAll(dirPath, 0700)
 		if err != nil {
-			return err
+			panic(err)
 		}
-	}
-	if err != nil {
-		return err
 	}
 	// create log file
 	logFile, err := os.Create(filePath)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	l.fileWriterInfo.file = logFile
-	return nil
+	cleanerMaxLogFiles(l, dirPath)
+	return
 }

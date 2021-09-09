@@ -30,20 +30,14 @@ func New(connectionStr string, _logger *logger.Logger) *DB {
 	pValidate = validator.New()
 	return &DB{
 		Connection: pConnection,
-		User:       UserObject{},
 	}
 }
 
 type DB struct {
 	Connection *pgx.Conn
-	User       UserObject
 }
 
 // service
-
-func structEmptyErr() error {
-	return errors.New("STRUCT_EMPTY")
-}
 
 func errorHandler(err error) error {
 	var errReadable error = nil
@@ -54,11 +48,14 @@ func errorHandler(err error) error {
 			switch pgErr.Code {
 			case pgerrcode.ConnectionException:
 				pLogger.Panic(err)
-			case pgerrcode.UniqueViolation: // for ex. username already exists
+			case pgerrcode.UniqueViolation:
+				// for ex. username already exists
 				return errors.New("DB_E_EXISTS")
-			case pgerrcode.NotNullViolation: // null value provided for NOT NULL
+			case pgerrcode.NotNullViolation:
+				// null value provided for NOT NULL
 				return errors.New("DB_E_NOT_NULL")
-			case pgerrcode.CheckViolation: // for ex. username has min length 4
+			case pgerrcode.CheckViolation:
+				// for ex. username has min length 4
 				return errors.New("DB_E_CHECK")
 			default:
 				return errors.New("DB_E_UNKNOWN")

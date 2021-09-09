@@ -23,9 +23,11 @@ type ConfigFile struct {
 	} `json:"DB"`
 	Logger struct {
 		WriteToConsole bool `json:"writeToConsole"`
-		WriteToFile bool `json:"writeToFile"`
-		MaxLogSize    int64 `json:"maxLogSize"`
-		MaxLogDirSize int64 `json:"maxLogDirSize"`
+		WriteToFile    struct {
+			Active      bool  `json:"active"`
+			MaxLogFiles int   `json:"maxLogFiles"`
+			MaxLogSize  int64 `json:"maxLogSize"`
+		} `json:"writeToFile"`
 	} `json:"Logger"`
 }
 

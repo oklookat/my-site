@@ -15,8 +15,10 @@
   },
   "Logger": {
     "writeToConsole": true,
-    "writeToFile": true,
-    "maxLogSize": 10000000,
-    "maxLogDirSize": 10000000
+    "writeToFile": {
+      "active": true,
+      "maxLogFiles": 3,
+      "maxLogSize": 10000000
+    }
   }
 }

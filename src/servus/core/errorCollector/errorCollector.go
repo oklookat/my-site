@@ -101,7 +101,7 @@ func (ec *errorCollector) AddEValidationEmpty(issuers []string) {
 }
 
 // AddEValidationAllowed like 'allowed only numbers' or 'is_published must be true or false'
-func (ec *errorCollector) AddEValidationAllowed(issuers []string, message string, allowed []string) {
+func (ec *errorCollector) AddEValidationAllowed(issuers []string, allowed []string) {
 	_error := EValidationAllowed{
 		EError{StatusCode: 400, ErrorCode: "E_VALIDATION_ALLOWED", Issuers: issuers, Message: "These things not allowed."},
 		allowed,

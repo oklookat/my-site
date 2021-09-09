@@ -42,9 +42,9 @@ type Config struct {
 	WriteToFile    struct {
 		Activated bool
 		Dir       string
+		MaxLogFiles int
+		MaxLogSize int64
 	}
-	maxLogSize int64
-	maxLogDirSize uint64
 }
 
 type Logger struct {

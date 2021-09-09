@@ -7,16 +7,21 @@ import (
 
 func bootLogger() logger.Logger {
 	// create log file
-	var dir = fmt.Sprintf("%v/logs/", servus.Utils.GetExecuteDir())
 	var writeToConsole = servus.Config.Logger.WriteToConsole
-	var writeToFile = servus.Config.Logger.WriteToFile
 	loggerConfig := logger.Config{
 		LogLevel:       logger.DebugLevel,
 		WriteToConsole: writeToConsole,
-		WriteToFile: struct {
-			Activated bool
-			Dir       string
-		}{Activated: writeToFile, Dir: dir},
+	}
+	// write to file
+	var wtfActive = servus.Config.Logger.WriteToFile.Active
+	loggerConfig.WriteToFile.Activated = wtfActive
+	if wtfActive {
+		var wtfDir = fmt.Sprintf("%v/logs/", servus.Utils.GetExecuteDir())
+		var wtfMaxLogFiles = servus.Config.Logger.WriteToFile.MaxLogFiles
+		var wtfMaxLogSize = servus.Config.Logger.WriteToFile.MaxLogSize
+		loggerConfig.WriteToFile.Dir = wtfDir
+		loggerConfig.WriteToFile.MaxLogFiles = wtfMaxLogFiles
+		loggerConfig.WriteToFile.MaxLogSize = wtfMaxLogSize
 	}
 	return logger.New(loggerConfig)
 }
