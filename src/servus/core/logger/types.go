@@ -35,6 +35,12 @@ type loggerI interface {
 	Panic(err error)
 }
 
+type Logger struct {
+	loggerI
+	Config
+	fileWriterInfo fileWriterInfo
+}
+
 // Config config
 type Config struct {
 	LogLevel       int
@@ -45,12 +51,6 @@ type Config struct {
 		MaxLogFiles int
 		MaxLogSize int64
 	}
-}
-
-type Logger struct {
-	loggerI
-	Config
-	fileWriterInfo fileWriterInfo
 }
 
 type fileWriterInfo struct {
