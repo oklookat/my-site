@@ -1,11 +1,12 @@
-package elControllers
+package elven
 
 import (
 	"net/http"
 	"servus/core/errorCollector"
 )
 
-func Login(response http.ResponseWriter, request *http.Request){
+// auth
+func controllerAuthLogin(response http.ResponseWriter, request *http.Request){
 	var username = request.FormValue("username")
 	var password = request.FormValue("password")
 	var authType = request.FormValue("type")
@@ -31,7 +32,6 @@ func Login(response http.ResponseWriter, request *http.Request){
 	//}
 }
 
-
-func Logout(w http.ResponseWriter, r *http.Request){
+func controllerAuthLogout(w http.ResponseWriter, r *http.Request){
 
 }
