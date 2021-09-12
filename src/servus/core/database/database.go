@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
@@ -12,8 +11,6 @@ import (
 )
 
 var pLogger *logger.Logger
-var pConnection *pgx.Conn
-var pValidate *validator.Validate
 
 func New(connectionStr string, _logger *logger.Logger) *DB {
 	pLogger = _logger
@@ -26,10 +23,8 @@ func New(connectionStr string, _logger *logger.Logger) *DB {
 	if err != nil {
 		pLogger.Panic(err)
 	}
-	pConnection = db
-	pValidate = validator.New()
 	return &DB{
-		Connection: pConnection,
+		Connection: db,
 	}
 }
 

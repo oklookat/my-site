@@ -8,6 +8,7 @@ import (
 
 type ConfigFile struct {
 	Debug    bool   `json:"Debug"`
+	Secret   string `json:"Secret"`
 	Timezone string `json:"Timezone"`
 	Host     string `json:"Host"`
 	Port     string `json:"Port"`

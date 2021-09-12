@@ -139,7 +139,7 @@ func newFileWriter(l *Logger, date time.Time) {
 	}
 	var dirPath = l.Config.WriteToFile.Dir
 	l.fileWriterInfo.fileDate = date
-	var fileName = fmt.Sprintf("log_%v.txt", date.Unix())
+	var fileName = fmt.Sprintf("at_%v.log", date.Unix())
 	var filePath = fmt.Sprintf("%v/%v", dirPath, fileName)
 	l.fileWriterInfo.fullPath = filePath
 	// create log dir if no exists

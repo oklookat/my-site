@@ -3,7 +3,6 @@ package errorCollector
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 )
 
 type errorCollectorI interface {
@@ -35,10 +34,7 @@ func (ec *errorCollector) HasErrors() bool {
 }
 
 func (ec *errorCollector) GetErrors() string {
-	var bytes, err = json.Marshal(ec.errorsArray)
-	if err != nil {
-		log.Println("json поломался")
-	}
+	var bytes, _ = json.Marshal(ec.errorsArray)
 	return fmt.Sprintf(`{"errors": %v}`, string(bytes))
 }
 

@@ -19,16 +19,17 @@ func cmdSuperuser() {
 }
 
 func cmdSuperuserRunForm() {
-	var username = ancientUI.AddInput(ancientUI.InputItem{Title: "username"})
+	servus.Logger.Info("--- create superuser (CTRL + D to exit)")
+	var username = ancientUI.AddInput(ancientUI.InputItem{Title: "Username"})
 	var err = validatorUsername(username)
 	if err != nil {
 		servus.Logger.Error(err.Error())
 		cmdSuperuserRunForm()
 	}
-	user, err := dbSearchUserBy(username)
+	user, err := dbFindUserBy(username)
 	// if user exists
 	if len(user.id) > 1 {
-		var deleteHim = ancientUI.AddQuestion(ancientUI.QuestionItem{Question: "This user exists. Delete him?"})
+		var deleteHim = ancientUI.AddQuestion(ancientUI.QuestionItem{Question: "Username exists. Delete?"})
 		if !deleteHim {
 			os.Exit(1)
 		}
@@ -37,13 +38,13 @@ func cmdSuperuserRunForm() {
 			println("Error while deleting user.")
 			cmdSuperuserRunForm()
 		}
-		var createNew = ancientUI.AddQuestion(ancientUI.QuestionItem{Question: "Continue creating user?"})
+		var createNew = ancientUI.AddQuestion(ancientUI.QuestionItem{Question: "Create new user?"})
 		if !createNew {
 			os.Exit(1)
 		}
 	}
 	// continue
-	var password = ancientUI.AddInput(ancientUI.InputItem{Title: "password"})
+	var password = ancientUI.AddInput(ancientUI.InputItem{Title: "Password"})
 	err = validatorPassword(password)
 	if err != nil {
 		servus.Logger.Error(err.Error())
@@ -55,5 +56,7 @@ func cmdSuperuserRunForm() {
 		println("Error while creating user.")
 		cmdSuperuserRunForm()
 	}
+	servus.Logger.Info("User created.")
+	os.Exit(1)
 }
 

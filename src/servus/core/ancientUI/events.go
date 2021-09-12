@@ -15,12 +15,12 @@ func onSelectItem(item SelectItem) string {
 		fmt.Println(format)
 		counter++
 	}
-	fmt.Println("Choose: ")
+	fmt.Println("- Choose: ")
 	scanner(&selected)
 	selectedNumber, err := strconv.Atoi(selected)
 	var selectedNumberInSlice = selectedNumber - 1
 	if err != nil || selectedNumberInSlice >= len(item.Items) || selectedNumberInSlice < 0 {
-		fmt.Println("Wrong selection. Try again.")
+		fmt.Println("- Wrong selection. Try again.")
 		onSelectItem(item)
 	}
 	var selectedInSlice = selectedNumber - 1
@@ -28,14 +28,14 @@ func onSelectItem(item SelectItem) string {
 }
 
 func onInputItem(items InputItem) string{
-	fmt.Println(fmt.Sprintf("%v:", items.Title))
+	fmt.Println(fmt.Sprintf("- %v:", items.Title))
 	var input string
 	scanner(&input)
 	return input
 }
 
 func onQuestionItem(item QuestionItem) bool {
-	fmt.Println(fmt.Sprintf("%v (Y/N)", item.Question))
+	fmt.Println(fmt.Sprintf("- %v (Y/N)", item.Question))
 	var input string
 	scanner(&input)
 	input = strings.ToUpper(input)
@@ -45,7 +45,7 @@ func onQuestionItem(item QuestionItem) bool {
 	case "N":
 		return false
 	default:
-		fmt.Println("Wrong answer. Type 'Y' or 'N'")
+		fmt.Println("- Wrong answer. Type 'Y' or 'N'")
 		onQuestionItem(item)
 	}
 	return false

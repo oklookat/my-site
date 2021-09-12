@@ -6,10 +6,10 @@ import (
 	"strings"
 )
 
-func cleanerMaxLogFiles(l *Logger, dirPath string){
+func cleanerMaxLogFiles(l *Logger, dirPath string) {
 	// delete the oldest file if max log files reached
 	files, err := os.ReadDir(dirPath)
-	if err != nil{
+	if err != nil {
 		return
 	}
 	var maxLogFiles = l.Config.WriteToFile.MaxLogFiles
@@ -29,7 +29,7 @@ func cleanerMaxLogFiles(l *Logger, dirPath string){
 			continue
 		}
 		// if not log file
-		if !strings.Contains(file.Name(), "log"){
+		if !strings.Contains(file.Name(), "at_") {
 			continue
 		}
 		// if its file and its log file

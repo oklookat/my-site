@@ -7,7 +7,7 @@ import (
 
 // logging levels
 const (
-	SilentLevel = iota
+	SilentLevel = iota // no messages
 	DebugLevel
 	InfoLevel
 	WarnLevel

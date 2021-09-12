@@ -24,14 +24,37 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request){
 		response.Write([]byte(ec.GetErrors()))
 		return
 	}
-
-
-	//for key, value := range request.Form{
-	//	println("lf")
-	//	println(fmt.Sprintf("%v / %v", key, value))
-	//}
+	var user, err = dbFindUserBy(username)
+	// user not found by username
+	if err != nil{
+		if err.Error() == "PIPE_USER_NOT_FOUND" {
+			serviceControllerAuthIncorrect(response)
+			return
+		}
+	}
+	var isPassword = servus.Utils.HashPasswordCheck(password, user.password)
+	// wrong password
+	if !isPassword {
+		serviceControllerAuthIncorrect(response)
+		return
+	}
+	// TODO: replace 'hello' to user id
+	// TODO: handle errors in crypt and decrypt methods
+	var hashed, encrypted, _ = servus.Utils.EncryptAES("hello")
+	var token = modelToken{userID: user.id, token: encrypted}
+	dbCreateToken(token)
+	println(hashed)
 }
 
 func controllerAuthLogout(w http.ResponseWriter, r *http.Request){
 
+}
+
+// used when wrong username or password
+func serviceControllerAuthIncorrect(response http.ResponseWriter){
+	var ec = errorCollector.New()
+	ec.AddEAuthIncorrect([]string{"auth"})
+	response.WriteHeader(403)
+	response.Write([]byte(ec.GetErrors()))
+	return
 }
