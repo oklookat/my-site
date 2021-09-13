@@ -1,13 +1,9 @@
-package elven
+package elUser
 
 import (
 	"os"
 	"servus/core/ancientUI"
 )
-
-func bootCmd() {
-	cmdSuperuser()
-}
 
 // create superuser
 func cmdSuperuser() {
@@ -59,4 +55,3 @@ func cmdSuperuserRunForm() {
 	servus.Logger.Info("User created.")
 	os.Exit(1)
 }
-

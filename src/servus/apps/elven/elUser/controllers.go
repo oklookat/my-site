@@ -1,12 +1,13 @@
-package elven
+package elUser
 
 import (
+	"fmt"
 	"net/http"
 	"servus/core/errorCollector"
 )
 
-// auth
-func controllerAuthLogin(response http.ResponseWriter, request *http.Request){
+// ControllerAuthLogin generate token if username and pass correct
+func ControllerAuthLogin(response http.ResponseWriter, request *http.Request){
 	var username = request.FormValue("username")
 	var password = request.FormValue("password")
 	var authType = request.FormValue("type")
@@ -18,6 +19,7 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request){
 		response.Write([]byte(ec.GetErrors()))
 		return
 	}
+	// detect auth type
 	if authType != "cookie" && authType != "direct"{
 		ec.AddEValidationAllowed([]string{"type"}, []string{"cookie", "direct"})
 		response.WriteHeader(400)
@@ -32,21 +34,34 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request){
 			return
 		}
 	}
+	// check password
 	var isPassword = servus.Utils.HashPasswordCheck(password, user.password)
 	// wrong password
 	if !isPassword {
 		serviceControllerAuthIncorrect(response)
 		return
 	}
-	// TODO: replace 'hello' to user id
-	// TODO: handle errors in crypt and decrypt methods
-	var hashed, encrypted, _ = servus.Utils.EncryptAES("hello")
-	var token = modelToken{userID: user.id, token: encrypted}
+	// generate token
+	// send to user token, in database save hashed token
+	var encrypted, _ = servus.Utils.EncryptAES(user.id)
+	var encryptedHashed, _ = servus.Utils.HashPassword(encrypted)
+	var token = modelToken{userID: user.id, token: encryptedHashed}
 	dbCreateToken(token)
-	println(hashed)
+	response.WriteHeader(200)
+	if authType == "direct" {
+		var direct = []byte(fmt.Sprintf(`{token: "%v"}`, encrypted))
+		response.Write(direct)
+		return
+	}
+	if authType == "cookie" {
+		servus.Utils.SetCookie(&response, "token", encrypted)
+		response.Write([]byte(""))
+		return
+	}
+
 }
 
-func controllerAuthLogout(w http.ResponseWriter, r *http.Request){
+func ControllerAuthLogout(w http.ResponseWriter, r *http.Request){
 
 }
 

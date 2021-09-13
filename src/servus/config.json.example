@@ -25,11 +25,11 @@
   "Security": {
     "https": {
       "active": true,
-      "certPath": "C:\\Users\\stels\\Desktop\\certs\\cert.pem",
-      "keyPath": "C:\\Users\\stels\\Desktop\\certs\\key.pem"
+      "certPath": "cert/path",
+      "keyPath": "key/path"
     },
     "cookie": {
-      "domain": "oklookat.ru",
+      "domain": "example.com",
       "path": "/",
       "maxAge": "1h",
       "httpOnly": false,
@@ -38,7 +38,7 @@
     },
     "cors": {
       "active": true,
-      "allowOrigin": ["https://elven.oklookat.ru", "https://static.oklookat.ru", "https://oklookat.ru"],
+      "allowOrigin": ["https://frontend.example.com"],
       "allowMethods": ["GET", "HEAD", "POST", "PUT", "DELETE"],
       "allowHeaders": ["*"],
       "exposeHeaders": ["cache-control", "content-language", "content-type", "expires", "last-modified", "pragma"],
