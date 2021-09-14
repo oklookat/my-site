@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
-	"servus/core/logger"
+	"servus/core/modules/logger"
 )
 
 var pLogger *logger.Logger

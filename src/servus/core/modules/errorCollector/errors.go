@@ -1,10 +1,10 @@
 package errorCollector
 
 type EError struct {
-	StatusCode int
-	ErrorCode  string
-	Issuers    []string
-	Message    string
+	StatusCode int      `json:"statusCode"`
+	ErrorCode  string   `json:"errorCode"`
+	Issuers    []string `json:"issuers"`
+	Message    string   `json:"message"`
 }
 
 // EUnknown like 500 error
@@ -15,7 +15,7 @@ type EUnknown struct {
 // ECustom like 'I need show message for users'
 type ECustom struct {
 	EError
-	Data interface{}
+	Data interface{} `json:"data"`
 }
 
 // EAuthIncorrect like 'wrong username or password'
@@ -36,8 +36,8 @@ type ENotFound struct {
 // EValidationMinMax like 'min length for username is 4 symbols'
 type EValidationMinMax struct {
 	EError
-	Min int
-	Max int
+	Min int `json:"min"`
+	Max int `json:"max"`
 }
 
 // EValidationEmpty like 'title cannot be empty'
@@ -48,10 +48,11 @@ type EValidationEmpty struct {
 // EValidationAllowed like 'allowed only numbers' or 'is_published must be true or false'
 type EValidationAllowed struct {
 	EError
-	Allowed []string
+	Allowed []string `json:"allowed"`
 }
 
 // EValidationInvalid like 'request contains file, but file broken'
 type EValidationInvalid struct {
 	EError
 }
+

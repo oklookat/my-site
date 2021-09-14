@@ -1,16 +1,31 @@
 package elUser
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"servus/core/errorCollector"
+	"servus/core"
+	"servus/core/modules/cryptor"
+	"servus/core/modules/errorCollector"
 )
+
+type controllerAuthLoginBody struct {
+	Username string
+	Password string
+	Type string
+}
 
 // ControllerAuthLogin generate token if username and pass correct
 func ControllerAuthLogin(response http.ResponseWriter, request *http.Request){
-	var username = request.FormValue("username")
-	var password = request.FormValue("password")
-	var authType = request.FormValue("type")
+	var loginBody controllerAuthLoginBody
+	var err = json.NewDecoder(request.Body).Decode(&loginBody)
+	if err != nil {
+		http.Error(response, "auth error", http.StatusBadRequest)
+		return
+	}
+	var username = loginBody.Username
+	var password = loginBody.Password
+	var authType = loginBody.Type
 	var isFull = len(username) > 1 && len(password) > 1 && len(authType) > 1
 	var ec = errorCollector.New()
 	if !isFull {
@@ -26,7 +41,7 @@ func ControllerAuthLogin(response http.ResponseWriter, request *http.Request){
 		response.Write([]byte(ec.GetErrors()))
 		return
 	}
-	var user, err = dbFindUserBy(username)
+	user, err := dbFindUserBy(username)
 	// user not found by username
 	if err != nil{
 		if err.Error() == "PIPE_USER_NOT_FOUND" {
@@ -35,7 +50,7 @@ func ControllerAuthLogin(response http.ResponseWriter, request *http.Request){
 		}
 	}
 	// check password
-	var isPassword = servus.Utils.HashPasswordCheck(password, user.password)
+	var isPassword = cryptor.BHashCheck(password, user.password)
 	// wrong password
 	if !isPassword {
 		serviceControllerAuthIncorrect(response)
@@ -43,8 +58,8 @@ func ControllerAuthLogin(response http.ResponseWriter, request *http.Request){
 	}
 	// generate token
 	// send to user token, in database save hashed token
-	var encrypted, _ = servus.Utils.EncryptAES(user.id)
-	var encryptedHashed, _ = servus.Utils.HashPassword(encrypted)
+	var encrypted, _ = cryptor.AESEncrypt(user.id, core.Config.Secret)
+	var encryptedHashed, _ = cryptor.BHash(encrypted)
 	var token = modelToken{userID: user.id, token: encryptedHashed}
 	dbCreateToken(token)
 	response.WriteHeader(200)
@@ -54,7 +69,7 @@ func ControllerAuthLogin(response http.ResponseWriter, request *http.Request){
 		return
 	}
 	if authType == "cookie" {
-		servus.Utils.SetCookie(&response, "token", encrypted)
+		core.Utils.SetCookie(&response, "token", encrypted)
 		response.Write([]byte(""))
 		return
 	}

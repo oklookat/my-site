@@ -7,7 +7,7 @@ import (
 )
 
 func bootConfig() ConfigFile {
-	var path = servus.Utils.GetExecuteDir()
+	var path = Utils.GetExecuteDir()
 	var config ConfigFile
 	path = fmt.Sprintf("%v/config.json", path)
 	byteValue, err := ioutil.ReadFile(path)

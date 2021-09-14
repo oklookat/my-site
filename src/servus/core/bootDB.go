@@ -2,11 +2,11 @@ package core
 
 import (
 	"fmt"
-	"servus/core/database"
-	"servus/core/logger"
+	"servus/core/modules/database"
+	"servus/core/modules/logger"
 )
 
-func bootDB(config ConfigFile, logger *logger.Logger) *database.DB{
+func bootDB(config ConfigFile, logger *logger.Logger) *database.DB {
 	var pgUser = config.DB.Postgres.User
 	var pgPassword = config.DB.Postgres.Password
 	var pgPort = config.DB.Postgres.Port

@@ -2,18 +2,7 @@ package core
 
 import (
 	"net/http"
-	"servus/core/database"
-	"servus/core/logger"
 )
-
-// Servus this struct collect all server stuff
-type Servus struct {
-	DB         *database.DB
-	Logger     logger.Logger
-	Config     ConfigFile
-	Utils      Utils
-	Middleware Middleware
-}
 
 // ConfigFile config.json struct
 type ConfigFile struct {
@@ -41,6 +30,13 @@ type ConfigFile struct {
 		} `json:"writeToFile"`
 	} `json:"Logger"`
 	Security struct {
+		Limiter struct {
+			Body struct {
+				Active  bool     `json:"active"`
+				MaxSize int64    `json:"maxSize"`
+				Except  []string `json:"except"`
+			} `json:"body"`
+		} `json:"limiter"`
 		HTTPS struct {
 			Active   bool   `json:"active"`
 			CertPath string `json:"certPath"`
@@ -56,18 +52,18 @@ type ConfigFile struct {
 		} `json:"cookie"`
 		CORS struct {
 			Active           bool     `json:"active"`
+			AllowCredentials bool     `json:"allowCredentials"`
 			AllowOrigin      []string `json:"allowOrigin"`
 			AllowMethods     []string `json:"allowMethods"`
 			AllowHeaders     []string `json:"allowHeaders"`
 			ExposeHeaders    []string `json:"exposeHeaders"`
-			AllowCredentials bool     `json:"allowCredentials"`
 			MaxAge           int64    `json:"maxAge"`
 		} `json:"cors"`
 	}
 }
 
-// Utils servus utilities
-type Utils struct {
+// BasicUtils servus utilities
+type BasicUtils struct {
 	utils
 }
 
@@ -75,19 +71,16 @@ type Utils struct {
 type utils interface {
 	RemoveSpaces(str string) string
 	GetExecuteDir() string
-	HashPassword(password string) (string, error)
-	HashPasswordCheck(password, hash string) bool
-	EncryptAES(text string) (encrypted string, err error)
-	DecryptAES(encrypted string) (text string, err error)
 	SetCookie(response *http.ResponseWriter, name string, value string)
 }
 
-// Middleware - hello I need basic middleware for my API
-type Middleware struct {
+// BasicMiddleware - hello I need basic middleware for my API
+type BasicMiddleware struct {
 	middleware
 }
 
 type middleware interface {
-	MiddlewareAsJSON(next http.Handler) http.Handler
 	MiddlewareCORS(next http.Handler) http.Handler
+	MiddlewareSecurity(next http.Handler) http.Handler
+	MiddlewareAsJSON(next http.Handler) http.Handler
 }

@@ -5,28 +5,9 @@ import (
 	"fmt"
 )
 
-type errorCollectorI interface {
-	HasErrors() bool
-	GetErrors() string
-	AddEUnknown(issuers []string, message string)
-	AddECustom(issuers []string, message string, data interface{})
-	AddEAuthIncorrect(issuers []string, message string)
-	AddEAuthForbidden(issuers []string, message string)
-	AddENotFound(issuers []string, message string)
-	AddEValidationMustBe(issuers []string, message string, available []string)
-	AddEValidationMinMax(issuers []string, min int, max int)
-	AddEValidationEmpty(issuers []string, message string)
-	AddEValidationAllowed(issuers []string, message string, allowed []string)
-	AddEValidationInvalid(issuers []string, message string)
-}
 
 func New() *errorCollector {
 	return &errorCollector{}
-}
-
-type errorCollector struct {
-	errorsArray []interface{}
-	errorCollectorI
 }
 
 func (ec *errorCollector) HasErrors() bool {

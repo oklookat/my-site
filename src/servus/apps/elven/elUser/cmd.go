@@ -2,7 +2,8 @@ package elUser
 
 import (
 	"os"
-	"servus/core/ancientUI"
+	"servus/core"
+	ancientUI "servus/core/modules/ancientUI"
 )
 
 // create superuser
@@ -15,11 +16,11 @@ func cmdSuperuser() {
 }
 
 func cmdSuperuserRunForm() {
-	servus.Logger.Info("--- create superuser (CTRL + D to exit)")
+	core.Logger.Info("--- create superuser (CTRL + D to exit)")
 	var username = ancientUI.AddInput(ancientUI.InputItem{Title: "Username"})
 	var err = validatorUsername(username)
 	if err != nil {
-		servus.Logger.Error(err.Error())
+		core.Logger.Error(err.Error())
 		cmdSuperuserRunForm()
 	}
 	user, err := dbFindUserBy(username)
@@ -43,7 +44,7 @@ func cmdSuperuserRunForm() {
 	var password = ancientUI.AddInput(ancientUI.InputItem{Title: "Password"})
 	err = validatorPassword(password)
 	if err != nil {
-		servus.Logger.Error(err.Error())
+		core.Logger.Error(err.Error())
 		cmdSuperuserRunForm()
 	}
 	// create
@@ -52,6 +53,6 @@ func cmdSuperuserRunForm() {
 		println("Error while creating user.")
 		cmdSuperuserRunForm()
 	}
-	servus.Logger.Info("User created.")
+	core.Logger.Info("User created.")
 	os.Exit(1)
 }

@@ -46,17 +46,17 @@ type Config struct {
 	LogLevel       int
 	WriteToConsole bool
 	WriteToFile    struct {
-		Activated bool
-		Dir       string
+		Activated   bool
+		Dir         string
 		MaxLogFiles int
-		MaxLogSize int64
+		MaxLogSize  int64
 	}
 }
 
 type fileWriterInfo struct {
-	fullPath string // path to log file
+	fullPath string    // path to log file
 	fileDate time.Time // date when file created
-	file     *os.File // file itself
+	file     *os.File  // file itself
 }
 
 // log to file JSON
