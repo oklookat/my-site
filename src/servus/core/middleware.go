@@ -17,7 +17,10 @@ func (m *BasicMiddleware) MiddlewareAsJSON(next http.Handler) http.Handler {
 func (m *BasicMiddleware) MiddlewareCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if Config.Security.CORS.Active {
-			corsParser.SetHeaders(writer, request)
+			var result = corsParser.SetHeaders(writer, request)
+			if result.IsPreflight {
+				return
+			}
 		}
 		next.ServeHTTP(writer, request)
 	})

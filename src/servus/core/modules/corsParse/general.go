@@ -6,73 +6,100 @@ import (
 	"strings"
 )
 
-func New(config Config) CorsParse{
+func New(config Config) CorsParse {
 	return CorsParse{config: config}
 }
 
-func (c *CorsParse) SetHeaders(writer http.ResponseWriter, request *http.Request){
-	//////// allow origin parse
+func (c *CorsParse) SetHeaders(writer http.ResponseWriter, request *http.Request) CorsResult {
+	c.writer = writer
+	c.request = request
+	c.preflightParse()
+	c.allowOriginParse()
+	c.allowMethodsParse()
+	c.allowHeadersParse()
+	c.exposeHeadersParse()
+	c.allowCredentialsParse()
+	c.maxAgeParse()
+	// if it is preflight method, we need bypass any auth and return in middleware
+	return CorsResult{IsPreflight: c.isPreflight}
+}
+
+func (c *CorsParse) preflightParse(){
+	var method = c.request.Method
+	method = strings.ToUpper(method)
+	c.isPreflight = method == "OPTIONS"
+}
+
+func (c *CorsParse) allowOriginParse(){
 	var allowOrigin = c.config.AllowOrigin
 	var isAllowOriginBypass = true
 	switch allowOrigin[0] {
 	case "*":
-		writer.Header().Add("Access-Control-Allow-Origin", "*")
-		break
+		c.writer.Header().Add("Access-Control-Allow-Origin", "*")
+		return
 	case "null":
-		writer.Header().Add("Access-Control-Allow-Origin", "null")
-		break
+		c.writer.Header().Add("Access-Control-Allow-Origin", "null")
+		return
 	default:
 		isAllowOriginBypass = false
 		break
 	}
 	if !isAllowOriginBypass {
 		// https://stackoverflow.com/a/1850482
-		var clientOrigin = request.Header.Get("Origin")
+		var clientOrigin = c.request.Header.Get("Origin")
 		for _, origin := range allowOrigin {
 			if origin == clientOrigin {
-				writer.Header().Add("Access-Control-Allow-Origin", origin)
+				c.writer.Header().Add("Access-Control-Allow-Origin", origin)
 				break
 			}
 		}
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin#cors_and_caching
-		writer.Header().Add("Vary", "Origin")
+		c.writer.Header().Add("Vary", "Origin")
 	}
-	//////// allow methods parse
+}
+
+func (c *CorsParse) allowMethodsParse(){
+	if !c.isPreflight {
+		return
+	}
 	var allowMethods = c.config.AllowMethods
-	var isAllowMethodsBypass = true
-	if allowMethods[0] == "*"{
-		writer.Header().Add("Access-Control-Allow-Methods", "OPTIONS, GET, HEAD, POST, PUT, DELETE")
-	} else {
-		isAllowMethodsBypass = false
+	if allowMethods[0] == "*" {
+		c.writer.Header().Add("Access-Control-Allow-Methods", "OPTIONS, GET, HEAD, POST, PUT, DELETE")
+		return
 	}
-	if !isAllowMethodsBypass {
-		var clientMethod = request.Header.Get("Access-Control-Request-Method")
-		for _, method := range allowMethods {
-			if method == clientMethod {
-				writer.Header().Add("Access-Control-Allow-Methods", method)
-				break
-			}
+	var clientMethod = c.request.Header.Get("Access-Control-Request-Method")
+	for _, method := range allowMethods {
+		if method == clientMethod {
+			c.writer.Header().Add("Access-Control-Allow-Methods", method)
+			break
 		}
 	}
-	//////// allow headers parse
+}
+
+func (c *CorsParse) allowHeadersParse(){
+	if !c.isPreflight {
+		return
+	}
+	// get allowed headers
 	var allowHeaders = c.config.AllowHeaders
-	// get headers like 'header-1, header-2, header-3'
-	var clientHeaders = request.Header.Get("Access-Control-Request-Headers")
+	// get request headers string like 'header-1, header-2, header-3'
+	var requestHeaders = c.request.Header.Get("Access-Control-Request-Headers")
 	// remove all spaces from headers
-	clientHeaders = removeSpaces(clientHeaders)
-	// split headers string to slice of headers
-	var clientHeadersSlice = strings.Split(clientHeaders, ",")
-	// here we store finally allowed headers
-	var responseAllowedHeadersSlice []string
+	requestHeaders = removeSpaces(requestHeaders)
+	// split headers string to slice of headers ['header-1', 'header-2', 'header-3']
+	var requestHeadersSlice = strings.Split(requestHeaders, ",")
 	// get allowed headers from config
 	var responseAllowedHeaders string
 	// if wildcard - allow all headers
-	if allowHeaders[0] == "*"{
-		responseAllowedHeaders = strings.Join(clientHeadersSlice, ", ")
+	var allowAll = allowHeaders[0] == "*"
+	if allowAll {
+		responseAllowedHeaders = strings.Join(requestHeadersSlice, ", ")
 	} else {
+		// here we store finally allowed headers
+		var responseAllowedHeadersSlice []string
 		for _, header := range allowHeaders {
 			// get client headers
-			for _, clientHeader := range clientHeadersSlice {
+			for _, clientHeader := range requestHeadersSlice {
 				// if allowed header and client header same
 				if header == clientHeader {
 					// allow this header
@@ -81,31 +108,28 @@ func (c *CorsParse) SetHeaders(writer http.ResponseWriter, request *http.Request
 				}
 			}
 		}
+		// make allowed headers string like 'header-1, header-2, header-3'
 		responseAllowedHeaders = strings.Join(responseAllowedHeadersSlice, ", ")
+		return
 	}
-	// make allowed headers string like 'header-1, header-2, header-3'
-	writer.Header().Add("Access-Control-Allow-Headers", responseAllowedHeaders)
-	//////// expose headers parse
+	c.writer.Header().Add("Access-Control-Allow-Headers", responseAllowedHeaders)
+}
+
+func (c *CorsParse) exposeHeadersParse(){
 	var exposeHeaders = c.config.ExposeHeaders
 	var exposeHeadersFinally = strings.Join(exposeHeaders, ", ")
-	writer.Header().Add("Access-Control-Expose-Headers", exposeHeadersFinally)
-	//////// allow credentials parse
+	c.writer.Header().Add("Access-Control-Expose-Headers", exposeHeadersFinally)
+}
+
+func (c *CorsParse) allowCredentialsParse(){
 	var allowCredentials = c.config.AllowCredentials
 	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials#directives
 	if allowCredentials {
-		writer.Header().Add("Access-Control-Allow-Credentials", "true")
+		c.writer.Header().Add("Access-Control-Allow-Credentials", "true")
 	}
-	//////// max age parse
-	var maxAge = c.config.MaxAge
-	writer.Header().Add("Access-Control-Max-Age", strconv.FormatInt(maxAge, 10))
+}
 
-	//////// bypass any auth if simple request
-	var method = request.Method
-	method = strings.ToUpper(method)
-	var isSimpleRequest = method == "OPTIONS"
-	if isSimpleRequest {
-		writer.WriteHeader(200)
-		writer.Write([]byte(""))
-		return
-	}
+func (c *CorsParse) maxAgeParse(){
+	var maxAge = c.config.MaxAge
+	c.writer.Header().Add("Access-Control-Max-Age", strconv.FormatInt(maxAge, 10))
 }

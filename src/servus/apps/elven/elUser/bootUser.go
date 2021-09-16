@@ -2,5 +2,5 @@ package elUser
 
 
 func Boot(){
-	cmdSuperuser()
+	bootCmd()
 }

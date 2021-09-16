@@ -2,6 +2,7 @@ package core
 
 import (
 	"net/http"
+	"time"
 )
 
 // ConfigFile config.json struct
@@ -71,6 +72,8 @@ type BasicUtils struct {
 type utils interface {
 	RemoveSpaces(str string) string
 	GetExecuteDir() string
+	FormatPath(path string) string
+	ConvertTimeWord(timeShortcut string) (time.Duration, error)
 	SetCookie(response *http.ResponseWriter, name string, value string)
 }
 

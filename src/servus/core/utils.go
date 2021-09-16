@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 	"unicode"
@@ -28,8 +29,26 @@ func (u *BasicUtils) GetExecuteDir() string {
 	return path
 }
 
+// FormatPath format path to system specific slashes
+func (u *BasicUtils) FormatPath(path string) string {
+	path = filepath.FromSlash(path)
+	path = filepath.ToSlash(path)
+	return path
+}
+
+// ConvertTimeWord convert time like "2h"; "2min"; "2sec" to duration
+func (u *BasicUtils) ConvertTimeWord(timeShortcut string) (time.Duration, error) {
+	timeShortcut = strings.ToLower(timeShortcut)
+	timeDuration, err := time.ParseDuration(timeShortcut)
+	if err != nil {
+		Logger.Panic(errors.New("time converting failed. Is string with time correct?"))
+	}
+	return timeDuration, nil
+}
+
 // SetCookie set cookie
 func (u *BasicUtils) SetCookie(response *http.ResponseWriter, name string, value string) {
+	// TODO: fix cookie sending
 	var maxAge, err = u.ConvertTimeWord(Config.Security.Cookie.MaxAge)
 	if err != nil {
 		Logger.Panic(errors.New("Cookie wrong time. Check your config file."))
@@ -43,16 +62,6 @@ func (u *BasicUtils) SetCookie(response *http.ResponseWriter, name string, value
 	if err != nil {
 		Logger.Panic(err)
 	}
-	var cookie = http.Cookie{Name: name, Value: value, Path: path, Domain: domain, MaxAge: maxAgeSeconds, HttpOnly: httpOnly, Secure: secure, SameSite: sameSite}
-	http.SetCookie(*response, &cookie)
-}
-
-// ConvertTimeWord convert time like "2h"; "2min"; "2sec" to duration
-func (u *BasicUtils) ConvertTimeWord(timeShortcut string) (time.Duration, error) {
-	timeShortcut = strings.ToLower(timeShortcut)
-	timeDuration, err := time.ParseDuration(timeShortcut)
-	if err != nil {
-		Logger.Panic(errors.New("time converting failed. Is string with time correct?"))
-	}
-	return timeDuration, nil
+	var cookie = &http.Cookie{Name: name, Value: value, Path: path, Domain: domain, MaxAge: maxAgeSeconds, HttpOnly: httpOnly, Secure: secure, SameSite: sameSite}
+	http.SetCookie(*response, cookie)
 }

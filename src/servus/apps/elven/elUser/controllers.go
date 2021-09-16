@@ -12,11 +12,11 @@ import (
 type controllerAuthLoginBody struct {
 	Username string
 	Password string
-	Type string
+	Type     string
 }
 
 // ControllerAuthLogin generate token if username and pass correct
-func ControllerAuthLogin(response http.ResponseWriter, request *http.Request){
+func ControllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 	var loginBody controllerAuthLoginBody
 	var err = json.NewDecoder(request.Body).Decode(&loginBody)
 	if err != nil {
@@ -35,7 +35,7 @@ func ControllerAuthLogin(response http.ResponseWriter, request *http.Request){
 		return
 	}
 	// detect auth type
-	if authType != "cookie" && authType != "direct"{
+	if authType != "cookie" && authType != "direct" {
 		ec.AddEValidationAllowed([]string{"type"}, []string{"cookie", "direct"})
 		response.WriteHeader(400)
 		response.Write([]byte(ec.GetErrors()))
@@ -43,7 +43,7 @@ func ControllerAuthLogin(response http.ResponseWriter, request *http.Request){
 	}
 	user, err := dbFindUserBy(username)
 	// user not found by username
-	if err != nil{
+	if err != nil {
 		if err.Error() == "PIPE_USER_NOT_FOUND" {
 			serviceControllerAuthIncorrect(response)
 			return
@@ -61,27 +61,30 @@ func ControllerAuthLogin(response http.ResponseWriter, request *http.Request){
 	var encrypted, _ = cryptor.AESEncrypt(user.id, core.Config.Secret)
 	var encryptedHashed, _ = cryptor.BHash(encrypted)
 	var token = modelToken{userID: user.id, token: encryptedHashed}
-	dbCreateToken(token)
-	response.WriteHeader(200)
-	if authType == "direct" {
+	err = dbCreateToken(token)
+	if err != nil {
+		ec.AddEUnknown([]string{"auth"}, "Server error during auth.")
+		response.WriteHeader(500)
+		response.Write([]byte(ec.GetErrors()))
+	}
+	switch authType {
+	case "direct":
 		var direct = []byte(fmt.Sprintf(`{token: "%v"}`, encrypted))
 		response.Write(direct)
 		return
-	}
-	if authType == "cookie" {
+	case "cookie":
 		core.Utils.SetCookie(&response, "token", encrypted)
 		response.Write([]byte(""))
 		return
 	}
-
 }
 
-func ControllerAuthLogout(w http.ResponseWriter, r *http.Request){
+func ControllerAuthLogout(w http.ResponseWriter, r *http.Request) {
 
 }
 
 // used when wrong username or password
-func serviceControllerAuthIncorrect(response http.ResponseWriter){
+func serviceControllerAuthIncorrect(response http.ResponseWriter) {
 	var ec = errorCollector.New()
 	ec.AddEAuthIncorrect([]string{"auth"})
 	response.WriteHeader(403)

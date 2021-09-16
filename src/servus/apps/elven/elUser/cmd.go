@@ -1,18 +1,28 @@
 package elUser
 
 import (
+	"context"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"servus/core"
 	ancientUI "servus/core/modules/ancientUI"
 )
 
 // create superuser
-func cmdSuperuser() {
-	var isCmd = ancientUI.ReadArg("elven:superuser")
-	if !isCmd {
-		return
+func bootCmd() {
+	var isSuperuser = ancientUI.ReadArg("elven:superuser")
+	if isSuperuser {
+		cmdSuperuserRunForm()
 	}
-	cmdSuperuserRunForm()
+	var isRunMigration = ancientUI.ReadArg("elven:migrate")
+	if isRunMigration {
+		cmdMigrate()
+	}
+	var isRollbackMigration = ancientUI.ReadArg("elven:rollback")
+	if isRollbackMigration {
+		cmdRollback()
+	}
 }
 
 func cmdSuperuserRunForm() {
@@ -54,5 +64,34 @@ func cmdSuperuserRunForm() {
 		cmdSuperuserRunForm()
 	}
 	core.Logger.Info("User created.")
+	os.Exit(1)
+}
+
+func cmdMigrate(){
+	var sqlPath = fmt.Sprintf("%v/apps/elven/elSQL/all.sql", core.Utils.GetExecuteDir())
+	sqlPath = core.Utils.FormatPath(sqlPath)
+	sql, err := ioutil.ReadFile(sqlPath)
+	if err != nil {
+		core.Logger.Panic(err)
+	}
+	_, err = core.Database.Connection.Exec(context.Background(), string(sql))
+	if err != nil {
+		core.Logger.Panic(err)
+	}
+	core.Logger.Info("elven: database migrate successful")
+	os.Exit(1)
+}
+
+func cmdRollback(){
+	_, err := core.Database.Connection.Exec(context.Background(), `
+	DROP SCHEMA public CASCADE;
+	CREATE SCHEMA public;
+	GRANT ALL ON SCHEMA public TO postgres;
+	GRANT ALL ON SCHEMA public TO public;
+	`)
+	if err != nil {
+		core.Logger.Panic(err)
+	}
+	core.Logger.Info("elven: database rollback successful")
 	os.Exit(1)
 }
