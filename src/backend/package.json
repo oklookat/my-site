@@ -28,7 +28,7 @@
     "randomstring": "^1.2.1",
     "reflect-metadata": "^0.1.13",
     "slugify": "^1.6.0",
-    "source-map-support": "^0.5.19",
+    "source-map-support": "^0.5.20",
     "validator": "^13.6.0"
   }
 }
