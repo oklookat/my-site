@@ -16,7 +16,7 @@
     "youch-terminal": "^1.1.1"
   },
   "dependencies": {
-    "@adonisjs/core": "^5.3.2",
+    "@adonisjs/core": "^5.3.4",
     "@adonisjs/lucid": "^16.0.2",
     "@adonisjs/repl": "^3.1.6",
     "@types/crypto-js": "^4.0.1",
