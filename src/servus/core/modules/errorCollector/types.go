@@ -1,5 +1,10 @@
 package errorCollector
 
+type errorCollector struct {
+	errorCollectorI
+	errorsArray []interface{}
+}
+
 type errorCollectorI interface {
 	HasErrors() bool
 	GetErrors() string
@@ -12,9 +17,4 @@ type errorCollectorI interface {
 	AddEValidationEmpty(issuers []string)
 	AddEValidationAllowed(issuers []string, allowed []string)
 	AddEValidationInvalid(issuers []string, message string)
-}
-
-type errorCollector struct {
-	errorsArray []interface{}
-	errorCollectorI
 }

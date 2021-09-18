@@ -37,9 +37,6 @@ func (c *CorsParse) allowOriginParse(){
 	case "*":
 		c.writer.Header().Add("Access-Control-Allow-Origin", "*")
 		return
-	case "null":
-		c.writer.Header().Add("Access-Control-Allow-Origin", "null")
-		return
 	default:
 		isAllowOriginBypass = false
 		break

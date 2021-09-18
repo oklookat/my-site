@@ -28,50 +28,51 @@ func AESEncrypt(text string, secret string) (encrypted string, error AESError) {
 	plaintext := []byte(text)
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		var err = AESError{HaveErrors: true, ErrorCode: "PIPE_MAKE_BLOCK_FAILED", Error: err}
+		var err = AESError{HasErrors: true, AdditionalErr: ErrMakeBlock, OriginalErr: err}
 		return "", err
 	}
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
-		var err = AESError{HaveErrors: true, ErrorCode: "PIPE_MAKE_GCM_FAILED", Error: err}
+		var err = AESError{HasErrors: true, AdditionalErr: ErrMakeGCM, OriginalErr: err}
 		return "", err
 	}
 	nonce := make([]byte, aesGCM.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		var err = AESError{HaveErrors: true, ErrorCode: "PIPE_MAKE_NONCE_FAILED", Error: err}
+		var err = AESError{HasErrors: true, AdditionalErr: ErrMakeNonceFromGCM, OriginalErr: err}
 		return "", err
 	}
 	ciphertext := aesGCM.Seal(nonce, nonce, plaintext, nil)
 	encrypted = fmt.Sprintf("%x", ciphertext)
-	return encrypted, AESError{HaveErrors: false}
+	return encrypted, AESError{HasErrors: false}
 }
 
 // AESDecrypt get encrypted and return decrypted text (AES)
 func AESDecrypt(encrypted string, secret string) (text string, error AESError) {
 	key := []byte(secret)
-	enc, err := hex.DecodeString(encrypted)
+	// get hex from string (this is encrypted data)
+	hexed, err := hex.DecodeString(encrypted)
 	if err != nil {
-		// if not hex in string
-		var err = AESError{HaveErrors: true, ErrorCode: "PIPE_DECODE_HEX_STRING_FAILED", Error: err}
+		// if presented string not a hex
+		var err = AESError{HasErrors: true, AdditionalErr: ErrDecodeHEX, OriginalErr: err}
 		return "", err
 	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		var err = AESError{HaveErrors: true, ErrorCode: "PIPE_MAKE_BLOCK_FAILED", Error: err}
+		var err = AESError{HasErrors: true, AdditionalErr: ErrMakeBlock, OriginalErr: err}
 		return "", err
 	}
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
-		var err = AESError{HaveErrors: true, ErrorCode: "PIPE_MAKE_GCM_FAILED", Error: err}
+		var err = AESError{HasErrors: true, AdditionalErr: ErrMakeGCM, OriginalErr: err}
 		return "", err
 	}
 	nonceSize := aesGCM.NonceSize()
-	nonce, ciphertext := enc[:nonceSize], enc[nonceSize:]
+	nonce, ciphertext := hexed[:nonceSize], hexed[nonceSize:]
 	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		var err = AESError{HaveErrors: true, ErrorCode: "PIPE_DECRYPT_FAILED", Error: err}
+		var err = AESError{HasErrors: true, AdditionalErr: ErrDecryption, OriginalErr: err}
 		return "", err
 	}
 	var decrypted = fmt.Sprintf("%s", plaintext)
-	return decrypted, AESError{HaveErrors: false}
+	return decrypted, AESError{HasErrors: false}
 }

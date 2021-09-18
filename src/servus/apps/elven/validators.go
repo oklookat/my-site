@@ -1,8 +1,9 @@
-package elUser
+package elven
 
 import (
 	"github.com/pkg/errors"
-	"regexp"
+	"servus/core/modules/errorCollector"
+	"servus/core/modules/validator"
 )
 
 //func validatorUserReg(username string, password string) (bool, string) {
@@ -58,8 +59,7 @@ func validatorUsername(username string) error {
 	if len(username) < 4 || len(username) > 24 {
 		return errors.New("username: min length 4 and max 24")
 	}
-	isAlphaNumeric := regexp.MustCompile("^[a-zA-Z0-9_]*$")
-	if !isAlphaNumeric.MatchString(username) {
+	if !validator.IsAlphanumeric(username) {
 		return errors.New("username: allowed only alphanumeric")
 	}
 	return nil
@@ -69,9 +69,30 @@ func validatorPassword(password string) error {
 	if len(password) < 8 || len(password) > 64 {
 		return errors.New("password: min length 8 and max 64")
 	}
-	isPassword := regexp.MustCompile("^[A-Za-z0-9_@!./#&+*%-]*$")
-	if !isPassword.MatchString(password) {
+	if !validator.IsAlphanumericWithSymbols(password) {
 		return errors.New("password: allowed only alphanumeric and some symbols")
+	}
+	return nil
+}
+
+func validatorAuth(username string, password string, authType string) error{
+	var ec = errorCollector.New()
+	if validator.IsEmpty(username) {
+		ec.AddEValidationEmpty([]string{"username"})
+	}
+	if validator.IsEmpty(password){
+		ec.AddEValidationEmpty([]string{"password"})
+	}
+	if validator.IsEmpty(authType){
+		ec.AddEValidationEmpty([]string{"authType"})
+	} else {
+		var isAuthType = authType == "cookie" || authType == "direct"
+		if !isAuthType{
+			ec.AddEValidationAllowed([]string{"type"}, []string{"cookie", "direct"})
+		}
+	}
+	if ec.HasErrors() {
+		return errors.New(ec.GetErrors())
 	}
 	return nil
 }

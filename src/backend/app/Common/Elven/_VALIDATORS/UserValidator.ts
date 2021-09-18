@@ -19,7 +19,7 @@ export default class UserValidator {
         errorCollector.addError(empty)
         failed++
       }
-      if(failed == 2){
+      if(failed > 0){
         throw errorCollector.getErrors()
       }
     }
