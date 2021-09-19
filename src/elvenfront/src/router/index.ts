@@ -9,6 +9,7 @@ import Files from '@/views/Main/Files/Files.vue'
 import Settings from '@/views/Main/Settings/Settings.vue'
 import AuthAdapter from "@/common/adapters/Main/AuthAdapter";
 import Fetcher from "@/common/adapters/Fetcher";
+import {AuthStorage} from "@/common/tools/LStorage";
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -63,11 +64,7 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
     if (to.meta.auth) {
-        let authorized = false
-        await AuthAdapter.check()
-            .then((result) => authorized = result)
-            .catch(err =>{
-            })
+        const authorized = AuthStorage.get()
         const auth = to.meta.auth
         if (auth === 'yes' && !authorized) { // не даем войти неавторизированным на страницы для авторизированных
             return next({name: 'Login'})

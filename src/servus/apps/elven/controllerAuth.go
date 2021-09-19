@@ -12,14 +12,14 @@ import (
 
 // ControllerAuthLogin generate token if username and pass correct
 func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
+	var theResponse = core.HttpResponse{ResponseWriter: response}
 	var ec = errorCollector.New()
 	// get and convert request body
 	var loginBody controllerAuthLoginBody
 	var err = json.NewDecoder(request.Body).Decode(&loginBody)
 	if err != nil {
 		ec.AddEValidationAllowed([]string{"request body"}, []string{"username", "password", "type"})
-		response.WriteHeader(400)
-		response.Write([]byte(ec.GetErrors()))
+		theResponse.Send(ec.GetErrors(), 400)
 		return
 	}
 	// get user credentials and other data
@@ -29,22 +29,21 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 	// validate
 	var ecErrors = validatorAuth(username, password, authType)
 	if ecErrors != nil {
-		response.WriteHeader(400)
-		response.Write([]byte(ecErrors.Error()))
+		// response error collector JSON
+		theResponse.Send(ecErrors.Error(), 400)
 		return
 	}
 	// find username in database
 	user, err := dbUserFindBy(username)
+	// server user find error
 	if err != nil {
-		// user not found by username
-		if err == errDatabaseNotFound {
-			errAuthWrongCredentials(response)
-			return
-		} else {
-			// server token saving error
-			errAuth500(response)
-			return
-		}
+		errAuth500(response)
+		return
+	}
+	// user not found by username
+	if len(user.id) < 1 {
+		errAuthWrongCredentials(response)
+		return
 	}
 	var isPassword = cryptor.BHashCheck(password, user.password)
 	// wrong password
@@ -53,60 +52,70 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	// token generating
-	// first we generate fake token to get created token ID
-	var token = modelToken{userID: user.id, token: "-1"}
-	token, err = dbTokenCreate(&token)
+	// first we generate fake token model to get created token ID
+	var tokenModel = modelToken{userID: user.id, token: "-1"}
+	tokenModel, err = dbTokenCreate(&tokenModel)
 	if err != nil {
 		errAuth500(response)
 		return
 	}
-	// then we encrypt this token id
-	encrypted, aesErr := cryptor.AESEncrypt(token.id, core.Config.Secret)
+	// then we get newly created token model id and encrypt it. That's we send to user as token.
+	encryptedToken, aesErr := cryptor.AESEncrypt(tokenModel.id, core.Config.Secret)
 	if aesErr.HasErrors {
 		core.Logger.Error(fmt.Sprintf("%v / %v", aesErr.AdditionalErr.Error(), aesErr.OriginalErr.Error()))
 		errAuth500(response)
 		return
 	}
 	// get hash from generated token
-	// user gets token, but database gets hash. In general, we do the same as with the password.
-	encryptedHashed, err := cryptor.BHash(encrypted)
+	// user gets encrypted token, but database gets hash. In general, we do the same as with the password.
+	encryptedTokenHash, err := cryptor.BHash(encryptedToken)
 	if err != nil {
 		core.Logger.Error(err.Error())
 		errAuth500(response)
 		return
 	}
-	// store hashed token to model
-	token.token = encryptedHashed
-	// update token model
-	_, err = dbTokenUpdate(&token)
+	// now we replace fake token with real token in database
+	tokenModel.token = encryptedTokenHash
+	_, err = dbTokenUpdate(&tokenModel)
 	if err != nil {
 		errAuth500(response)
 		return
 	}
+	// based on auth type we send token
 	switch authType {
 	case "direct":
-		var direct = []byte(fmt.Sprintf(`{token: "%v"}`, encrypted))
-		response.Write(direct)
+		var direct = fmt.Sprintf(`{token: "%v"}`, encryptedToken)
+		theResponse.Send(direct, 200)
 		return
 	case "cookie":
-		core.Utils.SetCookie(&response, "token", encrypted)
-		response.Write([]byte(""))
+		core.Utils.SetCookie(&response, "token", encryptedToken)
+		theResponse.Send("", 200)
 		return
 	default:
-		core.Logger.Error("authController: this is authType switch default action. Check your code for strange stuff.")
+		core.Logger.Error("authController: this is authType switch default action. Check your code for oddities.")
 		errAuth500(response)
 		return
 	}
 }
 
-//func controllerAuthLogout(response http.ResponseWriter, request *http.Request) {
-//	var theResponse = core.HttpResponse{ResponseWriter: response}
-//	var token, err = authGrabToken(request)
-//	if err != nil {
-//		var ec = errorCollector.New()
-//		ec.AddEAuthIncorrect([]string{"logout"})
-//		theResponse.Send(ec.GetErrors(), 401)
-//		return
-//	}
-//
-//}
+func controllerAuthLogout(response http.ResponseWriter, request *http.Request) {
+	var theResponse = core.HttpResponse{ResponseWriter: response}
+	var ec = errorCollector.New()
+	// get token from cookie or auth header
+	var token, err = authGrabToken(request)
+	if err != nil {
+		ec.AddEAuthIncorrect([]string{"get-token"})
+		theResponse.Send(ec.GetErrors(), 401)
+		return
+	}
+	// get user and token instances by encrypted token
+	_, tokenModel, err := authGetUserAndTokenByToken(token)
+	if err != nil {
+		ec.AddEAuthIncorrect([]string{"token"})
+		theResponse.Send(ec.GetErrors(), 401)
+		return
+	}
+	// delete token
+	_ = dbTokenDelete(tokenModel.id)
+	theResponse.Send("", 200)
+}

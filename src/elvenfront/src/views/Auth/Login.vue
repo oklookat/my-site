@@ -2,8 +2,8 @@
   <div class="login-container">
     <div class="login-inputs">
       <div class="logo-text">elven</div>
-      <input type="text" name="username" placeholder="Имя пользователя" v-model="username" @input="trackInput">
-      <input type="password" name="password" placeholder="Пароль" v-model="password" @input="trackInput">
+      <input type="text" name="username" placeholder="Имя пользователя" v-model="username">
+      <input type="password" name="password" placeholder="Пароль" v-model="password">
     </div>
     <button :disabled="!username || !password" class="auth-button" @click="makeLogin">
       Войти
@@ -25,7 +25,6 @@ export default defineComponent({
   },
   methods: {
     async makeLogin() {
-      this.isError = false
       AuthAdapter.login(this.username, this.password)
           .then(() =>{
             this.$router.push({name: 'Index'})

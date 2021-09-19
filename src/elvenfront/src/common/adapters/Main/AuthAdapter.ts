@@ -1,6 +1,6 @@
 import Axios from '@/common/adapters/Axios.js'
 import router from "@/router";
-import Fetcher from "@/common/adapters/Fetcher";
+import {AuthStorage} from "@/common/tools/LStorage";
 
 class AuthAdapter {
 
@@ -10,25 +10,19 @@ class AuthAdapter {
             password: password,
             type: 'cookie',
         }
-        return await Axios.post('auth/login', data)
-            .then(() => {
-                return Promise.resolve()
-            })
-            .catch(() => {})
+        try {
+            await Axios.post('auth/login', data)
+            // set auth state after request, because we can get error when username and password not valid
+            AuthStorage.set(true)
+            return Promise.resolve()
+        } catch (err){
+        }
     }
 
     public static async logout() {
+        AuthStorage.set(false)
         await Axios.post('auth/logout').catch(() => {})
         await router.push({name: 'Login'})
-    }
-
-    public static async check(){
-        return await Fetcher.check()
-            .then((result) =>{
-                return Promise.resolve(result)
-            })
-            .catch((error) =>{
-            })
     }
 }
 

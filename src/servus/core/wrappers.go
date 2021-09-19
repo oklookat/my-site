@@ -1,15 +1,17 @@
 package core
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // HttpResponse wrap response for cool features
 type HttpResponse struct {
 	http.ResponseWriter
 }
 
-func (r HttpResponse) Send(data string, statusCode int) (n int, err error) {
+func (r HttpResponse) Send(data string, statusCode int){
 	r.ResponseWriter.WriteHeader(statusCode)
-	n, err = r.ResponseWriter.Write([]byte(data))
+	_, err := r.ResponseWriter.Write([]byte(data))
 	if err != nil {
 		Logger.Error(err.Error())
 	}

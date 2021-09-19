@@ -68,13 +68,14 @@ type BasicUtils struct {
 	utils
 }
 
-// Servus utilities
+// utilities
 type utils interface {
 	RemoveSpaces(str string) string
 	GetExecuteDir() string
 	FormatPath(path string) string
 	ConvertTimeWord(timeShortcut string) (time.Duration, error)
 	SetCookie(response *http.ResponseWriter, name string, value string)
+	DBCheckError(err error) error
 }
 
 // BasicMiddleware - hello I need basic middleware for my API

@@ -7,16 +7,15 @@ import (
 )
 
 func bootRoutes(){
-	// TODO: fix MultipartForm and add many variants to get username and password
-	// TODO: test CORS and test cookie max age
 	// set up router
 	router := mux.NewRouter()
-	router.Use(core.Middleware.MiddlewareSecurity)
-	router.Use(core.Middleware.MiddlewareAsJSON)
+	router.Use(core.Middleware.MiddlewareSecurity, core.Middleware.MiddlewareAsJSON)
+	routerElven := router.PathPrefix("/elven/").Subrouter()
+	//routerAdminOnly := routerElven.PathPrefix("").Subrouter()
+	//routerAdminOnly.Use(middlewareAdminOnly)
 	// handlers
-	routerSub := router.PathPrefix("/elven/").Subrouter()
-	routerSub.HandleFunc("/auth/login", controllerAuthLogin).Methods("POST")
-	//routerSub.HandleFunc("/auth/logout", controllerAuthLogout).Methods("POST")
+	routerElven.HandleFunc("/auth/login", controllerAuthLogin).Methods("POST")
+	routerElven.HandleFunc("/auth/logout", controllerAuthLogout).Methods("POST")
 	//routerSub.HandleFunc("/articles", elControllers.Articles)
 	//routerSub.HandleFunc("/articles", elControllers.Files)
 

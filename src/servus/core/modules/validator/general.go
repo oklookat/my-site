@@ -16,8 +16,8 @@ func IsAlphanumeric(text string) bool {
 	return alphanumeric.MatchString(text)
 }
 
-// IsAlphanumericWithSymbols a-z A-Z 0-9 _ @ ! . / # & + * %
+// IsAlphanumericWithSymbols alphanumeric and keyboard symbols
 func IsAlphanumericWithSymbols(text string) bool {
-	alphaWithSymbols := regexp.MustCompile("^[a-zA-Z0-9_@!./#&+*%-]*$")
+	alphaWithSymbols := regexp.MustCompile("^[a-zA-Z0-9~`!@#$%^&*()_\\-+={\\[}\\]|:;\"'<,>.?\\/\\\\\\\\]*$")
 	return alphaWithSymbols.MatchString(text)
 }
