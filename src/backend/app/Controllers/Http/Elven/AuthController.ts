@@ -34,7 +34,7 @@ export default class AuthController {
       }
     } catch (error) {
       if (error === 'PIPE_TOKEN_SAVING_ERROR') {
-        const unknown = new E_UNKNOWN(['AUTH'], '')
+        const unknown = new E_UNKNOWN(['AUTH'], 'Server error during auth.')
         return response.status(500).send(EL_ErrorCollector.singleError(unknown))
       } else {
         const wrong = new E_AUTH_INCORRECT(['AUTH'])
