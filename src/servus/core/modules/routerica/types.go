@@ -2,47 +2,58 @@ package routerica
 
 import "net/http"
 
+type ctxMiddlewarePipe string
+
 const (
-	methodGet    = "GET"
-	methodPost   = "POST"
-	methodPut    = "PUT"
-	methodDelete = "DELETE"
+	methodGET                       = "GET"
+	methodPOST                      = "POST"
+	methodPUT                       = "PUT"
+	methodDELETE                    = "DELETE"
+	ctxMiddleware ctxMiddlewarePipe = "PIPE_ROUTERICA"
 )
 
 type routericaI interface {
-	Post(path string, handler func(http.ResponseWriter, *http.Request))
-	Get(path string, handler func(http.ResponseWriter, *http.Request)) *GetRoute
-	Delete(path string, handler func(http.ResponseWriter, *http.Request))
+	// Use (G) - add global middleware
+	Use(middlewares ...TheMiddleware) *TheGlobalRoute
+	POST(path string, handler func(http.ResponseWriter, *http.Request)) *TheRoute
+	GET(path string, handler func(http.ResponseWriter, *http.Request)) *TheRoute
+	DELETE(path string, handler func(http.ResponseWriter, *http.Request)) *TheRoute
 	Group(prefix string)
 }
 
 type Routerica struct {
-	getRoutes []*GetRoute
 	routericaI
+	globalRoute *TheGlobalRoute
+	localRoutes      map[string][]TheRoute
 }
-// TODO: check when user has no middlewares. For now we get a panic, when no middlewares.
+
 type TheMiddlewareChain http.Handler
 type TheMiddleware func(next http.Handler) http.Handler
 
 type baseMethodI interface {
+	// Use (R) - add local middleware
 	Use(...TheMiddleware)
 }
 
 type BaseMethod struct {
-	middlewares []TheMiddleware
 	baseMethodI
+	middlewares []TheMiddleware
 }
 
-type theRoute struct {
+type BaseRoute struct {
 	baseMethodI
-	path            string
-	method          string
 	handler         http.HandlerFunc
 	middlewareChain TheMiddlewareChain
 }
 
-type GetRoute struct {
-	theRoute
+type TheGlobalRoute struct {
+	BaseRoute
+}
+
+type TheRoute struct {
+	BaseRoute
+	path   string
+	method string
 }
 
 type TheGroup func()

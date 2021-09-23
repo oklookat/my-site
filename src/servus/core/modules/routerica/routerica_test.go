@@ -7,7 +7,8 @@ import (
 
 func TestNew(t *testing.T) {
 	routerica := New()
-	routerica.Get("/test", testHandler).Use(testingMiddleware, testingMiddleware2)
+	routerica.Use(testingGlobalMiddleware, testingGlobalMiddleware2)
+	routerica.GET("/test", testHandler).Use(testingMiddleware, testingMiddleware2)
 	http.Handle("/", routerica)
 	err := http.ListenAndServe(":7777", nil)
 	if err != nil {
@@ -25,6 +26,20 @@ func testingMiddleware(next http.Handler) http.Handler{
 func testingMiddleware2(next http.Handler) http.Handler{
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		println("i am in second middleware /test")
+		next.ServeHTTP(writer, request)
+	})
+}
+
+func testingGlobalMiddleware(next http.Handler) http.Handler{
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		println("i am in global middleware")
+		next.ServeHTTP(writer, request)
+	})
+}
+
+func testingGlobalMiddleware2(next http.Handler) http.Handler{
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		println("i am in global middleware 2")
 		next.ServeHTTP(writer, request)
 	})
 }
