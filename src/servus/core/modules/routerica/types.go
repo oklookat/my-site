@@ -12,51 +12,25 @@ const (
 	ctxMiddleware ctxMiddlewarePipe = "PIPE_ROUTERICA"
 )
 
-type routericaI interface {
-	// Use (G) - add global middleware
-	Use(middlewares ...TheMiddleware) *TheGlobalRoute
-	POST(path string, handler func(http.ResponseWriter, *http.Request)) *TheRoute
-	GET(path string, handler func(http.ResponseWriter, *http.Request)) *TheRoute
-	DELETE(path string, handler func(http.ResponseWriter, *http.Request)) *TheRoute
-	Group(prefix string)
+type requestsI interface {
+	GET(path string, handler func(http.ResponseWriter, *http.Request)) *RouteLocal
+	POST(path string, handler func(http.ResponseWriter, *http.Request)) *RouteLocal
+	PUT(path string, handler func(http.ResponseWriter, *http.Request)) *RouteLocal
+	DELETE(path string, handler func(http.ResponseWriter, *http.Request)) *RouteLocal
 }
 
-type Routerica struct {
-	routericaI
-	globalRoute *TheGlobalRoute
-	localRoutes      map[string][]TheRoute
-}
+type MiddlewareChain http.Handler
+type Middleware func(next http.Handler) http.Handler
 
-type TheMiddlewareChain http.Handler
-type TheMiddleware func(next http.Handler) http.Handler
-
-type baseMethodI interface {
-	// Use (R) - add local middleware
-	Use(...TheMiddleware)
-}
-
-type BaseMethod struct {
-	baseMethodI
-	middlewares []TheMiddleware
-}
-
-type BaseRoute struct {
-	baseMethodI
+// RouteBase using for typical routes
+type RouteBase struct {
 	handler         http.HandlerFunc
-	middlewareChain TheMiddlewareChain
+	middlewareChain MiddlewareChain
 }
 
-type TheGlobalRoute struct {
-	BaseRoute
+// GlobalMiddleware used only for global middleware (router instance)
+type GlobalMiddleware struct {
+	handler         http.HandlerFunc
+	middlewareChain MiddlewareChain
 }
 
-type TheRoute struct {
-	BaseRoute
-	path   string
-	method string
-}
-
-type TheGroup func()
-type RouterGroup struct {
-	Prefix string
-}
