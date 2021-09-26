@@ -5,11 +5,13 @@ import "net/http"
 type ctxMiddlewarePipe string
 
 const (
-	methodGET                       = "GET"
-	methodPOST                      = "POST"
-	methodPUT                       = "PUT"
-	methodDELETE                    = "DELETE"
-	ctxMiddleware ctxMiddlewarePipe = "PIPE_ROUTERICA"
+	methodGET                             = "GET"
+	methodPOST                            = "POST"
+	methodPUT                             = "PUT"
+	methodDELETE                          = "DELETE"
+	paramDelimiterOpen                    = "{"
+	paramDelimiterClose                   = "}"
+	ctxMiddleware       ctxMiddlewarePipe = "PIPE_ROUTERICA"
 )
 
 type requestsI interface {
@@ -33,4 +35,3 @@ type GlobalMiddleware struct {
 	handler         http.HandlerFunc
 	middlewareChain MiddlewareChain
 }
-
