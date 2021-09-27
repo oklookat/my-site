@@ -2,7 +2,6 @@ package routerica
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -17,17 +16,13 @@ func middlewareChainer(middlewares []Middleware, next http.Handler) http.Handler
 	return next
 }
 
-// cleanupSlashes - from //1////2/3 make /1/2/3.
-func cleanupSlashes(data string) string {
-	regex := regexp.MustCompile(`\/\/+`)
-	return string(regex.ReplaceAll([]byte(data), []byte("/")))
-}
 
 // formatPath - from path like /hello or ///hello// make /HELLO/.
 func formatPath(path string) string {
 	path = fmt.Sprintf("/%v/", path)
-	path = cleanupSlashes(path)
-	return strings.ToUpper(path)
+	regex := regexp.MustCompile(`//+`)
+	path = string(regex.ReplaceAll([]byte(path), []byte("/")))
+	return path
 }
 
 //func paramMatching(){
@@ -40,43 +35,19 @@ func uriSplitter(uri string) []string {
 	f := func(c rune) bool {
 		return c == '/'
 	}
+	// split uri by slash.
 	var uriSlice = strings.FieldsFunc(uri, f)
 	return uriSlice
 }
 
-// uriParser - returns true and map like [param: value] if uriSlice equals requestUriSlice.
-func uriParser(uriSlice []string, requestUriSlice []string) (isMatch bool, paramsMap map[string]string) {
-	if len(uriSlice) < len(requestUriSlice) {
-		return false, nil
-	}
-	// equalCount - get size of uri to compare with request uri slice.
-	var equalCount = len(uriSlice) - 1
-	// verified - used for comparing
-	var verified = 0
-	for prefixIndex := range uriSlice {
-		var currentPref = uriSlice[prefixIndex]
-		switch requestUriSlice[prefixIndex] {
-		// if part of request URI equals to prefix part.
-		case currentPref:
-			verified++
-			continue
-		default:
-			var hasDelimiter = strings.HasPrefix(currentPref, paramDelimiterOpen) && strings.HasSuffix(currentPref, paramDelimiterClose)
-			if hasDelimiter {
-				// if part of request URI not equals to prefix part, but prefix part has {delimiter}.
-				// get prefix name without delimiter. Ex: {user} = user.
-				currentPref = strings.ReplaceAll(currentPref, paramDelimiterOpen, "")
-				currentPref = strings.ReplaceAll(currentPref, paramDelimiterClose, "")
-				// paste prefix and value to map. Ex: /{user}/hello to /69/hello.
-				// in summary: paramsMap[user] = 69.
-				paramsMap[currentPref] = requestUriSlice[prefixIndex]
-				verified++
-			} else {
-				// if part of requestUriSlice not equals to uriSlice part, and has no {delimiter}, we don't need to continue.
-				break
-			}
+// mapConcat - make one map from maps (duplicates will be replaced)
+func mapConcat(maps ...map[string]string) map[string]string{
+	mapped := make(map[string]string, 0)
+	for currentMapIndex := range maps {
+		var currentMap = maps[currentMapIndex]
+		for currentMapKey := range currentMap {
+			mapped[currentMapKey] = currentMap[currentMapKey]
 		}
 	}
-	log.Println(paramsMap)
-	return equalCount != verified, paramsMap
+	return mapped
 }

@@ -1,6 +1,7 @@
 package routerica
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 )
@@ -38,9 +39,11 @@ func testingGlobalMiddleware(next http.Handler) http.Handler{
 
 
 func testHandler(response http.ResponseWriter, request *http.Request){
-	println("/test/get handler")
+	println("/user/id handler")
 	response.WriteHeader(200)
-	response.Write([]byte("/test"))
+	var params = request.Context().Value(ctxPathParams).(map[string]string)
+	var formatted = fmt.Sprintf("/user/id handler | id of user: %v", params["id"])
+	response.Write([]byte(formatted))
 	return
 }
 

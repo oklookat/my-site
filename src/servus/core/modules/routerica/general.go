@@ -6,25 +6,28 @@ import (
 
 // New - create new Routerica instance
 func New() *Routerica {
-	var localRoutes = make(map[string][]RouteLocal, 0)
-	var routerica = &Routerica{localRoutes: localRoutes}
-	routerica.globalMiddleware = &GlobalMiddleware{}
+	var routeLocals = make(map[string][]RouteLocal, 0)
+	var routerica = &Routerica{routeLocals: routeLocals}
 	routerica.routeGroups = make([]RouteGroup, 0)
-	routerica.globalMiddleware.middlewareChain = routerica.globalMiddleware
+	routerica.middlewareGlobal = &middlewareGlobal{}
+	routerica.middlewareGlobal.chain = routerica.middlewareGlobal
+	routerica.routeNotFound.endpoint = defaultsEndpointNotFound
 	return routerica
 }
 
 // newRouteGroup - create route group instance (internal)
 func newRouteGroup(prefix string) RouteGroup {
-	var localRoutes = map[string][]RouteLocal{}
+	var routeLocals = map[string][]RouteLocal{}
 	prefixSlice := uriSplitter(prefix)
-	var routeGroup = RouteGroup{prefix: prefixSlice, localRoutes: localRoutes}
-	routeGroup.middlewareChain = &routeGroup.RouteBase
+	var routeGroup = RouteGroup{prefix: prefixSlice, routeLocals: routeLocals}
+	routeGroup.middlewareGroupGlobal = &middlewareGroupGlobal{}
+	// its works because middlewareGroupGlobal implements ServeHTTP
+	routeGroup.middlewareGroupGlobal.chain = routeGroup.middlewareGroupGlobal
 	return routeGroup
 }
 
 // newRouteLocal - create route local instance (internal)
 func newRouteLocal(path string, method string, handler http.HandlerFunc) RouteLocal {
 	pathSlice := uriSplitter(path)
-	return RouteLocal{path: pathSlice, method: method, RouteBase: RouteBase{handler: handler}}
+	return RouteLocal{path: pathSlice, method: method, endpoint: handler, middlewareLocal: &middlewareLocal{}}
 }

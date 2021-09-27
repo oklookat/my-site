@@ -1,13 +1,15 @@
 package routerica
 
 import (
+	"context"
 	"net/http"
 )
 
-// TODO: pass params map to request context.
-// TODO: remove big case converting (replace to strings.EqualFold)
-// TODO: remove adding prefix to route group routes(?)
+
 // TODO: write normal tests and benchmarks
+// TODO: remove ServeHTTP from external use (if possible)
+// TODO: optimize code (maybe pointers in some places be good?)
+// TODO: try make it possible: /route/hello{param}/
 // depending on request method and path choose right routes array, executes middleware (if exists) and then run handler (if middleware not returned response).
 func routeMatcher(r *Routerica, response http.ResponseWriter, request *http.Request) {
 	var requestMethod = request.Method
@@ -18,36 +20,47 @@ func routeMatcher(r *Routerica, response http.ResponseWriter, request *http.Requ
 	}
 	//////// route matching.
 	var routeLocal *RouteLocal
-	var requestURISlice = uriSplitter(formatPath(request.URL.RequestURI()))
+	// get uri without query string.
+	var requestPath = uriSplitter(request.URL.Path)
+	// define params (if {delimiter} exists, it will be replaced request value and added to context)
+	// ex: /{id}/change => /1337/change => map[id: 1337].
+	var paramsMap = make(map[string]string, 0)
+	var paramsMapTemp = make(map[string]string, 0)
 	// route groups.
-	var routeGroup = parseRouteGroup(r.routeGroups, requestURISlice)
-	// getting routeLocal depending on request URI.
+	routeGroup, paramsMap := parserRouteGroups(r.routeGroups, requestPath)
+	request = request.WithContext(context.WithValue(context.Background(), ctxPathParams, paramsMap))
+	// getting routeLocal depending on request URI (group or not).
 	switch routeGroup {
 	default:
-		routeGroup.middlewareChain.ServeHTTP(response, request)
-		routeLocal = parseRouteLocal(routeGroup.localRoutes, requestMethod, requestURISlice)
+		// we have route group, execute group middleware and parse routes inside group.
+		routeGroup.middlewareGroupGlobal.chain.ServeHTTP(response, request)
+		routeLocal, paramsMapTemp = parserRouteLocals(routeGroup.routeLocals, requestMethod, requestPath)
 		break
 	case nil:
-		routeLocal = parseRouteLocal(r.localRoutes, requestMethod, requestURISlice)
+		// we don't have route group, switching to parse routes without group.
+		routeLocal, paramsMapTemp = parserRouteLocals(r.routeLocals, requestMethod, requestPath)
 		break
 	}
+	paramsMap = mapConcat(paramsMap, paramsMapTemp)
+	request = request.WithContext(context.WithValue(context.Background(), ctxPathParams, paramsMap))
 	// execute routeLocal middleware or handler. Or go to 404.
 	switch routeLocal {
 	default:
-		switch routeLocal.middlewareChain {
+		// we have routeLocal.
+		switch routeLocal.middlewareLocal.chain {
 		default:
-			// if middleware exists, at the end it executes handler.
-			routeLocal.middlewareChain.ServeHTTP(response, request)
+			// if middleware exists, at the end it executes endpoint.
+			routeLocal.middlewareLocal.chain.ServeHTTP(response, request)
 			break
 		case nil:
-			// Or middleware not exists we run handler directly.
-			routeLocal.handler(response, request)
+			// middleware not exists - we run endpoint directly.
+			routeLocal.endpoint(response, request)
 			break
 		}
 		break
 	case nil:
-		// TODO: add 404 handler here
-		println("404")
+		// we don't have routeLocal. 404 moment.
+		r.routeNotFound.endpoint.ServeHTTP(response, request)
 		break
 	}
 }
