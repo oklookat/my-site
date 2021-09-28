@@ -6,7 +6,7 @@ import (
 )
 
 // defaultsEndpointNotFound - default endpoint for 404 page.
-func defaultsEndpointNotFound(response http.ResponseWriter, request *http.Request){
+func defaultsEndpointNotFound(response http.ResponseWriter, request *http.Request) {
 	response.WriteHeader(404)
 	_, err := response.Write([]byte("not found"))
 	if err != nil {

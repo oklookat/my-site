@@ -45,11 +45,9 @@ func (r *Routerica) ServeHTTP(response http.ResponseWriter, request *http.Reques
 	if request.RequestURI == "/favicon.ico" {
 		return
 	}
-	println("i am in entry point")
 	// pass routerica instance to request
 	request = request.WithContext(context.WithValue(context.Background(), ctxMain, r))
 	r.middlewareGlobal.chain.ServeHTTP(response, request)
-	println("exit from entry point")
 }
 
 // ServeHTTP - when global middleware finished or if no global middlewares, it calls this method. If global middleware send response, this method will not be called.

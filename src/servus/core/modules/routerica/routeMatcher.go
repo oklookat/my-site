@@ -6,11 +6,7 @@ import (
 )
 
 
-// TODO: write normal tests and benchmarks
-// TODO: remove ServeHTTP from external use (if possible)
-// TODO: optimize code (maybe pointers in some places be good?)
-// TODO: try make it possible: /route/hello{param}/
-// depending on request method and path choose right routes array, executes middleware (if exists) and then run handler (if middleware not returned response).
+// routeMatcher - depending on request method and path choose right routes array, executes middleware (if exists) and then run handler (if middleware not returned response).
 func routeMatcher(r *Routerica, response http.ResponseWriter, request *http.Request) {
 	var requestMethod = request.Method
 	var isValidMethod = requestMethod == methodGET || requestMethod == methodPOST || requestMethod == methodPUT || requestMethod == methodDELETE

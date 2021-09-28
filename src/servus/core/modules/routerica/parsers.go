@@ -1,44 +1,8 @@
 package routerica
 
-import "strings"
-
-// parserPath - if url path equals requestPath returns true, map like [param: value] {if delimiter}, and requestPath without matched.
-func parserPath(path []string, requestPath []string) (isMatch bool, paramsMap map[string]string) {
-	if len(path) > len(requestPath) {
-		return false, nil
-	}
-	// equalCount - get size of uri to compare with request uri slice.
-	var equalCount = len(path) - 1
-	// verified - used for comparing.
-	var verified = 0
-	// requestUriSliceFormatted - contains requestUri items without matched.
-	paramsMap = make(map[string]string, 0)
-	for prefixIndex := range path {
-		var currentPref = path[prefixIndex]
-		var isEquals = strings.EqualFold(requestPath[prefixIndex], currentPref)
-		if isEquals {
-			verified++
-			continue
-		} else {
-			var hasDelimiter = strings.HasPrefix(currentPref, paramDelimiterOpen) && strings.HasSuffix(currentPref, paramDelimiterClose)
-			// if part of request URI not equals to prefix part, but prefix part has {delimiter}.
-			if hasDelimiter {
-				// get prefix name without delimiter. Ex: {user} = user.
-				currentPref = strings.ReplaceAll(currentPref, paramDelimiterOpen, "")
-				currentPref = strings.ReplaceAll(currentPref, paramDelimiterClose, "")
-				// paste prefix and value to map. Ex: /{user}/hello to /69/hello.
-				// in summary: paramsMap[user] = 69.
-				paramsMap[currentPref] = requestPath[prefixIndex]
-				verified++
-				continue
-			} else {
-				// if part of requestUriSlice not equals to uriSlice part, and has no {delimiter}, we don't need to continue.
-				break
-			}
-		}
-	}
-	return equalCount != verified, paramsMap
-}
+import (
+	"strings"
+)
 
 // parserRouteGroups - get route group from request URI. If success, returns routeGroup and requestURI without routeGroup prefix.
 func parserRouteGroups(groups []RouteGroup, requestPath []string) (routeGroup *RouteGroup, paramsMap map[string]string) {
@@ -61,9 +25,46 @@ func parserRouteLocals(routes map[string][]RouteLocal, requestMethod string, req
 		if !isMatched {
 			continue
 		}
-		// now we in correct route
+		// now we in correct route.
 		return currentRoute, paramsMap
 	}
 	return nil, nil
 }
 
+// parserPath - if url path equals requestPath, returns true and map like [param: value] if {param}.
+func parserPath(path []string, requestPath []string) (isMatch bool, paramsMap map[string]string) {
+	if len(path) > len(requestPath) {
+		return false, nil
+	}
+	// equalCount - get size of uri to compare with request uri slice.
+	var equalCount = len(path) - 1
+	// verified - used for comparing.
+	var verified = 0
+	// requestUriSliceFormatted - contains requestUri items without matched.
+	paramsMap = make(map[string]string, 0)
+	for pathPartIndex := range path {
+		var currentPathPart = path[pathPartIndex]
+		var currentPathRequestPart = requestPath[pathPartIndex]
+		var hasParam = strings.HasPrefix(currentPathPart, paramOpen) && strings.HasSuffix(currentPathPart, paramClose)
+		// if part of request URI not equals to prefix part, but prefix part has {param}.
+		if hasParam {
+			// get prefix name without param. Ex: {user} = user.
+			currentPathPart = strings.ReplaceAll(currentPathPart, paramOpen, "")
+			currentPathPart = strings.ReplaceAll(currentPathPart, paramClose, "")
+			// paste prefix and value to map. Ex: /{user}/hello to /69/hello.
+			// in summary: paramsMap[user] = 69.
+			paramsMap[currentPathPart] = currentPathRequestPart
+			verified++
+			continue
+		}
+		var isEquals = strings.EqualFold(currentPathRequestPart, currentPathPart)
+		if isEquals {
+			verified++
+			continue
+		} else {
+			// if part of requestUriSlice not equals to uriSlice part, and has no {param}, we don't need to continue.
+			return false, nil
+		}
+	}
+	return equalCount != verified, paramsMap
+}

@@ -7,6 +7,16 @@ import (
 	"strings"
 )
 
+// GetParams - get {params} from request. Example: if route /hello/{id} and request are /hello/12 - it func returns [id: 12].
+func GetParams(request *http.Request) map[string]string {
+	paramsMap, ok := request.Context().Value(ctxPathParams).(map[string]string)
+	if ok {
+		return paramsMap
+	} else {
+		return nil
+	}
+}
+
 // create one big middleware from middlewares (chain).
 func middlewareChainer(middlewares []Middleware, next http.Handler) http.Handler {
 	// https://gist.github.com/husobee/fd23681261a39699ee37#gistcomment-3111569
@@ -16,7 +26,6 @@ func middlewareChainer(middlewares []Middleware, next http.Handler) http.Handler
 	return next
 }
 
-
 // formatPath - from path like /hello or ///hello// make /HELLO/.
 func formatPath(path string) string {
 	path = fmt.Sprintf("/%v/", path)
@@ -24,10 +33,6 @@ func formatPath(path string) string {
 	path = string(regex.ReplaceAll([]byte(path), []byte("/")))
 	return path
 }
-
-//func paramMatching(){
-//	var regex, _ = regexp.Compile(`{([a-zA-Z0-9]*)}`)
-//}
 
 // uriSplitter - split url like /hello/world/ to slice [hello, world].
 func uriSplitter(uri string) []string {
@@ -40,8 +45,8 @@ func uriSplitter(uri string) []string {
 	return uriSlice
 }
 
-// mapConcat - make one map from maps (duplicates will be replaced)
-func mapConcat(maps ...map[string]string) map[string]string{
+// mapConcat - make one map from maps (duplicates will be replaced).
+func mapConcat(maps ...map[string]string) map[string]string {
 	mapped := make(map[string]string, 0)
 	for currentMapIndex := range maps {
 		var currentMap = maps[currentMapIndex]
