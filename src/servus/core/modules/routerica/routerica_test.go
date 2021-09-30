@@ -9,26 +9,44 @@ import (
 
 func testRequestBasic(t *testing.T, method string) {
 	routerica := New()
+	var group = routerica.Group(GroupPath1)
+	var groupParams = routerica.Group(GroupPath2)
 	switch method {
 	case http.MethodGet:
 		routerica.GET(Path1, TestingEndpoint)
 		routerica.GET(Path2, TestingEndpoint)
 		routerica.GET(Path3, TestingEndpoint)
+		routerica.GET(Path4, TestingEndpoint)
+		routerica.GET(Path5, TestingEndpoint)
+		group.GET(GroupSubPath1, TestingEndpoint)
+		groupParams.GET(GroupSubPath2, TestingEndpoint)
 		break
 	case http.MethodPost:
 		routerica.POST(Path1, TestingEndpoint)
 		routerica.POST(Path2, TestingEndpoint)
 		routerica.POST(Path3, TestingEndpoint)
+		routerica.POST(Path4, TestingEndpoint)
+		routerica.POST(Path5, TestingEndpoint)
+		group.POST(GroupSubPath1, TestingEndpoint)
+		groupParams.POST(GroupSubPath2, TestingEndpoint)
 		break
 	case http.MethodPut:
 		routerica.PUT(Path1, TestingEndpoint)
 		routerica.PUT(Path2, TestingEndpoint)
 		routerica.PUT(Path3, TestingEndpoint)
+		routerica.PUT(Path4, TestingEndpoint)
+		routerica.PUT(Path5, TestingEndpoint)
+		group.PUT(GroupSubPath1, TestingEndpoint)
+		groupParams.PUT(GroupSubPath2, TestingEndpoint)
 		break
 	case http.MethodDelete:
 		routerica.DELETE(Path1, TestingEndpoint)
 		routerica.DELETE(Path2, TestingEndpoint)
 		routerica.DELETE(Path3, TestingEndpoint)
+		routerica.DELETE(Path4, TestingEndpoint)
+		routerica.DELETE(Path5, TestingEndpoint)
+		group.DELETE(GroupSubPath1, TestingEndpoint)
+		groupParams.DELETE(GroupSubPath2, TestingEndpoint)
 		break
 	default:
 		t.Fatalf("testRequestBasic wrong http method: %v", method)
@@ -71,6 +89,10 @@ func testRequestBasic(t *testing.T, method string) {
 			Path1: Path1Response1,
 			Path2: Path2Response1,
 			Path3: Path3Response1,
+			Path4Params: Path4Response1,
+			Path5Params: Path5Response1,
+			GroupSubPath1Request: GroupSubPath1Response1,
+			GroupSubPath2Request: GroupSubPath2Response1,
 		}
 		pathFor(http.MethodGet, pathsAndExpected)
 		break
@@ -79,6 +101,10 @@ func testRequestBasic(t *testing.T, method string) {
 			Path1: Path1Response2,
 			Path2: Path2Response2,
 			Path3: Path3Response2,
+			Path4Params: Path4Response2,
+			Path5Params: Path5Response2,
+			GroupSubPath1Request: GroupSubPath1Response2,
+			GroupSubPath2Request: GroupSubPath2Response2,
 		}
 		pathFor(http.MethodPost, pathsAndExpected)
 		break
@@ -87,6 +113,10 @@ func testRequestBasic(t *testing.T, method string) {
 			Path1: Path1Response3,
 			Path2: Path2Response3,
 			Path3: Path3Response3,
+			Path4Params: Path4Response3,
+			Path5Params: Path5Response3,
+			GroupSubPath1Request: GroupSubPath1Response3,
+			GroupSubPath2Request: GroupSubPath2Response3,
 		}
 		pathFor(http.MethodPut, pathsAndExpected)
 		break
@@ -95,6 +125,10 @@ func testRequestBasic(t *testing.T, method string) {
 			Path1: Path1Response4,
 			Path2: Path2Response4,
 			Path3: Path3Response4,
+			Path4Params: Path4Response4,
+			Path5Params: Path5Response4,
+			GroupSubPath1Request: GroupSubPath1Response4,
+			GroupSubPath2Request: GroupSubPath2Response4,
 		}
 		pathFor(http.MethodDelete, pathsAndExpected)
 		break
@@ -108,42 +142,18 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestRouterica_GET(t *testing.T) {
+func TestRouterica_All_GET(t *testing.T) {
 	testRequestBasic(t, http.MethodGet)
 }
 
-func TestRouterica_POST(t *testing.T) {
+func TestRouterica_All_POST(t *testing.T) {
 	testRequestBasic(t, http.MethodPost)
 }
 
-func TestRouterica_PUT(t *testing.T) {
+func TestRouterica_All_PUT(t *testing.T) {
 	testRequestBasic(t, http.MethodPut)
 }
 
-func TestRouterica_DELETE(t *testing.T) {
+func TestRouterica_All_DELETE(t *testing.T) {
 	testRequestBasic(t, http.MethodDelete)
-}
-
-func TestRouteGroup_GET(t *testing.T) {
-	routerica := New()
-	server := httptest.NewServer(routerica)
-	defer server.Close()
-}
-
-func TestRouteGroup_POST(t *testing.T) {
-	routerica := New()
-	server := httptest.NewServer(routerica)
-	defer server.Close()
-}
-
-func TestRouteGroup_PUT(t *testing.T) {
-	routerica := New()
-	server := httptest.NewServer(routerica)
-	defer server.Close()
-}
-
-func TestRouteGroup_DELETE(t *testing.T) {
-	routerica := New()
-	server := httptest.NewServer(routerica)
-	defer server.Close()
 }
