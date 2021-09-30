@@ -8,7 +8,7 @@ import (
 )
 
 var errDatabaseNotFound = errors.New("database: not found")
-var errTokenNotPresented = errors.New("authorization: token not found not in cookie, not in authorization header")
+var errTokenNotPresented = errors.New("authorization token not found (not in cookie, not in authorization header).")
 
 // used when wrong username or password
 func errAuthWrongCredentials(response http.ResponseWriter) {

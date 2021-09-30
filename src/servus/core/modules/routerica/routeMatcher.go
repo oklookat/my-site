@@ -24,7 +24,7 @@ func routeMatcher(r *Routerica, response http.ResponseWriter, request *http.Requ
 	var paramsMapTemp = make(map[string]string, 0)
 	// route groups.
 	routeGroup, paramsMap := parserRouteGroups(r.routeGroups, requestPath)
-	request = request.WithContext(context.WithValue(context.Background(), ctxPathParams, paramsMap))
+	request = request.WithContext(context.WithValue(context.Background(), ctxValueParams, paramsMap))
 	// getting routeLocal depending on request URI (group or not).
 	switch routeGroup {
 	default:
@@ -38,7 +38,7 @@ func routeMatcher(r *Routerica, response http.ResponseWriter, request *http.Requ
 		break
 	}
 	paramsMap = mapConcat(paramsMap, paramsMapTemp)
-	request = request.WithContext(context.WithValue(context.Background(), ctxPathParams, paramsMap))
+	request = request.WithContext(context.WithValue(context.Background(), ctxValueParams, paramsMap))
 	// execute routeLocal middleware or handler. Or go to 404.
 	switch routeLocal {
 	default:

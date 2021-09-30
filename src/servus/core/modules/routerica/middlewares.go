@@ -46,13 +46,13 @@ func (r *Routerica) ServeHTTP(response http.ResponseWriter, request *http.Reques
 		return
 	}
 	// pass routerica instance to request
-	request = request.WithContext(context.WithValue(context.Background(), ctxMain, r))
+	request = request.WithContext(context.WithValue(context.Background(), ctxInternal, r))
 	r.middlewareGlobal.chain.ServeHTTP(response, request)
 }
 
 // ServeHTTP - when global middleware finished or if no global middlewares, it calls this method. If global middleware send response, this method will not be called.
 func (g *middlewareGlobal) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	var routerica = request.Context().Value(ctxMain)
+	var routerica = request.Context().Value(ctxInternal)
 	// clear context
 	request = request.WithContext(context.Background())
 	routeMatcher(routerica.(*Routerica), response, request)

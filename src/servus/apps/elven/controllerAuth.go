@@ -18,7 +18,7 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 	var loginBody controllerAuthLoginBody
 	var err = json.NewDecoder(request.Body).Decode(&loginBody)
 	if err != nil {
-		ec.AddEValidationAllowed([]string{"request body"}, []string{"username", "password", "type"})
+		ec.AddEValidationAllowed([]string{"you"}, []string{"username", "password", "type"})
 		theResponse.Send(ec.GetErrors(), 400)
 		return
 	}
@@ -76,6 +76,8 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 	}
 	// now we replace fake token with real token in database
 	tokenModel.token = encryptedTokenHash
+	tokenModel.authAgent = request.UserAgent()
+	tokenModel.authIP = getIP(request)
 	_, err = dbTokenUpdate(&tokenModel)
 	if err != nil {
 		errAuth500(response)
@@ -102,16 +104,16 @@ func controllerAuthLogout(response http.ResponseWriter, request *http.Request) {
 	var theResponse = core.HttpResponse{ResponseWriter: response}
 	var ec = errorCollector.New()
 	// get token from cookie or auth header
-	var token, err = authGrabToken(request)
+	var token, err = getToken(request)
 	if err != nil {
-		ec.AddEAuthIncorrect([]string{"get-token"})
+		ec.AddEAuthIncorrect([]string{"logout"})
 		theResponse.Send(ec.GetErrors(), 401)
 		return
 	}
 	// get user and token instances by encrypted token
-	_, tokenModel, err := authGetUserAndTokenByToken(token)
+	_, tokenModel, err := getUserAndTokenByToken(token)
 	if err != nil {
-		ec.AddEAuthIncorrect([]string{"token"})
+		ec.AddEAuthIncorrect([]string{"logout"})
 		theResponse.Send(ec.GetErrors(), 401)
 		return
 	}
