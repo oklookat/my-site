@@ -4,37 +4,49 @@ import (
 	"context"
 	"servus/core"
 	"servus/core/modules/cryptor"
+	"time"
 )
 
 
-func dbUserCreate(user modelUser) (modelUser, error) {
-	var newUser = modelUser{}
-	var hashedPassword, err = cryptor.BHash(user.password)
+type ModelUser struct {
+	ID        string
+	Role      string
+	Username  string
+	Password  string
+	RegIP     string
+	RegAgent  string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func dbUserCreate(user ModelUser) (newUser ModelUser, err error) {
+	newUser = ModelUser{}
+	hashedPassword, err := cryptor.BHash(user.Password)
 	if err != nil {
 		core.Logger.Error(err.Error())
 		return newUser, err
 	}
-	var sql = `INSERT INTO users (role, username, password) VALUES ($1, $2, $3) RETURNING id, role, username, password, reg_ip, reg_agent, created_at, updated_at`
-	query := core.Database.Connection.QueryRow(context.Background(), sql, user.role, user.username, hashedPassword)
-	err = query.Scan(&newUser.id, &newUser.role, &newUser.username, &newUser.password, &newUser.regIP, &newUser.regAgent, &newUser.createdAt, &newUser.updatedAt)
+	var sql = `INSERT INTO users (role, username, password) VALUES ($1, $2, $3) RETURNING *`
+	query := core.Database.Connection.QueryRow(context.Background(), sql, user.Role, user.Username, hashedPassword)
+	err = query.Scan(&newUser.ID, &newUser.Role, &newUser.Username, &newUser.Password, &newUser.RegIP, &newUser.RegAgent, &newUser.CreatedAt, &newUser.UpdatedAt)
 	err = core.Utils.DBCheckError(err)
 	return newUser, err
 }
 
-func dbUserFind(id string) (modelUser, error){
-	var user = modelUser{}
+func dbUserFind(id string) (ModelUser, error){
+	var user = ModelUser{}
 	var sql = "SELECT * FROM users WHERE id=$1 LIMIT 1"
 	row := core.Database.Connection.QueryRow(context.Background(), sql, id)
-	err := row.Scan(&user.id, &user.role, &user.username, &user.password, &user.regIP, &user.regAgent, &user.createdAt, &user.updatedAt)
+	err := row.Scan(&user.ID, &user.Role, &user.Username, &user.Password, &user.RegIP, &user.RegAgent, &user.CreatedAt, &user.UpdatedAt)
 	err = core.Utils.DBCheckError(err)
 	return user, err
 }
 
-func dbUserFindBy(username string) (modelUser, error) {
-	var user = modelUser{}
+func dbUserFindBy(username string) (ModelUser, error) {
+	var user = ModelUser{}
 	var sql = "SELECT * FROM users WHERE username=$1 LIMIT 1"
 	row := core.Database.Connection.QueryRow(context.Background(), sql, username)
-	err := row.Scan(&user.id, &user.role, &user.username, &user.password, &user.regIP, &user.regAgent, &user.createdAt, &user.updatedAt)
+	err := row.Scan(&user.ID, &user.Role, &user.Username, &user.Password, &user.RegIP, &user.RegAgent, &user.CreatedAt, &user.UpdatedAt)
 	err = core.Utils.DBCheckError(err)
 	return user, err
 }

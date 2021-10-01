@@ -38,12 +38,12 @@ func cmdSuperuser() {
 	}
 	user, err := dbUserFindBy(username)
 	// if user exists
-	if len(user.id) > 1 {
+	if len(user.ID) > 1 {
 		var deleteHim = ancientUI.AddQuestion(ancientUI.QuestionItem{Question: "Username exists. Delete?"})
 		if !deleteHim {
 			os.Exit(1)
 		}
-		err = dbUserDeleteBy(user.id)
+		err = dbUserDeleteBy(user.ID)
 		if err != nil {
 			println("Error while deleting user.")
 			cmdSuperuser()
@@ -61,7 +61,7 @@ func cmdSuperuser() {
 		cmdSuperuser()
 	}
 	// create
-	_, err = dbUserCreate(modelUser{role: "admin", username: username, password: password})
+	_, err = dbUserCreate(ModelUser{Role: "admin", Username: username, Password: password})
 	if err != nil {
 		println("Error while creating user.")
 		cmdSuperuser()

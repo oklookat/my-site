@@ -9,7 +9,7 @@ import (
 
 // GetParams - get {params} from request. Example: if route /hello/{id} and request are /hello/12 - it func returns [id: 12].
 func GetParams(request *http.Request) map[string]string {
-	paramsMap, ok := request.Context().Value(ctxValueParams).(map[string]string)
+	paramsMap, ok := request.Context().Value(CtxValueParams).(map[string]string)
 	if ok {
 		return paramsMap
 	} else {

@@ -63,7 +63,7 @@ type ConfigFile struct {
 	}
 }
 
-// BasicUtils servus utilities
+// BasicUtils - utilities.
 type BasicUtils struct {
 	utils
 }

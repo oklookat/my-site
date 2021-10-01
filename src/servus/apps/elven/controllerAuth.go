@@ -41,11 +41,11 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	// user not found by username
-	if len(user.id) < 1 {
+	if len(user.ID) < 1 {
 		errAuthWrongCredentials(response)
 		return
 	}
-	var isPassword = cryptor.BHashCheck(password, user.password)
+	var isPassword = cryptor.BHashCheck(password, user.Password)
 	// wrong password
 	if !isPassword {
 		errAuthWrongCredentials(response)
@@ -53,14 +53,14 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 	}
 	// token generating
 	// first we generate fake token model to get created token ID
-	var tokenModel = modelToken{userID: user.id, token: "-1"}
+	var tokenModel = ModelToken{UserID: user.ID, Token: "-1"}
 	tokenModel, err = dbTokenCreate(&tokenModel)
 	if err != nil {
 		errAuth500(response)
 		return
 	}
 	// then we get newly created token model id and encrypt it. That's we send to user as token.
-	encryptedToken, aesErr := cryptor.AESEncrypt(tokenModel.id, core.Config.Secret)
+	encryptedToken, aesErr := cryptor.AESEncrypt(tokenModel.ID, core.Config.Secret)
 	if aesErr.HasErrors {
 		core.Logger.Error(fmt.Sprintf("%v / %v", aesErr.AdditionalErr.Error(), aesErr.OriginalErr.Error()))
 		errAuth500(response)
@@ -75,9 +75,9 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	// now we replace fake token with real token in database
-	tokenModel.token = encryptedTokenHash
-	tokenModel.authAgent = request.UserAgent()
-	tokenModel.authIP = getIP(request)
+	tokenModel.Token = encryptedTokenHash
+	tokenModel.AuthAgent = request.UserAgent()
+	tokenModel.AuthIP = getIP(request)
 	_, err = dbTokenUpdate(&tokenModel)
 	if err != nil {
 		errAuth500(response)
@@ -118,6 +118,6 @@ func controllerAuthLogout(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	// delete token
-	_ = dbTokenDelete(tokenModel.id)
+	_ = dbTokenDelete(tokenModel.ID)
 	theResponse.Send("", 200)
 }

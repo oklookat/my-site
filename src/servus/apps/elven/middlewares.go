@@ -7,24 +7,24 @@ import (
 	"servus/core/modules/errorCollector"
 )
 
-type ctxAuthDataPipe string
+type CtxAuthDataPipe string
 
 const (
-	accessTypeAdminOnly = "ACCESS_ADMIN_ONLY"
-	accessTypeReadOnly  = "ACCESS_READ_ONLY"
-	ctxAuthData         = "ELVEN_PIPE_AUTH_DATA"
+	accessTypeAdminOnly                 = "ACCESS_ADMIN_ONLY"
+	accessTypeReadOnly                  = "ACCESS_READ_ONLY"
+	CtxAuthData CtxAuthDataPipe = "ELVEN_PIPE_AUTH_DATA"
 )
 
-type authData struct {
-	access bool
-	user   modelUser
-	token  modelToken
+type AuthData struct {
+	Access bool
+	User   ModelUser
+	Token  ModelToken
 }
 
 func middlewareReadOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var auth = createAuthData(request, accessTypeReadOnly)
-		if !auth.access {
+		if !auth.Access {
 			var ec = errorCollector.New()
 			ec.AddEAuthForbidden([]string{"AUTH"})
 			var res = core.HttpResponse{ResponseWriter: response}
@@ -32,7 +32,7 @@ func middlewareReadOnly(next http.Handler) http.Handler {
 			return
 		}
 		var ctx = request.Context()
-		request = request.WithContext(context.WithValue(ctx, ctxAuthData, auth))
+		*request = *request.WithContext(context.WithValue(ctx, CtxAuthData, auth))
 		next.ServeHTTP(response, request)
 	})
 }
@@ -40,7 +40,7 @@ func middlewareReadOnly(next http.Handler) http.Handler {
 func middlewareAdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var auth = createAuthData(request, accessTypeAdminOnly)
-		if !auth.access {
+		if !auth.Access {
 			var ec = errorCollector.New()
 			ec.AddEAuthForbidden([]string{"AUTH"})
 			var res = core.HttpResponse{ResponseWriter: response}
@@ -48,7 +48,7 @@ func middlewareAdminOnly(next http.Handler) http.Handler {
 			return
 		}
 		var ctx = request.Context()
-		request = request.WithContext(context.WithValue(ctx, ctxAuthData, auth))
+		*request = *request.WithContext(context.WithValue(ctx, CtxAuthData, auth))
 		next.ServeHTTP(response, request)
 	})
 }

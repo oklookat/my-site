@@ -1,20 +1,43 @@
 package elven
 
-import "net/http"
+import (
+	"net/http"
+	"servus/core"
+)
 
-func controllerArticlesGet(response http.ResponseWriter, request *http.Request){
+// GET url/
+// params:
+// page = number
+// show = published, drafts, all
+// by = created, updated, published
+// start = newest (DESC), oldest (ASC)
+// preview = true (content < 480 symbols), false (gives you full articles)
+func controllerArticlesGet(response http.ResponseWriter, request *http.Request) {
+	var theResponse = core.HttpResponse{ResponseWriter: response}
+	var authData = getAuthData(request)
+	var isAdmin = false
+	if authData != nil {
+		isAdmin = authData.User.Role == "admin"
+	}
+	var validated, err = validatorArticleQueryParams(request, isAdmin)
+	if err != nil {
+		theResponse.Send(err.Error(), 400)
+		return
+	}
 
 }
 
-func controllerArticlesPost(response http.ResponseWriter, request *http.Request){
+// POST url/
+func controllerArticlesPost(response http.ResponseWriter, request *http.Request) {
 
 }
 
-func controllerArticlesPut(response http.ResponseWriter, request *http.Request){
+// PUT /url/id
+func controllerArticlesPut(response http.ResponseWriter, request *http.Request) {
 
 }
 
-func controllerArticlesDelete(response http.ResponseWriter, request *http.Request){
+// DELETE /url/id
+func controllerArticlesDelete(response http.ResponseWriter, request *http.Request) {
 
 }
-

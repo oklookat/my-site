@@ -2,8 +2,11 @@ package elven
 
 import (
 	"github.com/pkg/errors"
+	"net/http"
 	"servus/core/modules/errorCollector"
 	"servus/core/modules/validator"
+	"strconv"
+	"strings"
 )
 
 //func validatorUserReg(username string, password string) (bool, string) {
@@ -55,6 +58,15 @@ import (
 //	return false, ""
 //}
 
+type validatedArticleQuery struct {
+	page int
+	show string
+	by string
+	start string
+	preview bool
+}
+
+// validatorUsername - validate username from ModelUser.
 func validatorUsername(username string) error {
 	if len(username) < 4 || len(username) > 24 {
 		return errors.New("username: min length 4 and max 24")
@@ -65,6 +77,7 @@ func validatorUsername(username string) error {
 	return nil
 }
 
+// validatorPassword - validate ModelUser password.
 func validatorPassword(password string) error {
 	if len(password) < 8 || len(password) > 64 {
 		return errors.New("password: min length 8 and max 64")
@@ -75,19 +88,20 @@ func validatorPassword(password string) error {
 	return nil
 }
 
-func validatorAuth(username string, password string, authType string) error{
+// validatorAuth - validate request body in auth.
+func validatorAuth(username string, password string, authType string) error {
 	var ec = errorCollector.New()
 	if validator.IsEmpty(username) {
 		ec.AddEValidationEmpty([]string{"username"})
 	}
-	if validator.IsEmpty(password){
+	if validator.IsEmpty(password) {
 		ec.AddEValidationEmpty([]string{"password"})
 	}
-	if validator.IsEmpty(authType){
+	if validator.IsEmpty(authType) {
 		ec.AddEValidationEmpty([]string{"authType"})
 	} else {
 		var isAuthType = authType == "cookie" || authType == "direct"
-		if !isAuthType{
+		if !isAuthType {
 			ec.AddEValidationAllowed([]string{"type"}, []string{"cookie", "direct"})
 		}
 	}
@@ -95,4 +109,111 @@ func validatorAuth(username string, password string, authType string) error{
 		return errors.New(ec.GetErrors())
 	}
 	return nil
+}
+
+// validatorArticleQueryParams - validate query params in request depending to ModelArticle
+// if validation error - returns errorCollector JSON (err.Error()).
+func validatorArticleQueryParams(request *http.Request, isAdmin bool) (validatedParams validatedArticleQuery, err error) {
+	validatedParams = validatedArticleQuery{}
+	var ec = errorCollector.New()
+	var queryParams = request.URL.Query()
+	// validate "show" param
+	var show = queryParams.Get("show")
+	if show == "" {
+		show = "published"
+	} else {
+		strings.ToLower(show)
+	}
+	var isShowInvalid = show != "published" && show != "drafts" && show != "all"
+	switch isShowInvalid {
+	case true:
+		ec.AddEValidationAllowed([]string{"show"}, []string{"published", "drafts", "all"})
+		break
+	case false:
+		if (show == "drafts" || show == "all") && !isAdmin {
+			ec.AddEAuthForbidden([]string{"show", "all"})
+		}
+		break
+	}
+	validatedParams.show = show
+	// validate "by" param
+	var by = queryParams.Get("by")
+	if by == "" {
+		show = "published"
+	} else {
+		strings.ToLower(show)
+	}
+	var isByInvalid = by != "created" && by != "published" && by != "updated"
+	if isByInvalid {
+		ec.AddEValidationAllowed([]string{"by"}, []string{"created", "published", "updated"})
+	} else {
+		if by == "created" || by == "updated" {
+			if !isAdmin {
+				ec.AddEAuthForbidden([]string{"by"})
+			}
+		}
+	}
+	switch by {
+	case "created":
+		by = "created_at"
+		break
+	case "updated":
+		by = "updated_at"
+		break
+	case "published":
+		by = "published_at"
+		break
+	}
+	validatedParams.by = by
+	// validate "start" param
+	var start = queryParams.Get("start")
+	if start == "" {
+		start = "newest"
+	} else {
+		strings.ToLower(start)
+	}
+	var isStartInvalid = start != "newest" && start != "oldest"
+	if isStartInvalid {
+		ec.AddEValidationAllowed([]string{"start"}, []string{"newest", "oldest"})
+	} else {
+		switch start {
+		case "newest":
+			start = "DESC"
+			break
+		case "oldest":
+			start = "ASC"
+			break
+		}
+	}
+	validatedParams.start = start
+	// validate "preview" param
+	var preview = queryParams.Get("preview")
+	if preview == "" {
+		preview = "true"
+	}
+	var previewBool bool
+	previewBool, err = strconv.ParseBool(preview)
+	if err != nil {
+		ec.AddEValidationAllowed([]string{"preview"}, []string{"boolean"})
+		previewBool = true
+	}
+	validatedParams.preview = previewBool
+	// validate "page" param
+	var page = queryParams.Get("page")
+	var pageInt int
+	pageInt, err = strconv.Atoi(page)
+	if err != nil {
+		ec.AddEValidationAllowed([]string{"page"}, []string{"number"})
+		pageInt = 1
+	} else {
+		if pageInt < 1 {
+			ec.AddEValidationMinMax([]string{"page"}, 1, 99999)
+		}
+	}
+	validatedParams.page = pageInt
+	// finally
+	if ec.HasErrors() {
+		return validatedParams, errors.New(ec.GetErrors())
+	}
+	return validatedParams, nil
 }

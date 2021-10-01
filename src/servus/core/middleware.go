@@ -8,7 +8,7 @@ import (
 // MiddlewareAsJSON this middleware set application/json header
 func (m *BasicMiddleware) MiddlewareAsJSON(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Add("Content-Type", "application/json")
+		writer.Header().Add("Content-Type", "application/json; charset=utf-8")
 		next.ServeHTTP(writer, request)
 	})
 }

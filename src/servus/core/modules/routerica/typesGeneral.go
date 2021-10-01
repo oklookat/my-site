@@ -2,8 +2,8 @@ package routerica
 
 import "net/http"
 
-type ctxInternalPipe string
-type ctxValueParamsPipe string
+type CtxInternalPipe string
+type CtxValueParamsPipe string
 
 const (
 	methodGET                         = "GET"
@@ -12,8 +12,8 @@ const (
 	methodDELETE                      = "DELETE"
 	paramOpen                         = "{"
 	paramClose                        = "}"
-	ctxInternal    ctxInternalPipe    = "ROUTERICA_PIPE_INTERNAL"
-	ctxValueParams ctxValueParamsPipe = "ROUTERICA_PIPE_PARAMS"
+	CtxInternal CtxInternalPipe    = "ROUTERICA_PIPE_INTERNAL"
+	CtxValueParams CtxValueParamsPipe = "ROUTERICA_PIPE_PARAMS"
 )
 
 type requestsI interface {
