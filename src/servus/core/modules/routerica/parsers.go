@@ -8,7 +8,7 @@ import (
 func parserRouteGroups(groups []RouteGroup, requestPath []string) (routeGroup *RouteGroup, paramsMap map[string]string) {
 	for index := range groups {
 		var currentGroup = &groups[index]
-		var isGroupMatched, paramsMap = parserPath(currentGroup.prefix, requestPath)
+		var isGroupMatched, paramsMap = parserPath(currentGroup.prefix, requestPath, true)
 		if !isGroupMatched {
 			continue
 		}
@@ -21,7 +21,7 @@ func parserRouteGroups(groups []RouteGroup, requestPath []string) (routeGroup *R
 func parserRouteLocals(routes map[string][]RouteLocal, requestMethod string, requestPath []string) (routeLocal *RouteLocal, paramsMap map[string]string) {
 	for index := range routes[requestMethod] {
 		var currentRoute = &routes[requestMethod][index]
-		var isMatched, paramsMap = parserPath(currentRoute.path, requestPath)
+		var isMatched, paramsMap = parserPath(currentRoute.path, requestPath, false)
 		if !isMatched {
 			continue
 		}
@@ -32,9 +32,11 @@ func parserRouteLocals(routes map[string][]RouteLocal, requestMethod string, req
 }
 
 // parserPath - if url path equals requestPath, returns true and map like [param: value] if {param}.
-func parserPath(path []string, requestPath []string) (isMatch bool, paramsMap map[string]string) {
-	if len(path) > len(requestPath) {
-		return false, nil
+func parserPath(path []string, requestPath []string, isRouteGroup bool) (isMatch bool, paramsMap map[string]string) {
+	if !isRouteGroup {
+		if len(requestPath) > len(path)  {
+			return false, nil
+		}
 	}
 	// equalCount - get size of uri to compare with request uri slice.
 	var equalCount = len(path) - 1

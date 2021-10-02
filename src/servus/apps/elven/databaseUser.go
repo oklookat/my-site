@@ -13,8 +13,8 @@ type ModelUser struct {
 	Role      string
 	Username  string
 	Password  string
-	RegIP     string
-	RegAgent  string
+	RegIP     *string
+	RegAgent  *string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

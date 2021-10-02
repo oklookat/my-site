@@ -7,34 +7,38 @@ import (
 )
 
 type ModelToken struct {
-	ID       string
+	ID        string
 	UserID    string
 	Token     string
-	LastIP    string
-	LastAgent string
-	AuthIP    string
-	AuthAgent string
+	LastIP    *string
+	LastAgent *string
+	AuthIP    *string
+	AuthAgent *string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
 // dbModifyToken - uses for modify data in dbToken methods. Ex: cut long user agent before make update request to database. You don't need this function.
 func dbModifyToken(token ModelToken) ModelToken {
-	if len(token.AuthAgent) > 323 {
-		var cut = 323 - len(token.AuthAgent)
-		token.AuthAgent = token.AuthAgent[:len(token.AuthAgent)-cut]
+	if token.AuthAgent != nil && len(*token.AuthAgent) > 323 {
+		var authAgent = *token.AuthAgent
+		var cut = 323 - len(authAgent)
+		*token.AuthAgent = authAgent[:len(authAgent)-cut]
 	}
-	if len(token.LastAgent) > 323 {
-		var cut = 323 - len(token.LastAgent)
-		token.LastAgent = token.LastAgent[:len(token.LastAgent)-cut]
+	if token.LastAgent != nil && len(*token.LastAgent) > 323 {
+		var lastAgent = *token.LastAgent
+		var cut = 323 - len(lastAgent)
+		*token.LastAgent = lastAgent[:len(lastAgent)-cut]
 	}
-	if len(token.AuthIP) > 53 {
-		var cut = 53 - len(token.AuthIP)
-		token.AuthIP = token.AuthIP[:len(token.AuthIP)-cut]
+	if token.AuthIP != nil && len(*token.AuthIP) > 53 {
+		var authIP = *token.AuthIP
+		var cut = 53 - len(authIP)
+		*token.AuthIP = authIP[:len(authIP)-cut]
 	}
-	if len(token.LastIP) > 53 {
-		var cut = 53 - len(token.LastIP)
-		token.LastIP = token.LastIP[:len(token.LastIP)-cut]
+	if token.LastIP != nil && len(*token.LastIP) > 53 {
+		var lastIP = *token.LastIP
+		var cut = 53 - len(lastIP)
+		*token.LastIP = lastIP[:len(lastIP)-cut]
 	}
 	return token
 }

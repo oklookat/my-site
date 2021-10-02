@@ -58,20 +58,12 @@ import (
 //	return false, ""
 //}
 
-type validatedArticleQuery struct {
-	page int
-	show string
-	by string
-	start string
-	preview bool
-}
-
 // validatorUsername - validate username from ModelUser.
 func validatorUsername(username string) error {
 	if len(username) < 4 || len(username) > 24 {
 		return errors.New("username: min length 4 and max 24")
 	}
-	if !validator.IsAlphanumeric(username) {
+	if !validator.IsAlphanumeric(&username) {
 		return errors.New("username: allowed only alphanumeric")
 	}
 	return nil
@@ -82,7 +74,7 @@ func validatorPassword(password string) error {
 	if len(password) < 8 || len(password) > 64 {
 		return errors.New("password: min length 8 and max 64")
 	}
-	if !validator.IsAlphanumericWithSymbols(password) {
+	if !validator.IsAlphanumericWithSymbols(&password) {
 		return errors.New("password: allowed only alphanumeric and some symbols")
 	}
 	return nil
@@ -91,13 +83,13 @@ func validatorPassword(password string) error {
 // validatorAuth - validate request body in auth.
 func validatorAuth(username string, password string, authType string) error {
 	var ec = errorCollector.New()
-	if validator.IsEmpty(username) {
+	if validator.IsEmpty(&username) {
 		ec.AddEValidationEmpty([]string{"username"})
 	}
-	if validator.IsEmpty(password) {
+	if validator.IsEmpty(&password) {
 		ec.AddEValidationEmpty([]string{"password"})
 	}
-	if validator.IsEmpty(authType) {
+	if validator.IsEmpty(&authType) {
 		ec.AddEValidationEmpty([]string{"authType"})
 	} else {
 		var isAuthType = authType == "cookie" || authType == "direct"
@@ -111,9 +103,18 @@ func validatorAuth(username string, password string, authType string) error {
 	return nil
 }
 
+type validatedArticleQuery struct {
+	cursor  string
+	show    string
+	by      string
+	start   string
+	preview bool
+}
+
 // validatorArticleQueryParams - validate query params in request depending to ModelArticle
 // if validation error - returns errorCollector JSON (err.Error()).
 func validatorArticleQueryParams(request *http.Request, isAdmin bool) (validatedParams validatedArticleQuery, err error) {
+	isAdmin = true
 	validatedParams = validatedArticleQuery{}
 	var ec = errorCollector.New()
 	var queryParams = request.URL.Query()
@@ -131,7 +132,7 @@ func validatorArticleQueryParams(request *http.Request, isAdmin bool) (validated
 		break
 	case false:
 		if (show == "drafts" || show == "all") && !isAdmin {
-			ec.AddEAuthForbidden([]string{"show", "all"})
+			ec.AddEAuthForbidden([]string{"show"})
 		}
 		break
 	}
@@ -198,19 +199,12 @@ func validatorArticleQueryParams(request *http.Request, isAdmin bool) (validated
 		previewBool = true
 	}
 	validatedParams.preview = previewBool
-	// validate "page" param
-	var page = queryParams.Get("page")
-	var pageInt int
-	pageInt, err = strconv.Atoi(page)
-	if err != nil {
-		ec.AddEValidationAllowed([]string{"page"}, []string{"number"})
-		pageInt = 1
-	} else {
-		if pageInt < 1 {
-			ec.AddEValidationMinMax([]string{"page"}, 1, 99999)
-		}
+	// validate "cursor" param
+	var cursor = queryParams.Get("cursor")
+	if cursor == "" {
+		cursor = "0"
 	}
-	validatedParams.page = pageInt
+	validatedParams.cursor = cursor
 	// finally
 	if ec.HasErrors() {
 		return validatedParams, errors.New(ec.GetErrors())

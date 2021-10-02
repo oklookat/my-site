@@ -76,8 +76,8 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 	}
 	// now we replace fake token with real token in database
 	tokenModel.Token = encryptedTokenHash
-	tokenModel.AuthAgent = request.UserAgent()
-	tokenModel.AuthIP = getIP(request)
+	*tokenModel.AuthAgent = request.UserAgent()
+	*tokenModel.AuthIP = getIP(request)
 	_, err = dbTokenUpdate(&tokenModel)
 	if err != nil {
 		errAuth500(response)

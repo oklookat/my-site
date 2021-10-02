@@ -15,8 +15,9 @@ func bootRoutes(){
 	elvenAuth.POST("/logout", controllerAuthLogout)
 	//
 	var elvenArticles = router.Group("/elven/articles")
-	elvenArticles.Use(middlewareReadOnly)
-	elvenArticles.GET("", controllerArticlesGet)
+	//elvenArticles.Use(middlewareReadOnly)
+	elvenArticles.GET("", controllerArticlesGetAll)
+	elvenArticles.GET("{id}", controllerArticlesGetOne)
 	elvenArticles.POST("", controllerArticlesPost)
 	elvenArticles.PUT("{id}", controllerArticlesPut)
 	elvenArticles.DELETE("{id}", controllerArticlesDelete)

@@ -5,22 +5,23 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4"
 	"servus/core"
-	"servus/core/modules/validator"
+	"strings"
 	"time"
 )
 
 type ModelArticle struct {
-	ID string
-	UserID string
-	IsPublished bool
-	Title string
-	Content string
-	Slug string
-	PublishedAt time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID string `json:"id"`
+	UserID string `json:"userID"`
+	IsPublished bool `json:"isPublished"`
+	Title string `json:"title"`
+	Content string `json:"content"`
+	Slug string `json:"slug"`
+	PublishedAt *time.Time `json:"publishedAt"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+// dbArticleScanRow - scan row or rows to article model.
 func dbArticleScanRow(row pgx.Row, article *ModelArticle) (err error){
 	err = row.Scan(&article.ID, &article.UserID, &article.IsPublished, &article.Title, &article.Content, &article.Slug, &article.PublishedAt, &article.CreatedAt, &article.UpdatedAt)
 	err = core.Utils.DBCheckError(err)
@@ -54,25 +55,28 @@ func dbArticleFind(id string) (found ModelArticle, err error){
 // dbArticlesGet - get articles by values in params argument.
 func dbArticlesGet(params *ModelArticle) (found ModelArticle, err error){
 	var wheres []string
+	var wheresValues []interface{}
 	var counter = 0
 	// append field with counter value
 	// like [title=$1, content=$2].
-	var appendCounted = func(fieldName string) {
+	var appendCounted = func(fieldName string, fieldValue interface{}) {
 		counter++
 		formatted := fmt.Sprintf("%v=$%v", fieldName, counter)
 		wheres = append(wheres, formatted)
+		wheresValues = append(wheresValues, fieldValue)
 	}
 	if params.Title != "" {
-		appendCounted("title")
+		appendCounted("title", params.Title)
 	}
 	if params.Content != "" {
-		appendCounted("content")
+		appendCounted("content", params.Content)
 	}
-
+	if params.Slug != "" {
+		appendCounted("slug", params.Slug)
+	}
 	found = ModelArticle{}
-	fmt.Sprintf("SELECT * FROM articles WHERE %v=$1 LIMIT 1", where)
-	var sql = "SELECT * FROM articles WHERE id=$1 LIMIT 1"
-	row := core.Database.Connection.QueryRow(context.Background(), sql, id)
+	var sql = fmt.Sprintf("SELECT * FROM articles WHERE %v LIMIT 1", strings.Join(wheres, " "))
+	row := core.Database.Connection.QueryRow(context.Background(), sql, wheresValues...)
 	err = dbArticleScanRow(row, &found)
 	return found, err
 }

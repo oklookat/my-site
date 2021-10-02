@@ -1,10 +1,14 @@
 package elven
 
 import (
+	"encoding/base64"
+	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
 	"servus/core"
 	"servus/core/modules/cryptor"
 	"strings"
+	"time"
 )
 
 // getToken - get token from auth header or cookies.
@@ -85,8 +89,8 @@ func getIP(request *http.Request) string {
 func setLastAgents(request *http.Request, token ModelToken) ModelToken {
 	var lastAgent = request.UserAgent()
 	var lastIP = getIP(request)
-	token.LastAgent = lastAgent
-	token.LastIP = lastIP
+	*token.LastAgent = lastAgent
+	*token.LastIP = lastIP
 	newToken, err := dbTokenUpdate(&token)
 	if err != nil {
 		return token
@@ -131,4 +135,28 @@ func getAuthData(request *http.Request) *AuthData {
 		return nil
 	}
 	return &auth
+}
+
+// paginationEncodeCursor - encode cursor with base 64.
+func paginationEncodeCursor(t time.Time, uuid string) string {
+	key := fmt.Sprintf("%s,%s", t.Format(time.RFC3339Nano), uuid)
+	return base64.StdEncoding.EncodeToString([]byte(key))
+}
+
+func paginationDecodeCursor(encodedCursor string) (res time.Time, uuid string, err error) {
+	byt, err := base64.StdEncoding.DecodeString(encodedCursor)
+	if err != nil {
+		return
+	}
+	arrStr := strings.Split(string(byt), ",")
+	if len(arrStr) != 2 {
+		err = errors.New("cursor is invalid")
+		return
+	}
+	res, err = time.Parse(time.RFC3339Nano, arrStr[0])
+	if err != nil {
+		return
+	}
+	uuid = arrStr[1]
+	return
 }
