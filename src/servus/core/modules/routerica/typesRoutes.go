@@ -19,8 +19,6 @@ type routeLocalI interface {
 }
 
 type Routerica struct {
-	requestsI
-	routericaI
 	middlewareGlobal *middlewareGlobal
 	routeNotFound    routeNotFound
 	routeGroups      []RouteGroup
@@ -32,15 +30,12 @@ type routeNotFound struct {
 }
 
 type RouteGroup struct {
-	requestsI
-	routeGroupI
 	middlewareGroupGlobal *middlewareGroupGlobal
 	prefix                []string
 	routeLocals           map[string][]RouteLocal
 }
 
 type RouteLocal struct {
-	routeLocalI
 	middlewareLocal *middlewareLocal
 	endpoint        http.HandlerFunc
 	path            []string

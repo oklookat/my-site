@@ -1,7 +1,9 @@
 package database
 
-import "github.com/jackc/pgx/v4"
+import (
+	"github.com/jmoiron/sqlx"
+)
 
 type DB struct {
-	Connection *pgx.Conn
+	Connection *sqlx.DB
 }

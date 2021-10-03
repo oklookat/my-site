@@ -46,7 +46,7 @@
           </div>
           <div class="article-main">
             <div class="article-item article-title">{{ article.title }}</div>
-            <div v-if="article.content.blocks[0]" class="article-item article-content-preview">
+            <div v-if="article.content.blocks && article.content.blocks[0]" class="article-item article-content-preview">
               <div v-html="article.content.blocks[0].data.text"></div>
             </div>
           </div>
@@ -60,12 +60,6 @@
           </RouterLink>
         </div>
       </div>
-
-      <UIPagination
-          :total-pages="totalPages"
-          :current-page="currentPage"
-          v-on:page-changed="getArticles($event)">
-      </UIPagination>
     </div>
 
 
@@ -119,8 +113,8 @@ export default defineComponent({
       articles: [],
       articlesMeta: [],
       selectedArticle: undefined,
-      totalPages: 1,
-      currentPage: 1,
+      cursor: "",
+      perPage: 0
     }
   },
   async mounted() {
@@ -128,39 +122,40 @@ export default defineComponent({
   },
   watch: {},
   methods: {
-    async getArticles(page = this.currentPage, show = this.show, sortBy = this.sortBy, sortFirst = this.sortFirst) {
-      if (show !== this.show || this.currentPage < 1) {
-        this.currentPage = 1
-        page = this.currentPage
-      }
+    async getArticles(cursor = this.cursor, show = this.show, sortBy = this.sortBy, sortFirst = this.sortFirst) {
+      // if (show !== this.show || this.currentPage < 1) {
+      //   this.currentPage = 1
+      //   page = this.currentPage
+      // }
       this.show = show
       this.isArticlesLoaded = false
-      await ArticleAdapter.getArticles(page, show, sortBy, sortFirst)
+      ArticleAdapter.getArticles(cursor, show, sortBy, sortFirst)
           .then(async result => {
-            this.articles = result.data
+            this.articles = result.content
             this.articlesMeta = result.meta
             this.perPage = this.articlesMeta.per_page
-            this.currentPage = this.articlesMeta.current_page
-            this.totalPages = Math.ceil(this.articlesMeta.total / this.articlesMeta.per_page)
             this.isArticlesLoaded = true
+
+            console.log(this.articles)
           })
     },
     async refreshArticles() {
       // refresh is need when for ex. you deleted all articles on current page
       // and we need to check, is data on current page exists?
       // if page > 1 and no data, we moving back (currentPage--) and get new articles
-      let isTrueArticles = this.isArticlesLoaded && this.articles.length < 1
-      if (isTrueArticles) { // no articles in current page
-        while (isTrueArticles) {
-          // moving back until the pages ends or data appears
-          this.currentPage--
-          await this.getArticles()
-          if (this.currentPage <= 1) {
-            break
-          }
-          isTrueArticles = this.isArticlesLoaded && this.articles.length < 1
-        }
-      }
+
+      // let isTrueArticles = this.isArticlesLoaded && this.articles.length < 1
+      // if (isTrueArticles) { // no articles in current page
+      //   while (isTrueArticles) {
+      //     // moving back until the pages ends or data appears
+      //     this.currentPage--
+      //     await this.getArticles()
+      //     if (this.currentPage <= 1) {
+      //       break
+      //     }
+      //     isTrueArticles = this.isArticlesLoaded && this.articles.length < 1
+      //   }
+      // }
     },
     async editArticle(article) {
       await this.$router.push({name: 'ArticleCreate', params: {id: article.id}})
@@ -192,13 +187,13 @@ export default defineComponent({
     },
     async setSort(sort) {
       this.sortBy = sort
-      this.currentPage = 1
+      this.cursor = ''
       await this.getArticles()
       this.isSortOverlayActive = false
     },
     async setSortDate(age = 'newest') {
       this.sortFirst = age
-      this.currentPage = 1
+      this.cursor = ''
       await this.getArticles()
     },
 

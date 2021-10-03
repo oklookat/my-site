@@ -3,8 +3,14 @@ import Axios from '@/common/adapters/Axios.js'
 
 class ArticleAdapter {
 
-    public static async getArticles(page = '1', show = 'published', sortBy = 'updated', start = 'newest') {
-        return await Axios.get('articles/', {params: {page: page, show: show, by: sortBy, start: start}})
+    public static async getArticles(cursor = '', show = 'published', sortBy = 'updated', start = 'newest') {
+        const config = {
+            params:
+                {
+                    cursor: cursor, show: show, by: sortBy, start: start
+                }
+        }
+        return await Axios.get('articles', config)
             .then(response => {
                 if (response.data) {
                     return Promise.resolve(response.data)
@@ -42,7 +48,8 @@ class ArticleAdapter {
     }
 
     public static async createArticle(article) {
-        return await Axios.post('articles/', article)
+        console.log(article)
+        return await Axios.post('articles', article)
             .then(response => {
                 if (response.data) {
                     return Promise.resolve(response.data)

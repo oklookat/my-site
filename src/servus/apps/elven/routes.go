@@ -1,32 +1,35 @@
 package elven
 
 import (
+	"github.com/gorilla/mux"
 	"net/http"
 	"servus/core"
-	"servus/core/modules/routerica"
 )
 
 func bootRoutes(){
-	router := routerica.New()
-	router.Use(core.Middleware.MiddlewareCORS, core.Middleware.MiddlewareSecurity, core.Middleware.MiddlewareAsJSON)
+	router := mux.NewRouter()
+	router.Use(core.Middleware.MiddlewareAsJSON)
+	var elven = router.PathPrefix("/elven").Subrouter()
 	//
-	var elvenAuth = router.Group("/elven/auth")
-	elvenAuth.POST("/login", controllerAuthLogin)
-	elvenAuth.POST("/logout", controllerAuthLogout)
+	var elvenAuth = elven.PathPrefix("/auth").Subrouter()
+	elvenAuth.HandleFunc("/login", controllerAuthLogin).Methods(http.MethodPost)
+	elvenAuth.HandleFunc("/logout", controllerAuthLogin).Methods(http.MethodPost)
 	//
-	var elvenArticles = router.Group("/elven/articles")
-	//elvenArticles.Use(middlewareReadOnly)
-	elvenArticles.GET("", controllerArticlesGetAll)
-	elvenArticles.GET("{id}", controllerArticlesGetOne)
-	elvenArticles.POST("", controllerArticlesPost)
-	elvenArticles.PUT("{id}", controllerArticlesPut)
-	elvenArticles.DELETE("{id}", controllerArticlesDelete)
+	var elvenArticles = elven.PathPrefix("/articles").Subrouter()
+	elvenArticles.Use(middlewareReadOnly)
+	elvenArticles.HandleFunc("", controllerArticlesGetAll).Methods(http.MethodGet)
+	elvenArticles.HandleFunc("", controllerArticlesPost).Methods(http.MethodPost)
+	elvenArticles.HandleFunc("/{id}", controllerArticlesPut).Methods(http.MethodPut)
+	elvenArticles.HandleFunc("/{id}", controllerArticlesGetOne).Methods(http.MethodGet)
+	elvenArticles.HandleFunc("/{id}", controllerArticlesDelete).Methods(http.MethodDelete)
 	//
-	var elvenFiles = router.Group("/elven/files")
+	var elvenFiles = elven.PathPrefix("/files").Subrouter()
 	elvenFiles.Use(middlewareAdminOnly)
-	elvenFiles.GET("", controllerFilesGet)
-	elvenFiles.POST("", controllerFilesPost)
-	elvenFiles.PUT("{id}", controllerFilesPut)
-	elvenFiles.DELETE("{id}", controllerFilesDelete)
-	http.Handle("/", router)
+	elvenFiles.HandleFunc("", controllerFilesGet).Methods(http.MethodGet)
+	elvenFiles.HandleFunc("", controllerFilesPost).Methods(http.MethodPost)
+	elvenFiles.HandleFunc("/{id}", controllerFilesPut).Methods(http.MethodPut)
+	elvenFiles.HandleFunc("/{id}", controllerFilesDelete).Methods(http.MethodDelete)
+	//
+	var useBeforeRouter = core.Middleware.MiddlewareCORS(core.Middleware.MiddlewareSecurity(router))
+	http.Handle("/", useBeforeRouter)
 }

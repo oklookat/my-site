@@ -9,54 +9,14 @@ import (
 	"strings"
 )
 
-//func validatorUserReg(username string, password string) (bool, string) {
-//	var ec = errorCollector.New()
-//	// username and password start //
-//	var usernameIssuer = []string{"username"}
-//	var passwordIssuer = []string{"password"}
-//	var failed = 0
-//	if len(username) < 4 || len(username) > 24 {
-//		ec.AddEValidationMinMax(usernameIssuer, 4, 24)
-//		failed++
-//	}
-//	if len(password) < 8 || len(password) > 64 {
-//		ec.AddEValidationMinMax(passwordIssuer, 8, 64)
-//		failed++
-//	}
-//	if failed == 2 { // if username and password failed
-//		return true, ec.GetErrors()
-//	}
-//	isAlphaNumeric := regexp.MustCompile("^[a-zA-Z0-9_]*$")
-//	if !isAlphaNumeric.MatchString(username) {
-//		ec.AddEValidationAllowed(usernameIssuer, []string{"alphanumeric"})
-//	}
-//	isPassword := regexp.MustCompile("^[A-Za-z0-9_@!./#&+*%-]*$")
-//	if !isPassword.MatchString(password) {
-//		ec.AddEValidationAllowed(passwordIssuer, []string{"alphanumeric-and-some-symbols"})
-//	}
-//	// username and password end //
-//	var role = user.Role
-//	var roleIssuer = []string{"role"}
-//	if len(role) > 0 {
-//		if role != "user" && role != "admin" {
-//			ec.AddEValidationAllowed(roleIssuer, []string{"user", "admin"})
-//		}
-//	}
-//	var regIP = user.RegIP
-//	if len(regIP) > 0 {
-//		err := pValidate.Var(regIP, "ip")
-//		if err != nil {
-//			ec.AddEValidationInvalid([]string{"RegIP"}, "invalid IP address")
-//		}
-//	}
-//
-//	//var regAgent = user.RegAgent
-//	if ec.HasErrors() {
-//		println(ec.GetErrors())
-//		return true, ec.GetErrors()
-//	}
-//	return false, ""
-//}
+
+type validatedArticlesGetAll struct {
+	cursor  string
+	show    string
+	by      string
+	start   string
+	preview bool
+}
 
 // validatorUsername - validate username from ModelUser.
 func validatorUsername(username string) error {
@@ -103,19 +63,10 @@ func validatorAuth(username string, password string, authType string) error {
 	return nil
 }
 
-type validatedArticleQuery struct {
-	cursor  string
-	show    string
-	by      string
-	start   string
-	preview bool
-}
-
-// validatorArticleQueryParams - validate query params in request depending to ModelArticle
+// validatorArticlesGetAll - validate query params in request depending to ModelArticle
 // if validation error - returns errorCollector JSON (err.Error()).
-func validatorArticleQueryParams(request *http.Request, isAdmin bool) (validatedParams validatedArticleQuery, err error) {
-	isAdmin = true
-	validatedParams = validatedArticleQuery{}
+func validatorArticlesGetAll(request *http.Request, isAdmin bool) (validated validatedArticlesGetAll, err error) {
+	validated = validatedArticlesGetAll{}
 	var ec = errorCollector.New()
 	var queryParams = request.URL.Query()
 	// validate "show" param
@@ -136,7 +87,7 @@ func validatorArticleQueryParams(request *http.Request, isAdmin bool) (validated
 		}
 		break
 	}
-	validatedParams.show = show
+	validated.show = show
 	// validate "by" param
 	var by = queryParams.Get("by")
 	if by == "" {
@@ -165,7 +116,7 @@ func validatorArticleQueryParams(request *http.Request, isAdmin bool) (validated
 		by = "published_at"
 		break
 	}
-	validatedParams.by = by
+	validated.by = by
 	// validate "start" param
 	var start = queryParams.Get("start")
 	if start == "" {
@@ -186,7 +137,7 @@ func validatorArticleQueryParams(request *http.Request, isAdmin bool) (validated
 			break
 		}
 	}
-	validatedParams.start = start
+	validated.start = start
 	// validate "preview" param
 	var preview = queryParams.Get("preview")
 	if preview == "" {
@@ -198,16 +149,33 @@ func validatorArticleQueryParams(request *http.Request, isAdmin bool) (validated
 		ec.AddEValidationAllowed([]string{"preview"}, []string{"boolean"})
 		previewBool = true
 	}
-	validatedParams.preview = previewBool
+	validated.preview = previewBool
 	// validate "cursor" param
 	var cursor = queryParams.Get("cursor")
 	if cursor == "" {
 		cursor = "0"
 	}
-	validatedParams.cursor = cursor
+	validated.cursor = cursor
 	// finally
 	if ec.HasErrors() {
-		return validatedParams, errors.New(ec.GetErrors())
+		return validated, errors.New(ec.GetErrors())
 	}
-	return validatedParams, nil
+	return validated, nil
+}
+
+func validatorArticlesPost(body *ControllerArticlesPostBody) error{
+	var ec = errorCollector.New()
+	if len(body.Title) > 124 {
+		ec.AddEValidationMinMax([]string{"title"}, 1, 124)
+	}
+	if len(body.Title) == 0 {
+		body.Title = "Без названия"
+	}
+	//if len(body.Content) > 512000 {
+	//	ec.AddEValidationMinMax([]string{"title"}, 1, 512000)
+	//}
+	if ec.HasErrors() {
+		return errors.New(ec.GetErrors())
+	}
+	return nil
 }

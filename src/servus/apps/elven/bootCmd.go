@@ -1,15 +1,14 @@
 package elven
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"servus/core"
-	ancientUI "servus/core/modules/ancientUI"
+	"servus/core/modules/ancientUI"
 )
 
-
+// bootCmd - when correct args specified, it calls functions.
 func bootCmd() {
 	// create superuser
 	var isSuperuser = ancientUI.ReadArg("elven:superuser")
@@ -28,6 +27,7 @@ func bootCmd() {
 	}
 }
 
+// cmdSuperuser - create superuser (user with admin rights).
 func cmdSuperuser() {
 	core.Logger.Info("--- create superuser (CTRL + D to exit)")
 	var username = ancientUI.AddInput(ancientUI.InputItem{Title: "Username"})
@@ -70,14 +70,15 @@ func cmdSuperuser() {
 	os.Exit(1)
 }
 
-func cmdMigrate(){
-	var sqlPath = fmt.Sprintf("%v/apps/elven/elSQL/all.sql", core.Utils.GetExecuteDir())
+// cmdMigrate - create tables from SQL file.
+func cmdMigrate() {
+	var sqlPath = fmt.Sprintf("%v/settings/sql/elven.sql", core.Utils.GetExecuteDir())
 	sqlPath = core.Utils.FormatPath(sqlPath)
 	sql, err := ioutil.ReadFile(sqlPath)
 	if err != nil {
 		core.Logger.Panic(err)
 	}
-	_, err = core.Database.Connection.Exec(context.Background(), string(sql))
+	_, err = core.Database.Connection.Exec(string(sql))
 	if err != nil {
 		core.Logger.Panic(err)
 	}
@@ -85,8 +86,9 @@ func cmdMigrate(){
 	os.Exit(1)
 }
 
-func cmdRollback(){
-	_, err := core.Database.Connection.Exec(context.Background(), `
+// cmdRollback - delete tables.
+func cmdRollback() {
+	_, err := core.Database.Connection.Exec(`
 	DROP SCHEMA public CASCADE;
 	CREATE SCHEMA public;
 	GRANT ALL ON SCHEMA public TO postgres;

@@ -9,7 +9,7 @@ import (
 func bootConfig() ConfigFile {
 	var path = Utils.GetExecuteDir()
 	var config ConfigFile
-	path = fmt.Sprintf("%v/config.json", path)
+	path = fmt.Sprintf("%v/settings/config.json", path)
 	byteValue, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)

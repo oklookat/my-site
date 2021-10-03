@@ -1,20 +1,9 @@
 package elven
 
 type ResponseContent struct {
-	Cursor struct {
+	Meta struct {
 		PerPage int    `json:"per_page"`
 		Next    string `json:"next"`
-	} `json:"cursor"`
+	} `json:"meta"`
 	Content interface{} `json:"content"`
-}
-
-type controllerAuthLoginBody struct {
-	Username string
-	Password string
-	Type     string
-}
-
-type TokenAuthData struct {
-	UserID  string
-	TokenID string
 }

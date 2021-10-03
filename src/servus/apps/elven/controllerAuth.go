@@ -10,6 +10,12 @@ import (
 )
 
 
+type controllerAuthLoginBody struct {
+	Username string
+	Password string
+	Type     string
+}
+
 // ControllerAuthLogin generate token if username and pass correct
 func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 	var theResponse = core.HttpResponse{ResponseWriter: response}
@@ -76,7 +82,9 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 	}
 	// now we replace fake token with real token in database
 	tokenModel.Token = encryptedTokenHash
+	tokenModel.AuthAgent = new(string)
 	*tokenModel.AuthAgent = request.UserAgent()
+	tokenModel.AuthIP = new(string)
 	*tokenModel.AuthIP = getIP(request)
 	_, err = dbTokenUpdate(&tokenModel)
 	if err != nil {
