@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"servus/core"
 	"servus/core/modules/errorCollector"
@@ -50,6 +49,7 @@ func controllerArticlesGetAll(response http.ResponseWriter, request *http.Reques
 		return
 	}
 	// get articles based on query params
+	// TODO: fix 500 when not articles found
 	articles, err := dbArticlesGetDependingOnValidated(validated)
 	if err != nil {
 		core.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
@@ -58,17 +58,14 @@ func controllerArticlesGetAll(response http.ResponseWriter, request *http.Reques
 		return
 	}
 	// generate response with pagination
-	var responseContent = ResponseContent{Content: articles}
+	var responseContent = ResponseContent{}
 	responseContent.Meta.PerPage = articlesPageSize
 	if len(articles) >= articlesPageSize {
 		var lastElement = len(articles) - 1
 		responseContent.Meta.Next = articles[lastElement].ID
 		articles = articles[:lastElement]
 	}
-	responseContent.Content = articles
-	// hhhh
-	figa, _ := json.Marshal(&articles)
-	log.Println(string(figa))
+	responseContent.Data = articles
 	// make json
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
@@ -133,7 +130,7 @@ func controllerArticlesPost(response http.ResponseWriter, request *http.Request)
 		theResponse.Send(ec.GetErrors(), 500)
 		return
 	}
-	var article = ModelArticle{UserID: authData.User.ID, IsPublished: false, Title: postBody.Title, Content: string(contentJson)}
+	var article = ModelArticle{UserID: authData.User.ID, IsPublished: false, Title: postBody.Title, Content: JSON(contentJson)}
 	newArticle, err := dbArticleCreate(article)
 	if err != nil {
 		ec.AddEUnknown([]string{"articles"}, "error while creating article")
@@ -157,5 +154,16 @@ func controllerArticlesPut(response http.ResponseWriter, request *http.Request) 
 
 // DELETE url/id
 func controllerArticlesDelete(response http.ResponseWriter, request *http.Request) {
-
+	var theResponse = core.HttpResponse{ResponseWriter: response}
+	var ec = errorCollector.New()
+	var params = mux.Vars(request)
+	var id = params["id"]
+	err := dbArticleDelete(id)
+	if err != nil {
+		ec.AddENotFound([]string{"article"})
+		theResponse.Send(ec.GetErrors(), 404)
+		return
+	}
+	theResponse.Send("", 200)
+	return
 }

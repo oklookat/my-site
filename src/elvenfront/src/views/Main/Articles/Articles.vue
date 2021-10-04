@@ -131,7 +131,7 @@ export default defineComponent({
       this.isArticlesLoaded = false
       ArticleAdapter.getArticles(cursor, show, sortBy, sortFirst)
           .then(async result => {
-            this.articles = result.content
+            this.articles = result.data
             this.articlesMeta = result.meta
             this.perPage = this.articlesMeta.per_page
             this.isArticlesLoaded = true

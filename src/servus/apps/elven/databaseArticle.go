@@ -10,15 +10,15 @@ import (
 )
 
 type ModelArticle struct {
-	ID          string `json:"id" db:"id"`
-	UserID      string `json:"userID" db:"user_id"`
-	IsPublished bool   `json:"isPublished" db:"is_published"`
-	Title       string `json:"title" db:"title"`
-	Content     string `json:"content" db:"content"`
+	ID          string     `json:"id" db:"id"`
+	UserID      string     `json:"user_id" db:"user_id"`
+	IsPublished bool       `json:"is_published" db:"is_published"`
+	Title       string     `json:"title" db:"title"`
+	Content     JSON       `json:"content" db:"content"`
 	Slug        string     `json:"slug" db:"slug"`
-	PublishedAt *time.Time `json:"publishedAt" db:"published_at"`
-	CreatedAt   time.Time  `json:"createdAt" db:"created_at"`
-	UpdatedAt   time.Time  `json:"updatedAt" db:"updated_at"`
+	PublishedAt *time.Time `json:"published_at" db:"published_at"`
+	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
 }
 
 func dbArticleBeforeChangeHook(article *ModelArticle) {
@@ -84,7 +84,7 @@ func dbArticleUpdate(article ModelArticle) (updated *ModelArticle, err error) {
 func dbArticleFind(id string) (found *ModelArticle, err error) {
 	found = &ModelArticle{}
 	var sql = "SELECT * FROM articles WHERE id=$1 LIMIT 1"
-	err = core.Database.Connection.Select(&found, sql, id)
+	err = core.Database.Connection.Get(found, sql, id)
 	err = core.Utils.DBCheckError(err)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func dbArticleDelete(id string) error {
 	return err
 }
 
-func dbArticlesGetDependingOnValidated(validated validatedArticlesGetAll) (articles []ModelArticle, err error){
+func dbArticlesGetDependingOnValidated(validated validatedArticlesGetAll) (articles []ModelArticle, err error) {
 	articles = []ModelArticle{}
 	switch validated.show {
 	case "published":
