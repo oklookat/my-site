@@ -48,7 +48,6 @@ class ArticleAdapter {
     }
 
     public static async createArticle(article) {
-        console.log(article)
         return await Axios.post('articles', article)
             .then(response => {
                 if (response.data) {

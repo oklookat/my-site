@@ -1,6 +1,7 @@
 package elven
 
 import (
+	"database/sql"
 	"github.com/jackc/pgx/v4"
 	"servus/core"
 	"servus/core/modules/cryptor"
@@ -9,14 +10,14 @@ import (
 
 
 type ModelUser struct {
-	ID        string
-	Role      string
-	Username  string
-	Password  string
-	RegIP     *string
-	RegAgent  *string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string `json:"id" db:"id"`
+	Role      string `json:"role" db:"role"`
+	Username  string `json:"username" db:"username"`
+	Password  string `json:"password" db:"password"`
+	RegIP     *string `json:"reg_ip" db:"reg_ip"`
+	RegAgent  *string `json:"reg_agent" db:"reg_agent"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 func dbUserScanRow(row pgx.Row, user *ModelUser)(err error) {
@@ -32,31 +33,52 @@ func dbUserCreate(user ModelUser) (new ModelUser, err error) {
 		core.Logger.Error(err.Error())
 		return new, err
 	}
-	var sql = `INSERT INTO users (role, username, password) VALUES ($1, $2, $3) RETURNING *`
-	row := core.Database.Connection.QueryRow(sql, user.Role, user.Username, hashedPassword)
+	var query = `INSERT INTO users (role, username, password) VALUES ($1, $2, $3) RETURNING *`
+	row := core.Database.QueryRow(query, user.Role, user.Username, hashedPassword)
 	err = dbUserScanRow(row, &new)
 	return new, err
 }
 
-func dbUserFind(id string) (found ModelUser, err error){
-	found = ModelUser{}
-	var sql = "SELECT * FROM users WHERE id=$1 LIMIT 1"
-	row := core.Database.Connection.QueryRow(sql, id)
-	err = dbUserScanRow(row, &found)
+func dbUserFind(id string) (found *ModelUser, err error){
+	found = &ModelUser{}
+	var query = "SELECT * FROM users WHERE id=$1 LIMIT 1"
+	row := core.Database.QueryRow(query, id)
+	err = dbUserScanRow(row, found)
+	switch err != nil {
+	case true:
+		if err == sql.ErrNoRows {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	case false:
+		return found, err
+	}
 	return found, err
 }
 
-func dbUserFindBy(username string) (found ModelUser, err error) {
-	found = ModelUser{}
-	var sql = "SELECT * FROM users WHERE username=$1 LIMIT 1"
-	row := core.Database.Connection.QueryRow(sql, username)
-	err = dbUserScanRow(row, &found)
-	return found, err
+func dbUserFindBy(username string) (found *ModelUser, err error) {
+	found = &ModelUser{}
+	var query = "SELECT * FROM users WHERE username=$1 LIMIT 1"
+	row := core.Database.QueryRowx(query, username)
+	err = row.StructScan(found)
+	err = core.Utils.DBCheckError(err)
+	switch err != nil {
+	case true:
+		if err == sql.ErrNoRows {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	case false:
+		return found, err
+	}
+	return
 }
 
 func dbUserDeleteBy(id string) error {
-	var sql = "DELETE FROM users WHERE id=$1"
-	_, err := core.Database.Connection.Exec(sql, id)
+	var query = "DELETE FROM users WHERE id=$1"
+	_, err := core.Database.Exec(query, id)
 	err = core.Utils.DBCheckError(err)
 	return err
 }

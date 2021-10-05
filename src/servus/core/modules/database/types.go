@@ -5,5 +5,5 @@ import (
 )
 
 type DB struct {
-	Connection *sqlx.DB
+	*sqlx.DB
 }

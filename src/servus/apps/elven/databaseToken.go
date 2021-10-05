@@ -1,6 +1,7 @@
 package elven
 
 import (
+	"database/sql"
 	"github.com/jackc/pgx/v4"
 	"servus/core"
 	"time"
@@ -53,34 +54,43 @@ func dbModifyToken(token ModelToken) ModelToken {
 // dbTokenCreate - create Token in database. ATTENTION: its function writes only Token and user id, other data will be ignored. For write full data see dbTokenUpdate.
 func dbTokenCreate(token *ModelToken) (new ModelToken, err error) {
 	new = ModelToken{}
-	var sql = "INSERT INTO tokens (user_id, token) VALUES ($1, $2) RETURNING *"
-	row := core.Database.Connection.QueryRow(sql, &token.UserID, &token.Token)
+	var query = "INSERT INTO tokens (user_id, token) VALUES ($1, $2) RETURNING *"
+	row := core.Database.QueryRow(query, &token.UserID, &token.Token)
 	err = dbTokenScanRow(row, &new)
 	return new, err
 }
 
 // dbTokenUpdate - updates Token in database. All fields (except update and created dates) must be filled.
-func dbTokenUpdate(token *ModelToken) (updated ModelToken, err error) {
-	updated = ModelToken{}
+func dbTokenUpdate(token *ModelToken) error {
 	*token = dbModifyToken(*token)
-	var sql = "UPDATE tokens SET user_id=$1, token=$2, last_ip=$3, last_agent=$4, auth_ip=$5, auth_agent=$6 WHERE id=$7 RETURNING *"
-	row := core.Database.Connection.QueryRow(sql, &token.UserID, &token.Token, &token.LastIP, &token.LastAgent, &token.AuthIP, &token.AuthAgent, &token.ID)
-	err = dbTokenScanRow(row, &updated)
-	return updated, err
+	var query = "UPDATE tokens SET user_id=$1, token=$2, last_ip=$3, last_agent=$4, auth_ip=$5, auth_agent=$6 WHERE id=$7 RETURNING *"
+	row := core.Database.QueryRow(query, &token.UserID, &token.Token, &token.LastIP, &token.LastAgent, &token.AuthIP, &token.AuthAgent, &token.ID)
+	err := dbTokenScanRow(row, token)
+	return err
 }
 
 // dbTokenFind - find Token in database.
-func dbTokenFind(id string) (found ModelToken, err error) {
-	found = ModelToken{}
-	var sql = "SELECT * FROM tokens WHERE id=$1 LIMIT 1"
-	row := core.Database.Connection.QueryRow(sql, id)
-	err = dbTokenScanRow(row, &found)
+func dbTokenFind(id string) (found *ModelToken, err error) {
+	found = &ModelToken{}
+	var query = "SELECT * FROM tokens WHERE id=$1 LIMIT 1"
+	row := core.Database.QueryRow(query, id)
+	err = dbTokenScanRow(row, found)
+	switch err != nil {
+	case true:
+		if err == sql.ErrNoRows {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	case false:
+		return found, err
+	}
 	return found, err
 }
 
 // dbTokenDelete - delete Token from database.
 func dbTokenDelete(id string) error {
-	var sql = "DELETE FROM tokens WHERE id=$1"
-	_, err := core.Database.Connection.Exec(sql, id)
+	var query = "DELETE FROM tokens WHERE id=$1"
+	_, err := core.Database.Exec(query, id)
 	return err
 }

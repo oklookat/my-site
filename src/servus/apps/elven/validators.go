@@ -163,7 +163,7 @@ func validatorArticlesGetAll(request *http.Request, isAdmin bool) (validated val
 	return validated, nil
 }
 
-func validatorArticlesPost(body *ControllerArticlesPostBody) error{
+func validatorArticlesPost(body *ArticleRequestBody) error{
 	var ec = errorCollector.New()
 	if len(body.Title) > 124 {
 		ec.AddEValidationMinMax([]string{"title"}, 1, 124)

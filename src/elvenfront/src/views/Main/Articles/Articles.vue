@@ -46,7 +46,7 @@
           </div>
           <div class="article-main">
             <div class="article-item article-title">{{ article.title }}</div>
-            <div v-if="article.content.blocks && article.content.blocks[0]" class="article-item article-content-preview">
+            <div v-if="article.content && article.content.blocks && article.content.blocks[0]" class="article-item article-content-preview">
               <div v-html="article.content.blocks[0].data.text"></div>
             </div>
           </div>

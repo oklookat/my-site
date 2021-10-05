@@ -11,19 +11,6 @@ import (
 
 const articlesPageSize = 2
 
-type ControllerArticlesPostBody struct {
-	Title   string      `json:"title"`
-	Content struct {
-		Time   int64 `json:"time"`
-		Blocks []struct {
-			ID   string `json:"id"`
-			Type string `json:"type"`
-			Data interface{} `json:"data"`
-		} `json:"blocks"`
-		Version string `json:"version"`
-	} `json:"content"`
-}
-
 
 // GET url/
 // params:
@@ -39,18 +26,16 @@ func controllerArticlesGetAll(response http.ResponseWriter, request *http.Reques
 	var authData = getAuthData(request)
 	var isAdmin = false
 	if authData != nil {
-		isAdmin = authData.User.Role == "admin"
+		isAdmin = authData.IsAdmin
 	}
 	// validate query params
-	var validated = validatedArticlesGetAll{}
-	validated, err = validatorArticlesGetAll(request, isAdmin)
+	validated, err := validatorArticlesGetAll(request, isAdmin)
 	if err != nil {
 		theResponse.Send(err.Error(), 400)
 		return
 	}
 	// get articles based on query params
-	// TODO: fix 500 when not articles found
-	articles, err := dbArticlesGetDependingOnValidated(validated)
+	articles, err := dbArticlesGet(validated)
 	if err != nil {
 		core.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
 		ec.AddEUnknown([]string{"articles"}, "error while getting articles.")
@@ -112,10 +97,10 @@ func controllerArticlesPost(response http.ResponseWriter, request *http.Request)
 	var theResponse = core.HttpResponse{ResponseWriter: response}
 	var ec = errorCollector.New()
 	var authData = getAuthData(request)
-	var postBody ControllerArticlesPostBody
+	var postBody ArticleRequestBody
 	var err = json.NewDecoder(request.Body).Decode(&postBody)
 	if err != nil {
-		ec.AddEValidationAllowed([]string{"article"}, []string{"isPublished", "title", "content"})
+		ec.AddEValidationAllowed([]string{"article"}, []string{"title", "content"})
 		theResponse.Send(ec.GetErrors(), 400)
 		return
 	}
@@ -124,13 +109,7 @@ func controllerArticlesPost(response http.ResponseWriter, request *http.Request)
 		theResponse.Send(err.Error(), 400)
 		return
 	}
-	contentJson, err := json.Marshal(postBody.Content)
-	if err != nil {
-		ec.AddEUnknown([]string{"articles"}, "error while creating article")
-		theResponse.Send(ec.GetErrors(), 500)
-		return
-	}
-	var article = ModelArticle{UserID: authData.User.ID, IsPublished: false, Title: postBody.Title, Content: JSON(contentJson)}
+	var article = ModelArticle{UserID: authData.User.ID, IsPublished: false, Title: postBody.Title, Content: postBody.Content}
 	newArticle, err := dbArticleCreate(article)
 	if err != nil {
 		ec.AddEUnknown([]string{"articles"}, "error while creating article")
@@ -149,7 +128,48 @@ func controllerArticlesPost(response http.ResponseWriter, request *http.Request)
 
 // PUT url/id
 func controllerArticlesPut(response http.ResponseWriter, request *http.Request) {
-
+	var theResponse = core.HttpResponse{ResponseWriter: response}
+	var ec = errorCollector.New()
+	//var params = mux.Vars(request)
+	var postBody ArticleRequestBody
+	err := json.NewDecoder(request.Body).Decode(&postBody)
+	if err != nil {
+		ec.AddEValidationAllowed([]string{"article"}, []string{"isPublished", "title", "content"})
+		theResponse.Send(ec.GetErrors(), 400)
+		return
+	}
+	var params = mux.Vars(request)
+	var id = params["id"]
+	article, err := dbArticleFind(id)
+	if err != nil {
+		ec.AddEUnknown([]string{"article"}, errArticleUpdate)
+		theResponse.Send(ec.GetErrors(), 500)
+		return
+	}
+	if article == nil {
+		ec.AddENotFound([]string{"article"})
+		theResponse.Send(ec.GetErrors(), 404)
+		return
+	}
+	article.Title = postBody.Title
+	article.Content = postBody.Content
+	if postBody.IsPublished != nil {
+		article.IsPublished = *postBody.IsPublished
+	}
+	err = dbArticleUpdate(article)
+	if err != nil {
+		ec.AddEUnknown([]string{"article"}, errArticleUpdate)
+		theResponse.Send(ec.GetErrors(), 500)
+		return
+	}
+	jsonArticle, err := json.Marshal(article)
+	if err != nil {
+		ec.AddEUnknown([]string{"article"}, errArticleUpdate)
+		theResponse.Send(ec.GetErrors(), 500)
+		return
+	}
+	theResponse.Send(string(jsonArticle), 200)
+	return
 }
 
 // DELETE url/id

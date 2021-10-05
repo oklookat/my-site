@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/jackc/pgx/v4"
+	"database/sql"
 	"github.com/pkg/errors"
 	"net/http"
 	"os"
@@ -11,7 +11,7 @@ import (
 	"unicode"
 )
 
-// RemoveSpaces remove spaces from string
+// RemoveSpaces - remove spaces from string.
 func (u *BasicUtils) RemoveSpaces(str string) string {
 	return strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
@@ -21,7 +21,7 @@ func (u *BasicUtils) RemoveSpaces(str string) string {
 	}, str)
 }
 
-// GetExecuteDir get execution directory
+// GetExecuteDir - get server execution directory.
 func (u *BasicUtils) GetExecuteDir() string {
 	path, err := os.Getwd()
 	if err != nil {
@@ -30,14 +30,14 @@ func (u *BasicUtils) GetExecuteDir() string {
 	return path
 }
 
-// FormatPath format path to system specific slashes
+// FormatPath - format path to system specific slashes.
 func (u *BasicUtils) FormatPath(path string) string {
 	path = filepath.FromSlash(path)
 	path = filepath.ToSlash(path)
 	return path
 }
 
-// ConvertTimeWord convert time like "2h"; "2min"; "2sec" to duration
+// ConvertTimeWord - convert time like "2h"; "2min"; "2sec" to duration.
 func (u *BasicUtils) ConvertTimeWord(timeShortcut string) (time.Duration, error) {
 	timeShortcut = strings.ToLower(timeShortcut)
 	timeDuration, err := time.ParseDuration(timeShortcut)
@@ -47,9 +47,8 @@ func (u *BasicUtils) ConvertTimeWord(timeShortcut string) (time.Duration, error)
 	return timeDuration, nil
 }
 
-// SetCookie set cookie
+// SetCookie - set cookie,
 func (u *BasicUtils) SetCookie(response *http.ResponseWriter, name string, value string) {
-	// TODO: fix cookie sending
 	var maxAge, err = u.ConvertTimeWord(Config.Security.Cookie.MaxAge)
 	if err != nil {
 		Logger.Panic(errors.New("Cookie wrong time. Check your config file."))
@@ -67,38 +66,15 @@ func (u *BasicUtils) SetCookie(response *http.ResponseWriter, name string, value
 	http.SetCookie(*response, cookie)
 }
 
-// DBCheckError check database error. If no rows - returned null. Otherwise - return error and write to logger.
+// DBCheckError - database error checking. If error - send err to logger and return err. If no rows - error will not send to logger.
 func (u *BasicUtils) DBCheckError(err error) error {
 	switch err {
 	case nil:
 		return nil
-	case pgx.ErrNoRows:
-		return nil
+	case sql.ErrNoRows:
+		return err
 	default:
 		Logger.Error(err.Error())
 		return err
 	}
-
-	//if err != nil {
-	//	var pgErr *pgconn.PgError
-	//	if errors.As(err, &pgErr) {
-	//		defer Logger.Warn(fmt.Sprintf("%v", err))
-	//		switch pgErr.Code {
-	//		case pgerrcode.ConnectionException:
-	//			Logger.Panic(err)
-	//		case pgerrcode.UniqueViolation:
-	//			// for ex. username already exists
-	//			return errors.New("DB_E_EXISTS")
-	//		case pgerrcode.NotNullViolation:
-	//			// null value provided for NOT NULL
-	//			return errors.New("DB_E_NOT_NULL")
-	//		case pgerrcode.CheckViolation:
-	//			// for ex. username has min length 4
-	//			return errors.New("DB_E_CHECK")
-	//		default:
-	//			return errors.New("DB_E_UNKNOWN")
-	//		}
-	//	}
-	//	pLogger.Error(fmt.Sprintf("%v\n", err))
-	//}
 }

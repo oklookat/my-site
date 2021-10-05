@@ -1,6 +1,7 @@
 package elven
 
 import (
+	"github.com/pkg/errors"
 	"net/http"
 	"servus/core"
 	"servus/core/modules/cryptor"
@@ -24,39 +25,36 @@ func getToken(request *http.Request) (string, error) {
 }
 
 // getUserAndTokenByToken - get user and token model by encrypted token.
-func getUserAndTokenByToken(tokenHex string) (user ModelUser, token ModelToken, err error) {
-	user = ModelUser{}
-	token = ModelToken{}
+func getUserAndTokenByToken(tokenHex string) (user *ModelUser, token *ModelToken, err error) {
+	user = &ModelUser{}
+	token = &ModelToken{}
 	// get token id from encrypted token
 	var tokenID, aesErr = cryptor.AESDecrypt(tokenHex, core.Config.Secret)
 	if aesErr.HasErrors {
-		return user, token, aesErr.AdditionalErr
+		return nil, nil, aesErr.AdditionalErr
 	}
 	// find token by id
 	token, err = dbTokenFind(tokenID)
 	if err != nil {
 		return user, token, err
 	}
+	if token == nil {
+		return nil, nil, err
+	}
 	// find user by id in found token
 	user, err = dbUserFind(token.UserID)
-	if err != nil {
-		return user, token, err
-	}
-	return user, token, nil
+	return user, token, err
 }
 
 // getUserAndTokenByRequest - get user and token by request.
-func getUserAndTokenByRequest(request *http.Request) (ModelUser, ModelToken, error) {
-	var user = ModelUser{}
-	var token = ModelToken{}
-	var tokenString, err = getToken(request)
+func getUserAndTokenByRequest(request *http.Request) (user *ModelUser, token *ModelToken, err error) {
+	user = &ModelUser{}
+	token = &ModelToken{}
+	tokenString, err := getToken(request)
 	if err != nil {
 		return user, token, err
 	}
 	user, token, err = getUserAndTokenByToken(tokenString)
-	if err != nil {
-		return user, token, err
-	}
 	return user, token, nil
 }
 
@@ -82,32 +80,44 @@ func getIP(request *http.Request) string {
 }
 
 // setLastAgents - writes ip and user agent to token model.
-func setLastAgents(request *http.Request, token ModelToken) ModelToken {
+func setLastAgents(request *http.Request, token *ModelToken) error {
+	if request == nil {
+		return errors.New("setLastAgents: request nil pointer.")
+	}
+	if token == nil {
+		return errors.New("setLastAgents: token nil pointer.")
+	}
 	var lastAgent = request.UserAgent()
 	var lastIP = getIP(request)
 	token.LastAgent = new(string)
 	*token.LastAgent = lastAgent
 	token.LastIP = new(string)
 	*token.LastIP = lastIP
-	newToken, err := dbTokenUpdate(&token)
-	if err != nil {
-		return token
-	}
-	return newToken
+	err := dbTokenUpdate(token)
+	return err
+}
+
+func setAuthAgents(request *http.Request, token *ModelToken) {
+	token.AuthAgent = new(string)
+	*token.AuthAgent = request.UserAgent()
+	token.AuthIP = new(string)
+	*token.AuthIP = getIP(request)
+	_ = dbTokenUpdate(token)
 }
 
 // createAuthData - check user permissions by request and accessType and write last agents and ip. Returns authData.
 func createAuthData(request *http.Request, accessType string) AuthData {
 	var auth = AuthData{}
-	var user, token, err = getUserAndTokenByRequest(request)
-	if err == nil {
-		auth.User = user
-		auth.Token = token
-		auth.Token = setLastAgents(request, token)
-		switch user.Role {
+	var err error
+	auth.User, auth.Token, err = getUserAndTokenByRequest(request)
+	auth.UserAndTokenExists = auth.User != nil && auth.Token != nil && err == nil
+	if auth.UserAndTokenExists {
+		_ = setLastAgents(request, auth.Token)
+		switch auth.User.Role {
 		default:
 			break
 		case "admin":
+			auth.IsAdmin = true
 			auth.Access = true
 			return auth
 		}

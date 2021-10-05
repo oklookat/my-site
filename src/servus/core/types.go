@@ -63,12 +63,14 @@ type ConfigFile struct {
 	}
 }
 
-// BasicUtils - utilities.
+// BasicUtils - must have utilities.
 type BasicUtils struct {
-	utils
 }
 
-// utilities
+// BasicMiddleware - hello I need basic middleware for my API.
+type BasicMiddleware struct {
+}
+
 type utils interface {
 	RemoveSpaces(str string) string
 	GetExecuteDir() string
@@ -76,11 +78,6 @@ type utils interface {
 	ConvertTimeWord(timeShortcut string) (time.Duration, error)
 	SetCookie(response *http.ResponseWriter, name string, value string)
 	DBCheckError(err error) error
-}
-
-// BasicMiddleware - hello I need basic middleware for my API
-type BasicMiddleware struct {
-	middleware
 }
 
 type middleware interface {

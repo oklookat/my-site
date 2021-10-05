@@ -235,11 +235,11 @@ export default defineComponent({
           throw Error('failed while trying load data to editor. Is internet down? Server problems? Or article content have bad format, like bad/not JSON parsed.')
         }
         try {
-          await window.editor.render(JSON.parse(this.article.content))
+          await window.editor.render(this.article.content)
           this.isEditorInitialized = true
           clearInterval(this.editorTimeoutID)
         } catch (err) {
-          console.info('Trying to load data in editor...')
+          console.info(`Trying to load data in editor... Last error: ${err}`)
           this.editorLoadAttempts++
         }
       }, 500)

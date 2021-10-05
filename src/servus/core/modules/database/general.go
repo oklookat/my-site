@@ -6,6 +6,7 @@ import (
 	"servus/core/modules/logger"
 )
 
+// TODO: remove Logger strict depend, migrate to interfaces.
 var pLogger *logger.Logger
 
 func New(connectionStr string, _logger *logger.Logger) *DB {
@@ -15,6 +16,6 @@ func New(connectionStr string, _logger *logger.Logger) *DB {
 		pLogger.Panic(err)
 	}
 	return &DB{
-		Connection: db,
+		db,
 	}
 }

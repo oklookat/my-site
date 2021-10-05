@@ -17,8 +17,10 @@ const (
 
 type AuthData struct {
 	Access bool
-	User   ModelUser
-	Token  ModelToken
+	UserAndTokenExists bool
+	IsAdmin bool
+	User   *ModelUser
+	Token  *ModelToken
 }
 
 func middlewareReadOnly(next http.Handler) http.Handler {

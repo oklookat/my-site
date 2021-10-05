@@ -220,10 +220,10 @@ EXECUTE PROCEDURE before_update();
 CREATE TABLE public.articles
 (
     id           ulid PRIMARY KEY,
-    user_id      ulid                                         NOT NULL,
+    user_id      ulid  NOT NULL,
     is_published boolean                                   DEFAULT false,
     title        varchar(124) COLLATE pg_catalog."default" DEFAULT 'Untitled':: varchar,
-    content      varchar(512000) COLLATE pg_catalog."default" NOT NULL,
+    content      jsonb NOT NULL,
     slug         varchar(256) COLLATE pg_catalog."default",
     published_at timestamp with time zone,
     created_at   timestamp with time zone                  DEFAULT current_timestamp,

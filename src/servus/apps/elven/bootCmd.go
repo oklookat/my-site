@@ -38,7 +38,7 @@ func cmdSuperuser() {
 	}
 	user, err := dbUserFindBy(username)
 	// if user exists
-	if len(user.ID) > 1 {
+	if user != nil && err == nil {
 		var deleteHim = ancientUI.AddQuestion(ancientUI.QuestionItem{Question: "Username exists. Delete?"})
 		if !deleteHim {
 			os.Exit(1)
@@ -78,7 +78,7 @@ func cmdMigrate() {
 	if err != nil {
 		core.Logger.Panic(err)
 	}
-	_, err = core.Database.Connection.Exec(string(sql))
+	_, err = core.Database.Exec(string(sql))
 	if err != nil {
 		core.Logger.Panic(err)
 	}
@@ -88,7 +88,7 @@ func cmdMigrate() {
 
 // cmdRollback - delete tables.
 func cmdRollback() {
-	_, err := core.Database.Connection.Exec(`
+	_, err := core.Database.Exec(`
 	DROP SCHEMA public CASCADE;
 	CREATE SCHEMA public;
 	GRANT ALL ON SCHEMA public TO postgres;

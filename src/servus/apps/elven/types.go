@@ -3,10 +3,15 @@ package elven
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
 	"github.com/pkg/errors"
 )
 
+const (
+	errArticleUpdate = "error while updating article."
+
+)
+
+// ResponseContent template for response.
 type ResponseContent struct {
 	Meta struct {
 		PerPage int    `json:"per_page"`
@@ -15,39 +20,41 @@ type ResponseContent struct {
 	Data interface{} `json:"data"`
 }
 
-type JSON json.RawMessage
+type ArticleRequestBody struct {
+	IsPublished *bool  `json:"is_published"`
+	Title       string `json:"title"`
+	Content     struct {
+		Time   int64 `json:"time"`
+		Blocks []struct {
+			ID   string      `json:"id"`
+			Type string      `json:"type"`
+			Data interface{} `json:"data"`
+		} `json:"blocks"`
+		Version string `json:"version"`
+	} `json:"content"`
+}
 
-func (j *JSON) Scan(value interface{}) error {
-	var str, ok = value.(string)
+type ArticleContent struct {
+	Time   int64 `json:"time"`
+	Blocks []struct {
+		ID   string      `json:"id"`
+		Type string      `json:"type"`
+		Data interface{} `json:"data"`
+	} `json:"blocks"`
+	Version string `json:"version"`
+}
+
+func (a ArticleContent) Value() (driver.Value, error) {
+	return json.Marshal(a)
+}
+
+func (a *ArticleContent) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
 	if !ok {
-		return errors.New(fmt.Sprint("Failed to unmarshal JSON value:", value))
+		return errors.New("articleContent: failed convert value to []byte")
 	}
-	bytes := []byte(str)
-	result := json.RawMessage{}
-	err := json.Unmarshal(bytes, &result)
-	*j = JSON(result)
-	return err
-}
-
-func (j JSON) Value() (driver.Value, error) {
-	if len(j) == 0 {
-		return nil, nil
+	if len(bytes) == 0 {
+		return nil
 	}
-	result, err := json.RawMessage(j).MarshalJSON()
-	return result, err
-}
-
-func (j JSON) MarshalJSON() ([]byte, error) {
-	if j == nil {
-		return []byte("null"), nil
-	}
-	return j, nil
-}
-
-func (j *JSON) UnmarshalJSON(data []byte) error {
-	if j == nil {
-		return errors.New("JSON: UnmarshalJSON on nil pointer")
-	}
-	*j = append((*j)[0:0], data...)
-	return nil
+	return json.Unmarshal(bytes, &a)
 }

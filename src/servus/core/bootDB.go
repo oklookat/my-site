@@ -6,7 +6,14 @@ import (
 	"servus/core/modules/logger"
 )
 
-func bootDB(config ConfigFile, logger *logger.Logger) *database.DB {
+// bootDB - connect to database and get connection.
+func bootDB(config *ConfigFile, logger *logger.Logger) *database.DB {
+	if config == nil {
+		panic("bootDB: config nil pointer.")
+	}
+	if logger == nil {
+		panic("bootDB: logger nil pointer.")
+	}
 	var pgUser = config.DB.Postgres.User
 	var pgPassword = config.DB.Postgres.Password
 	var pgPort = config.DB.Postgres.Port

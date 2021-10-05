@@ -2,52 +2,29 @@ package elven
 
 import (
 	"fmt"
-	"github.com/gosimple/slug"
-	"github.com/oklog/ulid/v2"
-	"math/rand"
 	"servus/core"
 	"time"
 )
 
+
 type ModelArticle struct {
-	ID          string     `json:"id" db:"id"`
-	UserID      string     `json:"user_id" db:"user_id"`
-	IsPublished bool       `json:"is_published" db:"is_published"`
-	Title       string     `json:"title" db:"title"`
-	Content     JSON       `json:"content" db:"content"`
-	Slug        string     `json:"slug" db:"slug"`
-	PublishedAt *time.Time `json:"published_at" db:"published_at"`
-	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
+	ID          string         `json:"id" db:"id"`
+	UserID      string         `json:"user_id" db:"user_id"`
+	IsPublished bool           `json:"is_published" db:"is_published"`
+	Title       string         `json:"title" db:"title"`
+	Content     ArticleContent `json:"content" db:"content"`
+	Slug        string         `json:"slug" db:"slug"`
+	PublishedAt *time.Time     `json:"published_at" db:"published_at"`
+	CreatedAt   time.Time      `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at" db:"updated_at"`
 }
 
-func dbArticleBeforeChangeHook(article *ModelArticle) {
-	// create temp slug (ULID)
-	t := time.Now()
-	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
-	article.Slug = ulid.MustNew(ulid.Timestamp(t), entropy).String()
-}
-
-func dbArticleAfterChangeHook(article *ModelArticle) (err error) {
-	// create normal slug
-	article.Slug = slug.Make(article.Title) + "-" + article.ID
-	var sql = "UPDATE articles SET slug=:slug WHERE id=:id RETURNING *"
-	row, err := core.Database.Connection.NamedQuery(sql, &article)
-	if err != nil {
-		return err
-	}
-	err = row.StructScan(&article)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func dbArticleCreate(article ModelArticle) (new *ModelArticle, err error) {
 	new = &ModelArticle{}
 	var sql = `INSERT INTO articles (user_id, is_published, title, content, slug) VALUES (:user_id, :is_published, :title, :content, :slug) RETURNING *`
 	dbArticleBeforeChangeHook(&article)
-	row, err := core.Database.Connection.NamedQuery(sql, &article)
+	row, err := core.Database.NamedQuery(sql, &article)
 	err = core.Utils.DBCheckError(err)
 	if err != nil {
 		return nil, err
@@ -62,29 +39,28 @@ func dbArticleCreate(article ModelArticle) (new *ModelArticle, err error) {
 	return new, err
 }
 
-func dbArticleUpdate(article ModelArticle) (updated *ModelArticle, err error) {
-	updated = &ModelArticle{}
-	dbArticleBeforeChangeHook(&article)
+func dbArticleUpdate(article *ModelArticle) error {
+	dbArticleBeforeChangeHook(article)
 	var sql = "UPDATE articles SET user_id=:user_id, is_published=:is_published, title=:title, content=:content, slug=:slug WHERE id=:id RETURNING *"
-	row, err := core.Database.Connection.NamedQuery(sql, article)
+	row, err := core.Database.NamedQuery(sql, article)
 	err = core.Utils.DBCheckError(err)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	row.Next()
-	err = row.StructScan(updated)
+	err = row.StructScan(article)
 	err = core.Utils.DBCheckError(err)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	_ = dbArticleAfterChangeHook(updated)
-	return updated, err
+	_ = dbArticleAfterChangeHook(article)
+	return err
 }
 
 func dbArticleFind(id string) (found *ModelArticle, err error) {
 	found = &ModelArticle{}
 	var sql = "SELECT * FROM articles WHERE id=$1 LIMIT 1"
-	err = core.Database.Connection.Get(found, sql, id)
+	err = core.Database.Get(found, sql, id)
 	err = core.Utils.DBCheckError(err)
 	if err != nil {
 		return nil, err
@@ -94,29 +70,28 @@ func dbArticleFind(id string) (found *ModelArticle, err error) {
 
 func dbArticleDelete(id string) error {
 	var sql = "DELETE FROM articles WHERE id=$1"
-	_, err := core.Database.Connection.Exec(sql, id)
+	_, err := core.Database.Exec(sql, id)
 	err = core.Utils.DBCheckError(err)
 	return err
 }
 
-func dbArticlesGetDependingOnValidated(validated validatedArticlesGetAll) (articles []ModelArticle, err error) {
-	articles = []ModelArticle{}
+func dbArticlesGet(validated validatedArticlesGetAll) (articles []ModelArticle, err error) {
+	articles = make([]ModelArticle, 0)
+	var query string
 	switch validated.show {
 	case "published":
 		// use sprintf to format validated.by and start because with $ database throws syntax error (I don't know why)
 		// it not allows sql injection, because start and by checked in validator
-		var sql = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 AND is_published=true ORDER BY %v %v, id %v LIMIT $2 + 1", validated.by, validated.start, validated.start)
-		err = core.Database.Connection.Select(&articles, sql, validated.cursor, articlesPageSize)
+		query = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 AND is_published=true ORDER BY %v %v, id %v LIMIT $2 + 1", validated.by, validated.start, validated.start)
 		break
 	case "drafts":
-		var sql = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 AND is_published=false ORDER BY %v %v, id %v LIMIT $2 + 1", validated.by, validated.start, validated.start)
-		err = core.Database.Connection.Select(&articles, sql, validated.cursor, articlesPageSize)
+		query = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 AND is_published=false ORDER BY %v %v, id %v LIMIT $2 + 1", validated.by, validated.start, validated.start)
 		break
 	case "all":
-		var sql = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 ORDER BY %v %v, id %v LIMIT $2 + 1", validated.by, validated.start, validated.start)
-		err = core.Database.Connection.Select(&articles, sql, validated.cursor, articlesPageSize)
+		query = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 ORDER BY %v %v, id %v LIMIT $2 + 1", validated.by, validated.start, validated.start)
 		break
 	}
+	err = core.Database.Select(&articles, query, validated.cursor, articlesPageSize)
 	err = core.Utils.DBCheckError(err)
 	return articles, err
 }

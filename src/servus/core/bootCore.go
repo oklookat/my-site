@@ -2,15 +2,15 @@ package core
 
 import "servus/core/modules/corsParse"
 
-// global user-usable vars
+// global vars for user.
 
 var Middleware = BasicMiddleware{}
 var Utils = BasicUtils{}
 var Config = bootConfig()
 var Logger = bootLogger()
-var Database = bootDB(Config, &Logger)
+var Database = bootDB(&Config, &Logger)
 
-// internal core-usable vars
+// internal vars for use in core.
 
 var corsConfig = corsParse.Config{
 	AllowCredentials: Config.Security.CORS.AllowCredentials,
