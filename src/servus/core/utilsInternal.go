@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-
 func convertCookieSameSite(sameSite string) (http.SameSite, error) {
 	sameSite = strings.ToUpper(sameSite)
 	switch sameSite {

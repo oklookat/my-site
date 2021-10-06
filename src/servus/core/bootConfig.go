@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 )
 
-func bootConfig() ConfigFile {
+func bootConfig() *ConfigFile {
 	var path = Utils.GetExecuteDir()
 	var config ConfigFile
 	path = fmt.Sprintf("%v/settings/config.json", path)
@@ -18,5 +18,5 @@ func bootConfig() ConfigFile {
 	if err != nil {
 		panic(err)
 	}
-	return config
+	return &config
 }

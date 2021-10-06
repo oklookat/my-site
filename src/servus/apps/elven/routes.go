@@ -7,21 +7,24 @@ import (
 )
 
 func bootRoutes(){
+	var baseController = &baseController{logger: core.Logger}
 	router := mux.NewRouter()
 	router.Use(core.Middleware.MiddlewareAsJSON)
 	var elven = router.PathPrefix("/elven").Subrouter()
 	//
+	var authController = controllerAuth{baseController}
 	var elvenAuth = elven.PathPrefix("/auth").Subrouter()
-	elvenAuth.HandleFunc("/login", controllerAuthLogin).Methods(http.MethodPost)
-	elvenAuth.HandleFunc("/logout", controllerAuthLogin).Methods(http.MethodPost)
+	elvenAuth.HandleFunc("/login", authController.login).Methods(http.MethodPost)
+	elvenAuth.HandleFunc("/logout", authController.logout).Methods(http.MethodPost)
 	//
+	var articlesController = controllerArticles{baseController}
 	var elvenArticles = elven.PathPrefix("/articles").Subrouter()
 	elvenArticles.Use(middlewareReadOnly)
-	elvenArticles.HandleFunc("", controllerArticlesGetAll).Methods(http.MethodGet)
-	elvenArticles.HandleFunc("", controllerArticlesPost).Methods(http.MethodPost)
-	elvenArticles.HandleFunc("/{id}", controllerArticlesPut).Methods(http.MethodPut)
-	elvenArticles.HandleFunc("/{id}", controllerArticlesGetOne).Methods(http.MethodGet)
-	elvenArticles.HandleFunc("/{id}", controllerArticlesDelete).Methods(http.MethodDelete)
+	elvenArticles.HandleFunc("", articlesController.GetAll).Methods(http.MethodGet)
+	elvenArticles.HandleFunc("", articlesController.Create).Methods(http.MethodPost)
+	elvenArticles.HandleFunc("/{id}", articlesController.Update).Methods(http.MethodPut)
+	elvenArticles.HandleFunc("/{id}", articlesController.GetOne).Methods(http.MethodGet)
+	elvenArticles.HandleFunc("/{id}", articlesController.Delete).Methods(http.MethodDelete)
 	//
 	var elvenFiles = elven.PathPrefix("/files").Subrouter()
 	elvenFiles.Use(middlewareAdminOnly)

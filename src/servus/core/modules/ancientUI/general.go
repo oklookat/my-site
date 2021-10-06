@@ -1,14 +1,14 @@
 package ancientUI
 
 
-func AddSelect(item SelectItem) string {
-	return onSelectItem(item)
+func AddSelect(title string, items []string) (selected string, err error) {
+	return onSelectItem(title, items)
 }
 
-func AddInput(item InputItem) string {
-	return onInputItem(item)
+func AddInput(title string) (input string, err error) {
+	return onInputItem(title)
 }
 
-func AddQuestion(item QuestionItem) bool {
-	return onQuestionItem(item)
+func AddQuestion(question string) (result bool, err error) {
+	return onQuestionItem(question)
 }

@@ -3,158 +3,149 @@ package logger
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
 )
 
-
-// New create new logger
+// New create new Logger instance.
 func New(config Config) Logger {
 	var logger = Logger{Config: config}
-	newFileWriter(&logger, time.Now())
 	return logger
 }
 
-
-func (l *Logger) Debug(message string) {
-	logWriter(l, DebugLevel, message)
-}
-func (l *Logger) Info(message string) {
-	logWriter(l, InfoLevel, message)
-}
-func (l *Logger) Warn(message string) {
-	logWriter(l, WarnLevel, message)
-}
-func (l *Logger) Error(message string) {
-	logWriter(l, ErrorLevel, message)
-}
-func (l *Logger) Panic(err error) {
-	logWriter(l, PanicLevel, err.Error())
-	os.Exit(1)
-}
-
-func logWriter(l *Logger, calledLevel int, message string) {
-	var calledLevelString string
-	var errorColor string
-	switch calledLevel {
-	case DebugLevel:
-		calledLevelString = "debug"
-		errorColor = colorGray
-	case InfoLevel:
-		calledLevelString = "info"
-		errorColor = colorGray
-	case WarnLevel:
-		calledLevelString = "warn"
-		errorColor = colorYellow
-	case ErrorLevel:
-		calledLevelString = "error"
-		errorColor = colorRed
-	case PanicLevel:
-		calledLevelString = "panic"
-		errorColor = colorRed
-	default:
-		calledLevelString = "unknown"
-		errorColor = colorGray
-	}
-	var at = "unknown"
-	// get caller function
-	if _, file, line, ok := runtime.Caller(2); ok {
-		at = file[strings.LastIndex(file, "/")+1:] + ":" + strconv.Itoa(line)
-	}
-	var logLevel = l.Config.LogLevel
-	if logLevel > calledLevel || logLevel == SilentLevel {
+// bus - calls when new log added. Writes log depending on settings.
+func (l *Logger) bus(lev leveler) {
+	// if silent level - logger not call anything.
+	if l.Config.LogLevel > lev.getLevel() || l.Config.LogLevel == LevelSilent {
 		return
 	}
-	// write to file
 	if l.Config.WriteToFile.Activated {
-		logFileWriter(l, calledLevelString, at, message)
+		l.writeToFile(lev)
 	}
-	// format message for console
 	if l.Config.WriteToConsole {
-		var curTime = fmt.Sprintf("%v%v%v", colorGray, time.Now().Format("15:04:05"), colorReset)
-		var calledLevelStringColor = fmt.Sprintf("%v%v%v", errorColor, calledLevelString, colorReset)
-		var atColor = fmt.Sprintf("%v%v%v", colorBlue, at, colorReset)
-		var messageColor = fmt.Sprintf("%v%v%v", colorCyan, message, colorReset)
-		var formatted = fmt.Sprintf("%v > %v > %v > %v", curTime, calledLevelStringColor, atColor, messageColor)
-		fmt.Println(formatted)
+		l.writeToConsole(lev)
 	}
 }
 
-func logFileWriter(l *Logger, calledLevelString string, at string, message string) {
-	logFileWriterOptimizer(l, time.Now())
-	// make json
-	var jsonStruct = logFile{
-		Level:   calledLevelString,
+// writeToConsole - prints information to console pretty.
+func (l *Logger) writeToConsole(lev leveler) {
+	var currentTimePretty = colorGray + time.Now().Format("15:04:05") + colorReset
+	var levelPretty = lev.getColor() + lev.getLevelWord() + colorReset
+	var callerPretty = colorBlue + l.getAt() + colorReset
+	var messagePretty = colorCyan + lev.getMessage() + colorReset
+	var pretty = fmt.Sprintf("%v > %v > %v > %v", currentTimePretty, levelPretty, callerPretty, messagePretty)
+	fmt.Println(pretty)
+}
+
+// writeToFile - write log to file.
+func (l *Logger) writeToFile(lev leveler) {
+	l.newLogFile()
+	// write json to the log file.
+	var theLog = logFile{
+		Level:   lev.getLevelWord(),
 		Time:    time.Now().Unix(),
-		At:      at,
-		Message: message}
-	var _json, err = json.Marshal(jsonStruct)
+		At:      l.getAt(),
+		Message: lev.getMessage(),
+	}
+	theLogJson, err := json.Marshal(&theLog)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	// write json to log file
-	_, err = l.fileWriterInfo.file.WriteString(fmt.Sprintln(string(_json)))
+	_, err = l.file.instance.WriteString(string(theLogJson) + "\n")
 	if err != nil {
 		log.Println(err)
 		return
 	}
 }
 
-func logFileWriterOptimizer(l *Logger, currentDate time.Time){
-	// create new log file if new day
-	var _, _, fileDay = l.fileWriterInfo.fileDate.Date()
-	var _, _, currentDay = currentDate.Date()
-	if fileDay != currentDay{
-		newFileWriter(l, currentDate)
-	}
-	// create new log if current log size very big
-	logFileStat, err := l.fileWriterInfo.file.Stat()
-	if err != nil {
-		panic(err)
-	}
-	// log size > some bytes
-	if logFileStat.Size() > l.Config.WriteToFile.MaxLogSize {
-		l.fileWriterInfo.file, err = os.Create(l.fileWriterInfo.fullPath)
+// newLogFile - create (or not) a log file, depending on settings.
+func (l *Logger) newLogFile() {
+	//// check and create log file.
+	var err error
+	var date = time.Now()
+	if l.file.instance != nil {
+		// create new log file if current log file size very big.
+		logFileStat, err := l.file.instance.Stat()
 		if err != nil {
-			panic(err)
+			var prettyErr = errors.Wrap(err, "logger: newLogFile failed get log size. Error")
+			log.Println(prettyErr)
+			return
 		}
-	}
-	return
-}
-
-func newFileWriter(l *Logger, date time.Time) {
-	if !l.Config.WriteToFile.Activated {
-		return
-	}
-	// if old file open, we close it
-	if l.fileWriterInfo.file != nil {
-		err := l.fileWriterInfo.file.Close()
+		// create new log file if new day.
+		var _, _, createdAt = l.file.created.Date()
+		var _, _, currentDay = date.Date()
+		var notContinue = createdAt == currentDay && l.Config.WriteToFile.MaxLogSize > logFileStat.Size()
+		if notContinue {
+			return
+		}
+		// close old file.
+		err = l.file.instance.Close()
 		if err != nil {
+			var prettyErr = errors.Wrap(err, "logger: newLogFile failed to close old log file. Error")
+			log.Println(prettyErr)
 		}
 	}
 	var dirPath = l.Config.WriteToFile.Dir
-	l.fileWriterInfo.fileDate = date
-	var fileName = fmt.Sprintf("at_%v.log", date.Unix())
-	var filePath = fmt.Sprintf("%v/%v", dirPath, fileName)
-	l.fileWriterInfo.fullPath = filePath
-	// create log dir if no exists
+	var fileName = "at_" + strconv.FormatInt(date.Unix(), 10) + ".log"
+	var pathToLogFile = dirPath + "/" + fileName
+	l.file.path = pathToLogFile
+	// create log dir if no exists.
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
 		err = os.MkdirAll(dirPath, 0700)
 		if err != nil {
-			panic(err)
+			var prettyErr = errors.Wrap(err, "logger: newLogFile failed to create logs dir. Error")
+			log.Println(prettyErr)
 		}
 	}
-	// create log file
-	logFile, err := os.Create(filePath)
+	// create log file.
+	instance, err := os.Create(pathToLogFile)
 	if err != nil {
-		panic(err)
+		var prettyErr = errors.Wrap(err, "logger: newLogFile failed to create a log file. Error")
+		log.Println(prettyErr)
+		return
 	}
-	l.fileWriterInfo.file = logFile
-	cleanerMaxLogFiles(l, dirPath)
-	return
+	l.file.instance = instance
+	l.file.created = date
+	//////// delete latest log file if max log files in dir reached.
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		var prettyErr = errors.Wrap(err, "logger: newLogFile failed to read logs dir. Error")
+		log.Println(prettyErr)
+		return
+	}
+	var maxLogFiles = l.Config.WriteToFile.MaxLogFiles
+	// if max log files reached.
+	if !(len(files) > maxLogFiles) {
+		return
+	}
+	// get count of files would be deleted.
+	var countDifference = len(files) - maxLogFiles
+	var attempts = 0
+	for index := range files {
+		// oldest files must be first in this cycle, because log filename has unix timestamp. And we have three attempts to delete.
+		if countDifference <= 0 || attempts > 3 {
+			break
+		}
+		if files[index].IsDir() {
+			continue
+		}
+		// if not log file.
+		if !strings.Contains(files[index].Name(), "at_") {
+			continue
+		}
+		var firstLogPath = dirPath + "/" + files[index].Name()
+		err := os.Remove(firstLogPath)
+		if err != nil {
+			var prettyErr = errors.Wrap(err, "logger: newLogFile failed to remove old log file. Error")
+			log.Println(prettyErr)
+			attempts++
+			continue
+		}
+		countDifference--
+	}
 }

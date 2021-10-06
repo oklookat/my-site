@@ -5,11 +5,11 @@ import (
 	"servus/core/modules/logger"
 )
 
-func bootLogger() logger.Logger {
+func bootLogger() *logger.Logger {
 	// create log file
 	var writeToConsole = Config.Logger.WriteToConsole
 	loggerConfig := logger.Config{
-		LogLevel:       logger.DebugLevel,
+		LogLevel:       logger.LevelDebug,
 		WriteToConsole: writeToConsole,
 	}
 	// write to file
@@ -23,5 +23,6 @@ func bootLogger() logger.Logger {
 		loggerConfig.WriteToFile.MaxLogFiles = wtfMaxLogFiles
 		loggerConfig.WriteToFile.MaxLogSize = wtfMaxLogSize
 	}
-	return logger.New(loggerConfig)
+	var theLogger = logger.New(loggerConfig)
+	return &theLogger
 }

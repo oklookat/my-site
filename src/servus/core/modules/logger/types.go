@@ -5,61 +5,34 @@ import (
 	"time"
 )
 
-// logging levels
-const (
-	SilentLevel = iota // no messages
-	DebugLevel
-	InfoLevel
-	WarnLevel
-	ErrorLevel
-	PanicLevel
-)
-
-// console colors
-const (
-	colorReset  = "\033[0m"
-	colorRed    = "\033[31m"
-	colorYellow = "\033[33m"
-	colorBlue   = "\033[34m"
-	colorCyan   = "\033[36m"
-	colorGray   = "\033[37m"
-	colorWhite  = "\033[97m"
-)
-
-// main functions
-type loggerI interface {
-	Debug(message string)
-	Info(message string)
-	Warn(message string)
-	Error(message string)
-	Panic(err error)
-}
-
-type Logger struct {
-	loggerI
-	Config
-	fileWriterInfo fileWriterInfo
-}
-
-// Config config
 type Config struct {
 	LogLevel       int
 	WriteToConsole bool
 	WriteToFile    struct {
 		Activated   bool
+		// Dir - for logs.
 		Dir         string
+		// MaxLogFiles - in log dir.
 		MaxLogFiles int
+		// MaxLogSize - in bytes.
 		MaxLogSize  int64
 	}
 }
 
-type fileWriterInfo struct {
-	fullPath string    // path to log file
-	fileDate time.Time // date when file created
-	file     *os.File  // file itself
+type Logger struct {
+	Config Config
+	file file
 }
 
-// log to file JSON
+type file struct {
+	// log file in system.
+	instance *os.File
+	// path to log file.
+	path string
+	// date when file created.
+	created time.Time
+}
+
 type logFile struct {
 	Level   string `json:"level"`
 	Time    int64  `json:"time"`

@@ -8,8 +8,8 @@ import (
 
 const (
 	errArticleUpdate = "error while updating article."
-
 )
+
 
 // ResponseContent template for response.
 type ResponseContent struct {

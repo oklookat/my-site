@@ -6,47 +6,60 @@ import (
 	"strings"
 )
 
-func onSelectItem(item SelectItem) string {
-	fmt.Printf("--- %v\n", item.Title)
-	var selected string
-	var counter = 1
-	for _, element := range item.Items {
-		var format = fmt.Sprintf("%v. %v", counter, element)
-		fmt.Println(format)
-		counter++
+func onSelectItem(title string, items []string) (selected string, err error) {
+	for true {
+		fmt.Printf("--- %v\n", title)
+		var counter = 1
+		for _, element := range items {
+			var format = fmt.Sprintf("%v. %v", counter, element)
+			fmt.Println(format)
+			counter++
+		}
+		fmt.Println("- Choose: ")
+		err = scanner(&selected)
+		if err != nil {
+			return "", err
+		}
+		selectedNumber, err := strconv.Atoi(selected)
+		if err != nil {
+			return "", err
+		}
+		var selectedNumberInSlice = selectedNumber - 1
+		if selectedNumberInSlice >= len(items) || selectedNumberInSlice < 0 {
+			fmt.Println("- Wrong selection. Try again.")
+			continue
+		}
+		return items[selectedNumberInSlice], err
 	}
-	fmt.Println("- Choose: ")
-	scanner(&selected)
-	selectedNumber, err := strconv.Atoi(selected)
-	var selectedNumberInSlice = selectedNumber - 1
-	if err != nil || selectedNumberInSlice >= len(item.Items) || selectedNumberInSlice < 0 {
-		fmt.Println("- Wrong selection. Try again.")
-		onSelectItem(item)
-	}
-	var selectedInSlice = selectedNumber - 1
-	return item.Items[selectedInSlice]
+	return "", err
 }
 
-func onInputItem(items InputItem) string{
-	fmt.Println(fmt.Sprintf("- %v:", items.Title))
-	var input string
-	scanner(&input)
-	return input
+func onInputItem(title string) (input string, err error) {
+	// ex: - username:.
+	fmt.Println(fmt.Sprintf("- %v:", title))
+	err = scanner(&input)
+	return input, err
 }
 
-func onQuestionItem(item QuestionItem) bool {
-	fmt.Println(fmt.Sprintf("- %v (Y/N)", item.Question))
-	var input string
-	scanner(&input)
-	input = strings.ToUpper(input)
-	switch input {
-	case "Y":
-		return true
-	case "N":
-		return false
-	default:
-		fmt.Println("- Wrong answer. Type 'Y' or 'N'")
-		onQuestionItem(item)
+func onQuestionItem(question string) (result bool, err error) {
+	for true {
+		// ex: - you drink water? (Y/N).
+		fmt.Println(fmt.Sprintf("- %v (Y/N)", question))
+		var input string
+		err = scanner(&input)
+		if err != nil {
+			return false, err
+		}
+		input = strings.ToUpper(input)
+		switch input {
+		case "Y", "y":
+			return true, err
+		case "N", "n":
+			return false, err
+		default:
+			fmt.Println(`- Wrong answer. Type «Y» or «N».`)
+			break
+		}
 	}
-	return false
+	return false, err
 }

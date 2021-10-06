@@ -11,7 +11,6 @@ import (
 
 const articlesPageSize = 2
 
-
 // GET url/
 // params:
 // cursor = article id
@@ -19,7 +18,7 @@ const articlesPageSize = 2
 // by = created, updated, published
 // start = newest (DESC), oldest (ASC)
 // preview = true (content < 480 symbols), false (gives you full articles).
-func controllerArticlesGetAll(response http.ResponseWriter, request *http.Request) {
+func (c *controllerArticles) GetAll(response http.ResponseWriter, request *http.Request) {
 	var err error
 	var ec = errorCollector.New()
 	var theResponse = core.HttpResponse{ResponseWriter: response}
@@ -64,7 +63,7 @@ func controllerArticlesGetAll(response http.ResponseWriter, request *http.Reques
 }
 
 // GET url/id
-func controllerArticlesGetOne(response http.ResponseWriter, request *http.Request) {
+func (c *controllerArticles) GetOne(response http.ResponseWriter, request *http.Request) {
 	var theResponse = core.HttpResponse{ResponseWriter: response}
 	var ec = errorCollector.New()
 	var params = mux.Vars(request)
@@ -93,7 +92,7 @@ func controllerArticlesGetOne(response http.ResponseWriter, request *http.Reques
 }
 
 // POST url/
-func controllerArticlesPost(response http.ResponseWriter, request *http.Request) {
+func (c *controllerArticles) Create(response http.ResponseWriter, request *http.Request) {
 	var theResponse = core.HttpResponse{ResponseWriter: response}
 	var ec = errorCollector.New()
 	var authData = getAuthData(request)
@@ -127,7 +126,7 @@ func controllerArticlesPost(response http.ResponseWriter, request *http.Request)
 }
 
 // PUT url/id
-func controllerArticlesPut(response http.ResponseWriter, request *http.Request) {
+func (c *controllerArticles) Update(response http.ResponseWriter, request *http.Request) {
 	var theResponse = core.HttpResponse{ResponseWriter: response}
 	var ec = errorCollector.New()
 	//var params = mux.Vars(request)
@@ -173,7 +172,7 @@ func controllerArticlesPut(response http.ResponseWriter, request *http.Request) 
 }
 
 // DELETE url/id
-func controllerArticlesDelete(response http.ResponseWriter, request *http.Request) {
+func (c *controllerArticles) Delete(response http.ResponseWriter, request *http.Request) {
 	var theResponse = core.HttpResponse{ResponseWriter: response}
 	var ec = errorCollector.New()
 	var params = mux.Vars(request)

@@ -39,7 +39,7 @@ func (m *BasicMiddleware) MiddlewareSecurity(next http.Handler) http.Handler {
 				var exceptSlice = Config.Security.Limiter.Body.Except
 				var isBypassed = false
 				for _, exceptOne := range exceptSlice {
-					if exceptOne == requestURI{
+					if exceptOne == requestURI {
 						isBypassed = true
 					}
 				}

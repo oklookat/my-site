@@ -42,7 +42,9 @@ func (u *BasicUtils) ConvertTimeWord(timeShortcut string) (time.Duration, error)
 	timeShortcut = strings.ToLower(timeShortcut)
 	timeDuration, err := time.ParseDuration(timeShortcut)
 	if err != nil {
-		Logger.Panic(errors.New("time converting failed. Is string with time correct?"))
+		var errPretty = errors.Wrap(err, "core: convertTimeWord time converting failed. Error")
+		Logger.Panic(errPretty)
+		os.Exit(1)
 	}
 	return timeDuration, nil
 }
@@ -51,7 +53,9 @@ func (u *BasicUtils) ConvertTimeWord(timeShortcut string) (time.Duration, error)
 func (u *BasicUtils) SetCookie(response *http.ResponseWriter, name string, value string) {
 	var maxAge, err = u.ConvertTimeWord(Config.Security.Cookie.MaxAge)
 	if err != nil {
-		Logger.Panic(errors.New("Cookie wrong time. Check your config file."))
+		var errPretty = errors.Wrap(err, "core: SetCookie convert time failed. Error")
+		Logger.Panic(errPretty)
+		os.Exit(1)
 	}
 	maxAgeSeconds := int(maxAge.Seconds())
 	var domain = Config.Security.Cookie.Domain
@@ -60,7 +64,8 @@ func (u *BasicUtils) SetCookie(response *http.ResponseWriter, name string, value
 	var secure = Config.Security.Cookie.Secure
 	sameSite, err := convertCookieSameSite(Config.Security.Cookie.SameSite)
 	if err != nil {
-		Logger.Panic(err)
+		var errPretty = errors.Wrap(err, "core: SetCookie failed convert cookie sameSite. Error")
+		Logger.Panic(errPretty)
 	}
 	var cookie = &http.Cookie{Name: name, Value: value, Path: path, Domain: domain, MaxAge: maxAgeSeconds, HttpOnly: httpOnly, Secure: secure, SameSite: sameSite}
 	http.SetCookie(*response, cookie)

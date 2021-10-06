@@ -17,7 +17,8 @@ type controllerAuthLoginBody struct {
 }
 
 // ControllerAuthLogin generate token if username and pass correct
-func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
+func (c *controllerAuth) login(response http.ResponseWriter, request *http.Request) {
+	// TODO: reformat controller and add errorCollector to baseController
 	var theResponse = core.HttpResponse{ResponseWriter: response}
 	var ec = errorCollector.New()
 	// get and convert request body
@@ -25,7 +26,7 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 	var err = json.NewDecoder(request.Body).Decode(&loginBody)
 	if err != nil {
 		ec.AddEValidationAllowed([]string{"you"}, []string{"username", "password", "type"})
-		theResponse.Send(ec.GetErrors(), 400)
+		c.Send(response, ec.GetErrors(), 400)
 		return
 	}
 	// get user credentials and other data
@@ -104,7 +105,7 @@ func controllerAuthLogin(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func controllerAuthLogout(response http.ResponseWriter, request *http.Request) {
+func (c *controllerAuth) logout(response http.ResponseWriter, request *http.Request) {
 	var theResponse = core.HttpResponse{ResponseWriter: response}
 	var ec = errorCollector.New()
 	// get token from cookie or auth header

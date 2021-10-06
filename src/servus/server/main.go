@@ -10,6 +10,7 @@ import (
 
 
 func main() {
+	core.Boot()
 	core.Logger.Info("elven: booting")
 	elven.Boot()
 	var host = core.Config.Host

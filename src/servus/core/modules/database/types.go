@@ -7,3 +7,7 @@ import (
 type DB struct {
 	*sqlx.DB
 }
+
+type Logger interface {
+	Panic(err error)
+}

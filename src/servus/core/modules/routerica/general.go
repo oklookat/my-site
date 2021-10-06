@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+// Routerica - another router for golang. Just in case.
+
 // New - create new Routerica instance.
 func New() *Routerica {
 	var routeLocals = make(map[string][]RouteLocal, 0)

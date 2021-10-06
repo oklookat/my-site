@@ -1,10 +1,5 @@
 package core
 
-import (
-	"net/http"
-	"time"
-)
-
 // ConfigFile config.json struct
 type ConfigFile struct {
 	Debug    bool   `json:"Debug"`
@@ -69,19 +64,4 @@ type BasicUtils struct {
 
 // BasicMiddleware - hello I need basic middleware for my API.
 type BasicMiddleware struct {
-}
-
-type utils interface {
-	RemoveSpaces(str string) string
-	GetExecuteDir() string
-	FormatPath(path string) string
-	ConvertTimeWord(timeShortcut string) (time.Duration, error)
-	SetCookie(response *http.ResponseWriter, name string, value string)
-	DBCheckError(err error) error
-}
-
-type middleware interface {
-	MiddlewareCORS(next http.Handler) http.Handler
-	MiddlewareSecurity(next http.Handler) http.Handler
-	MiddlewareAsJSON(next http.Handler) http.Handler
 }
