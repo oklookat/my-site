@@ -10,8 +10,8 @@ func onSelectItem(title string, items []string) (selected string, err error) {
 	for true {
 		fmt.Printf("--- %v\n", title)
 		var counter = 1
-		for _, element := range items {
-			var format = fmt.Sprintf("%v. %v", counter, element)
+		for index := range items {
+			var format = fmt.Sprintf("%v. %v", counter, items[index])
 			fmt.Println(format)
 			counter++
 		}

@@ -20,9 +20,7 @@ export default class ArticlesController {
   public async index(ctx: HttpContextContract) {
     let isAdmin = false
     if(ctx.user){
-      if(ctx.user.role === 'admin'){
-        isAdmin = true
-      }
+      isAdmin = ctx.user && ctx.user.role === 'admin'
     }
     let validatedParams
     try {

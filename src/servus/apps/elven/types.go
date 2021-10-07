@@ -6,10 +6,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	errArticleUpdate = "error while updating article."
-)
-
 
 // ResponseContent template for response.
 type ResponseContent struct {
@@ -18,20 +14,6 @@ type ResponseContent struct {
 		Next    string `json:"next"`
 	} `json:"meta"`
 	Data interface{} `json:"data"`
-}
-
-type ArticleRequestBody struct {
-	IsPublished *bool  `json:"is_published"`
-	Title       string `json:"title"`
-	Content     struct {
-		Time   int64 `json:"time"`
-		Blocks []struct {
-			ID   string      `json:"id"`
-			Type string      `json:"type"`
-			Data interface{} `json:"data"`
-		} `json:"blocks"`
-		Version string `json:"version"`
-	} `json:"content"`
 }
 
 type ArticleContent struct {

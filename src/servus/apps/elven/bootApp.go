@@ -1,8 +1,8 @@
 package elven
 
-// Boot - start app.
-func Boot(){
-	bootCmd()
+// BootApp - start app.
+func BootApp() {
+	bootEntities()
+	oCmd.boot()
 	bootRoutes()
 }
-

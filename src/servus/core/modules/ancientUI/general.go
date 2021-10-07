@@ -1,6 +1,5 @@
 package ancientUI
 
-
 func AddSelect(title string, items []string) (selected string, err error) {
 	return onSelectItem(title, items)
 }

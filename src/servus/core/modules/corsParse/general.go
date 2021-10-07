@@ -6,10 +6,12 @@ import (
 	"strings"
 )
 
+// New - create new instance of CorsParse.
 func New(config Config) CorsParse {
 	return CorsParse{config: config}
 }
 
+// SetHeaders - add CORS headers to response. Returns CorsResult with information about method (is preflight).
 func (c *CorsParse) SetHeaders(writer http.ResponseWriter, request *http.Request) CorsResult {
 	c.writer = writer
 	c.request = request
@@ -27,7 +29,7 @@ func (c *CorsParse) SetHeaders(writer http.ResponseWriter, request *http.Request
 func (c *CorsParse) preflightParse(){
 	var method = c.request.Method
 	method = strings.ToUpper(method)
-	c.isPreflight = method == "OPTIONS"
+	c.isPreflight = method == http.MethodOptions
 }
 
 func (c *CorsParse) allowOriginParse(){
@@ -44,9 +46,9 @@ func (c *CorsParse) allowOriginParse(){
 	if !isAllowOriginBypass {
 		// https://stackoverflow.com/a/1850482
 		var clientOrigin = c.request.Header.Get("Origin")
-		for _, origin := range allowOrigin {
-			if origin == clientOrigin {
-				c.writer.Header().Add("Access-Control-Allow-Origin", origin)
+		for index := range allowOrigin {
+			if allowOrigin[index] == clientOrigin {
+				c.writer.Header().Add("Access-Control-Allow-Origin", allowOrigin[index])
 				break
 			}
 		}
@@ -65,9 +67,9 @@ func (c *CorsParse) allowMethodsParse(){
 		return
 	}
 	var clientMethod = c.request.Header.Get("Access-Control-Request-Method")
-	for _, method := range allowMethods {
-		if method == clientMethod {
-			c.writer.Header().Add("Access-Control-Allow-Methods", method)
+	for index := range allowMethods {
+		if allowMethods[index] == clientMethod {
+			c.writer.Header().Add("Access-Control-Allow-Methods", allowMethods[index])
 			break
 		}
 	}
@@ -94,13 +96,13 @@ func (c *CorsParse) allowHeadersParse(){
 	} else {
 		// here we store finally allowed headers
 		var responseAllowedHeadersSlice []string
-		for _, header := range allowHeaders {
+		for headerIndex := range allowHeaders {
 			// get client headers
-			for _, clientHeader := range requestHeadersSlice {
+			for clientHeaderIndex := range requestHeadersSlice {
 				// if allowed header and client header same
-				if header == clientHeader {
+				if allowHeaders[headerIndex] == requestHeadersSlice[clientHeaderIndex] {
 					// allow this header
-					responseAllowedHeadersSlice = append(responseAllowedHeadersSlice, header)
+					responseAllowedHeadersSlice = append(responseAllowedHeadersSlice, allowHeaders[headerIndex])
 					break
 				}
 			}

@@ -10,19 +10,19 @@ import (
 	"io"
 )
 
-// BHash hash (bcrypt)
+// BHash - hash (bcrypt).
 func BHash(data string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(data), 14)
 	return string(bytes), err
 }
 
-// BHashCheck check hash (bcrypt)
+// BHashCheck - check hash (bcrypt).
 func BHashCheck(data string, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(data))
 	return err == nil
 }
 
-// AESEncrypt get text and return encrypted text (AES)
+// AESEncrypt - get text and return encrypted text (AES).
 func AESEncrypt(text string, secret string) (encrypted string, error AESError) {
 	key := []byte(secret)
 	plaintext := []byte(text)
@@ -46,7 +46,7 @@ func AESEncrypt(text string, secret string) (encrypted string, error AESError) {
 	return encrypted, AESError{HasErrors: false}
 }
 
-// AESDecrypt get encrypted and return decrypted text (AES)
+// AESDecrypt - get encrypted and return decrypted text (AES).
 func AESDecrypt(encrypted string, secret string) (text string, error AESError) {
 	key := []byte(secret)
 	// get hex from string (this is encrypted data)
