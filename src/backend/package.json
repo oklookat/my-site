@@ -27,7 +27,7 @@
     "proxy-addr": "^2.0.6",
     "randomstring": "^1.2.1",
     "reflect-metadata": "^0.1.13",
-    "slugify": "^1.6.0",
+    "slugify": "^1.6.1",
     "source-map-support": "^0.5.20",
     "validator": "^13.6.0"
   }
