@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"net/http"
 	"servus/core"
+	"servus/core/modules/errorMan"
 	"strconv"
 	"strings"
 	"time"
@@ -21,12 +22,10 @@ const articlesPageSize = 2
 // entityArticle - manage the articles.
 type entityArticle struct {
 	*entityBase
-	queryControllerGetAll *queryArticleControllerGetAll
-	bodyChange            *BodyArticleChange
 }
 
-// BodyArticleChange - represents the body of the request that the user should send. Used in create and update methods.
-type BodyArticleChange struct {
+// BodyArticle - represents the body of the request that the user should send. Used in create and update methods.
+type BodyArticle struct {
 	IsPublished *bool  `json:"is_published"`
 	Title       string `json:"title"`
 	Content     struct {
@@ -73,17 +72,17 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 	var err error
 	isAdmin := a.isAdmin(request)
 	// validate query params.
-	_ = a.validatorGetAll(request, isAdmin)
-	if a.EC.HasErrors() {
-		a.Send(response, a.EC.GetErrors(), 400)
+	validated, _ := a.validatorControllerGetAll(request, ec, isAdmin)
+	if ec.HasErrors() {
+		a.Send(response, ec.GetErrors(), 400)
 		return
 	}
 	// get articles based on query params.
-	articles, err := a.databaseGetAll()
+	articles, err := a.databaseGetAll(&validated)
 	if err != nil {
 		core.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
-		a.EC.AddEUnknown([]string{"articles"}, "error while getting articles.")
-		a.Send(response, a.EC.GetErrors(), 500)
+		ec.AddEUnknown([]string{"articles"}, "error while getting articles.")
+		a.Send(response, ec.GetErrors(), 500)
 		return
 	}
 	// generate response with pagination
@@ -99,8 +98,8 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
 		core.Logger.Error(fmt.Sprintf("articles response json marshal error: %v", err.Error()))
-		a.EC.AddEUnknown([]string{"articles"}, "error while getting articles.")
-		a.Send(response, a.EC.GetErrors(), 500)
+		ec.AddEUnknown([]string{"articles"}, "error while getting articles.")
+		a.Send(response, ec.GetErrors(), 500)
 		return
 	}
 	a.Send(response, string(jsonResponse), 200)
@@ -108,26 +107,27 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 
 // controllerGetOne - GET url/id.
 func (a *entityArticle) controllerGetOne(response http.ResponseWriter, request *http.Request) {
+	ec := errorMan.New()
 	isAdmin := a.isAdmin(request)
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article, err = a.databaseFind(id)
 	if err != nil {
-		a.err500(response, request, err)
+		a.err500(response, request, ec, err)
 		return
 	}
 	if article == nil {
-		a.EC.AddENotFound([]string{"article"})
-		a.Send(response, a.EC.GetErrors(), 404)
+		ec.AddENotFound([]string{"article"})
+		a.Send(response, ec.GetErrors(), 404)
 		return
 	}
 	if !article.IsPublished && !isAdmin {
-		a.err403(response)
+		a.err403(response, ec)
 		return
 	}
 	articleJson, err := json.Marshal(article)
 	if err != nil {
-		a.err500(response, request, err)
+		a.err500(response, request, ec, err)
 		return
 	}
 	a.Send(response, string(articleJson), 200)
@@ -135,28 +135,29 @@ func (a *entityArticle) controllerGetOne(response http.ResponseWriter, request *
 
 // controllerCreateOne - POST url/.
 func (a *entityArticle) controllerCreateOne(response http.ResponseWriter, request *http.Request) {
+	ec := errorMan.New()
 	var authData = oUtil.getPipeAuth(request)
-	a.bodyChange = &BodyArticleChange{}
-	var err = json.NewDecoder(request.Body).Decode(a.bodyChange)
+	bodyChange := &BodyArticle{}
+	var err = json.NewDecoder(request.Body).Decode(bodyChange)
 	if err != nil {
-		a.EC.AddEValidationAllowed([]string{"article"}, []string{"title", "content"})
-		a.Send(response, a.EC.GetErrors(), 400)
+		ec.AddEValidationAllowed([]string{"article"}, []string{"title", "content"})
+		a.Send(response, ec.GetErrors(), 400)
 		return
 	}
-	a.validatorBodyChange(a.bodyChange)
-	if a.EC.HasErrors() {
-		a.Send(response, a.EC.GetErrors(), 400)
+	a.validatorBodyChange(bodyChange, ec)
+	if ec.HasErrors() {
+		a.Send(response, ec.GetErrors(), 400)
 		return
 	}
-	var article = ModelArticle{UserID: authData.User.ID, IsPublished: false, Title: a.bodyChange.Title, Content: a.bodyChange.Content}
+	var article = ModelArticle{UserID: authData.User.ID, IsPublished: false, Title: bodyChange.Title, Content: bodyChange.Content}
 	err = a.databaseCreate(&article)
 	if err != nil {
-		a.err500(response, request, err)
+		a.err500(response, request, ec, err)
 		return
 	}
 	articleJson, err := json.Marshal(&article)
 	if err != nil {
-		a.err500(response, request, err)
+		a.err500(response, request, ec, err)
 		return
 	}
 	a.Send(response, string(articleJson), 200)
@@ -164,17 +165,9 @@ func (a *entityArticle) controllerCreateOne(response http.ResponseWriter, reques
 
 // controllerUpdateOne - PUT url/id.
 func (a *entityArticle) controllerUpdateOne(response http.ResponseWriter, request *http.Request) {
-	//var params = mux.Vars(request)
-	a.bodyChange = &BodyArticleChange{}
-	err := json.NewDecoder(request.Body).Decode(a.bodyChange)
-	if err != nil {
-		a.EC.AddEValidationAllowed([]string{"article"}, []string{"isPublished", "title", "content"})
-		a.Send(response, a.EC.GetErrors(), 400)
-		return
-	}
-	a.validatorBodyChange(a.bodyChange)
-	if a.EC.HasErrors() {
-		a.Send(response, a.EC.GetErrors(), 400)
+	body, em, err := a.validatorControllerUpdateOne(request)
+	if em.HasErrors() {
+		a.Send(response, em.GetJSON(), 400)
 		return
 	}
 	var params = mux.Vars(request)
@@ -185,14 +178,13 @@ func (a *entityArticle) controllerUpdateOne(response http.ResponseWriter, reques
 		return
 	}
 	if article == nil {
-		a.EC.AddENotFound([]string{"article"})
-		a.Send(response, a.EC.GetErrors(), 404)
+		a.Send(response, errorMan.ThrowNotFound(), 404)
 		return
 	}
-	article.Title = a.bodyChange.Title
-	article.Content = a.bodyChange.Content
-	if a.bodyChange.IsPublished != nil {
-		article.IsPublished = *a.bodyChange.IsPublished
+	article.Title = body.Title
+	article.Content = body.Content
+	if body.IsPublished != nil {
+		article.IsPublished = *body.IsPublished
 	}
 	err = a.databaseUpdate(article)
 	if err != nil {
@@ -213,26 +205,10 @@ func (a *entityArticle) controllerDeleteOne(response http.ResponseWriter, reques
 	var id = params["id"]
 	err := a.databaseDelete(id)
 	if err != nil {
-		a.EC.AddENotFound([]string{"article"})
-		a.Send(response, a.EC.GetErrors(), 404)
+		a.Send(response, errorMan.ThrowNotFound(), 404)
 		return
 	}
 	a.Send(response, "", 200)
-}
-
-// err500 - write error to logger and send 500 error to user.
-func (a *entityArticle) err500(response http.ResponseWriter, request *http.Request, err error) {
-	a.Logger.Warn("entityArticle code 500 at: %v. Error: %v", request.URL.Path, err.Error())
-	a.EC.AddEUnknown([]string{"articles"}, "server error")
-	a.Send(response, a.EC.GetErrors(), 500)
-	return
-}
-
-// err403 - send an error if the user is not allowed to do something.
-func (a *entityArticle) err403(response http.ResponseWriter){
-	a.EC.AddEAuthForbidden([]string{"article"})
-	a.Send(response, a.EC.GetErrors(), 403)
-	return
 }
 
 // isAdmin - check is request by admin.
@@ -243,220 +219,5 @@ func (a *entityArticle) isAdmin(request *http.Request) (isAdmin bool){
 		isAdmin = authData.IsAdmin
 	}
 	return
-}
-
-// validatorGetAll - validate query params in request depending to ModelArticle
-// if validation error - returns errorCollector JSON (err.Error()).
-func (a *entityArticle) validatorGetAll(request *http.Request, isAdmin bool) (err error) {
-	a.queryControllerGetAll = &queryArticleControllerGetAll{}
-	var queryParams = request.URL.Query()
-	// validate "show" param
-	var show = queryParams.Get("show")
-	if len(show) == 0 {
-		show = "published"
-	} else {
-		strings.ToLower(show)
-	}
-	var isShowInvalid = show != "published" && show != "drafts" && show != "all"
-	switch isShowInvalid {
-	case true:
-		a.EC.AddEValidationAllowed([]string{"show"}, []string{"published", "drafts", "all"})
-		break
-	case false:
-		if (show == "drafts" || show == "all") && !isAdmin {
-			a.EC.AddEAuthForbidden([]string{"show"})
-		}
-		break
-	}
-	a.queryControllerGetAll.show = show
-	// validate "by" param
-	var by = queryParams.Get("by")
-	if len(by) == 0 {
-		by = "published"
-	} else {
-		strings.ToLower(by)
-	}
-	var isByInvalid = by != "created" && by != "published" && by != "updated"
-	if isByInvalid {
-		a.EC.AddEValidationAllowed([]string{"by"}, []string{"created", "published", "updated"})
-	} else if (by == "updated" || by == "created") && !isAdmin{
-		a.EC.AddEAuthForbidden([]string{"by"})
-	}
-	switch by {
-	case "created":
-		by = "created_at"
-		break
-	case "updated":
-		by = "updated_at"
-		break
-	case "published":
-		by = "published_at"
-		break
-	}
-	a.queryControllerGetAll.by = by
-	// validate "start" param
-	var start = queryParams.Get("start")
-	if len(start) == 0 {
-		start = "newest"
-	} else {
-		strings.ToLower(start)
-	}
-	var isStartInvalid = start != "newest" && start != "oldest"
-	if isStartInvalid {
-		a.EC.AddEValidationAllowed([]string{"start"}, []string{"newest", "oldest"})
-	} else {
-		switch start {
-		case "newest":
-			start = "DESC"
-			break
-		case "oldest":
-			start = "ASC"
-			break
-		}
-	}
-	a.queryControllerGetAll.start = start
-	// validate "preview" param
-	var preview = queryParams.Get("preview")
-	if len(preview) == 0 {
-		preview = "true"
-	}
-	var previewBool bool
-	previewBool, err = strconv.ParseBool(preview)
-	if err != nil {
-		a.EC.AddEValidationAllowed([]string{"preview"}, []string{"bool"})
-		previewBool = true
-	}
-	a.queryControllerGetAll.preview = previewBool
-	// validate "cursor" param
-	var cursor = queryParams.Get("cursor")
-	if len(cursor) == 0 {
-		cursor = "0"
-	}
-	a.queryControllerGetAll.cursor = cursor
-	// finally
-	return
-}
-
-// validatorBodyChange - validate BodyArticleChange. Writes result in errorCollector instance.
-func (a *entityArticle) validatorBodyChange(body *BodyArticleChange) {
-	if len(body.Title) > 124 {
-		a.EC.AddEValidationMinMax([]string{"title"}, 1, 124)
-	}
-}
-
-// databaseGetAll - get ModelArticles by request and GetAllQuery.
-func (a *entityArticle) databaseGetAll() (articles []ModelArticle, err error) {
-	if a.queryControllerGetAll == nil {
-		return nil, errors.New("databaseGetAll: getAllQuery nil pointer.")
-	}
-	articles = make([]ModelArticle, 0)
-	var query string
-	var by = a.queryControllerGetAll.by
-	var start = a.queryControllerGetAll.start
-	var cursor = a.queryControllerGetAll.cursor
-	switch a.queryControllerGetAll.show {
-	case "published":
-		// use sprintf to format validated.by and start because with $ database throws syntax error (I don't know why)
-		// it not allows sql injection, because start and by checked in validator
-		query = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 AND is_published=true ORDER BY %v %v, id %v LIMIT $2 + 1", by, start, start)
-		break
-	case "drafts":
-		query = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 AND is_published=false ORDER BY %v %v, id %v LIMIT $2 + 1", by, start, start)
-		break
-	case "all":
-		query = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 ORDER BY %v %v, id %v LIMIT $2 + 1", by, start, start)
-		break
-	}
-	err = core.Database.Select(&articles, query, cursor, articlesPageSize)
-	err = core.Utils.DBCheckError(err)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	return
-}
-
-// databaseCreate - create ModelArticle.
-func (a *entityArticle) databaseCreate(article *ModelArticle) (err error) {
-	var query = `INSERT INTO articles (user_id, is_published, title, content, slug) VALUES (:user_id, :is_published, :title, :content, :slug) RETURNING *`
-	a.databaseBeforeChange(article)
-	row, err := core.Database.NamedQuery(query, &article)
-	err = core.Utils.DBCheckError(err)
-	if err != nil {
-		return err
-	}
-	row.Next()
-	err = row.StructScan(article)
-	err = core.Utils.DBCheckError(err)
-	if err != nil {
-		return
-	}
-	_ = a.databaseAfterChange(article)
-	return
-}
-
-// databaseUpdate - update ModelArticle.
-func (a *entityArticle) databaseUpdate(article *ModelArticle) (err error) {
-	a.databaseBeforeChange(article)
-	var query = "UPDATE articles SET user_id=:user_id, is_published=:is_published, title=:title, content=:content, slug=:slug WHERE id=:id RETURNING *"
-	row, err := core.Database.NamedQuery(query, article)
-	err = core.Utils.DBCheckError(err)
-	if err != nil {
-		return
-	}
-	row.Next()
-	err = row.StructScan(article)
-	err = core.Utils.DBCheckError(err)
-	if err != nil {
-		return
-	}
-	_ = a.databaseAfterChange(article)
-	return
-}
-
-// databaseFind - find ModelArticle.
-func (a *entityArticle) databaseFind(id string) (found *ModelArticle, err error) {
-	found = &ModelArticle{}
-	var query = "SELECT * FROM articles WHERE id=$1 LIMIT 1"
-	err = core.Database.Get(found, query, id)
-	err = core.Utils.DBCheckError(err)
-	if err != nil {
-		return nil, err
-	}
-	return
-}
-
-// databaseDelete - delete ModelArticle.
-func (a *entityArticle) databaseDelete(id string) (err error) {
-	var query = "DELETE FROM articles WHERE id=$1"
-	_, err = core.Database.Exec(query, id)
-	err = core.Utils.DBCheckError(err)
-	return
-}
-
-// databaseBeforeChange - executes before article create or update.
-func (a *entityArticle) databaseBeforeChange(article *ModelArticle) {
-	if len(article.Title) == 0 {
-		article.Title = "Untitled"
-	}
-	// create temp slug (ULID)
-	t := time.Now()
-	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
-	article.Slug = ulid.MustNew(ulid.Timestamp(t), entropy).String()
-}
-
-// databaseBeforeChange - executes after article create or update.
-func (a *entityArticle) databaseAfterChange(article *ModelArticle) (err error) {
-	// create normal slug
-	article.Slug = slug.Make(article.Title) + "-" + article.ID
-	var query = "UPDATE articles SET slug=:slug WHERE id=:id RETURNING *"
-	row, err := core.Database.NamedQuery(query, &article)
-	if err != nil {
-		return err
-	}
-	err = row.StructScan(&article)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 

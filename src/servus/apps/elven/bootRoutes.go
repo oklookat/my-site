@@ -26,9 +26,7 @@ func bootRoutes() {
 	var routerFiles = routerElven.PathPrefix("/files").Subrouter()
 	routerFiles.Use(eBase.middlewareAdminOnly)
 	routerFiles.HandleFunc("", eFile.controllerGetAll).Methods(http.MethodGet)
-	routerFiles.HandleFunc("/{id}", eFile.controllerGetOne).Methods(http.MethodGet)
 	routerFiles.HandleFunc("", eFile.controllerCreateOne).Methods(http.MethodPost)
-	routerFiles.HandleFunc("/{id}", eFile.controllerUpdateOne).Methods(http.MethodPut)
 	routerFiles.HandleFunc("/{id}", eFile.controllerDeleteOne).Methods(http.MethodDelete)
 	//
 	var useBeforeRouter = core.Middleware.MiddlewareCORS(core.Middleware.MiddlewareSecurity(router))

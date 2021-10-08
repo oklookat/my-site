@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"servus/core"
 	"servus/core/modules/cryptor"
+	"servus/core/modules/errorMan"
 	"servus/core/modules/validator"
 )
 
@@ -24,9 +25,9 @@ type bodyAuthLogin struct {
 
 // controllerLogin -  generate token if username and password are correct.
 func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http.Request) {
-	_ = a.validatorControllerLogin(request)
-	if a.EC.HasErrors() {
-		a.Send(response, a.EC.GetErrors(), 400)
+	em, _ := a.validatorControllerLogin(request)
+	if em.HasErrors() {
+		a.Send(response, em.GetJSON(), 400)
 		return
 	}
 	user, err := eUser.databaseFindBy(a.bodyLogin.Username)
@@ -108,29 +109,30 @@ func (a *entityAuth) controllerLogout(response http.ResponseWriter, request *htt
 	a.Send(response, "", 200)
 }
 
-// validatorControllerLogin - validate request body. Writes result in errorCollector instance.
-func (a *entityAuth) validatorControllerLogin(request *http.Request) (err error) {
+// validatorControllerLogin - validate request body. Writes result in errorMan instance.
+func (a *entityAuth) validatorControllerLogin(request *http.Request) (em *errorMan.EValidation, err error) {
+	em = errorMan.NewValidation()
 	a.bodyLogin = &bodyAuthLogin{}
 	err = json.NewDecoder(request.Body).Decode(&a.bodyLogin)
 	if err != nil {
-		a.EC.AddEValidationAllowed([]string{"auth"}, []string{"username", "password", "type"})
+		em.Add("body", "provide username, password, type fields.")
 	} else {
 		// get user credentials and other data.
 		var username = a.bodyLogin.Username
 		var password = a.bodyLogin.Password
 		var authType = a.bodyLogin.Type
 		if validator.IsEmpty(&username) {
-			a.EC.AddEValidationEmpty([]string{"username"})
+			em.Add("username", "username cannot be empty.")
 		}
 		if validator.IsEmpty(&password) {
-			a.EC.AddEValidationEmpty([]string{"password"})
+			em.Add("password", "password cannot be empty.")
 		}
 		if validator.IsEmpty(&authType) {
-			a.EC.AddEValidationEmpty([]string{"authType"})
+			em.Add("type", "type cannot be empty.")
 		} else {
 			var isAuthType = authType == "cookie" || authType == "direct"
 			if !isAuthType {
-				a.EC.AddEValidationAllowed([]string{"type"}, []string{"cookie", "direct"})
+				em.Add("type", "wrong type.")
 			}
 		}
 	}
@@ -139,15 +141,6 @@ func (a *entityAuth) validatorControllerLogin(request *http.Request) (err error)
 
 // errWrongCredentials - like wrong username or password.
 func (a *entityAuth) errWrongCredentials(response http.ResponseWriter) {
-	a.EC.AddEAuthIncorrect([]string{"auth"})
-	a.Send(response, a.EC.GetErrors(), 401)
-	return
-}
-
-// err500 - like unknown error.
-func (a *entityAuth) err500(response http.ResponseWriter, request *http.Request, err error) {
-	a.Logger.Warn("entityAuth code 500 at: %v. Error: %v", request.URL.Path, err.Error())
-	a.EC.AddEUnknown([]string{"auth"}, "server error")
-	a.Send(response, a.EC.GetErrors(), 500)
+	a.Send(response, errorMan.ThrowForbidden(), 403)
 	return
 }

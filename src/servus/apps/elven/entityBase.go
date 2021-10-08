@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"servus/core"
+	"servus/core/modules/errorMan"
 )
 
 type CtxAuthDataPipe string
@@ -20,10 +21,11 @@ type entityBase struct {
 
 func (b *entityBase) middlewareReadOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		ec := errorMan.New()
 		var auth = oUtil.createPipeAuth(request, accessTypeReadOnly)
 		if !auth.Access {
-			b.EC.AddEAuthForbidden([]string{"auth"})
-			b.Send(response, b.EC.GetErrors(), 403)
+			ec.AddEAuthForbidden([]string{"auth"})
+			b.Send(response, ec.GetErrors(), 403)
 			return
 		}
 		var ctx = request.Context()
@@ -34,10 +36,11 @@ func (b *entityBase) middlewareReadOnly(next http.Handler) http.Handler {
 
 func (b *entityBase) middlewareAdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		ec := errorMan.New()
 		var auth = oUtil.createPipeAuth(request, accessTypeAdminOnly)
 		if !auth.Access {
-			b.EC.AddEAuthForbidden([]string{"auth"})
-			b.Send(response, b.EC.GetErrors(), 403)
+			ec.AddEAuthForbidden([]string{"auth"})
+			b.Send(response, ec.GetErrors(), 403)
 			return
 		}
 		var ctx = request.Context()
