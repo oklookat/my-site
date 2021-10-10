@@ -3,7 +3,13 @@ import Axios from '@/common/adapters/Axios.js'
 export default class FileAdapter {
 
     public static async getFiles(page = '1', start = 'newest'){
-        return await Axios.get('files/', {params: {page: page, start: start}})
+        const config = {
+            params:
+                {
+                    page: page, start: start
+                }
+        }
+        return await Axios.get('files', config)
             .then(response => {
                 if (response.data) {
                     return Promise.resolve(response.data)
@@ -23,7 +29,7 @@ export default class FileAdapter {
             }
             const formData = new FormData()
             formData.append("file", files[file])
-            await Axios.post('files/', formData, {
+            await Axios.post('files', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }

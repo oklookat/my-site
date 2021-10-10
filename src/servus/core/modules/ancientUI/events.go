@@ -7,7 +7,7 @@ import (
 )
 
 func onSelectItem(title string, items []string) (selected string, err error) {
-	for true {
+	for {
 		fmt.Printf("--- %v\n", title)
 		var counter = 1
 		for index := range items {
@@ -31,7 +31,6 @@ func onSelectItem(title string, items []string) (selected string, err error) {
 		}
 		return items[selectedNumberInSlice], err
 	}
-	return "", err
 }
 
 func onInputItem(title string) (input string, err error) {
@@ -42,7 +41,7 @@ func onInputItem(title string) (input string, err error) {
 }
 
 func onQuestionItem(question string) (result bool, err error) {
-	for true {
+	for {
 		// ex: - you drink water? (Y/N).
 		fmt.Println(fmt.Sprintf("- %v (Y/N)", question))
 		var input string
@@ -61,5 +60,4 @@ func onQuestionItem(question string) (result bool, err error) {
 			break
 		}
 	}
-	return false, err
 }

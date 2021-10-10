@@ -3,10 +3,12 @@ package cryptor
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/sha3"
 	"io"
 )
 
@@ -14,6 +16,23 @@ import (
 func BHash(data string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(data), 14)
 	return string(bytes), err
+}
+
+// GetFileHashMD5 - get file hash (MD5).
+func GetFileHashMD5(file io.Reader) (hashed string, err error) {
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	hashed = hex.EncodeToString(hash.Sum(nil))
+	return
+}
+
+// GetFileHashSHA3 - get file hash (SHA3-384).
+func GetFileHashSHA3(fileBytes []byte) (hashed string, err error) {
+	hash := sha3.New384()
+	hashed = string(hash.Sum(fileBytes[:48]))
+	return
 }
 
 // BHashCheck - check hash (bcrypt).

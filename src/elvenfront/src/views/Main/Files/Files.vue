@@ -121,7 +121,7 @@ export default defineComponent({
         await FileAdapter.delete(file.id)
         this.deleteFileFromArray(file)
         this.isToolsOverlayActive = false
-        await this.refreshFiles()
+        //await this.refreshFiles()
       }
     },
     // GET FUNCTIONS END //

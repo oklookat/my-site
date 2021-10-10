@@ -2,8 +2,8 @@ package elven
 
 import "servus/core"
 
-// oUtil - useful utilities.
-var oUtil *objectUtil
+// utils - useful utilities.
+var oUtils *objectUtils
 
 // oCmd - commandline methods. Used when app starts.
 var oCmd *objectCmd
@@ -27,7 +27,7 @@ var eUser *entityUser
 var eToken *entityToken
 
 func bootEntities() {
-	oUtil = &objectUtil{}
+	oUtils = &objectUtils{}
 	oCmd = &objectCmd{}
 	eBase = &entityBase{core.NewBaseController()}
 	eAuth = &entityAuth{entityBase: eBase}

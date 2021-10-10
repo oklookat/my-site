@@ -1,28 +1,18 @@
 package elven
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
+	"os"
+	"path/filepath"
 	"servus/core"
 	"servus/core/modules/cryptor"
 	"strings"
 )
 
-// objectUtil - useful utilities.
-type objectUtil struct {
-}
-
-// PipeAuth - represents auth status in secured routes.
-type PipeAuth struct {
-	Access             bool
-	UserAndTokenExists bool
-	IsAdmin            bool
-	User               *ModelUser
-	Token              *ModelToken
-}
-
 // getEncryptedToken - get encrypted token from auth header or cookies.
-func (u *objectUtil) getEncryptedToken(request *http.Request) (string, error) {
+func (u *objectUtils) getEncryptedToken(request *http.Request) (string, error) {
 	// get from cookie.
 	var cookieToken, err = request.Cookie("token")
 	if err == nil && len(cookieToken.Value) > 4 {
@@ -40,7 +30,7 @@ func (u *objectUtil) getEncryptedToken(request *http.Request) (string, error) {
 }
 
 // getUserAndTokenByEncrypted - get ModelUser and ModelToken by encrypted (AES hex) token.
-func (u *objectUtil) getUserAndTokenByEncrypted(encryptedToken string) (user *ModelUser, token *ModelToken, err error) {
+func (u *objectUtils) getUserAndTokenByEncrypted(encryptedToken string) (user *ModelUser, token *ModelToken, err error) {
 	user = &ModelUser{}
 	token = &ModelToken{}
 	// get token id from encrypted token.
@@ -62,7 +52,7 @@ func (u *objectUtil) getUserAndTokenByEncrypted(encryptedToken string) (user *Mo
 }
 
 // getUserAndToken - get ModelUser and ModelToken by request.
-func (u *objectUtil) getUserAndToken(request *http.Request) (user *ModelUser, token *ModelToken, err error) {
+func (u *objectUtils) getUserAndToken(request *http.Request) (user *ModelUser, token *ModelToken, err error) {
 	user = &ModelUser{}
 	token = &ModelToken{}
 	tokenString, err := u.getEncryptedToken(request)
@@ -73,13 +63,23 @@ func (u *objectUtil) getUserAndToken(request *http.Request) (user *ModelUser, to
 	return user, token, nil
 }
 
+// isAdmin - check is request by admin.
+func (u *objectUtils) isAdmin(request *http.Request) (isAdmin bool) {
+	var authData = oUtils.getPipeAuth(request)
+	isAdmin = false
+	if authData != nil {
+		isAdmin = authData.IsAdmin
+	}
+	return
+}
+
 // isMethodReadOnly - check is HTTP method readonly.
-func (u *objectUtil) isMethodReadOnly(method string) bool {
+func (u *objectUtils) isMethodReadOnly(method string) bool {
 	return method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions
 }
 
 // getIP - get IP by request.
-func (u *objectUtil) getIP(request *http.Request) (ip string) {
+func (u *objectUtils) getIP(request *http.Request) (ip string) {
 	ip = ""
 	var ips = strings.Split(request.Header.Get("X-FORWARDED-FOR"), ", ")
 	for _, theIP := range ips {
@@ -95,7 +95,7 @@ func (u *objectUtil) getIP(request *http.Request) (ip string) {
 }
 
 // setLastAgents - writes ip and user agent to ModelToken.
-func (u *objectUtil) setLastAgents(request *http.Request, token *ModelToken) (err error) {
+func (u *objectUtils) setLastAgents(request *http.Request, token *ModelToken) (err error) {
 	if request == nil {
 		return errors.New("setLastAgents: request nil pointer.")
 	}
@@ -113,7 +113,7 @@ func (u *objectUtil) setLastAgents(request *http.Request, token *ModelToken) (er
 }
 
 // setAuthAgents - writes last ip and user agent to ModelToken.
-func (u *objectUtil) setAuthAgents(request *http.Request, token *ModelToken) {
+func (u *objectUtils) setAuthAgents(request *http.Request, token *ModelToken) {
 	token.AuthAgent = new(string)
 	*token.AuthAgent = request.UserAgent()
 	token.AuthIP = new(string)
@@ -122,7 +122,7 @@ func (u *objectUtil) setAuthAgents(request *http.Request, token *ModelToken) {
 }
 
 // createPipeAuth - check user permissions by request and accessType and write last agents and ip.
-func (u *objectUtil) createPipeAuth(request *http.Request, accessType string) (auth PipeAuth) {
+func (u *objectUtils) createPipeAuth(request *http.Request, accessType string) (auth PipeAuth) {
 	auth = PipeAuth{}
 	var err error
 	auth.User, auth.Token, err = u.getUserAndToken(request)
@@ -153,10 +153,69 @@ func (u *objectUtil) createPipeAuth(request *http.Request, accessType string) (a
 }
 
 // getPipeAuth - get authData from request context. If nothing - returns nil.
-func (u *objectUtil) getPipeAuth(request *http.Request) *PipeAuth {
+func (u *objectUtils) getPipeAuth(request *http.Request) *PipeAuth {
 	auth, ok := request.Context().Value(CtxAuthData).(PipeAuth)
 	if !ok {
 		return nil
 	}
 	return &auth
+}
+
+// generateDirsByHash - generate folders struct from hash like: 1d/2c. Returns error if hash length less than 6 symbols.
+func (u *objectUtils) generateDirsByHash(hash string) (result string, err error) {
+	if len(hash) < 6 {
+		return "", errors.New("generateDirByHash: hash too short")
+	}
+	var hashFirstTwo1 = hash[0:2]
+	var hashFirstTwo2 = hash[2:4]
+	result = fmt.Sprintf("%v/%v", hashFirstTwo1, hashFirstTwo2)
+	return
+}
+
+// deleteEmptyDirsRecursive - collect dirs and delete
+// starts from rootPath + relativePath, and goes up to rootPath deleting dirs (if empty) along the way.
+// params:
+// rootPath - end at: 'D:\Test\'
+// relativePath - start from: '123\456\789\music.flac' or '123\456\789\'
+// total: if in dirs D:\Test\123\456\789\ has no files, it deletes all dirs up to D:\Test\.
+func (u *objectUtils) deleteEmptyDirsRecursive(rootPath string, relativePath string) (err error){
+	rootPath = filepath.ToSlash(rootPath)
+	relativePath = filepath.ToSlash(relativePath)
+	relativePath, _ = filepath.Split(relativePath)
+	var pathSlice = strings.Split(relativePath, "/")
+	var pathsForDelete []string
+	for index := range pathSlice{
+		if len(pathSlice[index]) < 1{
+			continue
+		}
+		// make concat and collect paths for recursive. Example:
+		// it.1 D:\Test\123\
+		// it.2 D:\Test\123\456\
+		// it.3 D:\Test\123\456\789\
+		var p string
+		if (index - 1) > -1 {
+			p = rootPath + "/" + pathSlice[index - 1] + "/" + pathSlice[index]
+		} else {
+			p = rootPath + "/" + pathSlice[index]
+		}
+		pathsForDelete = append(pathsForDelete, p)
+	}
+	var deleteDirIfEmpty = func(path string) (err error) {
+		entry, err := os.ReadDir(path)
+		if len(entry) == 0 {
+			err = os.Remove(path)
+		}
+		return
+	}
+	// reverse
+	for i := len(pathsForDelete) - 1; i >= 0; i-- {
+		// it.1: delete D:\Test\123\456\789\
+		// it.2: delete D:\Test\123\456\
+		// it.3: delete D:\Test\123\
+		err = deleteDirIfEmpty(pathsForDelete[i])
+		if err != nil {
+			break
+		}
+	}
+	return
 }

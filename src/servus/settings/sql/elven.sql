@@ -262,7 +262,7 @@ CREATE TABLE public.files
 (
     id            ulid PRIMARY KEY,
     user_id       ulid                                      NOT NULL,
-    hash          varchar(64) COLLATE pg_catalog."default"  NOT NULL,
+    hash          varchar(256) COLLATE pg_catalog."default"  NOT NULL,
     path          varchar(512) COLLATE pg_catalog."default" NOT NULL,
     name          varchar(512) COLLATE pg_catalog."default" NOT NULL,
     original_name varchar(512) COLLATE pg_catalog."default" DEFAULT NULL,

@@ -3,7 +3,6 @@ package elven
 import (
 	"context"
 	"net/http"
-	"servus/core"
 	"servus/core/modules/errorMan"
 )
 
@@ -15,17 +14,11 @@ const (
 	CtxAuthData         CtxAuthDataPipe = "ELVEN_PIPE_AUTH_DATA"
 )
 
-type entityBase struct {
-	*core.BaseController
-}
-
 func (b *entityBase) middlewareReadOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		ec := errorMan.New()
-		var auth = oUtil.createPipeAuth(request, accessTypeReadOnly)
+		var auth = oUtils.createPipeAuth(request, accessTypeReadOnly)
 		if !auth.Access {
-			ec.AddEAuthForbidden([]string{"auth"})
-			b.Send(response, ec.GetErrors(), 403)
+			b.Send(response, errorMan.ThrowForbidden(), 403)
 			return
 		}
 		var ctx = request.Context()
@@ -36,11 +29,9 @@ func (b *entityBase) middlewareReadOnly(next http.Handler) http.Handler {
 
 func (b *entityBase) middlewareAdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		ec := errorMan.New()
-		var auth = oUtil.createPipeAuth(request, accessTypeAdminOnly)
+		var auth = oUtils.createPipeAuth(request, accessTypeAdminOnly)
 		if !auth.Access {
-			ec.AddEAuthForbidden([]string{"auth"})
-			b.Send(response, ec.GetErrors(), 403)
+			b.Send(response, errorMan.ThrowForbidden(), 403)
 			return
 		}
 		var ctx = request.Context()

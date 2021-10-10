@@ -10,15 +10,11 @@ import (
 )
 
 const (
-	cmdFlagSuperuser = "elven:superuser"
-	cmdFlagUser      = "elven:user"
-	cmdFlagRollback  = "elven:rollback"
-	cmdFlagMigrate   = "elven:migrate"
+	cmdFlagSuperuser                    = "elven:superuser"
+	cmdFlagUser                         = "elven:user"
+	cmdFlagRollback                     = "elven:rollback"
+	cmdFlagMigrate                      = "elven:migrate"
 )
-
-// objectCmd - commandline methods.
-type objectCmd struct {
-}
 
 // boot - call methods depending on startup arguments.
 func (c *objectCmd) boot() {
@@ -68,7 +64,7 @@ chooseUsername:
 		core.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	err = validatorUsername(username)
+	err = eUser.validatorUsername(username)
 	if err != nil {
 		core.Logger.Error("elven: validation failed. Error: %v", err.Error())
 		goto chooseUsername
@@ -113,7 +109,7 @@ choosePassword:
 		core.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	err = validatorPassword(password)
+	err = eUser.validatorPassword(password)
 	if err != nil {
 		core.Logger.Error("elven: validation failed. Error: %v", err.Error())
 		goto choosePassword

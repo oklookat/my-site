@@ -1,0 +1,57 @@
+package elven
+
+// ResponseContent - template for response.
+type ResponseContent struct {
+	Meta struct {
+		PerPage int    `json:"per_page"`
+		Next    string `json:"next"`
+	} `json:"meta"`
+	Data interface{} `json:"data"`
+}
+
+// PipeAuth - represents auth status in secured routes.
+type PipeAuth struct {
+	Access             bool
+	UserAndTokenExists bool
+	IsAdmin            bool
+	User               *ModelUser
+	Token              *ModelToken
+}
+
+// BodyArticle - represents the body of the request that the user should send. Used in create and update methods.
+type BodyArticle struct {
+	IsPublished *bool  `json:"is_published"`
+	Title       string `json:"title"`
+	Content     struct {
+		Time   int64 `json:"time"`
+		Blocks []struct {
+			ID   string      `json:"id"`
+			Type string      `json:"type"`
+			Data interface{} `json:"data"`
+		} `json:"blocks"`
+		Version string `json:"version"`
+	} `json:"content"`
+}
+
+// queryArticleGetAll - validated query params in article GetAll.
+type queryArticleGetAll struct {
+	cursor  string
+	show    string
+	by      string
+	start   string
+	preview bool
+}
+
+// bodyAuth - represents the body of the request that the user should send. Used in entityAuth login method.
+type bodyAuth struct {
+	Username string
+	Password string
+	Type     string
+}
+
+// queryFileGetAll - validated query params in files GetAll.
+type queryFileGetAll struct {
+	cursor string
+	start  string
+	by string
+}

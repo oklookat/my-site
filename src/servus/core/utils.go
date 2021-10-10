@@ -27,7 +27,7 @@ func (u *BasicUtils) GetExecuteDir() string {
 	if err != nil {
 		panic(err)
 	}
-	return path
+	return filepath.ToSlash(path)
 }
 
 // FormatPath - format path to system specific slashes.
