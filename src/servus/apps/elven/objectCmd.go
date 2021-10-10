@@ -16,6 +16,10 @@ const (
 	cmdFlagMigrate                      = "elven:migrate"
 )
 
+// objectCmd - commandline methods.
+type objectCmd struct {
+}
+
 // boot - call methods depending on startup arguments.
 func (c *objectCmd) boot() {
 	// create superuser.
@@ -69,14 +73,15 @@ chooseUsername:
 		core.Logger.Error("elven: validation failed. Error: %v", err.Error())
 		goto chooseUsername
 	}
-	user, err := eUser.databaseFind(username)
+	var user = ModelUser{Username: username}
+	found, err := user.findByUsername()
 	if err != nil {
 		var errPretty = errors.Wrap(err, "elven: failed to find user. Error")
 		core.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
 	// if user exists
-	if user != nil {
+	if !found {
 		deleteHim, err := ancientUI.AddQuestion("Username exists. Delete?")
 		if err != nil {
 			var errPretty = errors.Wrap(err, "elven: failed to scan answer. Error")
@@ -86,7 +91,7 @@ chooseUsername:
 		if !deleteHim {
 			os.Exit(1)
 		}
-		err = eUser.databaseDelete(user.ID)
+		err = user.deleteByID()
 		if err != nil {
 			var errPretty = errors.Wrap(err, "elven: delete user failed. Error")
 			core.Logger.Panic(errPretty)
@@ -115,8 +120,8 @@ choosePassword:
 		goto choosePassword
 	}
 	// create
-	user = &ModelUser{Role: role, Username: username, Password: password}
-	err = eUser.databaseCreate(user)
+	user = ModelUser{Role: role, Username: username, Password: password}
+	err = user.create()
 	if err != nil {
 		var errPretty = errors.Wrap(err, fmt.Sprintf("elven: error while creating %v. Error", sign))
 		core.Logger.Panic(errPretty)

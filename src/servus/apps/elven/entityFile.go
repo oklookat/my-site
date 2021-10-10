@@ -6,18 +6,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/h2non/filetype"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"servus/core"
 	"servus/core/modules/errorMan"
 )
 
 const filesPageSize = 2
-const filesInMemorySize = 250 << 20 // 250 MB
 var filesSaveTo = core.Utils.GetExecuteDir() + "/uploads"
 var filesSaveToTemp = core.Utils.GetExecuteDir() + "/uploads/temp"
+
+// entityFile - manage files.
+type entityFile struct {
+	*entityBase
+}
 
 // GET url/
 // params:
@@ -30,7 +34,7 @@ func (f *entityFile) controllerGetAll(response http.ResponseWriter, request *htt
 		f.Send(response, em.GetJSON(), 400)
 		return
 	}
-	files, err := f.databaseGetAll(&val)
+	files, err := val.getAll()
 	if err != nil {
 		f.Logger.Error(fmt.Sprintf("files get error: %v", err.Error()))
 		f.Send(response, errorMan.ThrowServer(), 500)
@@ -57,21 +61,23 @@ func (f *entityFile) controllerGetAll(response http.ResponseWriter, request *htt
 
 // POST url/
 func (f *entityFile) controllerCreateOne(response http.ResponseWriter, request *http.Request) {
+	// get user permissions.
 	auth := oUtils.getPipeAuth(request)
 	em := errorMan.NewValidation()
 	if !auth.UserAndTokenExists || !auth.IsAdmin {
 		f.Send(response, errorMan.ThrowForbidden(), 403)
 	}
 	// get file from form and validate.
-	err := request.ParseMultipartForm(filesInMemorySize)
 	fileFromForm, header, err := request.FormFile("file")
 	if err != nil {
 		em.Add("file", "bad file provided.")
 		f.Send(response, em.GetJSON(), 400)
 		return
 	}
-	defer fileFromForm.Close()
-	if header.Size < 270 {
+	defer func() {
+		_ = fileFromForm.Close()
+	}()
+	if header == nil {
 		em.Add("file", "bad file provided.")
 		f.Send(response, em.GetJSON(), 400)
 		return
@@ -95,17 +101,27 @@ func (f *entityFile) controllerCreateOne(response http.ResponseWriter, request *
 	md5hr := md5.New()
 	buf := make([]byte, 8192)
 	for {
-		_, err := fileFromForm.Read(buf)
+		var n int
+		n, err = fileFromForm.Read(buf)
 		if err == io.EOF {
 			break
 		}
-		tempFile.Write(buf)
-		md5hr.Write(buf)
+		_, err = tempFile.Write(buf[:n])
+		if err != nil {
+			return
+		}
+		_, err = md5hr.Write(buf[:n])
 	}
+	_ = fileFromForm.Close()
 	hash := hex.EncodeToString(md5hr.Sum(nil))
 	// check is file exists.
-	var fileInDB, _ = f.databaseFindBy("hash", hash)
-	if fileInDB != nil {
+	var fileInDB = ModelFile{Hash: hash}
+	found, err := fileInDB.findByHash()
+	if err != nil {
+		f.err500(response, request, err)
+		return
+	}
+	if found {
 		fileJSON, err := json.Marshal(fileInDB)
 		if err != nil {
 			f.err500(response, request, err)
@@ -114,20 +130,9 @@ func (f *entityFile) controllerCreateOne(response http.ResponseWriter, request *
 		f.Send(response, string(fileJSON), 200)
 		return
 	}
-	// get type (extension).
-	// https://github.com/h2non/filetype#file-header
-	_, _ = fileFromForm.Seek(0, io.SeekStart)
-	fileFromFormHeader := make([]byte, 261)
-	_, err = fileFromForm.Read(fileFromFormHeader)
-	if err != nil {
-		f.err500(response, request, err)
-		return
-	}
-	fType, err := filetype.Match(fileFromFormHeader)
-	if err != nil {
-		f.err500(response, request, err)
-		return
-	}
+	// get file extension.
+	var extension = header.Filename
+	extension = filepath.Ext(extension)
 	// create file and dirs in system.
 	var hashDirs, _ = oUtils.generateDirsByHash(hash)
 	// newFileDir - full path to file dir like D:/images/files/8c/9d
@@ -137,34 +142,41 @@ func (f *entityFile) controllerCreateOne(response http.ResponseWriter, request *
 		f.err500(response, request, err)
 		return
 	}
-	// newFileName - 1513cd2345e.jpg
-	var newFileName = hash + "." + fType.Extension
+	// newFileName - ULIDSTRING.jpg
+	filenameULID, err := oUtils.generateULID()
+	if err != nil {
+		f.err500(response, request, err)
+		return
+	}
+	var newFileName = filenameULID + extension
 	// newFilePathLocal - 1c/2d/1513cd2345e.jpg
 	var newFilePathLocal = hashDirs + "/" + newFileName
 	// newFilePath - full path to file like D:/images/files/1c/2d/1513cd2345e.jpg
 	var newFilePath = fmt.Sprintf("%v/%v", newFileDir, newFileName)
 	// move and rename temp file to folder
-	tempFile.Close()
+	_ = tempFile.Close()
 	err = os.Rename(tempFile.Name(), newFilePath)
 	if err != nil {
 		f.err500(response, request, err)
 		return
 	}
 	// create file model
-	var newFileModel = ModelFile{}
-	newFileModel.UserID = auth.User.ID
-	newFileModel.Hash = hash
-	newFileModel.Path = newFilePathLocal
-	newFileModel.Name = newFileName
-	newFileModel.OriginalName = header.Filename
-	newFileModel.Extension = fType.Extension
-	newFileModel.Size = header.Size
-	err = f.databaseCreate(&newFileModel)
+	fileInDB = ModelFile{
+		UserID: auth.User.ID,
+		Hash: hash,
+		Path: newFilePathLocal,
+		Name: newFileName,
+		OriginalName: header.Filename,
+		Extension: extension,
+		Size: header.Size,
+	}
+	err = fileInDB.create()
 	if err != nil {
 		f.err500(response, request, err)
 		return
 	}
-	fileJSON, err := json.Marshal(&newFileModel)
+	// send file to user
+	fileJSON, err := json.Marshal(&fileInDB)
 	if err != nil {
 		f.err500(response, request, err)
 		return
@@ -177,18 +189,30 @@ func (f *entityFile) controllerCreateOne(response http.ResponseWriter, request *
 func (f *entityFile) controllerDeleteOne(response http.ResponseWriter, request *http.Request) {
 	var params = mux.Vars(request)
 	var id = params["id"]
-	found, err := f.databaseFind(id)
+	var file = ModelFile{ID: id}
+	found, err := file.findByID()
 	if err != nil {
+		f.err500(response, request, err)
+		return
+	}
+	if !found {
 		f.Send(response, errorMan.ThrowNotFound(), 404)
 		return
 	}
 	// delete dirs if empty
-	var fullPath = filesSaveTo + "/" + found.Path
+	var fullPath = filesSaveTo + "/" + file.Path
 	err = os.Remove(fullPath)
 	if err == nil {
-		err = oUtils.deleteEmptyDirsRecursive(filesSaveTo, found.Path)
+		err = oUtils.deleteEmptyDirsRecursive(filesSaveTo, file.Path)
 	}
-	err = f.databaseDelete(found.ID)
+	err = file.deleteByID()
 	f.Send(response, "", 200)
+	return
+}
+
+// err403 - send an error if the user is not allowed to do something.
+func (f *entityFile) err500(response http.ResponseWriter, request *http.Request, err error) {
+	f.Logger.Warn("entityFile code 500 at: %v. Error: %v", request.URL.Path, err.Error())
+	f.Send(response, errorMan.ThrowServer(), 500)
 	return
 }

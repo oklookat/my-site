@@ -3,6 +3,7 @@ package elven
 import (
 	"context"
 	"net/http"
+	"servus/core"
 	"servus/core/modules/errorMan"
 )
 
@@ -13,6 +14,10 @@ const (
 	accessTypeReadOnly                  = "ELVEN_ACCESS_READ_ONLY"
 	CtxAuthData         CtxAuthDataPipe = "ELVEN_PIPE_AUTH_DATA"
 )
+
+type entityBase struct {
+	*core.BaseController
+}
 
 func (b *entityBase) middlewareReadOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {

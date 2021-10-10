@@ -182,7 +182,7 @@ CREATE TABLE public.tokens
 (
     id         ulid PRIMARY KEY,
     user_id    ulid                                       NOT NULL,
-    token      varchar(2048) COLLATE pg_catalog."default" NOT NULL,
+    token      varchar(2048) COLLATE pg_catalog."default" NOT NULL UNIQUE,
     last_ip    varchar(64) COLLATE pg_catalog."default"  DEFAULT NULL,
     last_agent varchar(324) COLLATE pg_catalog."default" DEFAULT NULL,
     auth_ip    varchar(64) COLLATE pg_catalog."default"  DEFAULT NULL,
@@ -262,7 +262,7 @@ CREATE TABLE public.files
 (
     id            ulid PRIMARY KEY,
     user_id       ulid                                      NOT NULL,
-    hash          varchar(256) COLLATE pg_catalog."default"  NOT NULL,
+    hash          varchar(32) COLLATE pg_catalog."default"  NOT NULL UNIQUE,
     path          varchar(512) COLLATE pg_catalog."default" NOT NULL,
     name          varchar(512) COLLATE pg_catalog."default" NOT NULL,
     original_name varchar(512) COLLATE pg_catalog."default" DEFAULT NULL,

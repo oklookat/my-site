@@ -5,9 +5,15 @@ import (
 	"net/http"
 	"servus/core"
 	"servus/core/modules/cryptor"
+	"servus/core/modules/errorMan"
 )
 
 const articlesPageSize = 2
+
+// entityAuth - manage authorization.
+type entityAuth struct {
+	*entityBase
+}
 
 // controllerLogin -  generate token if username and password are correct.
 func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http.Request) {
@@ -16,12 +22,13 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 		a.Send(response, em.GetJSON(), 400)
 		return
 	}
-	user, err := eUser.databaseFindBy(val.Username)
+	var user = ModelUser{Username: val.Username}
+	found, err := user.findByUsername()
 	if err != nil {
 		a.err500(response, request, err)
 		return
 	}
-	if user == nil {
+	if !found {
 		a.err401(response)
 		return
 	}
@@ -33,11 +40,16 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 	// token generating.
 	// first we generate fake token model to get created token ID.
 	var tokenModel = ModelToken{UserID: user.ID, Token: "-1"}
-	err = eToken.databaseCreate(&tokenModel)
+	err = tokenModel.create()
 	if err != nil {
 		a.err500(response, request, err)
 		return
 	}
+	defer func() {
+		if err != nil {
+			_ = tokenModel.deleteByID()
+		}
+	}()
 	// then we get newly created token model id and encrypt it. That's we send to user as token.
 	encryptedToken, aesErr := cryptor.AESEncrypt(tokenModel.ID, core.Config.Secret)
 	if aesErr.HasErrors {
@@ -53,7 +65,7 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 	}
 	// now we replace fake token with real token in database.
 	tokenModel.Token = encryptedTokenHash
-	oUtils.setAuthAgents(request, &tokenModel)
+	err = tokenModel.setAuthAgents(request)
 	if err != nil {
 		a.err500(response, request, err)
 		return
@@ -90,7 +102,20 @@ func (a *entityAuth) controllerLogout(response http.ResponseWriter, request *htt
 	}
 	if tokenModel != nil {
 		// delete token.
-		_ = eToken.databaseDelete(tokenModel.ID)
+		_ = tokenModel.deleteByID()
 	}
 	a.Send(response, "", 200)
+}
+
+// err500 - like unknown error.
+func (a *entityAuth) err500(response http.ResponseWriter, request *http.Request, err error) {
+	a.Logger.Warn("entityAuth code 500 at: %v. Error: %v", request.URL.Path, err.Error())
+	a.Send(response, errorMan.ThrowServer(), 500)
+	return
+}
+
+// err401 - like wrong username or password.
+func (a *entityAuth) err401(response http.ResponseWriter) {
+	a.Send(response, errorMan.ThrowForbidden(), 403)
+	return
 }

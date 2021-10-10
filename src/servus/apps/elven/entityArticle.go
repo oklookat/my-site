@@ -9,6 +9,10 @@ import (
 	"servus/core/modules/errorMan"
 )
 
+// entityArticle - manage articles.
+type entityArticle struct {
+	*entityBase
+}
 
 // controllerGetAll - GET url/
 // params:
@@ -27,7 +31,7 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 		return
 	}
 	// get articles based on query params.
-	articles, err := a.databaseGetAll(&val)
+	articles, err := val.getAll()
 	if err != nil {
 		core.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
 		a.Send(response, errorMan.ThrowServer(), 500)
@@ -57,12 +61,13 @@ func (a *entityArticle) controllerGetOne(response http.ResponseWriter, request *
 	isAdmin := oUtils.isAdmin(request)
 	var params = mux.Vars(request)
 	var id = params["id"]
-	var article, err = a.databaseFind(id)
+	var article = ModelArticle{ID: id}
+	found, err := article.findByID()
 	if err != nil {
 		a.err500(response, request, err)
 		return
 	}
-	if article == nil {
+	if !found {
 		a.Send(response, errorMan.ThrowNotFound(), 404)
 		return
 	}
@@ -87,7 +92,7 @@ func (a *entityArticle) controllerCreateOne(response http.ResponseWriter, reques
 		return
 	}
 	var article = ModelArticle{UserID: authData.User.ID, IsPublished: false, Title: val.Title, Content: val.Content}
-	err := a.databaseCreate(&article)
+	err := article.create()
 	if err != nil {
 		a.err500(response, request, err)
 		return
@@ -109,12 +114,13 @@ func (a *entityArticle) controllerUpdateOne(response http.ResponseWriter, reques
 	}
 	var params = mux.Vars(request)
 	var id = params["id"]
-	article, err := a.databaseFind(id)
+	var article = ModelArticle{ID: id}
+	found, err := article.findByID()
 	if err != nil {
 		a.err500(response, request, err)
 		return
 	}
-	if article == nil {
+	if !found {
 		a.Send(response, errorMan.ThrowNotFound(), 404)
 		return
 	}
@@ -123,7 +129,7 @@ func (a *entityArticle) controllerUpdateOne(response http.ResponseWriter, reques
 	if body.IsPublished != nil {
 		article.IsPublished = *body.IsPublished
 	}
-	err = a.databaseUpdate(article)
+	err = article.update()
 	if err != nil {
 		a.err500(response, request, err)
 		return
@@ -140,11 +146,34 @@ func (a *entityArticle) controllerUpdateOne(response http.ResponseWriter, reques
 func (a *entityArticle) controllerDeleteOne(response http.ResponseWriter, request *http.Request) {
 	var params = mux.Vars(request)
 	var id = params["id"]
-	err := a.databaseDelete(id)
+	var article = ModelArticle{ID: id}
+	found, err := article.findByID()
 	if err != nil {
+		a.err500(response, request, err)
+		return
+	}
+	if !found {
 		a.Send(response, errorMan.ThrowNotFound(), 404)
 		return
 	}
+	err = article.deleteByID()
+	if err != nil {
+		a.err500(response, request, err)
+		return
+	}
 	a.Send(response, "", 200)
+	return
 }
 
+// err500 - write error to logger and send 500 error to user.
+func (a *entityArticle) err500(response http.ResponseWriter, request *http.Request, err error) {
+	a.Logger.Warn("entityArticle code 500 at: %v. Error: %v", request.URL.Path, err.Error())
+	a.Send(response, errorMan.ThrowServer(), 500)
+	return
+}
+
+// err403 - send an error if the user is not allowed to do something.
+func (a *entityArticle) err403(response http.ResponseWriter) {
+	a.Send(response, errorMan.ThrowForbidden(), 403)
+	return
+}

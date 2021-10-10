@@ -2,14 +2,22 @@ package elven
 
 import (
 	"fmt"
+	"github.com/oklog/ulid/v2"
 	"github.com/pkg/errors"
+	"math/rand"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"servus/core"
 	"servus/core/modules/cryptor"
 	"strings"
+	"time"
 )
+
+// objectUtils - useful utilities.
+type objectUtils struct {
+}
 
 // getEncryptedToken - get encrypted token from auth header or cookies.
 func (u *objectUtils) getEncryptedToken(request *http.Request) (string, error) {
@@ -39,13 +47,15 @@ func (u *objectUtils) getUserAndTokenByEncrypted(encryptedToken string) (user *M
 		return nil, nil, aesErr.AdditionalErr
 	}
 	// find token by id.
-	token, err = eToken.databaseFind(tokenID)
-	if err != nil || token == nil {
+	token.ID = tokenID
+	found, err := token.findByID()
+	if !found || err != nil {
 		return nil, nil, err
 	}
 	// find user by id in found token.
-	user, err = eUser.databaseFind(token.UserID)
-	if user == nil {
+	user.ID = token.UserID
+	found, err = user.findByID()
+	if !found || err != nil {
 		return nil, nil, err
 	}
 	return
@@ -94,33 +104,6 @@ func (u *objectUtils) getIP(request *http.Request) (ip string) {
 	return
 }
 
-// setLastAgents - writes ip and user agent to ModelToken.
-func (u *objectUtils) setLastAgents(request *http.Request, token *ModelToken) (err error) {
-	if request == nil {
-		return errors.New("setLastAgents: request nil pointer.")
-	}
-	if token == nil {
-		return errors.New("setLastAgents: token nil pointer.")
-	}
-	var lastAgent = request.UserAgent()
-	var lastIP = u.getIP(request)
-	token.LastAgent = new(string)
-	*token.LastAgent = lastAgent
-	token.LastIP = new(string)
-	*token.LastIP = lastIP
-	err = eToken.databaseUpdate(token)
-	return
-}
-
-// setAuthAgents - writes last ip and user agent to ModelToken.
-func (u *objectUtils) setAuthAgents(request *http.Request, token *ModelToken) {
-	token.AuthAgent = new(string)
-	*token.AuthAgent = request.UserAgent()
-	token.AuthIP = new(string)
-	*token.AuthIP = u.getIP(request)
-	_ = eToken.databaseUpdate(token)
-}
-
 // createPipeAuth - check user permissions by request and accessType and write last agents and ip.
 func (u *objectUtils) createPipeAuth(request *http.Request, accessType string) (auth PipeAuth) {
 	auth = PipeAuth{}
@@ -128,7 +111,7 @@ func (u *objectUtils) createPipeAuth(request *http.Request, accessType string) (
 	auth.User, auth.Token, err = u.getUserAndToken(request)
 	auth.UserAndTokenExists = auth.User != nil && auth.Token != nil && err == nil
 	if auth.UserAndTokenExists {
-		_ = u.setLastAgents(request, auth.Token)
+		_ = auth.Token.setAuthAgents(request)
 		switch auth.User.Role {
 		default:
 			break
@@ -176,30 +159,12 @@ func (u *objectUtils) generateDirsByHash(hash string) (result string, err error)
 // starts from rootPath + relativePath, and goes up to rootPath deleting dirs (if empty) along the way.
 // params:
 // rootPath - end at: 'D:\Test\'
-// relativePath - start from: '123\456\789\music.flac' or '123\456\789\'
+// relativePath - start from: '123\456\789\'
 // total: if in dirs D:\Test\123\456\789\ has no files, it deletes all dirs up to D:\Test\.
-func (u *objectUtils) deleteEmptyDirsRecursive(rootPath string, relativePath string) (err error){
+func (u *objectUtils) deleteEmptyDirsRecursive(rootPath string, relativePath string) (err error) {
 	rootPath = filepath.ToSlash(rootPath)
 	relativePath = filepath.ToSlash(relativePath)
 	relativePath, _ = filepath.Split(relativePath)
-	var pathSlice = strings.Split(relativePath, "/")
-	var pathsForDelete []string
-	for index := range pathSlice{
-		if len(pathSlice[index]) < 1{
-			continue
-		}
-		// make concat and collect paths for recursive. Example:
-		// it.1 D:\Test\123\
-		// it.2 D:\Test\123\456\
-		// it.3 D:\Test\123\456\789\
-		var p string
-		if (index - 1) > -1 {
-			p = rootPath + "/" + pathSlice[index - 1] + "/" + pathSlice[index]
-		} else {
-			p = rootPath + "/" + pathSlice[index]
-		}
-		pathsForDelete = append(pathsForDelete, p)
-	}
 	var deleteDirIfEmpty = func(path string) (err error) {
 		entry, err := os.ReadDir(path)
 		if len(entry) == 0 {
@@ -207,15 +172,29 @@ func (u *objectUtils) deleteEmptyDirsRecursive(rootPath string, relativePath str
 		}
 		return
 	}
-	// reverse
-	for i := len(pathsForDelete) - 1; i >= 0; i-- {
-		// it.1: delete D:\Test\123\456\789\
-		// it.2: delete D:\Test\123\456\
-		// it.3: delete D:\Test\123\
-		err = deleteDirIfEmpty(pathsForDelete[i])
+	var deletePath = rootPath + "/" + relativePath
+	for !strings.EqualFold(rootPath, deletePath) {
+		// delete dirs. Example:
+		// it.1: delete D:\Test\123\456\789\ if empty
+		// it.2: delete D:\Test\123\456\ if empty
+		// it.3: delete D:\Test\123\ if empty
+		// it.4: delete D:\Test\ if empty
+		deletePath = path.Dir(deletePath)
+		err = deleteDirIfEmpty(deletePath)
 		if err != nil {
 			break
 		}
 	}
+	return
+}
+
+func (u *objectUtils) generateULID() (ul string, err error) {
+	current := time.Now()
+	entropy := ulid.Monotonic(rand.New(rand.NewSource(current.UnixNano())), 0)
+	ulType, err := ulid.New(ulid.Timestamp(current), entropy)
+	if err != nil {
+		return "", err
+	}
+	ul = ulType.String()
 	return
 }

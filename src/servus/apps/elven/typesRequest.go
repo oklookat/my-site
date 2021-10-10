@@ -33,25 +33,9 @@ type BodyArticle struct {
 	} `json:"content"`
 }
 
-// queryArticleGetAll - validated query params in article GetAll.
-type queryArticleGetAll struct {
-	cursor  string
-	show    string
-	by      string
-	start   string
-	preview bool
-}
-
 // bodyAuth - represents the body of the request that the user should send. Used in entityAuth login method.
 type bodyAuth struct {
 	Username string
 	Password string
 	Type     string
-}
-
-// queryFileGetAll - validated query params in files GetAll.
-type queryFileGetAll struct {
-	cursor string
-	start  string
-	by string
 }
