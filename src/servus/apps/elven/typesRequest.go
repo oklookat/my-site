@@ -9,14 +9,6 @@ type ResponseContent struct {
 	Data interface{} `json:"data"`
 }
 
-// PipeAuth - represents auth status in secured routes.
-type PipeAuth struct {
-	Access             bool
-	UserAndTokenExists bool
-	IsAdmin            bool
-	User               *ModelUser
-	Token              *ModelToken
-}
 
 // BodyArticle - represents the body of the request that the user should send. Used in create and update methods.
 type BodyArticle struct {

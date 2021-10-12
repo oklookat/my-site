@@ -13,7 +13,7 @@ export default class ElvenPlayer {
                     theLogic.options = options
                     theLogic.init()
                     instance.componentData = this
-                    app.config.globalProperties.$elvenPlayer = theLogic
+                    window.$elvenPlayer = theLogic
                 }
             },
         })

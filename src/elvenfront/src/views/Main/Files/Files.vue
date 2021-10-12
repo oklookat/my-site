@@ -2,24 +2,37 @@
   <div class="files-main">
     <div class="files-tools">
       <div class="files-tools-upload cursor-pointer">
-        <div class="files-tools-upload-butt" v-on:click="onUploadClick">Загрузить</div>
-        <input id="input-upload" type="file" multiple style="display: none" @input="onFileInputChange"/>
+        <div class="files-tools-upload-butt" v-on:click="onUploadClick()">Загрузить</div>
+        <input
+          id="input-upload"
+          type="file"
+          multiple
+          style="display: none"
+          @input="onFileInputChange($event)"
+        />
       </div>
     </div>
-
-    <div class="files-list" v-if="isFilesLoaded && files.length > 0">
-      <div class="file" v-for="file in files" :key="file.id" v-on:click="selectFile(file)">
+    <div class="files-list" v-if="filesLoaded && files.length > 0">
+      <div class="file" v-for="file in files" :key="file.id" v-on:click="select(file)">
         <div class="file-meta">
-          <div class="file-item file-loaded-at">
-            {{ convertDateWrap(file.created_at) }}
-          </div>
+          <div class="file-item file-loaded-at">{{ convertDateWrap(file.created_at) }}</div>
         </div>
         <div class="file-main">
-
-          <div class="file-item file-preview" v-on:click.stop v-if="readableExtensionWrap(file.extension) === 'IMAGE'">
-            <img :src="convertPreviewPath(file.path)" v-if="readableExtensionWrap(file.extension) === 'IMAGE'">
+          <div
+            class="file-item file-preview"
+            v-on:click.stop
+            v-if="readableExtensionWrap(file.extension) === 'IMAGE'"
+          >
+            <img
+              :src="convertPreviewPath(file.path)"
+              v-if="readableExtensionWrap(file.extension) === 'IMAGE'"
+            />
           </div>
-          <div class="file-item file-preview" v-on:click.stop v-if="readableExtensionWrap(file.extension) === 'VIDEO'">
+          <div
+            class="file-item file-preview"
+            v-on:click.stop
+            v-if="readableExtensionWrap(file.extension) === 'VIDEO'"
+          >
             <video controls :src="convertPreviewPath(file.path)"></video>
           </div>
 
@@ -29,155 +42,144 @@
       </div>
     </div>
 
-    <div class="files-404" v-if="isFilesLoaded && files.length < 1">
+    <div class="files-404" v-if="filesLoaded && files.length < 1">
       <div class="files-404-1">Нет файлов :(</div>
     </div>
 
-    <UIPagination
-        :total-pages="totalPages"
-        :current-page="currentPage"
-        v-on:page-changed="getFiles($event)">
-    </UIPagination>
-
-
     <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
       <div class="overlay-file-tools">
-        <div class="ov-item file-play"
-             v-if="readableExtensionWrap(selectedFile.extension) === 'AUDIO'"
-             v-on:click="playAudio(selectedFile)">Воспроизвести</div>
+        <div
+          class="ov-item file-play"
+          v-if="readableExtensionWrap(selectedFile.extension) === 'AUDIO'"
+          v-on:click="playAudio(selectedFile)"
+        >Воспроизвести</div>
         <div class="ov-item file-copy-link" v-on:click="copyLink(selectedFile)">Скопировать ссылку</div>
         <div class="ov-item file-delete" v-on:click="deleteFile(selectedFile)">Удалить</div>
       </div>
     </UIOverlay>
-
-
   </div>
 </template>
 
-<script lang="ts">
-import {defineComponent} from "vue"
+<script setup lang="ts">
+import {onMounted, ref, Ref} from "vue"
+import UIOverlay from "@/components/_UI/UIOverlay.vue"
 import FileAdapter from "@/common/adapters/Main/FileAdapter"
 import Dates from "@/common/tools/Dates"
 import Sizes from "@/common/tools/Sizes.js"
-import UIOverlay from "@/components/_UI/UIOverlay.vue"
 import Extensions from "@/common/tools/Extensions"
-import UIPagination from "@/components/_UI/UIPagination.vue"
+import { IMeta, iMetaDefault } from '@/types/response'
+import { IFile, IFileDefault } from '@/types/file'
 
-export default defineComponent({
-  name: 'Files',
-  components: {UIPagination, UIOverlay},
-  data() {
-    return {
-      isFilesLoaded: false,
-      isToolsOverlayActive: false,
-      isSortOverlayActive: false,
-      sortBy: 'created', // see backend docs for more
-      sortFirst: 'newest',
-      files: [],
-      filesMeta: [],
-      selectedFile: undefined,
-      totalPages: 1,
-      currentPage: 1,
-    }
-  },
-  async mounted() {
-    await this.getFiles()
-  },
-  methods: {
-    // GET FUNCTIONS START //
-    async getFiles(page = this.currentPage, sortFirst = this.sortFirst) {
-      if (this.currentPage < 1) {
-        this.currentPage = 1
-        page = this.currentPage
-      }
-      this.isFilesLoaded = false
-      await FileAdapter.getFiles(page, sortFirst)
-          .then(result => {
-            this.files = result.data
-            this.filesMeta = result.meta
-            this.perPage = this.filesMeta.per_page
-            this.currentPage = this.filesMeta.current_page
-            this.totalPages = Math.ceil(this.filesMeta.total / this.filesMeta.per_page)
-            this.isFilesLoaded = true
-          })
-    },
-    async refreshFiles() {
-      let isTrueFiles = this.isFilesLoaded && this.files.length < 1
-      if (isTrueFiles) { // no files in current page
-        while (isTrueFiles) {
-          // moving back until the pages ends or data appears
-          this.currentPage--
-          await this.getFiles()
-          if (this.currentPage <= 1) {
-            break
-          }
-          isTrueFiles = this.isFilesLoaded && this.files.length < 1
-        }
-      }
-    },
-    async deleteFile(file) {
-      const isDelete = confirm('Удалить файл?')
-      if (isDelete) {
-        await FileAdapter.delete(file.id)
-        this.deleteFileFromArray(file)
-        this.isToolsOverlayActive = false
-        //await this.refreshFiles()
-      }
-    },
-    // GET FUNCTIONS END //
+const filesLoaded: Ref<boolean> = ref(false)
+const isToolsOverlayActive: Ref<boolean> = ref(false)
+const isSortOverlayActive: Ref<boolean> = ref(false)
+const sortBy: Ref<string> = ref('created')
+const sortFirst: Ref<string> = ref('newest')
+const files: Ref<Array<IFile>> = ref([IFileDefault])
+const meta: Ref<IMeta> = ref(iMetaDefault)
+const selectedFile: Ref<IFile> = ref(IFileDefault)
+const perPage: Ref<string> = ref('')
+const next: Ref<string> = ref('')
 
-    // UPLOAD FUNCTIONS START //
-    async onFileInputChange(event) {
-      const files = event.target.files
-      if (files.length < 1) {
-        return 0
-      }
-      await FileAdapter.upload(files)
-      await this.getFiles()
-    },
-    onUploadClick() {
-      const inputUpload = document.getElementById('input-upload')
-      inputUpload.value = ''
-      inputUpload.click()
-    },
-    // UPLOAD FUNCTIONS END //
 
-    // SERVICE START //
-    async copyLink(file) {
-      const url = `${import.meta.env.VITE_UPLOADS_URL}/${file.path}`
-      await navigator.clipboard.writeText(url)
-          .then(() => {
-            this.isToolsOverlayActive = false
-          })
-    },
-    deleteFileFromArray(file) {
-      const index = this.files.indexOf(file)
-      this.files.splice(index, 1)
-      return true
-    },
-    selectFile(file) {
-      this.isToolsOverlayActive = true
-      this.selectedFile = file
-    },
-    convertDateWrap(date) {
-      return Dates.convert(date)
-    },
-    convertSizeWrap(size) {
-      return Sizes.convert(size)
-    },
-    readableExtensionWrap(extension) {
-      return Extensions.getReadable(extension)
-    },
-    convertPreviewPath(path) {
-      return `${import.meta.env.VITE_UPLOADS_URL}/${path}`
-    },
-    playAudio(file){
-      const converted = this.convertPreviewPath(file.path)
-      this.$elvenPlayer.play(converted)
-    }
-    // SERVICE END //
-  },
+onMounted(() => {
+  getFiles('')
 })
+
+function getFiles(cursor: string) {
+  filesLoaded.value = false
+  FileAdapter.getFiles(cursor, undefined)
+    .then(result => {
+      files.value = result.data
+      meta.value = result.meta
+      next.value = meta.value.next
+      filesLoaded.value = true
+    })
+}
+
+
+async function refresh() {
+  let isTrueFiles = filesLoaded.value && files.value.length < 1
+  // if (isTrueFiles) { // no files in current page
+  //     while (isTrueFiles) {
+  //         // moving back until the pages ends or data appears
+  //         this.currentPage--
+  //         await this.getFiles()
+  //         if (this.currentPage <= 1) {
+  //             break
+  //         }
+  //         isTrueFiles = this.loaded.value && this.files.value.length < 1
+  //     }
+  // }
+}
+
+async function deleteFile(file: IFile) {
+  const isDelete = confirm('Удалить файл?')
+  if (isDelete) {
+    FileAdapter.delete(file.id).then(() => {
+      deleteFileFromArray(file)
+      isToolsOverlayActive.value = false
+    })
+  }
+}
+
+async function onFileInputChange(event) {
+  const files = event.target.files
+  if (files.length < 1) {
+    return 0
+  }
+  await FileAdapter.upload(files)
+  await getFiles('')
+}
+
+function onUploadClick() {
+  const inputUpload = document.getElementById('input-upload') as HTMLInputElement
+  if (!inputUpload) {
+    return
+  }
+  inputUpload.value = ''
+  inputUpload.click()
+}
+
+async function copyLink(file: IFile) {
+  const url = `${import.meta.env.VITE_UPLOADS_URL}/${file.path}`
+  navigator.clipboard.writeText(url)
+    .then(() => {
+      isToolsOverlayActive.value = false
+    })
+}
+
+function deleteFileFromArray(file: IFile) {
+  const index = files.value.indexOf(file)
+  files.value.splice(index, 1)
+  return true
+}
+
+function select(file) {
+  isToolsOverlayActive.value = true
+  selectedFile.value = file
+}
+
+function convertDateWrap(date) {
+  return Dates.convert(date)
+}
+
+function convertSizeWrap(size) {
+  return Sizes.convert(size)
+}
+
+function readableExtensionWrap(extension) {
+  return Extensions.getReadable(extension)
+}
+
+function convertPreviewPath(path) {
+  return `${import.meta.env.VITE_UPLOADS_URL}/${path}`
+}
+
+function playAudio(file) {
+  const converted = convertPreviewPath(file.path)
+  window.$elvenPlayer.play(converted)
+}
 </script>
 
 <style scoped>
@@ -284,5 +286,4 @@ export default defineComponent({
 .ov-item:hover {
   background-color: var(--color-hover);
 }
-
 </style>

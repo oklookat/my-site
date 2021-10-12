@@ -23,7 +23,10 @@ type entityArticle struct {
 // preview = true (content < 480 symbols), false - gives you full articles.
 func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *http.Request) {
 	var err error
-	isAdmin := oUtils.isAdmin(request)
+	var isAdmin = false
+	var auth = PipeAuth{}
+	auth.get(request)
+	isAdmin = auth.UserAndTokenExists && auth.IsAdmin
 	// validate query params.
 	val, em, _ := a.validatorControllerGetAll(request, isAdmin)
 	if em.HasErrors() {
@@ -58,7 +61,10 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 
 // controllerGetOne - GET url/id.
 func (a *entityArticle) controllerGetOne(response http.ResponseWriter, request *http.Request) {
-	isAdmin := oUtils.isAdmin(request)
+	var isAdmin = false
+	var auth = PipeAuth{}
+	auth.get(request)
+	isAdmin = auth.UserAndTokenExists && auth.IsAdmin
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article = ModelArticle{ID: id}
@@ -85,13 +91,20 @@ func (a *entityArticle) controllerGetOne(response http.ResponseWriter, request *
 
 // controllerCreateOne - POST url/.
 func (a *entityArticle) controllerCreateOne(response http.ResponseWriter, request *http.Request) {
-	var authData = oUtils.getPipeAuth(request)
+	var isAdmin = false
+	var pAuth = PipeAuth{}
+	pAuth.get(request)
+	isAdmin = pAuth.UserAndTokenExists && pAuth.IsAdmin
+	if !isAdmin {
+		a.Send(response, errorMan.ThrowForbidden(), 403)
+		return
+	}
 	val, em, _ := a.validatorBody(request)
 	if em.HasErrors() {
 		a.Send(response, em.GetJSON(), 400)
 		return
 	}
-	var article = ModelArticle{UserID: authData.User.ID, IsPublished: false, Title: val.Title, Content: val.Content}
+	var article = ModelArticle{UserID: pAuth.User.ID, IsPublished: false, Title: val.Title, Content: val.Content}
 	err := article.create()
 	if err != nil {
 		a.err500(response, request, err)

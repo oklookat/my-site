@@ -13,7 +13,9 @@ func bootRoutes() {
 	//
 	var routerAuth = routerElven.PathPrefix("/auth").Subrouter()
 	routerAuth.HandleFunc("/login", eAuth.controllerLogin).Methods(http.MethodPost)
-	routerAuth.HandleFunc("/logout", eAuth.controllerLogout).Methods(http.MethodPost)
+	var routerAuthLogout = routerAuth.PathPrefix("/logout").Subrouter()
+	routerAuthLogout.Use(eBase.middlewareAuthorizedOnly)
+	routerAuthLogout.HandleFunc("", eAuth.controllerLogout).Methods(http.MethodPost)
 	//
 	var routerArticles = routerElven.PathPrefix("/articles").Subrouter()
 	routerArticles.Use(eBase.middlewareReadOnly)
@@ -32,3 +34,4 @@ func bootRoutes() {
 	var useBeforeRouter = core.Middleware.MiddlewareCORS(core.Middleware.MiddlewareSecurity(router))
 	http.Handle("/", useBeforeRouter)
 }
+

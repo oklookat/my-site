@@ -40,9 +40,9 @@
 
 <script setup lang="ts">
 import {reactive, ref, toRef, watch} from "vue";
-import Overlay from '../Overlay/Component.vue'
 import Composition from "@/common/plugins/ElvenPlayer/components/Player/Composition"
-import PlaybackControls from "@/common/plugins/ElvenPlayer/components/Player/PlaybackControls.vue";
+import PlaybackControls from "./PlaybackControls.vue";
+import Overlay from "./../Overlay/Component.vue"
 const SERVICE = ref('ELVEN_PLAYER_C')
 const player = reactive(new Composition())
 const isAudioOverlayActive = ref(false)

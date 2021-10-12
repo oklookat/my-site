@@ -3,18 +3,20 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 func bootConfig() *ConfigFile {
 	var path = Utils.GetExecuteDir()
 	var config ConfigFile
 	path = fmt.Sprintf("%v/settings/config.json", path)
-	byteValue, err := ioutil.ReadFile(path)
+	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(byteValue, &config)
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&config)
 	if err != nil {
 		panic(err)
 	}

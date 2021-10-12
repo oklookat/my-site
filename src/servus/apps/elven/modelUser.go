@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+const (
+	userRoleAdmin = "admin"
+	userRoleUser  = "user"
+)
+
 // ModelUser - represents user in database.
 type ModelUser struct {
 	ID        string    `json:"id" db:"id"`
@@ -45,7 +50,7 @@ func (u *ModelUser) findByID() (found bool, err error) {
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return found,nil
+			return found, nil
 		}
 		return
 	}

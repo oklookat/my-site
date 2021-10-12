@@ -2,17 +2,18 @@ import Axios from '@/common/adapters/Axios.js'
 
 export default class FileAdapter {
 
-    public static async getFiles(page = '1', start = 'newest'){
+    public static async getFiles(cursor = '', start = 'newest'): Promise<IFilesData> {
         const config = {
             params:
                 {
-                    page: page, start: start
+                    cursor: cursor, start: start
                 }
         }
-        return await Axios.get('files', config)
+        return Axios.get('files', config)
             .then(response => {
                 if (response.data) {
-                    return Promise.resolve(response.data)
+                    let data: IFilesData = response.data
+                    return Promise.resolve(data)
                 } else {
                     return Promise.reject('Нет данных.')
                 }
@@ -22,9 +23,9 @@ export default class FileAdapter {
             })
     }
 
-    public static async upload(files: FileList){
-        for(const file in files){
-            if(typeof files[file] !== "object"){
+    public static async upload(files: FileList) {
+        for (const file in files) {
+            if (typeof files[file] !== "object") {
                 continue
             }
             const formData = new FormData()
@@ -37,7 +38,7 @@ export default class FileAdapter {
         }
     }
 
-    public static async delete(id){
+    public static async delete(id) {
         return await Axios.delete(`files/${id}`)
             .then(() => {
                 return Promise.resolve(true)

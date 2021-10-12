@@ -51,8 +51,8 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 		}
 	}()
 	// then we get newly created token model id and encrypt it. That's we send to user as token.
-	encryptedToken, aesErr := cryptor.AESEncrypt(tokenModel.ID, core.Config.Secret)
-	if aesErr.HasErrors {
+	encryptedToken, err := cryptor.AESEncrypt(tokenModel.ID, core.Config.Secret)
+	if err != nil {
 		a.err500(response, request, err)
 		return
 	}
@@ -89,20 +89,10 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 // logout - get token from user and delete.
 func (a *entityAuth) controllerLogout(response http.ResponseWriter, request *http.Request) {
 	// get token from cookie or auth header.
-	var token, err = oUtils.getEncryptedToken(request)
-	if err != nil {
-		a.err401(response)
-		return
-	}
-	// get user and token instances by encrypted token.
-	_, tokenModel, err := oUtils.getUserAndTokenByEncrypted(token)
-	if err != nil {
-		a.err401(response)
-		return
-	}
-	if tokenModel != nil {
-		// delete token.
-		_ = tokenModel.deleteByID()
+	var auth = PipeAuth{}
+	auth.get(request)
+	if auth.UserAndTokenExists {
+		_ = auth.Token.deleteByID()
 	}
 	a.Send(response, "", 200)
 }

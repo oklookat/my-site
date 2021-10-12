@@ -43,7 +43,12 @@ func (q *queryFileGetAll) getAll() (files []ModelFile, err error){
 // create - create file in database.
 func (f *ModelFile) create() (err error){
 	var query = `INSERT INTO files (user_id, hash, path, name, original_name, extension, size) VALUES (:user_id, :hash, :path, :name, :original_name, :extension, :size) RETURNING *`
-	row := core.Database.QueryRowx(query, f)
+	row, err := core.Database.NamedQuery(query, f)
+	err = core.Utils.DBCheckError(err)
+	if err != nil {
+		return err
+	}
+	row.Next()
 	err = row.StructScan(f)
 	err = core.Utils.DBCheckError(err)
 	return
@@ -68,7 +73,7 @@ func (f *ModelFile) findByID() (found bool, err error){
 // findByHash - find file in database by hash field.
 func (f *ModelFile) findByHash() (found bool, err error){
 	var query = "SELECT * FROM files WHERE hash=$1 LIMIT 1"
-	err = core.Database.Get(found, query, f.Hash)
+	err = core.Database.Get(f, query, f.Hash)
 	err = core.Utils.DBCheckError(err)
 	found = false
 	if err != nil {

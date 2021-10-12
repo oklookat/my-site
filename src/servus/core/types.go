@@ -56,6 +56,10 @@ type ConfigFile struct {
 			MaxAge           int64    `json:"maxAge"`
 		} `json:"cors"`
 	}
+	Uploads struct {
+		To   string `json:"to"`
+		Temp string `json:"temp"`
+	} `json:"Uploads"`
 }
 
 // BasicUtils - must have utilities.

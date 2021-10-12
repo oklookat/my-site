@@ -1,3 +1,5 @@
+type convertSecondsMode = 'auto' | 'hours' | 'minutes'
+
 // only static methods be here
 export default class Service {
 
@@ -21,7 +23,7 @@ export default class Service {
     }
 
     // convert seconds to string like '01:23'
-    public static convertSeconds(seconds: number, mode: 'auto' | 'hours' | 'minutes'): string {
+    public static convertSeconds(seconds: number, mode: convertSecondsMode): string {
         // https://stackoverflow.com/a/1322771/16762009
         switch (mode) {
             case 'auto':

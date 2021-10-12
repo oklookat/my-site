@@ -135,8 +135,6 @@ export default defineComponent({
             this.articlesMeta = result.meta
             this.perPage = this.articlesMeta.per_page
             this.isArticlesLoaded = true
-
-            console.log(this.articles)
           })
     },
     async refreshArticles() {
