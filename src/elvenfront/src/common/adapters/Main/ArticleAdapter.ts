@@ -1,16 +1,16 @@
 import Axios from '@/common/adapters/Axios.js'
-
+import { IArticle, IArticlesData } from '@/types/article'
 
 class ArticleAdapter {
 
-    public static async getArticles(cursor = '', show = 'published', sortBy = 'updated', start = 'newest') {
+    public static async getArticles(cursor = '', show = 'published', sortBy = 'updated', start = 'newest'): Promise<IArticlesData> {
         const config = {
             params:
                 {
                     cursor: cursor, show: show, by: sortBy, start: start
                 }
         }
-        return await Axios.get('articles', config)
+        return Axios.get('articles', config)
             .then(response => {
                 if (response.data) {
                     return Promise.resolve(response.data)
@@ -23,8 +23,8 @@ class ArticleAdapter {
             })
     }
 
-    public static async getArticle(id) {
-        return await Axios.get(`articles/${id}`)
+    public static async getArticle(id): Promise<IArticle> {
+        return Axios.get(`articles/${id}`)
             .then(response => {
                 if (response.data) {
                     return Promise.resolve(response.data)

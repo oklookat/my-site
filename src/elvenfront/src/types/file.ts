@@ -1,4 +1,9 @@
-import { IMeta } from '@/types/response'
+import { IMeta } from '@/types/global'
+
+export interface IFilesData {
+    meta: IMeta
+    data: Array<IFile>
+}
 
 export interface IFile {
     id: string
@@ -11,11 +16,6 @@ export interface IFile {
     size: number
     created_at: string
     updated_at: string
-}
-
-export interface IFilesData {
-    meta: IMeta
-    data: Array<IFile>
 }
 
 export const IFileDefault: IFile = {

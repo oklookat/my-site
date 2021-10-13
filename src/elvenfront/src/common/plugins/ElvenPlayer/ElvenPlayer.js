@@ -5,7 +5,6 @@ export default class ElvenPlayer {
 
     static install(app, options) {
         app.component('elven-player', ElvenPlayerC)
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const instance = this
         app.mixin({
             created() {

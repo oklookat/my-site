@@ -67,7 +67,7 @@ import FileAdapter from "@/common/adapters/Main/FileAdapter"
 import Dates from "@/common/tools/Dates"
 import Sizes from "@/common/tools/Sizes.js"
 import Extensions from "@/common/tools/Extensions"
-import { IMeta, iMetaDefault } from '@/types/response'
+import { IMeta, iMetaDefault } from '@/types/global'
 import { IFile, IFileDefault } from '@/types/file'
 
 const filesLoaded: Ref<boolean> = ref(false)
