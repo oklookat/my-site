@@ -9,21 +9,21 @@ const apiURL = import.meta.env.VITE_API_URL
 Axios.defaults.baseURL = apiURL
 Axios.defaults.headers['Content-Type'] = 'application/json'
 Axios.interceptors.request.use(async function (config) {
-    window.app.$elvenProgress.loadingStart()
+    window.$elvenProgress.loadingStart()
     config.withCredentials = true
     return config;
 }, function (error) {
-    window.app.$elvenProgress.loadingFinish()
+    window.$elvenProgress.loadingFinish()
     ErrorHandler.sortError(error)
     return Promise.reject(error);
 });
 
 
 Axios.interceptors.response.use(function (response) {
-    app.$elvenProgress.loadingFinish()
+    window.$elvenProgress.loadingFinish()
     return response;
 }, function (error) {
-    app.$elvenProgress.loadingFinish()
+    window.$elvenProgress.loadingFinish()
     ErrorHandler.sortError(error)
     return Promise.reject(error);
 })

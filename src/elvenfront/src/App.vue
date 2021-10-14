@@ -16,20 +16,9 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import {defineComponent} from 'vue'
 import Header from '@/components/Header/Header.vue'
-
-export default defineComponent({
-  name: 'App',
-  components: {Header},
-  data() {
-    return {
-    }
-  },
-  mounted() {
-  }
-})
 </script>
 
 <style>

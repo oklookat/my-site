@@ -9,6 +9,8 @@ import (
 	"servus/core/modules/errorMan"
 )
 
+const articlesPageSize = 2
+
 // entityArticle - manage articles.
 type entityArticle struct {
 	*entityBase
@@ -16,8 +18,8 @@ type entityArticle struct {
 
 // controllerGetAll - GET url/
 // params:
-// cursor = article id
-// show = published, drafts, all
+// page = number
+// show = published, drafts
 // by = created, updated, published
 // start = newest (DESC), oldest (ASC)
 // preview = true (content < 480 symbols), false - gives you full articles.
@@ -34,7 +36,7 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 		return
 	}
 	// get articles based on query params.
-	articles, err := val.getAll()
+	articles, pages, err := val.getAll()
 	if err != nil {
 		core.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
 		a.Send(response, errorMan.ThrowServer(), 500)
@@ -42,12 +44,9 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 	}
 	// generate response with pagination
 	var responseContent = ResponseContent{}
+	responseContent.Meta.CurrentPage = val.page
+	responseContent.Meta.TotalPages = pages
 	responseContent.Meta.PerPage = articlesPageSize
-	if len(articles) >= articlesPageSize {
-		var lastElement = len(articles) - 1
-		responseContent.Meta.Next = articles[lastElement].ID
-		articles = articles[:lastElement]
-	}
 	responseContent.Data = articles
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)

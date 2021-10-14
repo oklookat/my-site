@@ -8,7 +8,6 @@ import (
 	"servus/core/modules/errorMan"
 )
 
-const articlesPageSize = 2
 
 // entityAuth - manage authorization.
 type entityAuth struct {

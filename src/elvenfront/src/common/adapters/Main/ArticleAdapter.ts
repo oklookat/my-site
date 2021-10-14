@@ -3,11 +3,11 @@ import { IArticle, IArticlesData } from '@/types/article'
 
 class ArticleAdapter {
 
-    public static async getArticles(cursor = '', show = 'published', sortBy = 'updated', start = 'newest'): Promise<IArticlesData> {
+    public static async getArticles(page = 1, show = 'published', sortBy = 'updated', start = 'newest'): Promise<IArticlesData> {
         const config = {
             params:
                 {
-                    cursor: cursor, show: show, by: sortBy, start: start
+                    page: page, show: show, by: sortBy, start: start
                 }
         }
         return Axios.get('articles', config)

@@ -65,12 +65,19 @@
         </div>
       </article>
     </div>
+
     <div class="articles-404" v-if="isArticlesLoaded && articles.length < 1">
       <div class="articles-404-1">Нет записей :(</div>
       <div class="articles-404-2">
         <RouterLink class="articles-404-link" :to="{ name: 'ArticleCreate' }">Создать новую?</RouterLink>
       </div>
     </div>
+
+    <UIPagination
+      :total-pages="totalPages"
+      :current-page="currentPage"
+      v-on:changed="getArticles($event)"
+    ></UIPagination>
   </div>
 
   <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
@@ -111,44 +118,51 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "@vue/runtime-core"
+import { onMounted, ref, Ref } from "@vue/runtime-core"
 import { useRouter, useRoute } from 'vue-router'
-import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter";
-import UIOverlay from "@/components/_UI/UIOverlay.vue";
-import Dates from "@/common/tools/Dates"; 
 import { IArticle } from "@/types/article";
 import { IMeta } from "@/types/global";
+import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter";
+import Dates from "@/common/tools/Dates";
+import UIOverlay from "@/components/_UI/UIOverlay.vue";
+import UIPagination from "@/components/_UI/UIPagination.vue";
 
 const router = useRouter()
-const route = useRoute()
-const articles: Array<IArticle> = ref([])
-const articlesMeta: IMeta = ref(null)
+// service
 const isArticlesLoaded = ref(false)
 const isToolsOverlayActive = ref(false)
 const isSortOverlayActive = ref(false)
+const selectedArticle: Ref<IArticle | null> = ref(null)
+// articles
+const articles: Ref<Array<IArticle>> = ref([])
+const articlesMeta: Ref<IMeta | null> = ref(null)
+// params
 const show = ref('published')
 const sortBy = ref('updated')
 const sortFirst = ref('newest')
-const selectedArticle: IArticle = ref(null)
-const cursor = ref("")
-const perPage = ref(0)
-
+// pagination
+const page = ref(1)
+const perPage = ref(1)
+const totalPages = ref(1)
+const currentPage = ref(1)
 
 onMounted(async () => {
   await getArticles()
 })
 
-async function getArticles(cursorA = cursor.value, showA = show.value, sortByA = sortBy.value, sortFirstA = sortFirst.value) {
-  cursor.value = cursorA
-  show.value = showA 
+async function getArticles(pageA = page.value, showA = show.value, sortByA = sortBy.value, sortFirstA = sortFirst.value) {
+  page.value = pageA
+  show.value = showA
   sortBy.value = sortByA
   sortFirst.value = sortFirstA
   isArticlesLoaded.value = false
-  ArticleAdapter.getArticles(cursorA, showA, sortByA, sortFirstA)
+  ArticleAdapter.getArticles(pageA, showA, sortByA, sortFirstA)
     .then(async result => {
       articles.value = result.data
       articlesMeta.value = result.meta
       perPage.value = articlesMeta.value.per_page
+      currentPage.value = articlesMeta.value.current_page
+      totalPages.value = articlesMeta.value.total_pages
       isArticlesLoaded.value = true
     })
 }
@@ -163,10 +177,9 @@ async function deleteArticle(article) {
     await ArticleAdapter.deleteArticle(article.id)
     deleteArticleFromArray(article)
     isToolsOverlayActive.value = false
-    //await this.refreshArticles()
+    refreshArticles()
   }
 }
-
 
 async function publishArticle(article) {
   await ArticleAdapter.publishArticle(article)
@@ -174,7 +187,7 @@ async function publishArticle(article) {
       deleteArticleFromArray(article)
       isToolsOverlayActive.value = false
     })
-  //await refreshArticles()
+  refreshArticles()
 }
 
 async function makeDraftArticle(article) {
@@ -183,35 +196,55 @@ async function makeDraftArticle(article) {
       deleteArticleFromArray(article)
       isToolsOverlayActive.value = false
     })
-  //  await this.refreshArticles()
+  refreshArticles()
 }
+
+async function refreshArticles() {
+  // refresh is need when for ex. you deleted all articles on current page
+  // and we need to check, is data on current page exists?
+  // if page > 1 and no data, we moving back (currentPage--) and get new articles
+  let notArticles = isArticlesLoaded.value && articles.value.length < 1
+  console.log(notArticles)
+  if (notArticles) { // no articles in current page
+    while (notArticles) {
+      // moving back until the pages ends or data appears
+      currentPage.value--
+      await getArticles()
+      if (currentPage.value <= 1) {
+        break
+      }
+      notArticles = isArticlesLoaded.value && articles.value.length < 1
+    }
+  }
+}
+
 
 async function setSort(sort) {
   sortBy.value = sort
-  cursor.value = ''
+  page.value = 1
   await getArticles()
   isSortOverlayActive.value = false
 }
 async function setSortDate(age = 'newest') {
   sortFirst.value = age
-  cursor.value = ''
+  page.value = 1
   await getArticles()
 }
 
-// SERVICE START //
 function deleteArticleFromArray(article) {
   const index = articles.value.indexOf(article)
   articles.value.splice(index, 1)
   return true
 }
+
 function selectArticle(article) {
   isToolsOverlayActive.value = true
   selectedArticle.value = article
 }
+
 function convertDateWrap(date) {
   return Dates.convert(date)
 }
-  // SERVICE END //
 </script>
 
 <style scoped>

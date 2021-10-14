@@ -19,7 +19,7 @@ export default class ElvenNotify {
                     _this.componentData = this
                     theLogic.options = options
                     theLogic.init()
-                    app.config.globalProperties.$elvenNotify = theLogic
+                    window.$elvenNotify = theLogic
                 }
             },
         })

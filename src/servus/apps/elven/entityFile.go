@@ -40,11 +40,11 @@ func (f *entityFile) controllerGetAll(response http.ResponseWriter, request *htt
 	// generate response with pagination
 	var responseContent = ResponseContent{}
 	responseContent.Meta.PerPage = filesPageSize
-	if len(files) >= filesPageSize {
-		var lastElement = len(files) - 1
-		responseContent.Meta.Next = files[lastElement].ID
-		files = files[:lastElement]
-	}
+	//if len(files) >= filesPageSize {
+	//	var lastElement = len(files) - 1
+	//	responseContent.Meta.Next = files[lastElement].ID
+	//	files = files[:lastElement]
+	//}
 	responseContent.Data = files
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)

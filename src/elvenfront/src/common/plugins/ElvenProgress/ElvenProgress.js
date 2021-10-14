@@ -13,7 +13,7 @@ class ElvenProgress {
                     instance.componentData = this
                     theLogic.options = options
                     theLogic.init()
-                    app.config.globalProperties.$elvenProgress = theLogic
+                    window.$elvenProgress = theLogic
                 }
             },
         })

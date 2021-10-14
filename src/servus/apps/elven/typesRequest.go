@@ -3,12 +3,12 @@ package elven
 // ResponseContent - template for response.
 type ResponseContent struct {
 	Meta struct {
-		PerPage int    `json:"per_page"`
-		Next    string `json:"next"`
+		PerPage     int `json:"per_page"`
+		TotalPages  int `json:"total_pages"`
+		CurrentPage int `json:"current_page"`
 	} `json:"meta"`
 	Data interface{} `json:"data"`
 }
-
 
 // BodyArticle - represents the body of the request that the user should send. Used in create and update methods.
 type BodyArticle struct {

@@ -51,9 +51,8 @@ func (a *entityArticle) validatorControllerGetAll(request *http.Request, isAdmin
 	}
 	var isShowPublished = strings.EqualFold(show, "published")
 	var isShowDrafts = strings.EqualFold(show, "drafts")
-	var isShowAll = strings.EqualFold(show, "all")
-	var isShowInvalid = !isShowPublished && !isShowDrafts && !isShowAll
-	var isShowForbidden = (isShowDrafts || isShowAll) && !isAdmin
+	var isShowInvalid = !isShowPublished && !isShowDrafts
+	var isShowForbidden = isShowDrafts && !isAdmin
 	if isShowInvalid || isShowForbidden {
 		em.Add("show", "wrong value provided.")
 	} else {
@@ -115,13 +114,17 @@ func (a *entityArticle) validatorControllerGetAll(request *http.Request, isAdmin
 	} else {
 		val.preview = previewBool
 	}
-	// validate "cursor" param
-	var cursor = queryParams.Get("cursor")
-	if len(cursor) == 0 {
-		cursor = "0"
+	// validate "page" param
+	var pageStr = queryParams.Get("page")
+	if len(pageStr) == 0 {
+		pageStr = "0"
 	}
-	val.cursor = cursor
-	// finally
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page <= 0 {
+		em.Add("page", "wrong value provided.")
+	} else {
+		val.page = page
+	}
 	return
 }
 

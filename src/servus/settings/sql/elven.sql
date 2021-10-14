@@ -102,7 +102,7 @@ CREATE TABLE public.users
 (
     id         ulid PRIMARY KEY,
     role       user_roles                                DEFAULT 'user'::user_roles NOT NULL,
-    username   varchar(24) COLLATE pg_catalog."default"                             NOT NULL,
+    username   varchar(24) COLLATE pg_catalog."default" UNIQUE                      NOT NULL,
     password   varchar(256) COLLATE pg_catalog."default"                            NOT NULL,
     reg_ip     varchar(64) COLLATE pg_catalog."default"  DEFAULT NULL,
     reg_agent  varchar(324) COLLATE pg_catalog."default" DEFAULT NULL,
@@ -113,6 +113,10 @@ CREATE TABLE public.users
 ) TABLESPACE pg_default;
 ALTER TABLE public.users
     OWNER to postgres;
+
+DROP INDEX IF EXISTS i_users;
+CREATE UNIQUE INDEX IF NOT EXISTS i_users
+    ON users (id, username);
 
 -- basic functions. Actual for all models.
 CREATE
@@ -197,6 +201,9 @@ CREATE TABLE public.tokens
 ALTER TABLE public.tokens
     OWNER to postgres;
 
+DROP INDEX IF EXISTS i_tokens;
+CREATE UNIQUE INDEX IF NOT EXISTS i_tokens
+    ON tokens (id);
 
 CREATE TRIGGER token_before_insert_or_update
     BEFORE INSERT OR
@@ -224,7 +231,7 @@ CREATE TABLE public.articles
     is_published boolean                                   DEFAULT false,
     title        varchar(124) COLLATE pg_catalog."default" DEFAULT 'Untitled':: varchar,
     content      jsonb NOT NULL,
-    slug         varchar(256) COLLATE pg_catalog."default",
+    slug         varchar(256) COLLATE pg_catalog."default" UNIQUE,
     published_at timestamp with time zone,
     created_at   timestamp with time zone                  DEFAULT current_timestamp,
     updated_at   timestamp with time zone,
@@ -237,6 +244,10 @@ CREATE TABLE public.articles
 
 ALTER TABLE public.articles
     OWNER to postgres;
+
+DROP INDEX IF EXISTS i_articles;
+CREATE UNIQUE INDEX IF NOT EXISTS i_articles
+    ON articles (id, is_published, published_at, created_at, updated_at);
 
 
 CREATE TRIGGER article_before_insert_or_update
@@ -263,8 +274,8 @@ CREATE TABLE public.files
     id            ulid PRIMARY KEY,
     user_id       ulid                                      NOT NULL,
     hash          varchar(32) COLLATE pg_catalog."default"  NOT NULL UNIQUE,
-    path          varchar(512) COLLATE pg_catalog."default" NOT NULL,
-    name          varchar(512) COLLATE pg_catalog."default" NOT NULL,
+    path          varchar(512) COLLATE pg_catalog."default" NOT NULL UNIQUE,
+    name          varchar(512) COLLATE pg_catalog."default" NOT NULL UNIQUE,
     original_name varchar(512) COLLATE pg_catalog."default" DEFAULT NULL,
     extension     varchar(64) COLLATE pg_catalog."default"  DEFAULT NULL,
     size          bigint                                    NOT NULL,
@@ -278,6 +289,9 @@ CREATE TABLE public.files
 ALTER TABLE public.files
     OWNER to postgres;
 
+DROP INDEX IF EXISTS i_files;
+CREATE UNIQUE INDEX IF NOT EXISTS i_files
+    ON files (id, original_name, extension, size);
 
 CREATE TRIGGER file_before_insert_or_update
     BEFORE INSERT OR

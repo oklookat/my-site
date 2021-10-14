@@ -8,6 +8,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/oklog/ulid/v2"
 	"github.com/pkg/errors"
+	"math"
 	"math/rand"
 	"servus/core"
 	"time"
@@ -39,7 +40,7 @@ type ArticleContent struct {
 
 // queryArticleGetAll - validated query params in article GetAll.
 type queryArticleGetAll struct {
-	cursor  string
+	page    int
 	show    string
 	by      string
 	start   string
@@ -62,32 +63,41 @@ func (a *ArticleContent) Scan(value interface{}) error {
 }
 
 // getAll - get articles by queryArticleGetAll.
-func (q *queryArticleGetAll) getAll() (articles []ModelArticle, err error) {
+func (q *queryArticleGetAll) getAll() (articles []ModelArticle, pagesCount int, err error) {
 	articles = make([]ModelArticle, 0)
 	var query string
+	var queryCount string
+	// get pages count
 	var by = q.by
 	var start = q.start
-	var cursor = q.cursor
 	switch q.show {
 	case "published":
 		// use sprintf to format validated.by and start because with $ database throws syntax error (I don't know why)
 		// it not allows sql injection, because start and by checked in validator
-		query = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 AND is_published=true ORDER BY %v %v, id %v LIMIT $2 + 1", by, start, start)
+		query = fmt.Sprintf("SELECT * FROM articles WHERE is_published=true ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", by, start, start)
+		queryCount = "SELECT count(*) FROM articles WHERE is_published=true"
 		break
 	case "drafts":
-		query = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 AND is_published=false ORDER BY %v %v, id %v LIMIT $2 + 1", by, start, start)
-		break
-	case "all":
-		query = fmt.Sprintf("SELECT * FROM articles WHERE id >= $1 ORDER BY %v %v, id %v LIMIT $2 + 1", by, start, start)
+		query = fmt.Sprintf("SELECT * FROM articles WHERE is_published=false ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", by, start, start)
+		queryCount = "SELECT count(*) FROM articles WHERE is_published=false"
 		break
 	}
-	err = core.Database.Select(&articles, query, cursor, articlesPageSize)
+	// get pages count.
+	pagesCount = 1
+	row := core.Database.QueryRowx(queryCount)
+	err = row.Scan(&pagesCount)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, 0, nil
+	}
+	pagesCount = int(math.Round(float64(pagesCount / articlesPageSize)))
+	// get articles.
+	err = core.Database.Select(&articles, query, articlesPageSize, (q.page - 1) * articlesPageSize)
 	err = core.Utils.DBCheckError(err)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return nil, 0, nil
 		}
-		return nil, err
+		return nil, 0, err
 	}
 	return
 }
@@ -136,7 +146,7 @@ func (a *ModelArticle) findByID() (found bool, err error) {
 	err = core.Database.Get(a, query, a.ID)
 	err = core.Utils.DBCheckError(err)
 	found = false
-	if err != nil{
+	if err != nil {
 		if err == sql.ErrNoRows {
 			return found, nil
 		}
