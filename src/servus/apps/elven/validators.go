@@ -128,6 +128,7 @@ func (a *entityArticle) validatorControllerGetAll(request *http.Request, isAdmin
 	return
 }
 
+// TODO: when provided only one value, it make other values to null, and pass it do db.
 // validatorBody - validate request body when POST or PUT.
 func (a *entityArticle) validatorBody(request *http.Request) (val *BodyArticle, em *errorMan.EValidation, err error) {
 	em = errorMan.NewValidation()

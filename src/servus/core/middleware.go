@@ -5,20 +5,26 @@ import (
 	"strings"
 )
 
-// MiddlewareAsJSON this middleware set application/json header
-func (m *BasicMiddleware) MiddlewareAsJSON(next http.Handler) http.Handler {
+// Middleware - hello I need basic middleware for my API.
+type Middleware struct {
+	config *ConfigFile
+	cors cors
+}
+
+// AsJSON - this middleware set application/json header.
+func (m *Middleware) AsJSON(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Add("Content-Type", "application/json; charset=utf-8")
 		next.ServeHTTP(writer, request)
 	})
 }
 
-// MiddlewareCORS CORS middleware depending on config file
-func (m *BasicMiddleware) MiddlewareCORS(next http.Handler) http.Handler {
+// CORS - CORS middleware depending on config file.
+func (m *Middleware) CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if Config.Security.CORS.Active {
-			var result = corsParser.SetHeaders(writer, request)
-			if result.IsPreflight {
+		if m.config.Security.CORS.Active {
+			var isPreflight = m.cors.SetHeaders(writer, request)
+			if isPreflight {
 				return
 			}
 		}
@@ -26,17 +32,17 @@ func (m *BasicMiddleware) MiddlewareCORS(next http.Handler) http.Handler {
 	})
 }
 
-// MiddlewareSecurity basic security depending on config file
-func (m *BasicMiddleware) MiddlewareSecurity(next http.Handler) http.Handler {
+// Security - basic security.
+func (m *Middleware) Security(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		var method = request.Method
 		method = strings.ToUpper(method)
 		//////// request body size check
-		if Config.Security.Limiter.Body.Active {
+		if m.config.Security.Limiter.Body.Active {
 			var isNotReadOnlyMethod = method == "POST" || method == "PUT" || method == "DELETE" || method == "PATCH"
 			if isNotReadOnlyMethod {
 				var requestURI = request.RequestURI
-				var exceptSlice = Config.Security.Limiter.Body.Except
+				var exceptSlice = m.config.Security.Limiter.Body.Except
 				var isBypassed = false
 				for _, exceptOne := range exceptSlice {
 					if exceptOne == requestURI {
@@ -44,7 +50,7 @@ func (m *BasicMiddleware) MiddlewareSecurity(next http.Handler) http.Handler {
 					}
 				}
 				if !isBypassed {
-					request.Body = http.MaxBytesReader(writer, request.Body, Config.Security.Limiter.Body.MaxSize)
+					request.Body = http.MaxBytesReader(writer, request.Body, m.config.Security.Limiter.Body.MaxSize)
 					//payload, err := ioutil.ReadAll(request.Body)
 					//if err != nil {
 					//	if strings.Contains(err.Error(), "request body too large"){

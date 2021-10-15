@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"os"
 	"runtime"
 	"strconv"
@@ -34,26 +33,26 @@ func (l *Logger) getAt() string {
 }
 
 // Debug - print debug message.
-func (l *Logger) Debug(format string, args ...interface{}) {
-	var lev = level{at: l.getAt(), number: LevelDebug, word: "debug", color: colorGray, message: fmt.Sprintf(format, args...)}
+func (l *Logger) Debug(message string) {
+	var lev = level{at: l.getAt(), number: LevelDebug, word: "debug", color: colorGray, message: message}
 	l.bus(&lev)
 }
 
 // Info - print info message.
-func (l *Logger) Info(format string, args ...interface{}) {
-	var lev = level{at: l.getAt(), number: LevelInfo, word: "info", color: colorGray, message: fmt.Sprintf(format, args...)}
+func (l *Logger) Info(message string) {
+	var lev = level{at: l.getAt(), number: LevelInfo, word: "info", color: colorGray, message: message}
 	l.bus(&lev)
 }
 
 // Warn - print warn message.
-func (l *Logger) Warn(format string, args ...interface{}) {
-	var lev = level{at: l.getAt(), number: LevelWarn, word: "warn", color: colorYellow, message: fmt.Sprintf(format, args...)}
+func (l *Logger) Warn(message string) {
+	var lev = level{at: l.getAt(), number: LevelWarn, word: "warn", color: colorYellow, message: message}
 	l.bus(&lev)
 }
 
 // Error - throw error.
-func (l *Logger) Error(format string, args ...interface{}) {
-	var lev = level{at: l.getAt(), number: LevelError, word: "error", color: colorRed, message: fmt.Sprintf(format, args...)}
+func (l *Logger) Error(message string) {
+	var lev = level{at: l.getAt(), number: LevelError, word: "error", color: colorRed, message: message}
 	l.bus(&lev)
 }
 

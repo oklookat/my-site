@@ -32,10 +32,18 @@ func (q *queryFileGetAll) getAll() (files []ModelFile, err error){
 	files = make([]ModelFile, 0)
 	var query string
 	query = fmt.Sprintf("SELECT * FROM files WHERE id >= $1 ORDER BY %v %v, id %v LIMIT $2 + 1", q.by, q.start, q.start)
-	err = core.Database.Select(&files, query, q.cursor, filesPageSize)
+	rows, err := core.Database.Queryx(query, q.cursor, filesPageSize)
 	err = core.Utils.DBCheckError(err)
 	if err == sql.ErrNoRows {
 		return nil, nil
+	}
+	for rows.Next() {
+		file := ModelFile{}
+		err = rows.StructScan(&file)
+		if err != nil {
+			break
+		}
+		files = append(files, file)
 	}
 	return
 }
@@ -43,14 +51,18 @@ func (q *queryFileGetAll) getAll() (files []ModelFile, err error){
 // create - create file in database.
 func (f *ModelFile) create() (err error){
 	var query = `INSERT INTO files (user_id, hash, path, name, original_name, extension, size) VALUES (:user_id, :hash, :path, :name, :original_name, :extension, :size) RETURNING *`
-	row, err := core.Database.NamedQuery(query, f)
+	stmt, err := core.Database.PrepareNamed(query)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = stmt.Close()
+	}()
+	err = stmt.Get(f, f)
 	err = core.Utils.DBCheckError(err)
 	if err != nil {
 		return err
 	}
-	row.Next()
-	err = row.StructScan(f)
-	err = core.Utils.DBCheckError(err)
 	return
 }
 

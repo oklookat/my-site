@@ -12,7 +12,7 @@ func New(config Config) CorsParse {
 }
 
 // SetHeaders - add CORS headers to response. Returns CorsResult with information about method (is preflight).
-func (c *CorsParse) SetHeaders(writer http.ResponseWriter, request *http.Request) CorsResult {
+func (c *CorsParse) SetHeaders(writer http.ResponseWriter, request *http.Request) (isPreflight bool) {
 	c.writer = writer
 	c.request = request
 	c.preflightParse()
@@ -23,7 +23,7 @@ func (c *CorsParse) SetHeaders(writer http.ResponseWriter, request *http.Request
 	c.allowCredentialsParse()
 	c.maxAgeParse()
 	// if it is preflight method, we need bypass any auth and return in middleware
-	return CorsResult{IsPreflight: c.isPreflight}
+	return c.isPreflight
 }
 
 func (c *CorsParse) preflightParse(){

@@ -2,10 +2,6 @@ package corsParse
 
 import "net/http"
 
-type CorsResult struct {
-	IsPreflight bool
-}
-
 type CorsParse struct {
 	config      Config
 	isPreflight bool

@@ -90,14 +90,8 @@ func (a *entityArticle) controllerGetOne(response http.ResponseWriter, request *
 
 // controllerCreateOne - POST url/.
 func (a *entityArticle) controllerCreateOne(response http.ResponseWriter, request *http.Request) {
-	var isAdmin = false
 	var pAuth = PipeAuth{}
 	pAuth.get(request)
-	isAdmin = pAuth.UserAndTokenExists && pAuth.IsAdmin
-	if !isAdmin {
-		a.Send(response, errorMan.ThrowForbidden(), 403)
-		return
-	}
 	val, em, _ := a.validatorBody(request)
 	if em.HasErrors() {
 		a.Send(response, em.GetJSON(), 400)

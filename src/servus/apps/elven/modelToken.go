@@ -34,13 +34,14 @@ func (t *ModelToken) create() (err error) {
 func (t *ModelToken) update() (err error) {
 	t.hookBeforeUpdate()
 	var query = "UPDATE tokens SET user_id=:user_id, token=:token, last_ip=:last_ip, last_agent=:last_agent, auth_ip=:auth_ip, auth_agent=:auth_agent WHERE id=:id RETURNING *"
-	row, err := core.Database.NamedQuery(query, t)
-	err = core.Utils.DBCheckError(err)
+	stmt, err := core.Database.PrepareNamed(query)
 	if err != nil {
 		return
 	}
-	row.Next()
-	err = row.StructScan(t)
+	defer func() {
+		_ = stmt.Close()
+	}()
+	err = stmt.Get(t, t)
 	err = core.Utils.DBCheckError(err)
 	return
 }
@@ -48,8 +49,7 @@ func (t *ModelToken) update() (err error) {
 // databaseFind - find ModelToken in database by id field.
 func (t *ModelToken) findByID() (found bool, err error) {
 	var query = "SELECT * FROM tokens WHERE id=$1 LIMIT 1"
-	row := core.Database.QueryRowx(query, t.ID)
-	err = row.StructScan(t)
+	err = core.Database.Get(t, query, t.ID)
 	err = core.Utils.DBCheckError(err)
 	found = false
 	if err != nil {
@@ -96,6 +96,22 @@ func (t *ModelToken) hookBeforeUpdate() {
 	}
 }
 
+// setAuthAgents - writes last ip and user agent then updating model in database.
+func (t *ModelToken) setAuthAgents(request *http.Request) (err error) {
+	if request == nil {
+		return errors.New("setLastAgents: request nil pointer.")
+	}
+	if t == nil {
+		return errors.New("setLastAgents: token nil pointer.")
+	}
+	t.AuthAgent = new(string)
+	*t.AuthAgent = request.UserAgent()
+	t.AuthIP = new(string)
+	*t.AuthIP = oUtils.getIP(request)
+	err = t.update()
+	return
+}
+
 // setLastAgents - writes ip and user agent then updating model in database.
 func (t *ModelToken) setLastAgents(request *http.Request) (err error) {
 	if request == nil {
@@ -110,22 +126,6 @@ func (t *ModelToken) setLastAgents(request *http.Request) (err error) {
 	*t.LastAgent = lastAgent
 	t.LastIP = new(string)
 	*t.LastIP = lastIP
-	err = t.update()
-	return
-}
-
-// setAuthAgents - writes last ip and user agent then updating model in database.
-func (t *ModelToken) setAuthAgents(request *http.Request) (err error) {
-	if request == nil {
-		return errors.New("setLastAgents: request nil pointer.")
-	}
-	if t == nil {
-		return errors.New("setLastAgents: token nil pointer.")
-	}
-	t.AuthAgent = new(string)
-	*t.AuthAgent = request.UserAgent()
-	t.AuthIP = new(string)
-	*t.AuthIP = oUtils.getIP(request)
 	err = t.update()
 	return
 }

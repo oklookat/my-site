@@ -42,7 +42,7 @@ func (a *PipeAuth) create(request *http.Request, accessType string) {
 	a.IsAdmin = false
 	a.UserAndTokenExists = a.User != nil && a.Token != nil && err == nil
 	if a.UserAndTokenExists {
-		_ = a.Token.setAuthAgents(request)
+		_ = a.Token.setLastAgents(request)
 		switch a.User.Role {
 		default:
 			break
@@ -63,7 +63,7 @@ func (a *PipeAuth) create(request *http.Request, accessType string) {
 		a.Access = false
 		break
 	case accessTypeAuthorized:
-		a.Access = a.UserAndTokenExists
+		a.Access = a.UserAndTokenExists && a.User.Role == userRoleUser
 		break
 	}
 	return

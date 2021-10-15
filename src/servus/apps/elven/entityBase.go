@@ -21,7 +21,7 @@ func (b *entityBase) middlewareAuthorizedOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var auth = PipeAuth{}
 		auth.create(request, accessTypeAuthorized)
-		if !auth.Access || !auth.UserAndTokenExists {
+		if !auth.Access {
 			b.Send(response, errorMan.ThrowForbidden(), 403)
 			return
 		}
@@ -35,7 +35,7 @@ func (b *entityBase) middlewareReadOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var auth = PipeAuth{}
 		auth.create(request, accessTypeReadOnly)
-		if !auth.Access || !auth.UserAndTokenExists {
+		if !auth.Access {
 			b.Send(response, errorMan.ThrowForbidden(), 403)
 			return
 		}
@@ -49,7 +49,7 @@ func (b *entityBase) middlewareAdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var auth = PipeAuth{}
 		auth.create(request, accessTypeAdminOnly)
-		if !auth.Access || !auth.UserAndTokenExists {
+		if !auth.Access {
 			b.Send(response, errorMan.ThrowForbidden(), 403)
 			return
 		}

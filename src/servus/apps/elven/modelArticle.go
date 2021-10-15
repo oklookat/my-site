@@ -64,7 +64,6 @@ func (a *ArticleContent) Scan(value interface{}) error {
 
 // getAll - get articles by queryArticleGetAll.
 func (q *queryArticleGetAll) getAll() (articles []ModelArticle, pagesCount int, err error) {
-	articles = make([]ModelArticle, 0)
 	var query string
 	var queryCount string
 	// get pages count
@@ -84,15 +83,24 @@ func (q *queryArticleGetAll) getAll() (articles []ModelArticle, pagesCount int, 
 	}
 	// get pages count.
 	pagesCount = 1
-	row := core.Database.QueryRowx(queryCount)
-	err = row.Scan(&pagesCount)
+	err = core.Database.Get(&pagesCount, queryCount)
+	err = core.Utils.DBCheckError(err)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, 0, nil
 	}
 	pagesCount = int(math.Round(float64(pagesCount / articlesPageSize)))
 	// get articles.
-	err = core.Database.Select(&articles, query, articlesPageSize, (q.page - 1) * articlesPageSize)
+	rows, err := core.Database.Queryx(query, articlesPageSize, (q.page - 1) * articlesPageSize)
 	err = core.Utils.DBCheckError(err)
+	articles = make([]ModelArticle, 0)
+	for rows.Next() {
+		article := ModelArticle{}
+		err = rows.StructScan(&article)
+		if err != nil {
+			return
+		}
+		articles = append(articles, article)
+	}
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, 0, nil
@@ -104,18 +112,12 @@ func (q *queryArticleGetAll) getAll() (articles []ModelArticle, pagesCount int, 
 
 // create - create article in database.
 func (a *ModelArticle) create() (err error) {
-	var query = `INSERT INTO articles (user_id, is_published, title, content, slug) VALUES (:user_id, :is_published, :title, :content, :slug) RETURNING *`
 	a.hookBeforeChange()
-	row, err := core.Database.NamedQuery(query, a)
+	var query = `INSERT INTO articles (user_id, is_published, title, content, slug) VALUES ($1, $2, $3, $4, $5) RETURNING *`
+	err = core.Database.Get(a, query, a.UserID, a.IsPublished, a.Title, a.Content, a.Slug)
 	err = core.Utils.DBCheckError(err)
 	if err != nil {
 		return err
-	}
-	row.Next()
-	err = row.StructScan(a)
-	err = core.Utils.DBCheckError(err)
-	if err != nil {
-		return
 	}
 	_ = a.hookAfterChange()
 	return
@@ -124,14 +126,8 @@ func (a *ModelArticle) create() (err error) {
 // update - update article in database.
 func (a *ModelArticle) update() (err error) {
 	a.hookBeforeChange()
-	var query = "UPDATE articles SET user_id=:user_id, is_published=:is_published, title=:title, content=:content, slug=:slug WHERE id=:id RETURNING *"
-	row, err := core.Database.NamedQuery(query, a)
-	err = core.Utils.DBCheckError(err)
-	if err != nil {
-		return
-	}
-	row.Next()
-	err = row.StructScan(a)
+	var query = "UPDATE articles SET user_id=$1, is_published=$2, title=$3, content=$4, slug=$5 WHERE id=$6 RETURNING *"
+	err = core.Database.Get(a, query, a.UserID, a.IsPublished, a.Title, a.Content, a.Slug, a.ID)
 	err = core.Utils.DBCheckError(err)
 	if err != nil {
 		return
@@ -179,11 +175,8 @@ func (a *ModelArticle) hookBeforeChange() {
 func (a *ModelArticle) hookAfterChange() (err error) {
 	// create normal slug
 	a.Slug = slug.Make(a.Title) + "-" + a.ID
-	var query = "UPDATE articles SET slug=:slug WHERE id=:id RETURNING *"
-	row, err := core.Database.NamedQuery(query, a)
-	if err != nil {
-		return err
-	}
+	var query = "UPDATE articles SET slug=$1 WHERE id=$2 RETURNING *"
+	row := core.Database.QueryRowx(query, a.Slug, a.ID)
 	err = row.StructScan(a)
 	if err != nil {
 		return err
