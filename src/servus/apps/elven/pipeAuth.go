@@ -2,8 +2,6 @@ package elven
 
 import (
 	"net/http"
-	"servus/core"
-	"servus/core/modules/cryptor"
 )
 
 const (
@@ -74,7 +72,7 @@ func (a *PipeAuth) setUserAndToken(encryptedToken string) (err error) {
 	// get token id from encrypted token.
 	a.User = nil
 	a.Token = nil
-	tokenID, err := cryptor.AESDecrypt(encryptedToken, core.Config.Secret)
+	tokenID, err := instance.Encryption.AES.Decrypt(encryptedToken)
 	if err != nil {
 		return err
 	}

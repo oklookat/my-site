@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
-	"servus/core"
-	"servus/core/modules/errorMan"
+	"servus/core/external/errorMan"
 )
 
 const articlesPageSize = 2
@@ -38,7 +37,7 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 	// get articles based on query params.
 	articles, pages, err := val.getAll()
 	if err != nil {
-		core.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
+		instance.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
 		a.Send(response, errorMan.ThrowServer(), 500)
 		return
 	}
@@ -51,7 +50,7 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
-		core.Logger.Error(fmt.Sprintf("articles response json marshal error: %v", err.Error()))
+		instance.Logger.Error(fmt.Sprintf("articles response json marshal error: %v", err.Error()))
 		a.Send(response, errorMan.ThrowServer(), 500)
 		return
 	}
@@ -173,7 +172,7 @@ func (a *entityArticle) controllerDeleteOne(response http.ResponseWriter, reques
 
 // err500 - write error to logger and send 500 error to user.
 func (a *entityArticle) err500(response http.ResponseWriter, request *http.Request, err error) {
-	a.Logger.Warn("entityArticle code 500 at: %v. Error: %v", request.URL.Path, err.Error())
+	instance.Logger.Warn(fmt.Sprintf("entityArticle code 500 at: %v. Error: %v", request.URL.Path, err.Error()))
 	a.Send(response, errorMan.ThrowServer(), 500)
 	return
 }

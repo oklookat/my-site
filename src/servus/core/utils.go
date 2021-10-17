@@ -2,7 +2,6 @@ package core
 
 import (
 	"github.com/pkg/errors"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,8 +25,8 @@ func (u *Utils) RemoveSpaces(str string) string {
 	}, str)
 }
 
-// GetExecuteDir - get server execution directory.
-func (u *Utils) GetExecuteDir() string {
+// GetExecutionDir - get server execution directory.
+func (u *Utils) GetExecutionDir() string {
 	path, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -42,7 +41,7 @@ func (u *Utils) FormatPath(path string) string {
 	return path
 }
 
-// ConvertTimeWord - convert time like "2h"; "2min"; "2sec" to duration.
+// ConvertTimeWord - convert time like "2h"; "2min"; "2sec" to duration (uses time.ParseDuration).
 func (u *Utils) ConvertTimeWord(timeShortcut string) (time.Duration, error) {
 	timeShortcut = strings.ToLower(timeShortcut)
 	timeDuration, err := time.ParseDuration(timeShortcut)
@@ -52,20 +51,4 @@ func (u *Utils) ConvertTimeWord(timeShortcut string) (time.Duration, error) {
 		os.Exit(1)
 	}
 	return timeDuration, nil
-}
-
-func (u *Utils) convertSameSite(sameSite string) (http.SameSite, error){
-	sameSite = strings.ToUpper(sameSite)
-	switch sameSite {
-	case "DEFAULT":
-		return http.SameSiteDefaultMode, nil
-	case "LAX":
-		return http.SameSiteLaxMode, nil
-	case "STRICT":
-		return http.SameSiteStrictMode, nil
-	case "NONE":
-		return http.SameSiteNoneMode, nil
-	default:
-		return http.SameSiteDefaultMode, errors.New("Wrong sameSite string.")
-	}
 }

@@ -3,9 +3,7 @@ package elven
 import (
 	"fmt"
 	"net/http"
-	"servus/core"
-	"servus/core/modules/cryptor"
-	"servus/core/modules/errorMan"
+	"servus/core/external/errorMan"
 )
 
 
@@ -31,7 +29,7 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 		a.err401(response)
 		return
 	}
-	var isPassword = cryptor.BHashCheck(val.Password, user.Password)
+	var isPassword, _ = instance.Encryption.Argon.Check(val.Password, user.Password)
 	if !isPassword {
 		a.err401(response)
 		return
@@ -50,14 +48,14 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 		}
 	}()
 	// then we get newly created token model id and encrypt it. That's we send to user as token.
-	encryptedToken, err := cryptor.AESEncrypt(tokenModel.ID, core.Config.Secret)
+	encryptedToken, err := instance.Encryption.AES.Encrypt(tokenModel.ID)
 	if err != nil {
 		a.err500(response, request, err)
 		return
 	}
 	// get hash from generated token.
 	// user gets encrypted token, but database gets hash. In general, we do the same as with the password.
-	encryptedTokenHash, err := cryptor.BHash(encryptedToken)
+	encryptedTokenHash, err := instance.Encryption.Argon.Hash(encryptedToken)
 	if err != nil {
 		a.err500(response, request, err)
 		return
@@ -76,7 +74,7 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 		a.Send(response, direct, 200)
 		return
 	case "cookie":
-		core.Utils.SetCookie(&response, "token", encryptedToken)
+		a.SetCookie(&response, "token", encryptedToken)
 		a.Send(response, "", 200)
 		return
 	default:
@@ -98,7 +96,7 @@ func (a *entityAuth) controllerLogout(response http.ResponseWriter, request *htt
 
 // err500 - like unknown error.
 func (a *entityAuth) err500(response http.ResponseWriter, request *http.Request, err error) {
-	a.Logger.Warn("entityAuth code 500 at: %v. Error: %v", request.URL.Path, err.Error())
+	instance.Logger.Warn(fmt.Sprintf("entityAuth code 500 at: %v. Error: %v", request.URL.Path, err.Error()))
 	a.Send(response, errorMan.ThrowServer(), 500)
 	return
 }

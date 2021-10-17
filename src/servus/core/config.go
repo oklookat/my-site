@@ -8,7 +8,6 @@ import (
 // ConfigFile - configuration file.
 type ConfigFile struct {
 	Debug    bool   `json:"Debug"`
-	Secret   string `json:"Secret"`
 	Timezone string `json:"Timezone"`
 	Host     string `json:"Host"`
 	Port     string `json:"Port"`
@@ -31,13 +30,6 @@ type ConfigFile struct {
 		} `json:"writeToFile"`
 	} `json:"Logger"`
 	Security struct {
-		Limiter struct {
-			Body struct {
-				Active  bool     `json:"active"`
-				MaxSize int64    `json:"maxSize"`
-				Except  []string `json:"except"`
-			} `json:"body"`
-		} `json:"limiter"`
 		HTTPS struct {
 			Active   bool   `json:"active"`
 			CertPath string `json:"certPath"`
@@ -60,6 +52,28 @@ type ConfigFile struct {
 			ExposeHeaders    []string `json:"exposeHeaders"`
 			MaxAge           int64    `json:"maxAge"`
 		} `json:"cors"`
+		Limiter struct {
+			Body struct {
+				Active  bool     `json:"active"`
+				MaxSize int64    `json:"maxSize"`
+				Except  []string `json:"except"`
+			} `json:"body"`
+		} `json:"limiter"`
+		Encryption struct {
+			AES struct {
+				Secret string `json:"secret"`
+			} `json:"aes"`
+			Argon  struct {
+				Memory      uint32 `json:"memory"`
+				Iterations  uint32 `json:"iterations"`
+				Parallelism uint8  `json:"parallelism"`
+				SaltLength  uint32 `json:"saltLength"`
+				KeyLength   uint32 `json:"keyLength"`
+			} `json:"argon"`
+			Bcrypt struct {
+				Cost int `json:"cost"`
+			} `json:"bcrypt"`
+		} `json:"encryption"`
 	}
 	Uploads struct {
 		To   string `json:"to"`

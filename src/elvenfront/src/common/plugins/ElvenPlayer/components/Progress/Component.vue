@@ -1,6 +1,6 @@
 <template>
-<div class="progress-container">
-  <div class="ps-progress" :style="{width: `${percents}%`}">
+<div class="progress__container">
+  <div class="progress__line" :style="{width: `${percents}%`}">
   </div>
 </div>
 </template>
@@ -12,12 +12,12 @@ const props = defineProps({
 </script>
 
 <style scoped>
-.progress-container{
+.progress__container{
   width: 100%;
   height: 100%;
 }
 
-.ps-progress{
+.progress__line{
   border-radius: inherit;
   height: 100%;
   width: 0;

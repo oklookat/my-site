@@ -3,17 +3,16 @@ package core
 import (
 	"fmt"
 	"os"
-	"servus/core/modules/corsParse"
-	"servus/core/modules/logger"
+	"servus/core/internal/corsParse"
+	"servus/core/internal/logger"
 )
 
-// TODO: convert other modules to interfaces, or include it directly here.
-// TODO: add argon2 hashing.
 type Core struct {
 	Utils      *Utils
 	Config     *ConfigFile
 	Logger     Logger
-	Middleware *Middleware
+	HTTP       *HTTP
+	Encryption *Encryption
 	DB         *Database
 }
 
@@ -22,7 +21,8 @@ func (c *Core) Boot() {
 	c.bootUtils()
 	c.bootConfig()
 	c.bootLogger()
-	c.bootMiddleware()
+	c.bootHTTP()
+	c.bootEncryption()
 	c.bootDatabase()
 }
 
@@ -33,12 +33,13 @@ func (c *Core) bootUtils() {
 
 // bootConfig - boot config file.
 func (c *Core) bootConfig() {
-	var config = &ConfigFile{}
-	var path = fmt.Sprintf("%v/settings/config.json", c.Utils.GetExecuteDir())
+	var config = ConfigFile{}
+	var path = fmt.Sprintf("%v/settings/config.json", c.Utils.GetExecutionDir())
 	err := config.boot(path)
 	if err != nil {
 		panic(err)
 	}
+	c.Config = &config
 }
 
 // bootLogger - boot Logger. Use this after booting the config.
@@ -53,7 +54,7 @@ func (c *Core) bootLogger() {
 	var wtfActive = c.Config.Logger.WriteToFile.Active
 	loggerConfig.WriteToFile.Activated = wtfActive
 	if wtfActive {
-		var wtfDir = fmt.Sprintf("%v/logs/", c.Utils.GetExecuteDir())
+		var wtfDir = fmt.Sprintf("%v/logs/", c.Utils.GetExecutionDir())
 		var wtfMaxLogFiles = c.Config.Logger.WriteToFile.MaxLogFiles
 		var wtfMaxLogSize = c.Config.Logger.WriteToFile.MaxLogSize
 		loggerConfig.WriteToFile.Dir = wtfDir
@@ -64,8 +65,8 @@ func (c *Core) bootLogger() {
 	c.Logger = &theLogger
 }
 
-// bootMiddleware - boot middleware. Use this after booting the config.
-func (c *Core) bootMiddleware() {
+// bootHTTP - boot http utilities. Use this after booting the config.
+func (c *Core) bootHTTP() {
 	var corsConfig = corsParse.Config{
 		AllowCredentials: c.Config.Security.CORS.AllowCredentials,
 		AllowOrigin:      c.Config.Security.CORS.AllowOrigin,
@@ -75,7 +76,15 @@ func (c *Core) bootMiddleware() {
 		MaxAge:           c.Config.Security.CORS.MaxAge,
 	}
 	var corsInstance = corsParse.New(corsConfig)
-	*c.Middleware = Middleware{config: c.Config, cors: &corsInstance}
+	middleware := Middleware{config: c.Config, cors: &corsInstance}
+	c.HTTP = &HTTP{config: c.Config, Middleware: &middleware}
+}
+
+// bootEncryption - boot encryption. Use this after booting the config.
+func (c *Core) bootEncryption() {
+	enc := &Encryption{config: c.Config}
+	enc.boot()
+	c.Encryption = enc
 }
 
 // bootDatabase - boot database. Use this after booting the config.
@@ -86,4 +95,5 @@ func (c *Core) bootDatabase() {
 		c.Logger.Panic(err)
 		os.Exit(1)
 	}
+	c.DB = &database
 }

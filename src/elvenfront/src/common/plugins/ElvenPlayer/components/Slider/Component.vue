@@ -1,19 +1,14 @@
 <template>
-  <div class="slider-container" ref="sliderContainer">
-    <div class="sliders" v-if="ready">
-      <div class="sl-slider"
-           :style="{width: `${elementPercents}`}">
-      </div>
-      <div
-          class="sl-slider-bubble"
-          :style="{left: `calc(${elementPercents} - 3px)`}">
-      </div>
+  <div class="slider__container" ref="container">
+    <div class="slider__sliders" v-if="ready">
+      <div class="slider__sl" :style="{ width: `${elementPercents}` }"></div>
+      <div class="slider__bubble" :style="{ left: `calc(${elementPercents} - 3px)` }"></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {onMounted, onUnmounted, reactive, ref, toRefs, watch, toRef} from "vue"
+import { onMounted, onUnmounted, reactive, ref, toRefs, watch, toRef, Ref } from "vue"
 import Composition from "@/common/plugins/ElvenPlayer/components/Slider/Composition"
 
 interface IProps {
@@ -30,21 +25,26 @@ const emit = defineEmits<{
   (e: 'slide', percents: number): void
 }>()
 
-const {emitAfterUp, percents} = toRefs(props)
+const { emitAfterUp, percents } = toRefs(props)
 // if true - we can render slider data in component
 const ready = ref(false)
 // slider container element used by composition class. Need for set events.
-const sliderContainer = ref(null)
-defineExpose({sliderContainer})
+const container = ref(null)
 const slide = reactive(new Composition())
 // percents by slider dragging be here
 const slidePercents = ref(0)
+// convert slider values to ref for using in watch
+const isSlideMouseDown = toRef(slide.slider, 'isMouseDown')
+const percentsChanged = toRef(slide.slider, 'percents')
 
 onMounted(() => {
   if (percents.value > 0) {
     calcStyles(percents.value)
   }
-  slide.init(sliderContainer.value)
+  if (!container.value) {
+    return
+  }
+  slide.init(container.value)
   ready.value = true
 })
 
@@ -52,9 +52,6 @@ onUnmounted(() => {
   slide.destroy()
 })
 
-// convert slider values to ref for using in watch
-const isSlideMouseDown = toRef(slide.slider, 'isMouseDown')
-const percentsChanged = toRef(slide.slider, 'percents')
 // watch changes (like dragging) for emit percents and set slider style
 watch([isSlideMouseDown, percentsChanged], (newValues) => {
   slidePercents.value = newValues[1]
@@ -91,12 +88,12 @@ function calcStyles(percents: number) {
 </script>
 
 <style scoped>
-.slider-container {
+.slider__container {
   width: 100%;
   height: 100%;
 }
 
-.sliders {
+.slider__sliders {
   width: calc(100% - 3px);
   height: 100%;
   position: relative;
@@ -104,27 +101,29 @@ function calcStyles(percents: number) {
   align-items: center;
 }
 
-.slider-container,
-.sliders,
+.slider__container,
+.slider__sliders,
 .sl-slider,
-.sl-slider-bubble {
+.slider__bubble {
   cursor: pointer;
 }
 
-.sl-slider {
+.slider__sl,
+.slider__bubble {
   position: absolute;
+  background-color: #9d6a89;
+}
+
+.slider__sl {
   border-top-left-radius: 2px;
   border-bottom-left-radius: 2px;
   width: 0;
   height: 100%;
-  background-color: #9D6A89;
   top: auto;
   bottom: 0;
 }
 
-.sl-slider-bubble {
-  position: absolute;
-  background-color: #9D6A89;
+.slider__bubble {
   width: 20px;
   height: 20px;
   border-radius: 50%;

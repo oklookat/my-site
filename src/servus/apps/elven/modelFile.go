@@ -3,7 +3,6 @@ package elven
 import (
 	"database/sql"
 	"fmt"
-	"servus/core"
 	"time"
 )
 
@@ -32,8 +31,8 @@ func (q *queryFileGetAll) getAll() (files []ModelFile, err error){
 	files = make([]ModelFile, 0)
 	var query string
 	query = fmt.Sprintf("SELECT * FROM files WHERE id >= $1 ORDER BY %v %v, id %v LIMIT $2 + 1", q.by, q.start, q.start)
-	rows, err := core.Database.Queryx(query, q.cursor, filesPageSize)
-	err = core.Utils.DBCheckError(err)
+	rows, err := instance.DB.Conn.Queryx(query, q.cursor, filesPageSize)
+	err = instance.DB.CheckError(err)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -51,7 +50,7 @@ func (q *queryFileGetAll) getAll() (files []ModelFile, err error){
 // create - create file in database.
 func (f *ModelFile) create() (err error){
 	var query = `INSERT INTO files (user_id, hash, path, name, original_name, extension, size) VALUES (:user_id, :hash, :path, :name, :original_name, :extension, :size) RETURNING *`
-	stmt, err := core.Database.PrepareNamed(query)
+	stmt, err := instance.DB.Conn.PrepareNamed(query)
 	if err != nil {
 		return err
 	}
@@ -59,7 +58,7 @@ func (f *ModelFile) create() (err error){
 		_ = stmt.Close()
 	}()
 	err = stmt.Get(f, f)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.CheckError(err)
 	if err != nil {
 		return err
 	}
@@ -69,8 +68,8 @@ func (f *ModelFile) create() (err error){
 // findByID - find one file in database by id field.
 func (f *ModelFile) findByID() (found bool, err error){
 	var query = "SELECT * FROM files WHERE id=$1 LIMIT 1"
-	err = core.Database.Get(f, query, f.ID)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.Conn.Get(f, query, f.ID)
+	err = instance.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -85,8 +84,8 @@ func (f *ModelFile) findByID() (found bool, err error){
 // findByHash - find file in database by hash field.
 func (f *ModelFile) findByHash() (found bool, err error){
 	var query = "SELECT * FROM files WHERE hash=$1 LIMIT 1"
-	err = core.Database.Get(f, query, f.Hash)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.Conn.Get(f, query, f.Hash)
+	err = instance.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -101,7 +100,7 @@ func (f *ModelFile) findByHash() (found bool, err error){
 // deleteByID - delete file in database by id field.
 func (f *ModelFile) deleteByID() (err error) {
 	var query = "DELETE FROM files WHERE id=$1"
-	_, err = core.Database.Exec(query, f.ID)
-	err = core.Utils.DBCheckError(err)
+	_, err = instance.DB.Conn.Exec(query, f.ID)
+	err = instance.DB.CheckError(err)
 	return
 }

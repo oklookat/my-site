@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"servus/core"
-	"servus/core/modules/errorMan"
-	"servus/core/modules/filer"
+	"servus/core/external/errorMan"
+	"servus/core/external/filer"
 	"strings"
 )
 
@@ -33,7 +32,7 @@ func (f *entityFile) controllerGetAll(response http.ResponseWriter, request *htt
 	}
 	files, err := val.getAll()
 	if err != nil {
-		f.Logger.Error(fmt.Sprintf("files get error: %v", err.Error()))
+		instance.Logger.Error(fmt.Sprintf("files get error: %v", err.Error()))
 		f.Send(response, errorMan.ThrowServer(), 500)
 		return
 	}
@@ -49,7 +48,7 @@ func (f *entityFile) controllerGetAll(response http.ResponseWriter, request *htt
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
-		f.Logger.Error(fmt.Sprintf("files response json marshal error: %v", err.Error()))
+		instance.Logger.Error(fmt.Sprintf("files response json marshal error: %v", err.Error()))
 		f.Send(response, errorMan.ThrowServer(), 500)
 		return
 	}
@@ -61,7 +60,7 @@ func (f *entityFile) controllerCreateOne(response http.ResponseWriter, request *
 	auth := PipeAuth{}
 	auth.get(request)
 	em := errorMan.NewValidation()
-	var tempDir = core.Config.Uploads.Temp
+	var tempDir = instance.Config.Uploads.Temp
 	// get file from form.
 	processed, err := filer.ProcessFromForm(request, "file", tempDir)
 	if err != nil {
@@ -94,7 +93,7 @@ func (f *entityFile) controllerCreateOne(response http.ResponseWriter, request *
 	var extension = filepath.Ext(filename)
 	var extensionWithoutDot = strings.Replace(extension, ".", "", -1)
 	var dirsHash, _ = filer.GenerateDirsByHash(hash)
-	var uploadTo = core.Config.Uploads.To
+	var uploadTo = instance.Config.Uploads.To
 	// saveAt - full path where temp file will be moved.
 	var saveAt = fmt.Sprintf("%v/%v/", uploadTo, dirsHash)
 	// newFileName - ULIDSTRING.jpg
@@ -175,7 +174,7 @@ func (f *entityFile) controllerDeleteOne(response http.ResponseWriter, request *
 		return
 	}
 	// delete dirs if empty
-	var fullPath = core.Config.Uploads.To + "/" + file.Path
+	var fullPath = instance.Config.Uploads.To + "/" + file.Path
 	err = os.Remove(fullPath)
 	if err == nil {
 		fullPath, _ = filepath.Split(fullPath)
@@ -188,7 +187,7 @@ func (f *entityFile) controllerDeleteOne(response http.ResponseWriter, request *
 
 // err403 - send an error if the user is not allowed to do something.
 func (f *entityFile) err500(response http.ResponseWriter, request *http.Request, err error) {
-	f.Logger.Warn("entityFile code 500 at: %v. Error: %v", request.URL.Path, err.Error())
+	instance.Logger.Warn(fmt.Sprintf("entityFile code 500 at: %v. Error: %v", request.URL.Path, err.Error()))
 	f.Send(response, errorMan.ThrowServer(), 500)
 	return
 }

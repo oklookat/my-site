@@ -1,7 +1,5 @@
 package elven
 
-import "servus/core"
-
 // utils - useful utilities.
 var oUtils *objectUtils
 
@@ -29,7 +27,7 @@ var eToken *entityToken
 func bootEntities() {
 	oUtils = &objectUtils{}
 	oCmd = &objectCmd{}
-	eBase = &entityBase{core.NewBaseController()}
+	eBase = &entityBase{instance.HTTP}
 	eAuth = &entityAuth{entityBase: eBase}
 	eArticle = &entityArticle{entityBase: eBase}
 	eFile = &entityFile{entityBase: eBase}

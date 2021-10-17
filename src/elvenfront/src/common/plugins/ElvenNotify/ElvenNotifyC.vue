@@ -1,148 +1,164 @@
 <template>
   <div class="notify-container">
     <transition-group class="notifications" name="notification-list" tag="p">
-      <span class="notification" v-on:click="deleteNotificationByID(notification.id)"
-            :key="notification" v-for="notification in notifications"
-            :class="classSetter(notification.self.type)">
+      <span
+        class="notification"
+        v-on:click="deleteNotificationByID(notification.id)"
+        :key="notification.id"
+        v-for="notification in notifications"
+        :class="classSetter(notification.self.type)"
+      >
         {{ notification.execute() }}
-        <div class="not-message">
-          {{ notification.self.message }}
-        </div>
+        <div class="not-message">{{ notification.self.message }}</div>
         <div class="not-timer-wrap">
-          <div class="not-timer" v-if="notification.percents"
-               v-bind:style="{
-               transform: `scaleX(${notification.percents / 100})`}">
-          </div>
+          <div
+            class="not-timer"
+            v-if="notification.percents"
+            v-bind:style="{
+              transform: `scaleX(${notification.percents / 100})`
+            }"
+          ></div>
         </div>
       </span>
     </transition-group>
   </div>
 </template>
 
-<script lang="ts">
-import {defineComponent} from "vue";
+<script setup lang="ts">
+import { ref, Ref } from '@vue/reactivity'
+interface INotificationFull {
+  id: number,
+  timeoutID: NodeJS.Timeout | null,
+  intervalID: ReturnType<typeof setInterval> | null, // need for calc progress
+  timeWhenGone: number, // ms when timeout ends
+  percents: number,
+  self: INotification, // notification object
+  executed: boolean,
+  execute: () => void
+}
+interface INotification {
+  type: string
+  message: string
+}
 
-export default defineComponent({
-  name: "ElvenNotifyC",
-  data() {
-    return {
-      SERVICE: 'ELVEN_NOTIFY_C',
-      notifications: [],
-      notificationsCounter: 0,
-      deletedIn: 5000,
-      maxNotificationsD: 8, // desktop
-      maxNotificationsM: 2, // mobile
-    }
-  },
-  methods: {
-    classSetter(errorType) {
-      switch (errorType) {
-        case 'error':
-          return 'not-error'
-        case 'warn':
-          return 'not-warn'
-        case 'info':
-          return 'not-info'
-        case 'success':
-          return 'not-success'
-        default:
-          return 'not-unknown'
-      }
-    },
-    addNotification(type, message) {
-      const notification = {
-        type: type,
-        message: message
-      }
-      if (this.notifications.length < 1) {
-        this.notificationsCounter = 0
-      }
-      let isMaxNotifications = false
-      if(window.screen.width > 765){
-        isMaxNotifications = this.notifications.length > this.maxNotificationsD - 1
-      } else {
-        isMaxNotifications = this.notifications.length > this.maxNotificationsM - 1
-      }
-      if (isMaxNotifications) {
-        this.deleteNotificationByID(this.notifications[0].id)
-      }
-      this.setNotification(notification)
-    },
-    setNotification(notification) {
-      const _this = this
-      const fullNotification = {
-        id: this.notificationsCounter,
-        timeoutID: null,
-        intervalID: null, // need for calc progress
-        timeWhenGone: null, // ms when timeout ends
-        percents: null,
-        self: notification, // notification object
-        executed: false,
-        execute: function () {
-          if (this.executed) {
-            // ---- already initialized
-            return
-          }
-          // ---- init
-          this.timeoutID = setTimeout(() => {
-            // delete himself from array
-            _this.deleteNotification(this)
-          }, _this.deletedIn)
-          // calc time to notification deleted
-          this.timeWhenGone = new Date().getTime() + _this.deletedIn // set time once item deleted
-          this.intervalID = setInterval(() => {
-            _this.calcPercents(this, _this.deletedIn)
-          }, 100) // time = performance and timer transition time = this time + 20ms
-          _this.notificationsCounter++
-          this.executed = true
-        }
-      }
-      this.notifications.push(fullNotification)
-    },
-    deleteNotification(objContext) {
-      const index = this.notifications.findIndex(obj => obj.id === objContext.id)
-      if (index > -1) {
-        this.clearTimeouts(index)
-        this.notifications.splice(index, 1)
-      }
-    },
-    deleteNotificationByID(id) {
-      const index = this.notifications.findIndex(obj => obj.id === id)
-      if (index > -1) {
-        this.clearTimeouts(index)
-        this.notifications.splice(index, 1)
-      }
-    },
-    clearTimeouts(index) {
-      clearTimeout(this.notifications[index].timeoutID)
-      clearInterval(this.notifications[index].intervalID)
-    },
-    calcPercents(objContext, deletedIn) {
-      const now = new Date().getTime()
-      if (now >= objContext.timeWhenGone) {
-        // if date when item should be deleted
-        clearInterval(objContext.intervalID)
-      }
-      // get the difference between current date and time when item deleted
-      const diff = Math.abs(now - objContext.timeWhenGone)
-      // get how much is left as a percentage. deletedIn = 100%
-      objContext.percents = (diff / deletedIn) * 100
-    },
+const SERVICE = 'ELVEN_NOTIFY_C'
+const notifications: Ref<Array<INotificationFull>> = ref([])
+let notificationsCounter = 0
+const deletedIn = 5000
+// desktop
+const maxNotificationsD = 8
+// mobile
+const maxNotificationsM = 2
 
+function classSetter(errorType) {
+  switch (errorType) {
+    case 'error':
+      return 'not-error'
+    case 'warn':
+      return 'not-warn'
+    case 'info':
+      return 'not-info'
+    case 'success':
+      return 'not-success'
+    default:
+      return 'not-unknown'
   }
-})
+}
+
+function addNotification(type, message) {
+  const notification = {
+    type: type,
+    message: message
+  }
+  if (notifications.value.length < 1) {
+    notificationsCounter = 0
+  }
+  let isMaxNotifications = false
+  if (window.screen.width > 765) {
+    isMaxNotifications = notifications.value.length > maxNotificationsD - 1
+  } else {
+    isMaxNotifications = notifications.value.length > maxNotificationsM - 1
+  }
+  if (isMaxNotifications) {
+    deleteNotificationByID(notifications[0].id)
+  }
+  setNotification(notification)
+}
+
+function setNotification(notification: INotification) {
+  const fullNotification: INotificationFull = {
+    id: notificationsCounter,
+    timeoutID: null,
+    intervalID: null, // need for calc progress
+    timeWhenGone: 0, // ms when timeout ends
+    percents: 0,
+    self: notification, // notification object
+    executed: false,
+    execute: function () {
+      if (this.executed) {
+        // already initialized
+        return
+      }
+      // init
+      this.timeoutID = setTimeout(() => {
+        // delete himself from array after time
+        deleteNotification(this)
+      }, deletedIn)
+      // calc time when notification be deleted
+      this.timeWhenGone = new Date().getTime() + deletedIn // set time once item deleted
+      this.intervalID = setInterval(() => {
+        calcPercents(this, deletedIn)
+      }, 100) // interval time = performance. timer transition time = this time + 20ms
+      this.executed = true
+      notificationsCounter++
+    }
+  }
+  notifications.value.push(fullNotification)
+}
+
+function deleteNotification(objContext) {
+  const index = notifications.value.findIndex(obj => obj.id === objContext.id)
+  if (index > -1) {
+    clearTimeouts(index)
+    notifications.value.splice(index, 1)
+  }
+}
+
+function deleteNotificationByID(id) {
+  const index = notifications.value.findIndex(obj => obj.id === id)
+  if (index > -1) {
+    clearTimeouts(index)
+    notifications.value.splice(index, 1)
+  }
+}
+
+function clearTimeouts(index) {
+  clearTimeout(notifications.value[index].timeoutID as unknown as number)
+  clearInterval(notifications.value[index].intervalID as unknown as number)
+}
+
+function calcPercents(objContext, deletedIn) {
+  const now = new Date().getTime()
+  // if date when item should be deleted
+  if (now >= objContext.timeWhenGone) {
+    clearInterval(objContext.intervalID)
+  }
+  // get the difference between current date and time when item deleted
+  const diff = Math.abs(now - objContext.timeWhenGone)
+  // get how much is left as a percentage. deletedIn = 100%
+  objContext.percents = (diff / deletedIn) * 100
+}
+
 </script>
 
 <style scoped>
 .notify-container {
-  /*pointer-events: none;*/
   position: fixed;
   bottom: 0;
   width: 100%;
   margin-bottom: 8px;
   overflow: hidden;
 }
-
 
 .notifications {
   height: max-content;
@@ -191,7 +207,6 @@ export default defineComponent({
   /*border: 1px solid rgba(255, 255, 255, 0.325);*/
   backdrop-filter: blur(15px) saturate(180%);
   border-radius: 6px;
-
 }
 
 .not-error {
@@ -232,7 +247,6 @@ export default defineComponent({
 
 /* NOT TYPES STYLING START */
 
-
 /* ANIMATIONS START */
 .notification {
   transition: all 0.4s;
@@ -242,11 +256,6 @@ export default defineComponent({
 .notification-list-leave-to {
   opacity: 0;
 }
-
-.notification-list-leave-active {
-
-}
-
 /* ANIMATIONS END */
 
 /* ADAPTIVE START */

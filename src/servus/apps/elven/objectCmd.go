@@ -5,15 +5,14 @@ import (
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
-	"servus/core"
-	"servus/core/modules/ancientUI"
+	"servus/core/external/ancientUI"
 )
 
 const (
-	cmdFlagSuperuser                    = "elven:superuser"
-	cmdFlagUser                         = "elven:user"
-	cmdFlagRollback                     = "elven:rollback"
-	cmdFlagMigrate                      = "elven:migrate"
+	cmdFlagSuperuser = "elven:superuser"
+	cmdFlagUser      = "elven:user"
+	cmdFlagRollback  = "elven:rollback"
+	cmdFlagMigrate   = "elven:migrate"
 )
 
 // objectCmd - commandline methods.
@@ -43,13 +42,13 @@ func (c *objectCmd) boot() {
 func (c *objectCmd) createUser(flag string) {
 	var err error
 	if flag != cmdFlagSuperuser && flag != cmdFlagUser {
-		core.Logger.Error("elven: wrong flag at cmd createUser")
+		instance.Logger.Error("elven: wrong flag at cmd createUser")
 		os.Exit(1)
 	}
 	if flag == cmdFlagSuperuser {
-		core.Logger.Info("elven: create superuser (CTRL + D to exit)")
+		instance.Logger.Info("elven: create superuser (CTRL + D to exit)")
 	} else if flag == cmdFlagUser {
-		core.Logger.Info("elven: create user (CTRL + D to exit)")
+		instance.Logger.Info("elven: create user (CTRL + D to exit)")
 	}
 	var isSuperuser = flag == cmdFlagSuperuser
 	var role string
@@ -65,27 +64,27 @@ chooseUsername:
 	username, err := ancientUI.AddInput("Username")
 	if err != nil {
 		var errPretty = errors.Wrap(err, "elven: failed to read username. Error")
-		core.Logger.Panic(errPretty)
+		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
 	err = eUser.validatorUsername(username)
 	if err != nil {
-		core.Logger.Error("elven: validation failed. Error: %v", err.Error())
+		instance.Logger.Error(fmt.Sprintf("elven: validation failed. Error: %v", err.Error()))
 		goto chooseUsername
 	}
 	var user = ModelUser{Username: username}
 	found, err := user.findByUsername()
 	if err != nil {
 		var errPretty = errors.Wrap(err, "elven: failed to find user. Error")
-		core.Logger.Panic(errPretty)
+		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
 	// if user exists
-	if !found {
+	if found {
 		deleteHim, err := ancientUI.AddQuestion("Username exists. Delete?")
 		if err != nil {
 			var errPretty = errors.Wrap(err, "elven: failed to scan answer. Error")
-			core.Logger.Panic(errPretty)
+			instance.Logger.Panic(errPretty)
 			os.Exit(1)
 		}
 		if !deleteHim {
@@ -94,13 +93,13 @@ chooseUsername:
 		err = user.deleteByID()
 		if err != nil {
 			var errPretty = errors.Wrap(err, "elven: delete user failed. Error")
-			core.Logger.Panic(errPretty)
+			instance.Logger.Panic(errPretty)
 			os.Exit(1)
 		}
 		createNew, err := ancientUI.AddQuestion(fmt.Sprintf("%v successfully deleted. Create new?", sign))
 		if err != nil {
 			var errPretty = errors.Wrap(err, "elven: scan answer failed. Error")
-			core.Logger.Panic(errPretty)
+			instance.Logger.Panic(errPretty)
 			os.Exit(1)
 		}
 		if !createNew {
@@ -111,12 +110,12 @@ choosePassword:
 	password, err := ancientUI.AddInput("Password")
 	if err != nil {
 		var errPretty = errors.Wrap(err, "elven: failed to scan password. Error")
-		core.Logger.Panic(errPretty)
+		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
 	err = eUser.validatorPassword(password)
 	if err != nil {
-		core.Logger.Error("elven: validation failed. Error: %v", err.Error())
+		instance.Logger.Error(fmt.Sprintf("elven: validation failed. Error: %v", err.Error()))
 		goto choosePassword
 	}
 	// create
@@ -124,36 +123,36 @@ choosePassword:
 	err = user.create()
 	if err != nil {
 		var errPretty = errors.Wrap(err, fmt.Sprintf("elven: error while creating %v. Error", sign))
-		core.Logger.Panic(errPretty)
+		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	core.Logger.Info("elven: %v successfully created", sign)
+	instance.Logger.Info(fmt.Sprintf("elven: %v successfully created", sign))
 	os.Exit(1)
 }
 
 // migrate - create tables in database from SQL file.
 func (c *objectCmd) migrate() {
-	var sqlPath = fmt.Sprintf("%v/settings/sql/elven.sql", core.Utils.GetExecuteDir())
-	sqlPath = core.Utils.FormatPath(sqlPath)
+	var sqlPath = fmt.Sprintf("%v/settings/sql/elven.sql", instance.Utils.GetExecutionDir())
+	sqlPath = instance.Utils.FormatPath(sqlPath)
 	script, err := ioutil.ReadFile(sqlPath)
 	if err != nil {
 		var errPretty = errors.Wrap(err, "elven: migration failed. Read SQL file error")
-		core.Logger.Panic(errPretty)
+		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	_, err = core.Database.Exec(string(script))
+	_, err = instance.DB.Conn.Exec(string(script))
 	if err != nil {
 		var errPretty = errors.Wrap(err, "elven: migration failed. Failed to execute SQL file)")
-		core.Logger.Panic(errPretty)
+		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	core.Logger.Info("elven: database migrate successful")
+	instance.Logger.Info("elven: database migrate successful")
 	os.Exit(1)
 }
 
 // rollback - delete tables from database.
 func (c *objectCmd) rollback() {
-	_, err := core.Database.Exec(`
+	_, err := instance.DB.Conn.Exec(`
 	DROP SCHEMA public CASCADE;
 	CREATE SCHEMA public;
 	GRANT ALL ON SCHEMA public TO postgres;
@@ -161,9 +160,9 @@ func (c *objectCmd) rollback() {
 	`)
 	if err != nil {
 		var errPretty = errors.Wrap(err, "elven: rollback failed. Failed to execute drop script")
-		core.Logger.Panic(errPretty)
+		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	core.Logger.Info("elven: database rollback successful")
+	instance.Logger.Info("elven: database rollback successful")
 	os.Exit(1)
 }

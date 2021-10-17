@@ -3,8 +3,8 @@ package elven
 import (
 	"encoding/json"
 	"net/http"
-	"servus/core/modules/errorMan"
-	"servus/core/modules/validator"
+	"servus/core/external/errorMan"
+	"servus/core/external/validator"
 	"strconv"
 	"strings"
 )

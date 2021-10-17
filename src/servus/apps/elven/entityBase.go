@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 	"servus/core"
-	"servus/core/modules/errorMan"
+	"servus/core/external/errorMan"
 )
 
 type CtxAuthDataPipe string
@@ -14,7 +14,7 @@ const (
 )
 
 type entityBase struct {
-	*core.BaseController
+	*core.HTTP
 }
 
 func (b *entityBase) middlewareAuthorizedOnly(next http.Handler) http.Handler {

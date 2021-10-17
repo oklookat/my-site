@@ -3,12 +3,11 @@ package elven
 import (
 	"github.com/gorilla/mux"
 	"net/http"
-	"servus/core"
 )
 
 func bootRoutes() {
 	router := mux.NewRouter()
-	router.Use(core.Middleware.MiddlewareAsJSON)
+	router.Use(instance.HTTP.Middleware.AsJSON)
 	var routerElven = router.PathPrefix("/elven").Subrouter()
 	//
 	var routerAuth = routerElven.PathPrefix("/auth").Subrouter()
@@ -31,7 +30,7 @@ func bootRoutes() {
 	routerFiles.HandleFunc("", eFile.controllerCreateOne).Methods(http.MethodPost)
 	routerFiles.HandleFunc("/{id}", eFile.controllerDeleteOne).Methods(http.MethodDelete)
 	//
-	var useBeforeRouter = core.Middleware.MiddlewareCORS(core.Middleware.MiddlewareSecurity(router))
+	var useBeforeRouter = instance.HTTP.Middleware.CORS(instance.HTTP.Middleware.Security(router))
 	http.Handle("/", useBeforeRouter)
 }
 

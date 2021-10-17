@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"math"
 	"math/rand"
-	"servus/core"
 	"time"
 )
 
@@ -83,15 +82,15 @@ func (q *queryArticleGetAll) getAll() (articles []ModelArticle, pagesCount int, 
 	}
 	// get pages count.
 	pagesCount = 1
-	err = core.Database.Get(&pagesCount, queryCount)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.Conn.Get(&pagesCount, queryCount)
+	err = instance.DB.CheckError(err)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, 0, nil
 	}
 	pagesCount = int(math.Round(float64(pagesCount / articlesPageSize)))
 	// get articles.
-	rows, err := core.Database.Queryx(query, articlesPageSize, (q.page - 1) * articlesPageSize)
-	err = core.Utils.DBCheckError(err)
+	rows, err := instance.DB.Conn.Queryx(query, articlesPageSize, (q.page - 1) * articlesPageSize)
+	err = instance.DB.CheckError(err)
 	articles = make([]ModelArticle, 0)
 	for rows.Next() {
 		article := ModelArticle{}
@@ -114,8 +113,8 @@ func (q *queryArticleGetAll) getAll() (articles []ModelArticle, pagesCount int, 
 func (a *ModelArticle) create() (err error) {
 	a.hookBeforeChange()
 	var query = `INSERT INTO articles (user_id, is_published, title, content, slug) VALUES ($1, $2, $3, $4, $5) RETURNING *`
-	err = core.Database.Get(a, query, a.UserID, a.IsPublished, a.Title, a.Content, a.Slug)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.Conn.Get(a, query, a.UserID, a.IsPublished, a.Title, a.Content, a.Slug)
+	err = instance.DB.CheckError(err)
 	if err != nil {
 		return err
 	}
@@ -127,8 +126,8 @@ func (a *ModelArticle) create() (err error) {
 func (a *ModelArticle) update() (err error) {
 	a.hookBeforeChange()
 	var query = "UPDATE articles SET user_id=$1, is_published=$2, title=$3, content=$4, slug=$5 WHERE id=$6 RETURNING *"
-	err = core.Database.Get(a, query, a.UserID, a.IsPublished, a.Title, a.Content, a.Slug, a.ID)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.Conn.Get(a, query, a.UserID, a.IsPublished, a.Title, a.Content, a.Slug, a.ID)
+	err = instance.DB.CheckError(err)
 	if err != nil {
 		return
 	}
@@ -139,8 +138,8 @@ func (a *ModelArticle) update() (err error) {
 // findByID - find article in database by id field.
 func (a *ModelArticle) findByID() (found bool, err error) {
 	var query = "SELECT * FROM articles WHERE id=$1 LIMIT 1"
-	err = core.Database.Get(a, query, a.ID)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.Conn.Get(a, query, a.ID)
+	err = instance.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -155,8 +154,8 @@ func (a *ModelArticle) findByID() (found bool, err error) {
 // deleteByID - delete article from database by id field.
 func (a *ModelArticle) deleteByID() (err error) {
 	var query = "DELETE FROM articles WHERE id=$1"
-	_, err = core.Database.Exec(query, a.ID)
-	err = core.Utils.DBCheckError(err)
+	_, err = instance.DB.Conn.Exec(query, a.ID)
+	err = instance.DB.CheckError(err)
 	return
 }
 
@@ -176,7 +175,7 @@ func (a *ModelArticle) hookAfterChange() (err error) {
 	// create normal slug
 	a.Slug = slug.Make(a.Title) + "-" + a.ID
 	var query = "UPDATE articles SET slug=$1 WHERE id=$2 RETURNING *"
-	row := core.Database.QueryRowx(query, a.Slug, a.ID)
+	row := instance.DB.Conn.QueryRowx(query, a.Slug, a.ID)
 	err = row.StructScan(a)
 	if err != nil {
 		return err

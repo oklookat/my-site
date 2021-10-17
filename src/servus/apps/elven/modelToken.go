@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"github.com/pkg/errors"
 	"net/http"
-	"servus/core"
 	"time"
 )
 
@@ -24,9 +23,9 @@ type ModelToken struct {
 // create - create ModelToken in database. WARNING: its function writes only token and user id, other data will be ignored. For write full data see dbTokenUpdate.
 func (t *ModelToken) create() (err error) {
 	var query = "INSERT INTO tokens (user_id, token) VALUES ($1, $2) RETURNING *"
-	row := core.Database.QueryRowx(query, &t.UserID, &t.Token)
+	row := instance.DB.Conn.QueryRowx(query, &t.UserID, &t.Token)
 	err = row.StructScan(t)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.CheckError(err)
 	return
 }
 
@@ -34,7 +33,7 @@ func (t *ModelToken) create() (err error) {
 func (t *ModelToken) update() (err error) {
 	t.hookBeforeUpdate()
 	var query = "UPDATE tokens SET user_id=:user_id, token=:token, last_ip=:last_ip, last_agent=:last_agent, auth_ip=:auth_ip, auth_agent=:auth_agent WHERE id=:id RETURNING *"
-	stmt, err := core.Database.PrepareNamed(query)
+	stmt, err := instance.DB.Conn.PrepareNamed(query)
 	if err != nil {
 		return
 	}
@@ -42,15 +41,15 @@ func (t *ModelToken) update() (err error) {
 		_ = stmt.Close()
 	}()
 	err = stmt.Get(t, t)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.CheckError(err)
 	return
 }
 
 // databaseFind - find ModelToken in database by id field.
 func (t *ModelToken) findByID() (found bool, err error) {
 	var query = "SELECT * FROM tokens WHERE id=$1 LIMIT 1"
-	err = core.Database.Get(t, query, t.ID)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.Conn.Get(t, query, t.ID)
+	err = instance.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -65,7 +64,7 @@ func (t *ModelToken) findByID() (found bool, err error) {
 // deleteByID - delete ModelToken from database by id field.
 func (t *ModelToken) deleteByID() (err error) {
 	var query = "DELETE FROM tokens WHERE id=$1"
-	_, err = core.Database.Exec(query, t.ID)
+	_, err = instance.DB.Conn.Exec(query, t.ID)
 	if err == sql.ErrNoRows {
 		return nil
 	}

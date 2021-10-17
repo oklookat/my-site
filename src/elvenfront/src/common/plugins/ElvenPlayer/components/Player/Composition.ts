@@ -1,18 +1,25 @@
-import {reactive} from "vue";
-import Service from "@/common/plugins/ElvenPlayer/tools/Service"
+import { reactive } from "vue";
+import Service, { TConvertSecondsMode } from "@/common/plugins/ElvenPlayer/tools/Service"
 
 interface IAudioPlayer {
-    active: boolean // is player component active
+    // is player component active
+    active: boolean
     initialized: boolean
     element: HTMLAudioElement
     isPlaying: boolean
-    volume: number // volume in float (1.0)
-    percentsVolume: number // volume in percents
+    // volume in float (1.0)
+    volume: number
+    // volume in percents
+    percentsVolume: number
     currentPlaying: {
-        duration: string, // total time of current audio like '04:23'
-        currentTime: string, // current time of playing audio like '01:23'
-        percentsReached: number // percents of audio reached
-        percentsBuffered: number // percents of buffered audio
+        // total time of current audio like '04:23'
+        duration: string,
+        // current time of playing audio like '01:23'
+        currentTime: string,
+        // percents of audio reached
+        percentsReached: number
+        // percents of buffered audio
+        percentsBuffered: number
         playlist: string[]
         index: number
     }
@@ -25,13 +32,14 @@ interface IAudioPlayer {
 export default class Composition {
 
     public audioPlayer: IAudioPlayer
-    // saved events links (for cleanup)
+    private playPromise: Promise<void> | undefined = undefined
+    // saved event links (for cleanup)
     private _onPlaying = this.onPlaying.bind(this)
     private _onPause = this.onPause.bind(this)
     private _onEnded = this.onEnded.bind(this)
     private _onTimeUpdate = this.onTimeUpdate.bind(this)
     private _onError = this.onError.bind(this)
-    private playPromise: Promise<void> | undefined = undefined
+    private readonly nullSrc = 'https://null/'
 
     constructor() {
         this.audioPlayer = {
@@ -80,20 +88,23 @@ export default class Composition {
 
     //////////// PLAYBACK CONTROLS
     public async play() {
-        if (!this.audioPlayer.initialized) {
-            this.setCurrentAudio()
-        }
-        if (!this.audioPlayer.element.src) {
-            return
+        if (!this.audioPlayer.initialized){
+            try {
+                this.setCurrentAudio()
+            } catch (err) {
+                console.error(err)
+                return
+            }
         }
         this.playPromise = this.audioPlayer.element.play()
-        if(this.playPromise !== undefined){
-            this.playPromise
-                .then(() => {
-                    this.audioPlayer.initialized = true
-                })
-                .catch(() => this.stop())
+        if (!this.playPromise) {
+            return
         }
+        this.playPromise
+            .then(() => {
+                this.audioPlayer.initialized = true
+            })
+            .catch((err) => { console.log(err); this.stop() })
     }
 
     public pause() {
@@ -105,12 +116,12 @@ export default class Composition {
 
     public async next() {
         if (!this.isHasNextAudio()) {
-            await this.stop()
-        } else {
-            this.audioPlayer.currentPlaying.index++
-            this.setCurrentAudio()
-            await this.play()
+            this.audioPlayer.element.currentTime = 0
+            return
         }
+        this.audioPlayer.currentPlaying.index++
+        this.setCurrentAudio()
+        await this.play()
     }
 
     public async prev() {
@@ -124,13 +135,7 @@ export default class Composition {
     }
 
     public async stop() {
-        await this.pause()
-        this.audioPlayer.element.currentTime = 0
-        this.audioPlayer.initialized = false
-        this.audioPlayer.isPlaying = false
-        this.playPromise = undefined
-
-        this.audioPlayer.element.src = ''
+        this.audioPlayer.element.src = this.nullSrc
         this.audioPlayer.currentPlaying.index = 0
         this.audioPlayer.currentPlaying.duration = '00:00'
         this.audioPlayer.currentPlaying.currentTime = '00:00'
@@ -139,18 +144,20 @@ export default class Composition {
         this.audioPlayer.isProgressMouseDown = false
         this.audioPlayer.progressPreviewTime = 0
         this.audioPlayer.isVolumeMouseDown = false
+        this.audioPlayer.initialized = false
+        this.audioPlayer.isPlaying = false
+        this.playPromise = undefined
     }
 
     //////////// PLAYBACK MANAGEMENT
     public setCurrentAudio(playlistIndex = this.audioPlayer.currentPlaying.index) {
         if (this.audioPlayer.currentPlaying.playlist.length < 1) {
-            console.error('Audio: empty playlist')
-            return
+            return Error('Audio: empty playlist')
         }
         this.audioPlayer.element.src = this.audioPlayer.currentPlaying.playlist[playlistIndex]
     }
 
-    public async setPlaylist(playlist: string []) {
+    public async setPlaylist(playlist: string[]) {
         await this.stop()
         this.audioPlayer.currentPlaying.index = 0
         this.audioPlayer.currentPlaying.playlist = playlist
@@ -160,34 +167,33 @@ export default class Composition {
         this.audioPlayer.currentPlaying.playlist.push(url)
     }
 
-    // is audio not in start. Start = audio duration / 4
-    private isAudioNotInStart() {
+    // is audio not in start. Start = audio duration / 4.
+    private isAudioNotInStart(): boolean {
         const isNotInStart = this.audioPlayer.element.duration / 4
         return this.audioPlayer.element.currentTime > isNotInStart
     }
 
-    private isHasNextAudio() {
-        const isHas = this.audioPlayer.currentPlaying.playlist[this.audioPlayer.currentPlaying.index + 1]
-        return !!isHas
+    private isHasNextAudio(): boolean {
+        const isHas = this.audioPlayer.currentPlaying.playlist[this.audioPlayer.currentPlaying.index + 1] !== undefined
+        return isHas
     }
 
-    private isHasPrevAudio() {
-        const isHas = this.audioPlayer.currentPlaying.playlist[this.audioPlayer.currentPlaying.index - 1]
-        return !!isHas
+    private isHasPrevAudio(): boolean {
+        const isHas = this.audioPlayer.currentPlaying.playlist[this.audioPlayer.currentPlaying.index - 1] !== undefined
+        return isHas
     }
 
-    // set playing audio time by percents
     public setTimeByPercents(percents: number) {
         const duration = this.audioPlayer.element.duration
         this.audioPlayer.element.currentTime = Service.round((duration / 100) * percents, 4)
     }
 
-    public setVolumeByPercents(percents: number){
+    public setVolumeByPercents(percents: number) {
         let percentsVolume = (percents / 100)
-        if(percentsVolume > 1.0){
+        if (percentsVolume > 1.0) {
             percentsVolume = 1.0
         }
-        if(percentsVolume < 0){
+        if (percentsVolume < 0) {
             percentsVolume = 0
         }
         this.audioPlayer.percentsVolume = percents
@@ -218,16 +224,19 @@ export default class Composition {
                 console.error('Audio: network error')
                 break
             case event.target.error.MEDIA_ERR_DECODE:
-                console.error('Audio: decode error. Audio damaged or not supported.')
+                console.error('Audio: decode error. Maybe audio damaged or something?')
                 break
             case event.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                console.error('Audio: source not supported')
+                console.log(this.audioPlayer.element.src)
+                if (this.audioPlayer.element.src === 'https://null/') {
+                    return
+                }
+                console.error('Audio: not supported')
                 break
             default:
                 console.error('Audio: unknown error')
                 break
         }
-        await this.stop()
     }
 
     private onTimeUpdate() {
@@ -237,7 +246,7 @@ export default class Composition {
         }
         if (this.audioPlayer.element.duration) {
             this.audioPlayer.currentPlaying.duration = Service.convertSeconds(this.audioPlayer.element.duration, 'auto')
-            let mode: string
+            let mode: TConvertSecondsMode
             if (this.audioPlayer.element.duration < 3600) {
                 mode = 'minutes'
             } else {

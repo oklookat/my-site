@@ -33,7 +33,7 @@ func (d *Database) boot() (err error) {
 		var errPretty = errors.Wrap(err, "boot database: connection failed. Error:")
 		return errPretty
 	}
-	*d.Conn = *connection
+	d.Conn = connection
 	return
 }
 

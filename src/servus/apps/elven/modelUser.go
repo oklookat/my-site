@@ -2,8 +2,6 @@ package elven
 
 import (
 	"database/sql"
-	"servus/core"
-	"servus/core/modules/cryptor"
 	"time"
 )
 
@@ -26,22 +24,22 @@ type ModelUser struct {
 
 // create - create user in database.
 func (u *ModelUser) create() (err error) {
-	u.Password, err = cryptor.BHash(u.Password)
+	u.Password, err = instance.Encryption.Argon.Hash(u.Password)
 	if err != nil {
-		core.Logger.Error(err.Error())
+		instance.Logger.Error(err.Error())
 		return
 	}
 	var query = `INSERT INTO users (role, username, password) VALUES ($1, $2, $3) RETURNING *`
-	err = core.Database.Get(u, query, u.Role, u.Username, u.Password)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.Conn.Get(u, query, u.Role, u.Username, u.Password)
+	err = instance.DB.CheckError(err)
 	return
 }
 
 // findByID - find user in database by id in ModelUser.
 func (u *ModelUser) findByID() (found bool, err error) {
 	var query = "SELECT * FROM users WHERE id=$1 LIMIT 1"
-	err = core.Database.Get(u, query, u.ID)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.Conn.Get(u, query, u.ID)
+	err = instance.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -56,8 +54,8 @@ func (u *ModelUser) findByID() (found bool, err error) {
 // findByUsername - find user in database by username in ModelUser.
 func (u *ModelUser) findByUsername() (found bool, err error) {
 	var query = "SELECT * FROM users WHERE username=$1 LIMIT 1"
-	err = core.Database.Get(u, query, u.Username)
-	err = core.Utils.DBCheckError(err)
+	err = instance.DB.Conn.Get(u, query, u.Username)
+	err = instance.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -72,8 +70,8 @@ func (u *ModelUser) findByUsername() (found bool, err error) {
 // deleteByID - delete user by id in ModelUser.
 func (u *ModelUser) deleteByID() (err error) {
 	var query = "DELETE FROM users WHERE id=$1"
-	_, err = core.Database.Exec(query, u.ID)
-	err = core.Utils.DBCheckError(err)
+	_, err = instance.DB.Conn.Exec(query, u.ID)
+	err = instance.DB.CheckError(err)
 	if err == sql.ErrNoRows {
 		return nil
 	}

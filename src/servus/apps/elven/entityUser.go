@@ -2,7 +2,7 @@ package elven
 
 import (
 	"github.com/pkg/errors"
-	"servus/core/modules/validator"
+	"servus/core/external/validator"
 )
 
 // entityUser - manage users.
