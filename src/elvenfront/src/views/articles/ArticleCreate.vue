@@ -3,7 +3,7 @@
     <div class="articles-create-main">
       <textarea
         id="article-title"
-        placeholder="Если коротко..."
+        placeholder="Actually..."
         rows="1"
         maxlength="124"
         v-model="article.title"
@@ -13,13 +13,13 @@
         <div id="editor" @input="autoSave"></div>
       </div>
 
-      <UIOverlay
+      <Overlay
         v-bind:active="isErrorOverlayActive"
         v-on:deactivated="isErrorOverlayActive = false"
       >
         {{ errorOverlayContent }}
         <div class="error-ok-button" v-on:click="isErrorOverlayActive = false">Ок</div>
-      </UIOverlay>
+      </Overlay>
     </div>
   </div>
 </template>
@@ -28,7 +28,7 @@
 import { defineComponent } from "vue"
 import { useRoute, useRouter } from 'vue-router'
 import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter"
-import UIOverlay from "@/components/_UI/UIOverlay.vue"
+import Overlay from "@/components/ui/Overlay.vue"
 import TextareaResizer from "@/common/tools/TextareaResizer"
 import EditorJS from '@editorjs/editorjs'
 import Head from '@editorjs/header'
@@ -93,14 +93,14 @@ function initEditor() {
     tools: {
       paragraph: {
         config: {
-          placeholder: 'Если развернуто...'
+          placeholder: `It's a long story.`
         }
       },
       header: {
         class: Head,
         inlineToolbar: true,
         config: {
-          placeholder: 'Заголовок',
+          placeholder: 'Header',
           levels: [2, 3, 4],
           defaultLevel: 3
         }
@@ -108,82 +108,12 @@ function initEditor() {
       image: {
         class: ImageTool,
         config: {
-          captionPlaceholder: 'Описание',
           endpoints: {
             byFile: 'http://localhost:8008/uploadFile', // Your backend file uploader endpoint
             byUrl: 'http://localhost:8008/fetchUrl', // Your endpoint that provides uploading by Url
           },
         }
       },
-    },
-    i18n: {
-      messages: {
-        ui: {
-          "blockTunes": {
-            "toggler": {
-              "Click to tune": "Нажмите, чтобы настроить",
-              "or drag to move": "или перетащите"
-            },
-          },
-          "inlineToolbar": {
-            "converter": {
-              "Convert to": "Конвертировать в"
-            }
-          },
-          "toolbar": {
-            "toolbox": {
-              "Add": "Добавить"
-            }
-          }
-        },
-        toolNames: {
-          "Text": "Параграф",
-          "Heading": "Заголовок",
-          "List": "Список",
-          "Warning": "Примечание",
-          "Checklist": "Чеклист",
-          "Quote": "Цитата",
-          "Code": "Код",
-          "Delimiter": "Разделитель",
-          "Raw HTML": "HTML-фрагмент",
-          "Table": "Таблица",
-          "Link": "Ссылка",
-          "Marker": "Маркер",
-          "Bold": "Полужирный",
-          "Italic": "Курсив",
-          "InlineCode": "Моноширинный",
-        },
-        tools: {
-          "warning": {
-            "Title": "Название",
-            "Message": "Сообщение",
-          },
-          "link": {
-            "Add a link": "Вставьте ссылку"
-          },
-          "stub": {
-            'The block can not be displayed correctly.': 'Блок не может быть отображен'
-          },
-          image: {
-            'Select an Image': 'Загрузить изображение',
-            'Couldn’t upload image. Please try another.': 'Не удалось загрузить изображение.'
-          }
-        },
-        blockTunes: {
-          "image": {
-
-          },
-          "delete": {
-            "Delete": "Удалить"
-          },
-          "moveUp": {
-            "Move up": "Переместить вверх"
-          },
-          "moveDown": {
-            "Move down": "Переместить вниз"
-          }
-        },
-      }
     },
     minHeight: 0,
     data: {}
@@ -192,7 +122,7 @@ function initEditor() {
 
 async function autoSave() {
   if (!isEditorInitialized) {
-    throw Error('editor not initialized.')
+    throw Error('editor not initialized')
   }
   if (timeoutID && timeoutID.value) {
     clearTimeout(timeoutID.value)
@@ -229,10 +159,9 @@ async function initEditArticle() {
     return Promise.resolve(true)
   } catch (err) {
     if (err === 404) {
-      console.log('Запись не найдена')
-      errorOverlayContent.value = 'Вы хотите отредактировать запись, которой не существует. Мы перенаправили вас на создание новой записи.'
+      errorOverlayContent.value = 'Article not found. You are redirected to create a new article.'
     } else {
-      errorOverlayContent.value = `Произошла странная ошибка. Ошибка: ${err}`
+      errorOverlayContent.value = `Strange error: ${err}`
     }
     article.value.id = ''
     await router.push({ name: 'ArticleCreate' })
@@ -266,11 +195,20 @@ async function setEditorData() {
 
 <style scoped>
 .articles-create-container {
-  width: 100%;
-  background-color: white;
+  max-width: 732px;
+  margin: auto;
+  background-color: var(--color-level-1);
   border-radius: 6px;
   padding-bottom: 24px;
 }
+
+@media screen and (max-width: 1919px) {
+  .articles-create-container {
+    width: 95%;
+    max-width: 512px;
+  }
+}
+
 .articles-create-main {
   width: 85%;
   height: 95%;
@@ -288,10 +226,6 @@ async function setEditorData() {
   background-color: transparent;
   font-size: 1.6rem;
   font-weight: bold;
-}
-
-textarea {
-  text-align: center;
 }
 
 .editor-container {

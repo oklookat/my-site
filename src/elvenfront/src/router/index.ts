@@ -1,15 +1,13 @@
 import {createRouter, createWebHistory, RouteRecordRaw} from 'vue-router'
 import Store from "@/store/index"
-import Login from '@/views/Auth/Login.vue'
-import Logout from '@/views/Auth/Logout.vue'
-import Index from '@/views/Main/Index.vue'
-import Articles from '@/views/Main/Articles/Articles.vue'
-import ArticleCreate from '@/views/Main/Articles/ArticleCreate.vue'
-import Files from '@/views/Main/Files/Files.vue'
-import Settings from '@/views/Main/Settings/Settings.vue'
-import AuthAdapter from "@/common/adapters/Main/AuthAdapter";
-import Fetcher from "@/common/adapters/Fetcher";
-import {AuthStorage} from "@/common/tools/LStorage";
+import Login from '@/views/auth/Login.vue'
+import Logout from '@/views/auth/Logout.vue'
+import Index from '@/views/Index.vue'
+import Articles from '@/views/articles/Articles.vue'
+import ArticleCreate from '@/views/articles/ArticleCreate.vue'
+import Files from '@/views/files/Files.vue'
+import Settings from '@/views/settings/Settings.vue'
+import {AuthStorage} from "@/common/tools/LStorage"
 
 const routes: Array<RouteRecordRaw> = [
     {

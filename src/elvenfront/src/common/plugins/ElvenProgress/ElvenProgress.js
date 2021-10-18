@@ -1,16 +1,16 @@
 import ElvenProgressC from './ElvenProgressC.vue'
 
 class ElvenProgress {
+
     static componentData = null
 
     static install(app, options) {
         app.component('elven-progress', ElvenProgressC)
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const instance = this
+        const _this = this
         app.mixin({
             created() {
                 if (this.SERVICE === 'ELVEN_PROGRESS_C') {
-                    instance.componentData = this
+                    _this.componentData = this
                     theLogic.options = options
                     theLogic.init()
                     window.$elvenProgress = theLogic
@@ -21,39 +21,40 @@ class ElvenProgress {
 }
 
 class theLogic {
+
     static options = null
 
     static init() {
         if (this.options) {
-            if (this.options.progressBarHeight) {
-                ElvenProgress.componentData.progressBarHeight = this.options.progressBarHeight
+            if (this.options.height) {
+                ElvenProgress.componentData.height = this.options.height
             }
-            if (this.options.basicLoadingStartSpeed) {
-                ElvenProgress.componentData.basicLoadingStartSpeed = this.options.basicLoadingStartSpeed
+            if (this.options.loadingStartSpeed) {
+                ElvenProgress.componentData.loadingStartSpeed = this.options.loadingStartSpeed
             }
-            if (this.options.basicLoadingFinishSpeed) {
-                ElvenProgress.componentData.basicLoadingFinishSpeed = this.options.basicLoadingFinishSpeed
+            if (this.options.loadingFinishSpeed) {
+                ElvenProgress.componentData.loadingFinishSpeed = this.options.loadingFinishSpeed
             }
-            if (this.options.basicLoadingStartTo) {
-                ElvenProgress.componentData.basicLoadingStartTo = this.options.basicLoadingStartTo
+            if (this.options.loadingStartTo) {
+                ElvenProgress.componentData.loadingStartTo = this.options.loadingStartTo
             }
         }
     }
 
     static setPercents(percents) {
-        ElvenProgress.componentData.setPercents = percents
+        ElvenProgress.componentData.setPercents(percents)
     }
 
     static loadingStart() {
-        ElvenProgress.componentData.basicLoading = true
+        ElvenProgress.componentData.loading(true)
     }
 
     static loadingFinish() {
-        ElvenProgress.componentData.basicLoading = false
+        ElvenProgress.componentData.loading(false)
     }
 
     static close() {
-        ElvenProgress.componentData.closeBar = true
+        ElvenProgress.componentData.destroy()
     }
 }
 

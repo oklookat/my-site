@@ -1,25 +1,24 @@
 <template>
-  <div class="notify-container">
-    <transition-group class="notifications" name="notification-list" tag="p">
-      <span
-        class="notification"
+  <div class="notify__container">
+    <transition-group class="notify__notifications" name="notification__list" tag="div">
+      <div
+        class="notify__notification"
         v-on:click="deleteNotificationByID(notification.id)"
         :key="notification.id"
         v-for="notification in notifications"
-        :class="classSetter(notification.self.type)"
       >
         {{ notification.execute() }}
-        <div class="not-message">{{ notification.self.message }}</div>
-        <div class="not-timer-wrap">
+        <div class="notification__message">{{ notification.self.message }}</div>
+        <div class="notification__timer-wrapper">
           <div
-            class="not-timer"
+            class="notification__timer"
             v-if="notification.percents"
             v-bind:style="{
               transform: `scaleX(${notification.percents / 100})`
             }"
           ></div>
         </div>
-      </span>
+      </div>
     </transition-group>
   </div>
 </template>
@@ -37,11 +36,12 @@ interface INotificationFull {
   execute: () => void
 }
 interface INotification {
-  type: string
   message: string
 }
 
+// used by plugin
 const SERVICE = 'ELVEN_NOTIFY_C'
+
 const notifications: Ref<Array<INotificationFull>> = ref([])
 let notificationsCounter = 0
 const deletedIn = 5000
@@ -50,24 +50,9 @@ const maxNotificationsD = 8
 // mobile
 const maxNotificationsM = 2
 
-function classSetter(errorType) {
-  switch (errorType) {
-    case 'error':
-      return 'not-error'
-    case 'warn':
-      return 'not-warn'
-    case 'info':
-      return 'not-info'
-    case 'success':
-      return 'not-success'
-    default:
-      return 'not-unknown'
-  }
-}
-
-function addNotification(type, message) {
+// used by plugin.
+function addNotification(message) {
   const notification = {
-    type: type,
     message: message
   }
   if (notifications.value.length < 1) {
@@ -152,7 +137,7 @@ function calcPercents(objContext, deletedIn) {
 </script>
 
 <style scoped>
-.notify-container {
+.notify__container {
   position: fixed;
   bottom: 0;
   width: 100%;
@@ -160,7 +145,7 @@ function calcPercents(objContext, deletedIn) {
   overflow: hidden;
 }
 
-.notifications {
+.notify__notifications {
   height: max-content;
   width: 100%;
   display: flex;
@@ -170,7 +155,7 @@ function calcPercents(objContext, deletedIn) {
   position: relative;
 }
 
-.notification {
+.notify__notification {
   cursor: pointer;
   align-self: center;
   width: 240px;
@@ -181,86 +166,66 @@ function calcPercents(objContext, deletedIn) {
   grid-template-rows: 1fr min-content;
 }
 
-.not-message {
+.notification__message {
   margin-top: 4px;
   margin-left: 12px;
   margin-right: 8px;
 }
 
-.not-timer-wrap {
+.notification__timer-wrapper {
   width: 50%;
   justify-self: center;
   margin-bottom: 12px;
   margin-top: 12px;
 }
 
-.not-timer {
+.notification__timer {
   border-radius: 4px;
   transition: transform 120ms linear;
   background-color: rgba(255, 255, 255, 0.8);
   height: 4px;
 }
 
-/* NOT TYPES STYLING START */
-.notification {
+.notify__notification {
   color: black;
   /*border: 1px solid rgba(255, 255, 255, 0.325);*/
   backdrop-filter: blur(15px) saturate(180%);
   border-radius: 6px;
 }
 
-.not-error {
-  background-color: rgba(255, 0, 0, 0.35);
-  border: 1px solid rgba(255, 0, 0, 0.25);
+.notify__notification > .notification__timer-wrapper > .notification__timer {
+  background-color: rgb(190, 190, 190);
 }
-
-.notification.not-error > .not-timer-wrap > .not-timer {
-  background-color: rgba(190, 13, 20, 1);
-}
-
-.not-warn {
-  background-color: rgba(255, 240, 0, 0.75);
-  border: 1px solid rgba(191, 179, 0, 0.35);
-}
-
-.notification.not-warn > .not-timer-wrap > .not-timer {
-  background-color: rgba(190, 180, 0, 1);
-}
-
-.not-info {
-  background-color: rgba(100, 200, 255, 0.75);
-  border: 1px solid rgba(75, 150, 191, 0.35);
-}
-
-.notification.not-info > .not-timer-wrap > .not-timer {
-  background-color: rgba(75, 150, 190, 1);
-}
-
-.not-success {
-  background-color: rgba(140, 255, 50, 0.75);
-  border: 1px solid rgba(105, 191, 38, 0.35);
-}
-
-.notification.not-success > .not-timer-wrap > .not-timer {
-  background-color: rgba(105, 190, 140, 1);
-}
-
-/* NOT TYPES STYLING START */
 
 /* ANIMATIONS START */
-.notification {
+.notify__notification {
   transition: all 0.4s;
 }
 
-.notification-list-enter-from,
-.notification-list-leave-to {
+@media (prefers-color-scheme: light) {
+  .notify__notification {
+    color: #fff;
+    background-color: rgb(130, 130, 130);
+    border: 1px solid rgb(120, 120, 120);
+  }
+}
+@media (prefers-color-scheme: dark) {
+  .notify__notification {
+    color: #fff;
+    background-color: rgb(50, 50, 50);
+    border: 1px solid rgb(60, 60, 60);
+  }
+}
+
+.notification__list-enter-from,
+.notification__list-leave-to {
   opacity: 0;
 }
 /* ANIMATIONS END */
 
 /* ADAPTIVE START */
 @media screen and (min-width: 765px) {
-  .notify-container {
+  .notify__container {
     margin-right: 12px;
     height: min-content;
     width: 224px;
@@ -268,19 +233,19 @@ function calcPercents(objContext, deletedIn) {
     bottom: 0;
   }
 
-  .notifications {
+  .notify__notifications {
     height: max-content;
     width: max-content;
     flex-direction: column;
   }
 
-  .notification {
+  .notify__notification {
     position: relative;
     width: 214px;
     min-height: 52px;
   }
 
-  .not-timer-wrap {
+  .notification__timer-wrapper {
     margin-bottom: 8px;
     margin-top: 8px;
   }

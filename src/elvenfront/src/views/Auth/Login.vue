@@ -2,11 +2,11 @@
   <div class="login-container">
     <div class="login-inputs">
       <div class="logo-text">elven</div>
-      <input type="text" name="username" placeholder="Имя пользователя" v-model="username">
-      <input type="password" name="password" placeholder="Пароль" v-model="password">
+      <input type="text" name="username" placeholder="username" v-model="username">
+      <input type="password" name="password" placeholder="password" v-model="password">
     </div>
     <button :disabled="!username || !password" class="auth-button" @click="makeLogin">
-      Войти
+      log in
     </button>
   </div>
 </template>

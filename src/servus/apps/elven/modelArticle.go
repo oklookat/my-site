@@ -89,7 +89,7 @@ func (q *queryArticleGetAll) getAll() (articles []ModelArticle, pagesCount int, 
 	}
 	pagesCount = int(math.Round(float64(pagesCount / articlesPageSize)))
 	// get articles.
-	rows, err := instance.DB.Conn.Queryx(query, articlesPageSize, (q.page - 1) * articlesPageSize)
+	rows, err := instance.DB.Conn.Queryx(query, articlesPageSize, (q.page * articlesPageSize) - 1)
 	err = instance.DB.CheckError(err)
 	articles = make([]ModelArticle, 0)
 	for rows.Next() {

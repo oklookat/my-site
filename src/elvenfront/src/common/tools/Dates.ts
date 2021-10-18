@@ -1,7 +1,7 @@
-const hoursTitles = ['час', 'часа', 'часов']
-const minTitles = ['минуту', 'минуты', 'минут']
-const secTitles = ['секунду', 'секунды', 'секунд']
-const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'ноя', 'дек']
+const hoursTitles = ['hour', 'hours']
+const minTitles = ['minute', 'minutes']
+const secTitles = ['second', 'seconds']
+const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 class Dates {
     public static convert(date) {
@@ -15,44 +15,42 @@ class Dates {
             const hoursAgo = Math.round(minutesAgo / 60)
             if (secondsAgo < 60) {
                 // 1min-
-                date = `${secondsAgo} ${this.declensionOfNumbers(secondsAgo, secTitles)} назад`
+                date = `${secondsAgo} ${this.declensionOfNumbers(secondsAgo, secTitles)} ago`
             } else if (minutesAgo < 60) {
                 // 1h-
-                date = `${minutesAgo} ${this.declensionOfNumbers(minutesAgo, minTitles)} назад`
+                date = `${minutesAgo} ${this.declensionOfNumbers(minutesAgo, minTitles)} ago`
             } else if (hoursAgo < 2) {
                 // 2h-
-                date = `час назад`
+                date = `hour ago`
             } else if (hoursAgo < 8) {
                 // 8h-
-                date = `${hoursAgo} ${this.declensionOfNumbers(hoursAgo, hoursTitles)} назад`
+                date = `${hoursAgo} ${this.declensionOfNumbers(hoursAgo, hoursTitles)} ago`
             } else if (hoursAgo < 24) {
                 // 24h-
                 const hours = this.numberWithZero(date.getHours())
                 const minutes = this.numberWithZero(date.getMinutes())
-                date = `сегодня в ${hours}:${minutes}`
+                date = `today at ${hours}:${minutes}`
             }
         } else if (isYesterday) {
-            date = `вчера в ${this.numberWithZero(date.getHours())}:${this.numberWithZero(date.getMinutes())}`
+            date = `yesterday at ${this.numberWithZero(date.getHours())}:${this.numberWithZero(date.getMinutes())}`
         } else {
             const day = this.numberWithZero(date.getDate())
             const month = date.getMonth() // in JS Date() January starts with 0, not 1
             const hours = this.numberWithZero(date.getHours())
             const minutes = this.numberWithZero(date.getMinutes())
             if (date.getFullYear() === currentDate.getFullYear()) {
-                date = `${day} ${months[month]} в ${hours}:${minutes}`
+                date = `${day} ${months[month]} at ${hours}:${minutes}`
             } else {
-                date = `${day} ${months[month]} ${date.getFullYear()} в ${hours}:${minutes}`
+                date = `${day} ${months[month]} ${date.getFullYear()} at ${hours}:${minutes}`
             }
         }
         return date
     }
 
-    public static declensionOfNumbers(number, titles) {
-        // https://gist.github.com/realmyst/1262561#gistcomment-3443551
+    public static declensionOfNumbers(number, titles): string {
         number = Math.abs(number)
-        if (Number.isInteger(number)) {
-            const cases = [2, 0, 1, 1, 1, 2]
-            return titles[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]]
+        if (number === 1) {
+            return titles[0]
         }
         return titles[1]
     }

@@ -1,10 +1,11 @@
 <template>
-  <div class="files-main">
-    <div class="files-tools">
-      <div class="files-tools-upload cursor-pointer">
-        <div class="files-tools-upload-butt" v-on:click="onUploadClick()">Загрузить</div>
+  <div class="files__container">
+    <div class="files__tools">
+      <div class="file__upload">
+        <div style="cursor: pointer;" class="file__upload-butt" v-on:click="onUploadClick()">upload</div>
         <input
-          id="input-upload"
+          ref="input"
+          id="file__input"
           type="file"
           multiple
           style="display: none"
@@ -12,14 +13,15 @@
         />
       </div>
     </div>
-    <div class="files-list" v-if="filesLoaded && files.length > 0">
+
+    <div class="files__list" v-if="filesLoaded && files.length > 0">
       <div class="file" v-for="file in files" :key="file.id" v-on:click="select(file)">
-        <div class="file-meta">
-          <div class="file-item file-loaded-at">{{ convertDateWrap(file.created_at) }}</div>
+        <div class="file__meta">
+          <div class="file__item file__uploaded-date">{{ convertDateWrap(file.created_at) }}</div>
         </div>
-        <div class="file-main">
+        <div class="file__main">
           <div
-            class="file-item file-preview"
+            class="file__item file__preview"
             v-on:click.stop
             v-if="readableExtensionWrap(file.extension) === 'IMAGE'"
           >
@@ -29,40 +31,40 @@
             />
           </div>
           <div
-            class="file-item file-preview"
+            class="file__item file__preview"
             v-on:click.stop
             v-if="readableExtensionWrap(file.extension) === 'VIDEO'"
           >
             <video controls :src="convertPreviewPath(file.path)"></video>
           </div>
 
-          <div class="file-item file-name">{{ file.original_name }}</div>
-          <div class="file-item file-size">{{ convertSizeWrap(file.size) }}</div>
+          <div class="file__item file__name">{{ file.original_name }}</div>
+          <div class="file__item file__size">{{ convertSizeWrap(file.size) }}</div>
         </div>
       </div>
     </div>
 
-    <div class="files-404" v-if="filesLoaded && files.length < 1">
-      <div class="files-404-1">Нет файлов :(</div>
+    <div class="files__404" v-if="filesLoaded && files.length < 1">
+      <div>no files :(</div>
     </div>
 
-    <UIOverlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
-      <div class="overlay-file-tools">
+    <Overlay v-bind:active="isToolsOverlayActive" v-on:deactivated="isToolsOverlayActive = false">
+      <div class="overlay__file-tools">
         <div
-          class="ov-item file-play"
+          class="overlay__item file__play"
           v-if="readableExtensionWrap(selectedFile.extension) === 'AUDIO'"
           v-on:click="playAudio(selectedFile)"
-        >Воспроизвести</div>
-        <div class="ov-item file-copy-link" v-on:click="copyLink(selectedFile)">Скопировать ссылку</div>
-        <div class="ov-item file-delete" v-on:click="deleteFile(selectedFile)">Удалить</div>
+        >play</div>
+        <div class="overlay__item file__copy-link" v-on:click="copyLink(selectedFile)">copy link</div>
+        <div class="overlay__item file__delete" v-on:click="deleteFile(selectedFile)">delete</div>
       </div>
-    </UIOverlay>
+    </Overlay>
   </div>
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, Ref} from "vue"
-import UIOverlay from "@/components/_UI/UIOverlay.vue"
+import { onMounted, ref, Ref } from "vue"
+import Overlay from "@/components/ui/Overlay.vue"
 import FileAdapter from "@/common/adapters/Main/FileAdapter"
 import Dates from "@/common/tools/Dates"
 import Sizes from "@/common/tools/Sizes.js"
@@ -80,6 +82,8 @@ const meta: Ref<IMeta> = ref(iMetaDefault)
 const selectedFile: Ref<IFile> = ref(IFileDefault)
 const perPage: Ref<string> = ref('')
 const next: Ref<string> = ref('')
+// file input for upload
+const input= ref(null)
 
 
 onMounted(() => {
@@ -133,12 +137,11 @@ async function onFileInputChange(event) {
 }
 
 function onUploadClick() {
-  const inputUpload = document.getElementById('input-upload') as HTMLInputElement
-  if (!inputUpload) {
+  if (!input.value) {
     return
   }
-  inputUpload.value = ''
-  inputUpload.click()
+  input.value.value = ''
+  input.value.click()
 }
 
 async function copyLink(file: IFile) {
@@ -146,6 +149,7 @@ async function copyLink(file: IFile) {
   navigator.clipboard.writeText(url)
     .then(() => {
       isToolsOverlayActive.value = false
+      window.$elvenNotify.add('Link copied to clipboard.')
     })
 }
 
@@ -183,14 +187,16 @@ function playAudio(file) {
 </script>
 
 <style scoped>
-.files-main {
+.files__container {
+  width: 95%;
+  max-width: 512px;
+  margin: auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.files-tools {
-  text-decoration: underline;
+.files__tools {
   background-color: var(--color-level-1);
   font-size: 1rem;
   width: 100%;
@@ -201,11 +207,11 @@ function playAudio(file) {
   align-items: center;
 }
 
-.files-tools-upload {
+.file__upload {
   margin-left: 12px;
 }
 
-.files-list {
+.files__list {
   height: 100%;
   width: 100%;
   display: flex;
@@ -228,7 +234,7 @@ function playAudio(file) {
   gap: 8px;
 }
 
-.file-item {
+.file__item {
   font-size: 0.9rem;
   line-height: 1.5rem;
   margin-top: 8px;
@@ -236,29 +242,29 @@ function playAudio(file) {
   margin-right: 12px;
 }
 
-.file-meta {
+.file__meta {
   display: flex;
   flex-direction: row;
   color: var(--color-text-inactive);
 }
 
-.file-main {
+.file__main {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.file-name {
+.file__name {
   font-size: 1.1rem;
   line-height: 2rem;
   letter-spacing: 0.0099rem;
 }
 
-.file-size {
+.file__size {
   font-size: 1rem;
 }
 
-.files-404 {
+.files__404 {
   background-color: var(--color-level-1);
   height: 240px;
   border-radius: var(--border-radius);
@@ -269,11 +275,11 @@ function playAudio(file) {
   gap: 24px;
 }
 
-.overlay-file-tools {
+.overlay__file-tools {
   width: 100%;
 }
 
-.ov-item {
+.overlay__item {
   height: 64px;
   width: 100%;
   font-size: 1rem;
@@ -283,7 +289,7 @@ function playAudio(file) {
   justify-content: center;
 }
 
-.ov-item:hover {
+.overlay__item:hover {
   background-color: var(--color-hover);
 }
 </style>

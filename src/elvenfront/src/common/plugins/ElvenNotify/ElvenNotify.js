@@ -38,20 +38,7 @@ export class theLogic {
         }
     }
 
-    static error(message){
-      ElvenNotify.componentData.addNotification('error', message)
+    static add(message){
+      ElvenNotify.componentData.addNotification(message)
     }
-
-    static warn(message){
-        ElvenNotify.componentData.addNotification('warn', message)
-    }
-
-    static info(message){
-        ElvenNotify.componentData.addNotification('info', message)
-    }
-
-    static success(message){
-        ElvenNotify.componentData.addNotification('success', message)
-    }
-
 }

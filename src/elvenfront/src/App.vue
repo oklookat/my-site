@@ -7,7 +7,7 @@
     </div>
     <div class="content">
       <div style="height: 16px;"></div>
-      <router-view/>
+      <router-view />
       <div style="height: 64px;"></div>
     </div>
     <div class="service-2" v-if="$route.name !== 'Login' && $route.name !== 'Logout'">
@@ -17,8 +17,8 @@
 </template>
 
 <script setup lang="ts">
-import {defineComponent} from 'vue'
-import Header from '@/components/Header/Header.vue'
+import Header from '@/components/parts/Header.vue'
+import '@/assets/fonts.css'
 </script>
 
 <style>
@@ -27,91 +27,82 @@ import Header from '@/components/Header/Header.vue'
   --border-radius: 6px;
 }
 
-:root {
-  /* MAIN UI START */
-  --color-scrollbar: #505050;
-  --color-scrollbar-hover: #707070;
-  /* HEADER START */
-  --color-header: #FFFFFF;
-  --color-header-active: #FFFFFF;
-  --color-header-text: #000000;
-  --color-header-hover: rgba(0, 0, 0, 0.03);
-  /* HEADER END */
-  --color-text: black;
-  --color-text-inactive: #404040;
-  --color-text-selection: #BAB0FF;
-  --color-placeholder: #808080;
-  --color-hover: rgba(0, 0, 0, 0.05);
-  --color-border: #F2F2F2;
-  --color-body: #E6E6E6;
-  --color-level-1: #FFFFFF;
-  --color-level-2: #FFFFFF;
-  --color-level-3: #FFFFFF;
-  /* MAIN UI END */
-  --color-helper: #8CE6E6;
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-body: #e6e6e6;
+    --color-text: black;
+    --color-text-inactive: #656565;
+    --color-text-selection: #b5a9ff;
+    --color-level-1: #ffffff;
+    --color-level-2: #ffffff;
+    --color-scrollbar: #505050;
+    --color-scrollbar-hover: #707070;
+    --color-placeholder: #808080;
+    --color-hover: rgba(0, 0, 0, 0.05);
+    --color-border: #f2f2f2;
+    --color-helper: #8ce6e6;
+    --color-header-active: #ffffff;
+    --color-header-text: #000000;
+  }
 }
 
-.router-link-active,
-.router-link-exact-active {
-  background-color: var(--color-hover);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-body: #101010;
+    --color-text: #fff;
+    --color-text-inactive: #a5a5a5;
+    --color-text-selection: #6952ff;
+    --color-level-1: #202020;
+    --color-level-2: #303030;
+    --color-scrollbar: #505050;
+    --color-scrollbar-hover: #707070;
+    --color-placeholder: #808080;
+    --color-hover: #303030;
+    --color-border: #2c2c2c;
+    --color-helper: #8ce6e6;
+    --color-header-active: #202020;
+    --color-header-text: white;
+  }
+}
+
+* {
+  box-sizing: border-box;
 }
 
 html,
 body {
-  min-height: 100vh;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding: 0;
+  height: 100vh;
+  min-height: 100vh;
+  width: 100vw;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
   color: var(--color-text);
   background-color: var(--color-body);
   text-underline-offset: 0.4em;
 }
 
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-scrollbar);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-scrollbar-hover);
-}
-
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 #app {
-  min-height: 100vh;
-}
-
-.active {
-  background-color: var(--color-hover);
-  border: none;
+  min-height: 100%;
 }
 
 .container {
-  min-height: 100vh;
   word-break: break-word;
-  hyphens: auto;
-  display: grid;
-  grid-template-rows: min-content 1fr min-content;
-  grid-auto-rows: 1px;
+  display: flex;
   flex-direction: column;
 }
 
-.service, .service-2 {
-  position: sticky;
+.service,
+.service-2 {
+  width: 100%;
   z-index: 7777;
 }
 
 .service {
   top: 0;
-  box-shadow: 0px 8px 8px 0px rgba(35, 60, 80, 0.1);
 }
 
 .service-2 {
@@ -120,11 +111,44 @@ a {
 
 .content {
   height: 100%;
-  margin: auto;
-  width: 95%;
+  width: 100%;
   font-size: 1.1rem;
   line-height: 1.46rem;
   letter-spacing: 0.0007rem;
+}
+
+.logo-text {
+  font-size: 1.2rem;
+  letter-spacing: 0.8rem;
+  text-indent: 0.8rem;
+  user-select: none;
+}
+
+.item {
+  cursor: pointer;
+  border-radius: 6px;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.item:hover {
+  background-color: var(--color-hover);
+}
+
+.active {
+  background-color: var(--color-hover);
+  border: none;
+}
+
+.no-scroll {
+  overflow: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 textarea {
@@ -151,7 +175,6 @@ input:focus::placeholder {
   color: transparent;
 }
 
-
 ::placeholder {
   color: var(--color-text);
   opacity: 45%;
@@ -161,37 +184,32 @@ input:focus::placeholder {
   outline: none;
 }
 
-.no-scroll {
-  overflow: hidden;
+button {
+  color: var(--color-text);
 }
 
-.logo-text {
-  font-size: 1.2rem;
-  letter-spacing: 0.8rem;
-  text-indent: 0.8rem;
-  user-select: none;
+button:disabled,
+button[disabled] {
+  color: var(--color-text-inactive);
 }
 
-.item {
-  cursor: pointer;
-  border-radius: 6px;
-  height: 100%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+/* SCROLLBAR START */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-.cursor-pointer {
-  cursor: pointer;
+::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar);
+  border-radius: 4px;
 }
 
-.item:hover {
-  background-color: var(--color-hover);
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-hover);
 }
+/* SCROLLBAR END */
 
-
-/* EDITOR.JS STYLING START */
-/* MAIN START */
+/* -------- EDITOR.JS -------- */
+/* GENERAL START */
 .codex-editor {
   z-index: unset;
 }
@@ -201,9 +219,8 @@ input:focus::placeholder {
   max-height: unset;
   max-width: unset;
 }
-
-/* MAIN END */
-/* EDITOR.JS LIGHT AND DARK THEME STYLING START */
+/* GENERAL END */
+/* THEME START */
 .cdx-button {
   background: var(--color-level-1);
   color: var(--color-text-inactive);
@@ -236,18 +253,18 @@ input:focus::placeholder {
 .ce-conversion-toolbar,
 .ce-settings,
 .ce-toolbar--opened {
-  background-color: var(--color-level-2);
+  background-color: var(--color-level-1);
   border: 1px solid var(--color-border);
 }
 
 .ce-conversion-tool__icon,
 .ce-toolbar__settings-btn {
-  background: var(--color-level-3);
+  background: var(--color-level-2);
 }
 
 .ce-inline-toolbar__actions input::placeholder,
 .ce-conversion-toolbar__label {
-  color: var(--color-text-inactive)
+  color: var(--color-text-inactive);
 }
 
 .codex-editor--narrow .ce-toolbox {
@@ -258,10 +275,10 @@ input:focus::placeholder {
 .ce-block--selected .ce-block__content {
   background: var(--color-text-selection);
 }
+/* THEME END */
+/* -------- EDITOR.JS END -------- */
 
-/* EDITOR.JS LIGHT AND DARK THEME STYLING END */
-/* EDITOR.JS STYLING END */
-
+/* MULTIMEDIA & ADAPTIVE START */
 img,
 video {
   min-height: 240px;
@@ -279,9 +296,6 @@ video {
 }
 
 @media screen and (min-width: 512px) {
-  .content {
-    width: 500px;
-  }
 }
 
 @media screen and (min-width: 604px) {
@@ -297,9 +311,6 @@ video {
     width: 40%;
     height: 40%;
   }
-  .content {
-    width: 712px;
-  }
-
 }
+/* MULTIMEDIA & ADAPTIVE END */
 </style>

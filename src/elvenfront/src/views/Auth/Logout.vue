@@ -3,20 +3,14 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-import AuthAdapter from "@/common/adapters/Main/AuthAdapter";
+<script setup lang="ts">
+import { onMounted } from "@vue/runtime-core"
+import AuthAdapter from "@/common/adapters/Main/AuthAdapter"
 
-export default defineComponent({
-  name: 'Logout',
-  async mounted() {
-    await AuthAdapter.logout()
-  }
+onMounted(async () => {
+  await AuthAdapter.logout()
 })
 </script>
 
 <style scoped>
-.logout{
-}
-
 </style>

@@ -9,11 +9,11 @@ interface IE_ERROR {
 export default class ErrorHandler {
     public static sortError(error) { // axios error
         if (error.response) {
-            window.$elvenNotify.error(`Неизвестная ошибка. Код: ${error.response.status}`)
+            window.$elvenNotify.add(`Unknown error. Code: ${error.response.status}`)
         } else if (error.request) {
-            window.$elvenNotify.error(`Нет ответа от сервера.`)
+            window.$elvenNotify.add(`No response from server.`)
         } else {
-            window.$elvenNotify.error(`${error.message}`)
+            window.$elvenNotify.add(`${error.message}`)
         }
     }
 }

@@ -1,137 +1,77 @@
 <template>
-  <div class="progressbar-container">
-    <div id="progressbar-line">
-    </div>
+  <div class="progressbar__container">
+    <div id="progressbar__line" :style="{ width: `${percents}%`, height: height}"></div>
   </div>
 </template>
 
-<script>
-export default {
-  name: "ElvenProgressC",
-  data() {
-    return {
-      // service vars start //
-      SERVICE: 'ELVEN_PROGRESS_C',
-      progressBar: undefined,
-      isProgressBarActive: true,
-      basicLoading: false, // wrap
-      setPercents: 0, // wrap
-      percents: 0,
-      closeBar: false,
-      // service vars end //
+<script setup lang="ts">
+import { onUnmounted, ref } from '@vue/runtime-core'
+const SERVICE = 'ELVEN_PROGRESS_C'
 
-      //// SETTINGS START ////
-      // default settings
-      progressBarHeight: '3px',
-      moveSpeed: 100,
-      basicLoadingStartSpeed: 30,
-      basicLoadingFinishSpeed: 5,
-      basicLoadingStartTo: 45,
-      //// SETTINGS END ////
+//// settings
+let height = ref('3px')
+let moveSpeed = 100
+let loadingStartTo = 45
+let loadingStartSpeed = 30
+let loadingFinishSpeed = 5
+
+let percents = ref(0)
+
+onUnmounted(() => {
+  destroy()
+})
+
+function destroy() {
+  percents.value = 0
+}
+
+function move() {
+  const intervalID = setInterval(() => {
+    if (percents.value < 100) {
+      percents.value++
+    } else {
+      clearInterval(intervalID)
     }
-  },
-  watch: {
-    // wraps from app.$elvenProgress
-    setPercents: function () {
-      this.percents = this.setPercents
-      this.progressBar.style.width = `${this.percents}%`
-    },
-    basicLoading: function () {
-      this.basicLoadingFunc(this.basicLoading)
-    },
-    closeBar: function () {
-      this.closeBarFunc()
-    }
-  },
-  mounted() {
-    this.progressBar = document.getElementById('progressbar-line')
-    this.openBar()
+  }, moveSpeed)
+}
 
-    // user settings are applied here
-    this.progressBar.style.height = this.progressBarHeight
-  },
-  unmounted() {
-    this.closeBarFunc()
-  },
-  methods: {
-    openBar() {
-      this.percents = 0
-      this.progressBar.style.width = '0'
-      this.isProgressBarActive = true
-    },
-    closeBarFunc() {
-      this.isProgressBarActive = false
-      this.basicLoading = false
-
-      this.percents = 0
-      this.progressBar.style.width = '0'
-    },
-    move() {
-      const intervalID = setInterval(() => {
-        if (this.percents < 100) {
-          this.percents++
-          this.progressBar.style.width = `${this.percents}%`
-        } else {
-          clearInterval(intervalID)
-        }
-      }, this.moveSpeed)
-    },
-
-    // BASIC LOADING START //
-    basicLoadingFunc(isStart) {
-      if (isStart) {
-        const intervalID = setInterval(() => {
-          if (this.percents < this.basicLoadingStartTo) {
-            this.percents++
-            this.progressBar.style.width = `${this.percents}%`
-          } else {
-            clearInterval(intervalID)
-            // we don't not close bar, because waiting for user call the finish function
-          }
-        }, this.basicLoadingStartSpeed)
+function loading(start: boolean) {
+  if (start) {
+    const intervalID = setInterval(() => {
+      // freeze progress at loadingStartTo
+      if (percents.value < loadingStartTo) {
+        percents.value++
       } else {
-        // finish function
-        this.percents = this.basicLoadingStartTo
-        const intervalID = setInterval(() => {
-          if (this.percents < 100) {
-            this.percents++
-            this.progressBar.style.width = `${this.percents}%`
-          } else {
-            clearInterval(intervalID)
-            this.closeBarFunc()
-          }
-        }, this.basicLoadingFinishSpeed)
+        clearInterval(intervalID)
       }
-    },
-    // BASIC LOADING END //
+    }, loadingStartSpeed)
+    return
   }
+  // finish (go to 100 and destroy)
+  percents.value = loadingStartTo
+  const intervalID = setInterval(() => {
+    if (percents.value < 100) {
+      percents.value++
+    } else {
+      clearInterval(intervalID)
+      destroy()
+    }
+  }, loadingFinishSpeed)
+  return
 }
 </script>
 
 <style scoped>
-.progressbar-container {
+.progressbar__container {
   cursor: default;
   position: absolute;
   width: 100%;
   height: 6px;
 }
 
-#progressbar-line {
+#progressbar__line {
   height: 100%;
   width: 0;
-  background-color: #A097DC;
-}
-
-.slide-fade-enter-active {
-  transition: all .3s ease;
-}
-
-.slide-fade-leave-active {
-  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
-}
-
-.slide-fade-enter, .slide-fade-leave-to {
-  transform: translateX(10px);
-  opacity: 0;
+  background-color: #a097dc;
 }
 </style>

@@ -1,31 +1,31 @@
 <template>
-  <div class="ui-pagination" v-if="active">
-    <div class="ui-pagination__paginator">
-      <div class="ui-pagination__prev-page">
+  <div class="pagination__container" v-if="active">
+    <div class="pagination__paginator">
+      <div class="pagination__prev-page">
         <div
-          class="ui-pagination__prev-page-butt"
+          class="pagination__prev-page-butt"
           v-if="currentPageData !== 1"
           v-on:click="onPrevButton"
-        >назад</div>
+        >prev</div>
       </div>
-      <div class="ui-pagination__pages-input">
+      <div class="pagination__pages-input">
         <input
-          class="ui-pagination__pages-input-num"
+          class="pagination__pages-input-num"
           type="text"
           placeholder="Номер страницы"
           v-model="inputPage"
           @input="onPageInput"
         />
       </div>
-      <div class="ui-pagination__next-page">
+      <div class="pagination__next-page">
         <div
-          class="ui-pagination__next-page-butt"
+          class="pagination__next-page-butt"
           v-if="currentPageData < totalPagesData"
           v-on:click="onNextButton"
-        >вперед</div>
+        >next</div>
       </div>
     </div>
-    <div class="ui-pagination__total-pages">всего: {{ totalPagesData }}</div>
+    <div class="pagination__total">pages: {{ totalPagesData }}</div>
   </div>
 </template>
 
@@ -82,7 +82,7 @@ function onPrevButton() {
 </script>
 
 <style scoped>
-.ui-pagination {
+.pagination__container {
   background-color: var(--color-level-1);
   height: 82px;
   display: flex;
@@ -91,45 +91,45 @@ function onPrevButton() {
   gap: 14px;
 }
 
-.ui-pagination__paginator {
+.pagination__paginator {
   height: 100%;
   width: 100%;
   display: flex;
   flex-direction: row;
 }
 
-.ui-pagination__next-page,
-.ui-pagination__prev-page {
+.pagination__next-page,
+.pagination__prev-page {
   width: 25%;
 }
 
-.ui-pagination__next-page-butt,
-.ui-pagination__prev-page-butt {
+.pagination__next-page-butt,
+.pagination__prev-page-butt {
   cursor: pointer;
   width: 100%;
   height: 100%;
 }
 
-.ui-pagination__next-page-butt:hover,
-.ui-pagination__prev-page-butt:hover {
+.pagination__next-page-butt:hover,
+.pagination__prev-page-butt:hover {
   background-color: var(--color-hover);
 }
 
-.ui-pagination__next-page-butt,
-.ui-pagination__prev-page-butt,
-.ui-pagination__pages-input {
+.pagination__next-page-butt,
+.pagination__prev-page-butt,
+.pagination__pages-input {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
 }
 
-.ui-pagination__pages-input {
+.pagination__pages-input {
   width: 50%;
   background-color: var(--color-level-2);
 }
 
-.ui-pagination__pages-input > input {
+.pagination__pages-input > input {
   border: none;
   background-color: var(--color-hover);
   width: 100%;
@@ -139,7 +139,7 @@ function onPrevButton() {
   box-sizing: border-box;
 }
 
-.ui-pagination__total-pages {
+.pagination__total {
   padding-bottom: 6px;
 }
 </style>
