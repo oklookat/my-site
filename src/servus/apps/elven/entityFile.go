@@ -25,25 +25,24 @@ type entityFile struct {
 // by = created (uploaded)
 // start = newest (DESC), oldest (ASC)
 func (f *entityFile) controllerGetAll(response http.ResponseWriter, request *http.Request) {
+	// validate query params.
 	val, em, _ := f.validatorControllerGetAll(request, true)
 	if em.HasErrors() {
 		f.Send(response, em.GetJSON(), 400)
 		return
 	}
-	files, err := val.getAll()
+	// get files by query params.
+	files, totalPages, err := val.getAll()
 	if err != nil {
 		instance.Logger.Error(fmt.Sprintf("files get error: %v", err.Error()))
 		f.Send(response, errorMan.ThrowServer(), 500)
 		return
 	}
-	// generate response with pagination
+	// generate response with pagination.
 	var responseContent = ResponseContent{}
+	responseContent.Meta.CurrentPage = val.page
+	responseContent.Meta.TotalPages = totalPages
 	responseContent.Meta.PerPage = filesPageSize
-	//if len(files) >= filesPageSize {
-	//	var lastElement = len(files) - 1
-	//	responseContent.Meta.Next = files[lastElement].ID
-	//	files = files[:lastElement]
-	//}
 	responseContent.Data = files
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)

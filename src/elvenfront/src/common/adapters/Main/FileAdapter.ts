@@ -1,12 +1,13 @@
 import Axios from '@/common/adapters/Axios.js'
+import { IFilesData } from '@/types/file'
 
 export default class FileAdapter {
 
-    public static async getFiles(cursor = '', start = 'newest'): Promise<IFilesData> {
+    public static async getFiles(page = 1, start = 'newest'): Promise<IFilesData> {
         const config = {
             params:
                 {
-                    cursor: cursor, start: start
+                    page: page, start: start
                 }
         }
         return Axios.get('files', config)

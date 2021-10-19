@@ -45,7 +45,7 @@ const active = ref(false)
 const totalPagesData = ref(1)
 const currentPageData = ref(1)
 const pageInputTimeoutID: Ref<ReturnType<typeof setTimeout> | null> = ref(null)
-const inputPage: Ref<number> = ref(1)
+const inputPage: Ref<string> = ref('1')
 
 
 watch(() => props.totalPages, (newValue, prevValue) => {
@@ -55,7 +55,7 @@ watch(() => props.totalPages, (newValue, prevValue) => {
 
 watch(() => props.currentPage, (newValue, prevValue) => {
   currentPageData.value = newValue
-  inputPage.value = newValue
+  inputPage.value = newValue.toString()
 })
 
 function onPageInput() {
@@ -63,12 +63,17 @@ function onPageInput() {
     clearTimeout(pageInputTimeoutID.value)
   }
   pageInputTimeoutID.value = setTimeout(() => {
-    const bad = isNaN(inputPage.value) || inputPage.value > totalPagesData.value || inputPage.value < 1
+    let bad = isNaN(inputPage.value)
     if (bad) {
-      return 0
+      return
     }
-    currentPageData.value = inputPage.value
-    emit('changed', inputPage.value)
+    const inputPageInt = parseInt(inputPage.value, 10)
+    bad = inputPageInt > totalPagesData.value || inputPageInt < 1 || inputPageInt === currentPageData.value
+    if (bad) {
+      return
+    }
+    currentPageData.value = inputPageInt
+    emit('changed', currentPageData.value)
   }, 1000)
 }
 
@@ -83,16 +88,17 @@ function onPrevButton() {
 
 <style scoped>
 .pagination__container {
+  border-radius: 8px;
   background-color: var(--color-level-1);
   height: 82px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .pagination__paginator {
-  height: 100%;
+  height: 36px;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -101,6 +107,14 @@ function onPrevButton() {
 .pagination__next-page,
 .pagination__prev-page {
   width: 25%;
+}
+
+.pagination__next-page-butt {
+  border-top-right-radius: 8px;
+}
+
+.pagination__prev-page-butt {
+  border-top-left-radius: 8px;
 }
 
 .pagination__next-page-butt,
@@ -137,9 +151,5 @@ function onPrevButton() {
   text-align: center;
   font-size: 1.2rem;
   box-sizing: border-box;
-}
-
-.pagination__total {
-  padding-bottom: 6px;
 }
 </style>

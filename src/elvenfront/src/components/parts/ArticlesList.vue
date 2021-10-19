@@ -41,7 +41,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'selected', article: IArticle): void
-    (e: 'update', value: string): void
 }>()
 
 function convertDate(date) {

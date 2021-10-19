@@ -34,7 +34,7 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 		a.Send(response, em.GetJSON(), 400)
 		return
 	}
-	// get articles based on query params.
+	// get articles by query params.
 	articles, pages, err := val.getAll()
 	if err != nil {
 		instance.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))

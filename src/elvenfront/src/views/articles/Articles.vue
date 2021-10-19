@@ -56,7 +56,7 @@
     <Pagination
       :total-pages="totalPages"
       :current-page="currentPage"
-      v-on:changed="getArticles($event)"
+      @changed="getArticles($event)"
     ></Pagination>
   </div>
 
@@ -110,7 +110,6 @@ onMounted(async () => {
 async function getArticles(pageA = page.value, showA = show.value, sortByA = sortBy.value, sortFirstA = sortFirst.value) {
   page.value = pageA
   show.value = showA
-  console.log(show.value)
   sortBy.value = sortByA
   sortFirst.value = sortFirstA
   isArticlesLoaded.value = false

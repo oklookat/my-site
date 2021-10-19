@@ -1,0 +1,206 @@
+<script lang="ts">
+  import { createEventDispatcher } from "svelte";
+  import type { IFile } from "@/types/file";
+  import Dates from "@/common/tools/Dates";
+  import Sizes from "@/common/tools/Sizes.js";
+  import Extensions from "@/common/tools/Extensions";
+  import Overlay from "@/components/ui/Overlay.svelte";
+
+  let selected: IFile | null = null;
+  let selectionOverlay = false;
+
+  export let files: Array<IFile> = [];
+  let normalized: Array<IFile> = [];
+
+  $: watchNormalized(files);
+  function watchNormalized(files: Array<IFile>) {
+    normalized = files.map((file) => {
+      file = converter(file);
+      return file;
+    });
+  }
+
+  const dispatch = createEventDispatcher();
+
+  function onSelected(file: IFile) {
+    selectionOverlay = true;
+    selected = file;
+    dispatch("selected", file);
+  }
+
+  function onDelete(file: IFile) {
+    selectionOverlay = false;
+    dispatch("delete", file);
+  }
+
+  async function copyLink(file: IFile) {
+    navigator.clipboard
+      .writeText(file.path)
+      .then(() => {
+        selectionOverlay = false;
+        window.$elvenNotify.add("Link copied to clipboard.");
+      })
+      .catch(() => {
+        window.$elvenNotify.add("Copy to clipboard: not have permission.");
+      });
+  }
+
+  // convert file path, extension etc
+  function converter(file: IFile): IFile {
+    file.extension = convertExtension(file.extension);
+    file.path = convertPreviewPath(file.path);
+    return file;
+  }
+
+  function playAudio(path: string) {
+    window.$elvenPlayer.play(path);
+  }
+
+  function convertDate(date) {
+    return Dates.convert(date);
+  }
+
+  function convertSize(size) {
+    return Sizes.convert(size);
+  }
+
+  function convertExtension(extension) {
+    return Extensions.getReadable(extension);
+  }
+
+  function convertPreviewPath(path) {
+    return `${import.meta.env.VITE_UPLOADS_URL}/${path}`;
+  }
+</script>
+
+<main>
+  {#if normalized && normalized.length > 0}
+    <div class="files__list">
+      {#each normalized as file (file.id)}
+        <div class="file" on:click={() => onSelected(file)}>
+          <div class="file__meta">
+            <div class="file__item file__uploaded-date">
+              {convertDate(file.created_at)}
+            </div>
+          </div>
+          <div class="file__main">
+            {#if file.extension === "IMAGE"}
+              <div class="file__item file__preview" on:click|stopPropagation>
+                <img src={file.path} />
+              </div>
+            {:else if file.extension === "VIDEO"}
+              <div class="file__item file__preview" on:click|stopPropagation>
+                <video controls src={file.path} />
+              </div>
+            {/if}
+            <div class="file__item file__name">{file.original_name}</div>
+            <div class="file__item file__size">{convertSize(file.size)}</div>
+          </div>
+        </div>
+      {/each}
+
+      <Overlay
+        bind:active={selectionOverlay}
+        on:deactivated={() => {
+          selectionOverlay = false;
+          selected = null;
+        }}
+      >
+        <div class="overlay__selected">
+          <div
+            class="overlay__item file__play"
+            v-if="selected.extension === 'AUDIO'"
+            v-on:click="playAudio(selected.path)"
+          >
+            play
+          </div>
+          <div
+            class="overlay__item file__copy-link"
+            v-on:click="copyLink(selected)"
+          >
+            copy link
+          </div>
+          <div
+            class="overlay__item file__delete"
+            v-on:click="onDelete(selected)"
+          >
+            delete
+          </div>
+        </div>
+      </Overlay>
+    </div>
+  {/if}
+</main>
+
+<style>
+  .files__list {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 42px;
+    gap: 12px;
+  }
+
+  .file {
+    box-shadow: 0 0 41px 0 rgba(0, 0, 0, 0.05);
+    min-height: 42px;
+    border-radius: var(--border-radius);
+    background-color: var(--color-level-1);
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 12px;
+    gap: 8px;
+  }
+
+  .file__item {
+    font-size: 0.9rem;
+    line-height: 1.5rem;
+    margin-top: 8px;
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  .file__meta {
+    display: flex;
+    flex-direction: row;
+    color: var(--color-text-inactive);
+  }
+
+  .file__main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .file__name {
+    font-size: 1.1rem;
+    line-height: 2rem;
+    letter-spacing: 0.0099rem;
+  }
+
+  .file__size {
+    font-size: 1rem;
+  }
+
+  .overlay__selected {
+    width: 100%;
+  }
+
+  .overlay__item {
+    height: 64px;
+    width: 100%;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .overlay__item:hover {
+    background-color: var(--color-hover);
+  }
+</style>

@@ -62,10 +62,9 @@ func (a *ArticleContent) Scan(value interface{}) error {
 }
 
 // getAll - get articles by queryArticleGetAll.
-func (q *queryArticleGetAll) getAll() (articles []ModelArticle, pagesCount int, err error) {
+func (q *queryArticleGetAll) getAll() (articles []ModelArticle, totalPages int, err error) {
 	var query string
 	var queryCount string
-	// get pages count
 	var by = q.by
 	var start = q.start
 	switch q.show {
@@ -81,17 +80,20 @@ func (q *queryArticleGetAll) getAll() (articles []ModelArticle, pagesCount int, 
 		break
 	}
 	// get pages count.
-	pagesCount = 1
-	err = instance.DB.Conn.Get(&pagesCount, queryCount)
+	totalPages = 1
+	err = instance.DB.Conn.Get(&totalPages, queryCount)
 	err = instance.DB.CheckError(err)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, 0, nil
 	}
-	pagesCount = int(math.Round(float64(pagesCount / articlesPageSize)))
-	// get articles.
-	rows, err := instance.DB.Conn.Queryx(query, articlesPageSize, (q.page * articlesPageSize) - 1)
-	err = instance.DB.CheckError(err)
 	articles = make([]ModelArticle, 0)
+	totalPages = int(math.Round(float64(totalPages / articlesPageSize)))
+	if q.page > totalPages {
+		return
+	}
+	// get articles.
+	rows, err := instance.DB.Conn.Queryx(query, articlesPageSize, (q.page - 1) * articlesPageSize)
+	err = instance.DB.CheckError(err)
 	for rows.Next() {
 		article := ModelArticle{}
 		err = rows.StructScan(&article)

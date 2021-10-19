@@ -1,0 +1,300 @@
+<script lang="ts">
+  import { Router } from "svelte-router-spa";
+  import { routes } from "./routes";
+</script>
+
+<main>
+  <Router {routes} />
+</main>
+
+<style>
+  :root {
+    --header-height: 52px;
+    --border-radius: 6px;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --color-body: #e6e6e6;
+      --color-text: black;
+      --color-text-inactive: #656565;
+      --color-text-selection: #b5a9ff;
+      --color-level-1: #ffffff;
+      --color-level-2: #ffffff;
+      --color-scrollbar: #505050;
+      --color-scrollbar-hover: #707070;
+      --color-placeholder: #808080;
+      --color-hover: rgba(0, 0, 0, 0.05);
+      --color-border: #f2f2f2;
+      --color-helper: #8ce6e6;
+      --color-header-active: #ffffff;
+      --color-header-text: #000000;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-body: #101010;
+      --color-text: #fff;
+      --color-text-inactive: #a5a5a5;
+      --color-text-selection: #6952ff;
+      --color-level-1: #202020;
+      --color-level-2: #303030;
+      --color-scrollbar: #505050;
+      --color-scrollbar-hover: #707070;
+      --color-placeholder: #808080;
+      --color-hover: #303030;
+      --color-border: #2c2c2c;
+      --color-helper: #8ce6e6;
+      --color-header-active: #202020;
+      --color-header-text: white;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  body {
+    font-family: "Roboto", sans-serif;
+    color: var(--color-text);
+    background-color: var(--color-body);
+    text-underline-offset: 0.4em;
+  }
+
+  #app {
+    min-height: 100%;
+  }
+
+  .container {
+    word-break: break-word;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .service,
+  .service-2 {
+    width: 100%;
+    z-index: 7777;
+  }
+
+  .service {
+    top: 0;
+  }
+
+  .service-2 {
+    bottom: 0;
+  }
+
+  .content {
+    height: 100%;
+    width: 100%;
+    font-size: 1.1rem;
+    line-height: 1.46rem;
+    letter-spacing: 0.0007rem;
+  }
+
+  .logo-text {
+    font-size: 1.2rem;
+    letter-spacing: 0.8rem;
+    text-indent: 0.8rem;
+    user-select: none;
+  }
+
+  .item {
+    cursor: pointer;
+    border-radius: 6px;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .item:hover {
+    background-color: var(--color-hover);
+  }
+
+  .active {
+    background-color: var(--color-hover);
+    border: none;
+  }
+
+  .no-scroll {
+    overflow: hidden;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  textarea {
+    font-family: inherit;
+    color: inherit;
+    resize: none;
+    overflow: hidden;
+  }
+
+  input {
+    color: var(--color-text);
+    background-color: var(--color-level-1);
+    border: 1px solid var(--color-border);
+    min-height: 24px;
+    border-radius: 4px;
+    text-indent: 6px;
+  }
+
+  input::placeholder {
+    opacity: 20%;
+  }
+
+  input:focus::placeholder {
+    color: transparent;
+  }
+
+  ::placeholder {
+    color: var(--color-text);
+    opacity: 45%;
+  }
+
+  :focus {
+    outline: none;
+  }
+
+  button {
+    color: var(--color-text);
+  }
+
+  button:disabled,
+  button[disabled] {
+    color: var(--color-text-inactive);
+  }
+
+  /* SCROLLBAR START */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-scrollbar);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-scrollbar-hover);
+  }
+  /* SCROLLBAR END */
+
+  /* -------- EDITOR.JS -------- */
+  /* GENERAL START */
+  .codex-editor {
+    z-index: unset;
+  }
+
+  .ce-block__content,
+  .ce-toolbar__content {
+    max-height: unset;
+    max-width: unset;
+  }
+  /* GENERAL END */
+  /* THEME START */
+  .cdx-button {
+    background: var(--color-level-1);
+    color: var(--color-text-inactive);
+    border: 1px solid var(--color-border);
+  }
+
+  .cdx-button:hover {
+    background: var(--color-hover);
+    border: 1px solid var(--color-hover);
+  }
+
+  .cdx-settings-button:hover {
+    background-color: var(--color-hover);
+  }
+
+  .ce-inline-tool,
+  .codex-editor svg {
+    color: var(--color-text);
+  }
+
+  .ce-inline-tool:hover,
+  .ce-inline-toolbar__dropdown:hover,
+  .ce-toolbar__settings-btn:hover,
+  .ce-settings__button:hover {
+    background-color: var(--color-hover);
+  }
+
+  .ce-inline-tool-input,
+  .ce-inline-toolbar,
+  .ce-conversion-toolbar,
+  .ce-settings,
+  .ce-toolbar--opened {
+    background-color: var(--color-level-1);
+    border: 1px solid var(--color-border);
+  }
+
+  .ce-conversion-tool__icon,
+  .ce-toolbar__settings-btn {
+    background: var(--color-level-2);
+  }
+
+  .ce-inline-toolbar__actions input::placeholder,
+  .ce-conversion-toolbar__label {
+    color: var(--color-text-inactive);
+  }
+
+  .codex-editor--narrow .ce-toolbox {
+    background-color: var(--color-level-1);
+  }
+
+  ::selection,
+  .ce-block--selected .ce-block__content {
+    background: var(--color-text-selection);
+  }
+  /* THEME END */
+  /* -------- EDITOR.JS END -------- */
+
+  /* MULTIMEDIA & ADAPTIVE START */
+  img,
+  video {
+    min-height: 240px;
+    min-width: 240px;
+    object-fit: fill;
+    border-radius: var(--border-radius);
+  }
+
+  @media screen and (min-width: 1px) {
+    img,
+    video {
+      max-width: 100%;
+      max-height: 320px;
+    }
+  }
+
+  @media screen and (min-width: 512px) {
+  }
+
+  @media screen and (min-width: 604px) {
+    img,
+    video {
+      max-width: 60%;
+      max-height: 60%;
+    }
+  }
+  @media screen and (min-width: 1365px) {
+    img,
+    video {
+      width: 40%;
+      height: 40%;
+    }
+  }
+  /* MULTIMEDIA & ADAPTIVE END */
+</style>

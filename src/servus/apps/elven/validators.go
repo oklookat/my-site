@@ -168,12 +168,6 @@ func (f *entityFile) validatorControllerGetAll(request *http.Request, isAdmin bo
 		}
 	}
 	val.start = start
-	// validate cursor param.
-	var cursor = queryParams.Get("cursor")
-	if len(cursor) == 0 {
-		cursor = "0"
-	}
-	val.cursor = cursor
 	// validate by param.
 	var by = queryParams.Get("by")
 	if len(by) == 0 {
@@ -191,5 +185,16 @@ func (f *entityFile) validatorControllerGetAll(request *http.Request, isAdmin bo
 		break
 	}
 	val.by = by
+	// validate page param.
+	var pageStr = queryParams.Get("page")
+	if len(pageStr) == 0 {
+		pageStr = "0"
+	}
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page <= 0 {
+		em.Add("page", "wrong value provided.")
+	} else {
+		val.page = page
+	}
 	return
 }
