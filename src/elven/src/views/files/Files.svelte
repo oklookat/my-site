@@ -86,39 +86,39 @@
   }
 </script>
 
-<main>
-  <div class="files__container">
-    <div class="files__tools">
-      <div class="file__upload">
-        <div class="file__upload-butt" on:click={() => onUploadClick()}>
-          upload
-        </div>
-        <input
-          bind:this={input}
-          id="file__input"
-          type="file"
-          multiple
-          style="display: none"
-          on:input={onFileInputChange}
-        />
+<div class="files__container">
+  <div class="files__tools">
+    <div class="file__upload">
+      <div class="file__upload-butt" on:click={() => onUploadClick()}>
+        upload
       </div>
+      <input
+        bind:this={input}
+        id="file__input"
+        type="file"
+        multiple
+        style="display: none"
+        on:input={onFileInputChange}
+      />
     </div>
-
-    {#if filesLoaded && files.length < 1}
-      <div class="files__404">
-        <div>no files :(</div>
-      </div>
-    {/if}
-
-    <FilesList :files="files" @delete="deleteFile($event)" />
-
-    <Pagination
-      :total-pages="totalPages"
-      :current-page="currentPage"
-      @changed="getFiles($event)"
-    />
   </div>
-</main>
+
+  {#if filesLoaded && files.length < 1}
+    <div class="files__404">
+      <div>no files :(</div>
+    </div>
+  {/if}
+
+  {#if filesLoaded && files.length > 0}
+  <FilesList files={files} on:delete={(e) => deleteFile(e.detail)} />
+  {/if}
+
+  <Pagination
+    totalPages={totalPages}
+    currentPage={currentPage}
+    on:changed={(e) => getFiles(e.detail)}
+  />
+</div>
 
 <style scoped>
   .files__container {

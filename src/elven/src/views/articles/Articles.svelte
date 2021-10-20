@@ -102,6 +102,7 @@
   }
 
   async function setSort(sort) {
+    window.$elvenNotify.add('testing')
     sortBy = sort;
     page = 1;
     await getArticles();
@@ -124,114 +125,116 @@
   }
 </script>
 
-<main>
-  <div class="articles__container">
-    <div class="articles__create">
-      <!-- <RouterLink :to="{ name: 'ArticleCreate' }">create</RouterLink> -->
-    </div>
-    <div class="articles__toolbar">
-      <div class="articles__show">
-        {#if show === "published"}
-          <div
-            class="articles__item articles__show-published"
-            on:click={() => getArticles(undefined, "drafts")}
-          >
-            show published
-          </div>
-        {/if}
-        {#if show === "drafts"}
-          <div
-            class="articles__item articles__show-drafts"
-            on:click={() => getArticles(undefined, "published")}
-          >
-            show drafts
-          </div>
-        {/if}
-      </div>
-      <div class="articles__sort-by-date">
-        {#if sortFirst === "newest"}
-          <div class="articles__item" on:click={() => setSortDate("oldest")}>
-            newest
-          </div>
-        {/if}
-        {#if sortFirst === "oldest"}
-          <div class="articles__item" on:click={() => setSortDate("newest")}>
-            oldest
-          </div>
-        {/if}
-      </div>
-      <div class="articles__sort-by">
-        {#if sortBy === "updated"}
-          <div class="articles__item" on:click={() => setSort("published")}>
-            by updated date
-          </div>
-        {/if}
-        {#if sortBy === "published"}
-          <div
-            class="articles__item"
-            v-if="sortBy === 'published'"
-            on:click={() => setSort("created")}
-          >
-            by published date
-          </div>
-        {/if}
-        {#if sortBy === "created"}
-          <div class="articles__item" on:click={() => setSort("updated")}>
-            by created date
-          </div>
-        {/if}
-      </div>
-
-      <ArticlesList articles="articles" on:selected={selectArticle} />
-
-      <div class="articles__404" v-if="isArticlesLoaded && articles.length < 1">
-        <div>no articles :(</div>
-      </div>
-
-      <Pagination
-        total-pages="totalPages"
-        current-page="currentPage"
-        on:changed={getArticles}
-      />
-    </div>
-
-    <Overlay
-      bind:active={isToolsOverlayActive}
-      on:deactivated={() => (isToolsOverlayActive = false)}
-    >
-      <!-- tools -->
-      <div class="overlay__article-manage" v-if="isToolsOverlayActive">
-        {#if selectedArticle && selectedArticle.is_published}
-          <div
-            class="overlay__item make__draft"
-            on:click={() => makeDraftArticle(selectedArticle)}
-          >
-            make a draft
-          </div>
-        {:else}
-          <div
-            class="overlay__item publish"
-            v-on:click="publishArticle(selectedArticle)"
-          >
-            publish
-          </div>
-        {/if}
-        <div
-          class="overlay__item edit"
-          on:click={() => editArticle(selectedArticle)}
-        >
-          edit
-        </div>
-        <div
-          class="overlay__item delete"
-          on:click={() => deleteArticle(selectedArticle)}
-        >
-          delete
-        </div>
-      </div>
-    </Overlay>
+<div class="articles__container">
+  <div class="articles__create">
+    <a href="#/articles/create">create</a>
   </div>
-</main>
+  <div class="articles__toolbar">
+    <div class="articles__show">
+      {#if show === "published"}
+        <div
+          class="articles__item articles__show-published"
+          on:click={() => getArticles(undefined, "drafts")}
+        >
+          show published
+        </div>
+      {/if}
+      {#if show === "drafts"}
+        <div
+          class="articles__item articles__show-drafts"
+          on:click={() => getArticles(undefined, "published")}
+        >
+          show drafts
+        </div>
+      {/if}
+    </div>
+    <div class="articles__sort-by-date">
+      {#if sortFirst === "newest"}
+        <div class="articles__item" on:click={() => setSortDate("oldest")}>
+          newest
+        </div>
+      {/if}
+      {#if sortFirst === "oldest"}
+        <div class="articles__item" on:click={() => setSortDate("newest")}>
+          oldest
+        </div>
+      {/if}
+    </div>
+    <div class="articles__sort-by">
+      {#if sortBy === "updated"}
+        <div class="articles__item" on:click={() => setSort("published")}>
+          by updated date
+        </div>
+      {/if}
+      {#if sortBy === "published"}
+        <div
+          class="articles__item"
+          v-if="sortBy === 'published'"
+          on:click={() => setSort("created")}
+        >
+          by published date
+        </div>
+      {/if}
+      {#if sortBy === "created"}
+        <div class="articles__item" on:click={() => setSort("updated")}>
+          by created date
+        </div>
+      {/if}
+    </div>
+  </div>
+
+  {#if articles && articles.length > 0}
+    <ArticlesList {articles} on:selected={(e) => selectArticle(e.detail)} />
+  {/if}
+
+  {#if isArticlesLoaded && articles.length < 1}
+    <div class="articles__404">
+      <div>no articles :(</div>
+    </div>
+  {/if}
+
+  <Pagination
+    {totalPages}
+    {currentPage}
+    on:changed={(e) => getArticles(e.detail)}
+  />
+
+  <Overlay
+    bind:active={isToolsOverlayActive}
+    on:deactivated={() => (isToolsOverlayActive = false)}
+  >
+    <!-- tools -->
+    <div class="overlay__article-manage" v-if="isToolsOverlayActive">
+      {#if selectedArticle && selectedArticle.is_published}
+        <div
+          class="overlay__item make__draft"
+          on:click={() => makeDraftArticle(selectedArticle)}
+        >
+          make a draft
+        </div>
+      {:else}
+        <div
+          class="overlay__item publish"
+          v-on:click="publishArticle(selectedArticle)"
+        >
+          publish
+        </div>
+      {/if}
+      <div
+        class="overlay__item edit"
+        on:click={() => editArticle(selectedArticle)}
+      >
+        edit
+      </div>
+      <div
+        class="overlay__item delete"
+        on:click={() => deleteArticle(selectedArticle)}
+      >
+        delete
+      </div>
+    </div>
+  </Overlay>
+</div>
 
 <style>
   .articles__container {

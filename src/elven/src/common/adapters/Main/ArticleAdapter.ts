@@ -1,4 +1,4 @@
-import Axios from '@/common/adapters/Axios.js'
+import {Axios} from '@/common/adapters/Axios'
 import type { IArticle, IArticlesData } from '@/types/article'
 
 class ArticleAdapter {

@@ -24,17 +24,15 @@
   }
 </script>
 
-<main>
-  {#if active}
-    <div class="overlay__container" on:click|self={deactivate}>
-      <div class="overlay__main">
-        <div class="overlay__content">
-          <slot />
-        </div>
+{#if active}
+  <div class="overlay__container" on:click|self={deactivate}>
+    <div class="overlay__main">
+      <div class="overlay__content">
+        <slot />
       </div>
     </div>
-  {/if}
-</main>
+  </div>
+{/if}
 
 <style>
   .overlay__container {

@@ -1,37 +1,33 @@
-class ElvenProgressLogic {
-
-    private options = null
-    public events = new EventManager()
-
-    // static init() {
-    //     if (this.options) {
-    //         if (this.options.height) {
-    //             ElvenProgress.componentData.height = this.options.height
-    //         }
-    //         if (this.options.loadingStartSpeed) {
-    //             ElvenProgress.componentData.loadingStartSpeed = this.options.loadingStartSpeed
-    //         }
-    //         if (this.options.loadingFinishSpeed) {
-    //             ElvenProgress.componentData.loadingFinishSpeed = this.options.loadingFinishSpeed
-    //         }
-    //         if (this.options.loadingStartTo) {
-    //             ElvenProgress.componentData.loadingStartTo = this.options.loadingStartTo
-    //         }
-    //     }
-    // }
+import ElvenProgressC from "./ElvenProgressC.svelte"
 
 
-    public loadingStart() {
-        this.events.fire('loading', true)
+export default class ElvenProgress {
+
+    private progress
+
+    constructor() {
+        const el = document.querySelector('#elven__progress')
+        if (!el) {
+            throw Error('elvenProgress: element not found')
+        }
+        this.progress = new ElvenProgressC({
+            target: el
+        })
+        window.$elvenProgress = this
     }
 
-    public loadingFinish() {
-        this.events.fire('loading', false)
+    // start loading
+    public start() {
+        this.progress.$set({ isLoading: true })
     }
 
-    public close() {
-        this.events.fire('close', null)
+    // finish loading
+    public finish() {
+        this.progress.$set({ isLoading: false })
+    }
+
+    // destroy plugin and element
+    public destroy() {
+        this.progress.$destroy()
     }
 }
-
-export default ElvenProgressLogic

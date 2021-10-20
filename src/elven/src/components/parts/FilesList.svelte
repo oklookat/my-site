@@ -73,64 +73,57 @@
   }
 </script>
 
-<main>
-  {#if normalized && normalized.length > 0}
-    <div class="files__list">
-      {#each normalized as file (file.id)}
-        <div class="file" on:click={() => onSelected(file)}>
-          <div class="file__meta">
-            <div class="file__item file__uploaded-date">
-              {convertDate(file.created_at)}
-            </div>
-          </div>
-          <div class="file__main">
-            {#if file.extension === "IMAGE"}
-              <div class="file__item file__preview" on:click|stopPropagation>
-                <img src={file.path} />
-              </div>
-            {:else if file.extension === "VIDEO"}
-              <div class="file__item file__preview" on:click|stopPropagation>
-                <video controls src={file.path} />
-              </div>
-            {/if}
-            <div class="file__item file__name">{file.original_name}</div>
-            <div class="file__item file__size">{convertSize(file.size)}</div>
-          </div>
+<div class="files__list">
+  {#each normalized as file (file.id)}
+    <div class="file" on:click={() => onSelected(file)}>
+      <div class="file__meta">
+        <div class="file__item file__uploaded-date">
+          {convertDate(file.created_at)}
         </div>
-      {/each}
-
-      <Overlay
-        bind:active={selectionOverlay}
-        on:deactivated={() => {
-          selectionOverlay = false;
-          selected = null;
-        }}
-      >
-        <div class="overlay__selected">
-          <div
-            class="overlay__item file__play"
-            v-if="selected.extension === 'AUDIO'"
-            v-on:click="playAudio(selected.path)"
-          >
-            play
+      </div>
+      <div class="file__main">
+        {#if file.extension === "IMAGE"}
+          <div class="file__item file__preview" on:click|stopPropagation>
+            <img src={file.path} />
           </div>
-          <div
-            class="overlay__item file__copy-link"
-            v-on:click="copyLink(selected)"
-          >
-            copy link
+        {:else if file.extension === "VIDEO"}
+          <div class="file__item file__preview" on:click|stopPropagation>
+            <video controls src={file.path} />
           </div>
-          <div
-            class="overlay__item file__delete"
-            v-on:click="onDelete(selected)"
-          >
-            delete
-          </div>
-        </div>
-      </Overlay>
+        {/if}
+        <div class="file__item file__name">{file.original_name}</div>
+        <div class="file__item file__size">{convertSize(file.size)}</div>
+      </div>
     </div>
-  {/if}
-</main>
+  {/each}
+
+  <Overlay
+    bind:active={selectionOverlay}
+    on:deactivated={() => {
+      selectionOverlay = false;
+      selected = null;
+    }}
+  >
+    <div class="overlay__selected">
+      <div
+        class="overlay__item file__play"
+        v-if="selected.extension === 'AUDIO'"
+        v-on:click="playAudio(selected.path)"
+      >
+        play
+      </div>
+      <div
+        class="overlay__item file__copy-link"
+        v-on:click="copyLink(selected)"
+      >
+        copy link
+      </div>
+      <div class="overlay__item file__delete" v-on:click="onDelete(selected)">
+        delete
+      </div>
+    </div>
+  </Overlay>
+</div>
 
 <style>
   .files__list {

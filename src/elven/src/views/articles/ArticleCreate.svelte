@@ -1,12 +1,12 @@
 <script lang="ts">
-  import EditorJS from "@editorjs/editorjs"
-  import Head from "@editorjs/header"
-  import ImageTool from "@editorjs/image"
-  import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter"
-  import type TextareaResizer from "@/common/tools/TextareaResizer"
-  import type { IArticle } from "@/types/article"
-  import Overlay from "@/components/ui/Overlay.svelte"
-  import { onDestroy, onMount } from "svelte"
+  import EditorJS from "@editorjs/editorjs";
+  import Head from "@editorjs/header";
+  import ImageTool from "@editorjs/image";
+  import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter";
+  import type TextareaResizer from "@/common/tools/TextareaResizer";
+  import type { IArticle } from "@/types/article";
+  import Overlay from "@/components/ui/Overlay.svelte";
+  import { onDestroy, onMount } from "svelte";
 
   export let article: IArticle = {
     id: "",
@@ -164,36 +164,34 @@
   }
 </script>
 
-<main>
-  <div class="articles-create-container">
-    <div class="articles-create-main">
-      <textarea
-        id="article-title"
-        placeholder="Actually..."
-        rows="1"
-        maxlength="124"
-        v-model="article.title"
-        on:input={autoSave}
-      />
-      <div class="editor-container">
-        <div id="editor" on:input={autoSave} />
-      </div>
-
-      <Overlay
-        v-bind:active="isErrorOverlayActive"
-        v-on:deactivated="isErrorOverlayActive = false"
-      >
-        {{ errorOverlayContent }}
-        <div
-          class="error-ok-button"
-          on:click={() => (isErrorOverlayActive = false)}
-        >
-          Ок
-        </div>
-      </Overlay>
+<div class="articles-create-container">
+  <div class="articles-create-main">
+    <textarea
+      id="article-title"
+      placeholder="Actually..."
+      rows="1"
+      maxlength="124"
+      v-model="article.title"
+      on:input={autoSave}
+    />
+    <div class="editor-container">
+      <div id="editor" on:input={autoSave} />
     </div>
+
+    <Overlay
+      v-bind:active="isErrorOverlayActive"
+      v-on:deactivated="isErrorOverlayActive = false"
+    >
+      {{ errorOverlayContent }}
+      <div
+        class="error-ok-button"
+        on:click={() => (isErrorOverlayActive = false)}
+      >
+        Ок
+      </div>
+    </Overlay>
   </div>
-</main>
+</div>
 
 <style>
   .articles-create-container {

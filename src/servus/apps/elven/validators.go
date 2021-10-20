@@ -16,24 +16,24 @@ func (a *entityAuth) validatorControllerLogin(request *http.Request) (val *bodyA
 	val = &bodyAuth{}
 	err = json.NewDecoder(request.Body).Decode(&val)
 	if err != nil {
-		em.Add("body", "wrong body provided.")
+		em.Add("body", "wrong value provided.")
 		return
 	}
 	var username = val.Username
 	var password = val.Password
 	var authType = val.Type
 	if validator.IsEmpty(&username) {
-		em.Add("username", "cannot be empty.")
+		em.Add("username", "wrong value provided.")
 	}
 	if validator.IsEmpty(&password) {
-		em.Add("password", "cannot be empty.")
+		em.Add("password", "wrong value provided.")
 	}
 	if validator.IsEmpty(&authType) {
-		em.Add("type", "cannot be empty.")
+		em.Add("type", "wrong value provided.")
 	} else {
 		var isAuthType = authType == "cookie" || authType == "direct"
 		if !isAuthType {
-			em.Add("type", "wrong type.")
+			em.Add("type", "wrong value provided.")
 		}
 	}
 	return

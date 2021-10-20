@@ -24,6 +24,9 @@
 
   $: watchCurrentPage(currentPage);
   function watchCurrentPage(value: number) {
+    if (!value) {
+      return;
+    }
     currentPageData = value;
     inputPage = value.toString();
   }
@@ -59,38 +62,36 @@
   }
 </script>
 
-<main>
-  {#if active}
-    <div class="pagination__container">
-      <div class="pagination__paginator">
-        <div class="pagination__prev-page">
-          {#if currentPageData !== 1}
-            <div class="pagination__prev-page-butt" on:click={onPrevButton}>
-              prev
-            </div>
-          {/if}
-        </div>
-        <div class="pagination__pages-input">
-          <input
-            class="pagination__pages-input-num"
-            type="text"
-            placeholder="page number"
-            bind:value={inputPage}
-            on:input={onPageInput}
-          />
-        </div>
-        <div class="pagination__next-page">
-          {#if currentPageData < totalPagesData}
-            <div class="pagination__next-page-butt" on:click={onNextButton}>
-              next
-            </div>
-          {/if}
-        </div>
+{#if active}
+  <div class="pagination__container">
+    <div class="pagination__paginator">
+      <div class="pagination__prev-page">
+        {#if currentPageData !== 1}
+          <div class="pagination__prev-page-butt" on:click={onPrevButton}>
+            prev
+          </div>
+        {/if}
       </div>
-      <div class="pagination__total">pages: {totalPagesData}</div>
+      <div class="pagination__pages-input">
+        <input
+          class="pagination__pages-input-num"
+          type="text"
+          placeholder="page number"
+          bind:value={inputPage}
+          on:input={onPageInput}
+        />
+      </div>
+      <div class="pagination__next-page">
+        {#if currentPageData < totalPagesData}
+          <div class="pagination__next-page-butt" on:click={onNextButton}>
+            next
+          </div>
+        {/if}
+      </div>
     </div>
-  {/if}
-</main>
+    <div class="pagination__total">pages: {totalPagesData}</div>
+  </div>
+{/if}
 
 <style scoped>
   .pagination__container {

@@ -103,6 +103,6 @@ func (a *entityAuth) err500(response http.ResponseWriter, request *http.Request,
 
 // err401 - like wrong username or password.
 func (a *entityAuth) err401(response http.ResponseWriter) {
-	a.Send(response, errorMan.ThrowForbidden(), 403)
+	a.Send(response, errorMan.ThrowNotAuthorized(), 401)
 	return
 }

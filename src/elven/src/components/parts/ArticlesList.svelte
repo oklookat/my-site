@@ -5,7 +5,7 @@
 
     const dispatch = createEventDispatcher();
 
-    export let articles: Array<IArticle>;
+    export let articles: Array<IArticle> = [];
 
     function convertDate(date) {
         return Dates.convert(date);
@@ -16,44 +16,36 @@
     }
 </script>
 
-<main>
-    {#if articles.length > 0}
-        <div class="articles__list">
-            {#each articles as article (article.id)}
-                <article class="article" on:click={() => onSelected(article)}>
-                    <div class="article__meta">
-                        {#if !article.is_published}
-                            <div class="article__item article__updated">
-                                {convertDate(article.updated_at)}
-                            </div>
-                        {:else}
-                            <div class="article__item article__published">
-                                {convertDate(article.published_at)}
-                            </div>
-                        {/if}
-                        {#if !article.is_published}
-                            <div class="article__item article__is-draft">
-                                draft
-                            </div>
-                        {/if}
+<div class="articles__list">
+    {#each articles as article, index (article.id)}
+        <article class="article" on:click={() => onSelected(article)}>
+            <div class="article__meta">
+                {#if !article.is_published}
+                    <div class="article__item article__updated">
+                        {convertDate(article.updated_at)}
                     </div>
-                    <div class="article__main">
-                        <div class="article__item article__title">
-                            {article.title}
-                        </div>
-                        {#if article.content && article.content.blocks && article.content.blocks[0]}
-                            <div class="article__item article__preview">
-                                <div
-                                    v-html="article.content.blocks[0].data.text"
-                                />
-                            </div>
-                        {/if}
+                {:else}
+                    <div class="article__item article__published">
+                        {convertDate(article.published_at)}
                     </div>
-                </article>
-            {/each}
-        </div>
-    {/if}
-</main>
+                {/if}
+                {#if !article.is_published}
+                    <div class="article__item article__is-draft">draft</div>
+                {/if}
+            </div>
+            <div class="article__main">
+                <div class="article__item article__title">
+                    {article.title}
+                </div>
+                {#if article.content && article.content.blocks && article.content.blocks[0]}
+                    <div class="article__item article__preview">
+                        <div>{@html article.content.blocks[0].data.text}</div>
+                    </div>
+                {/if}
+            </div>
+        </article>
+    {/each}
+</div>
 
 <style>
     .articles__list {

@@ -1,16 +1,15 @@
-<main>
-  <div class="logout">
-  </div>
-</main>
-
 <script lang="ts">
-import AuthAdapter from "@/common/adapters/Main/AuthAdapter"
-import { onMount } from "svelte";
+  import { onMount } from "svelte";
+  import { push } from "svelte-spa-router";
+  import AuthAdapter from "@/common/adapters/Main/AuthAdapter";
 
-onMount(async () => {
-  await AuthAdapter.logout()
-})
+  onMount(async () => {
+    AuthAdapter.logout();
+    push("/login");
+  });
 </script>
+
+<div class="logout" />
 
 <style>
 </style>

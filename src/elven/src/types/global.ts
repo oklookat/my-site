@@ -1,7 +1,7 @@
 //import type {theLogic as Player} from "@/common/plugins/ElvenPlayer/ElvenPlayer.js"
-//import type {theLogic as Notfiy} from "@/common/plugins/ElvenNotify/ElvenNotify.js"
-//import type {theLogic as Progress} from "@/common/plugins/ElvenProgress/ElvenProgress.js"
- 
+import type ElvenNotify from "@/common/plugins/ElvenNotify/ElvenNotify"
+import type ElvenProgress from "@/common/plugins/ElvenProgress/ElvenProgress" 
+
 export interface IMeta {
     per_page: number
     total_pages: number
@@ -17,7 +17,7 @@ export const iMetaDefault: IMeta = {
 declare global {
     interface Window {
         //$elvenPlayer: Player
-        //$elvenNotify: Notfiy
-        //$elvenProgress: Progress
+        $elvenNotify: ElvenNotify
+        $elvenProgress: ElvenProgress
     }
 }

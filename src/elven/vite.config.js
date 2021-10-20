@@ -72,6 +72,7 @@ const credentials = { key: privateKey, cert: certificate }
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [svelte()],
+  optimizeDeps: { exclude: ["svelte-router-spa"] },
   resolve: {
     alias: [
       { find: '@', replacement: resolve(projectRootDir, './src') },
