@@ -72,11 +72,11 @@
   }
 
   function onUploadClick() {
-    if (!input.value) {
+    if (!input) {
       return;
     }
-    input.value.value = "";
-    input.value.click();
+    input.value = "";
+    input.click();
   }
 
   function deleteFileFromArray(file: IFile) {

@@ -43,7 +43,7 @@ func serveHttps(hostAndPort string) {
 	var keyPath = instance.Config.Security.HTTPS.KeyPath
 	err := http.ListenAndServeTLS(hostAndPort, certPath, keyPath, nil)
 	if err != nil {
-		var prettyErr = errors.Wrap(err, "HTTPS serve error: ")
+		var prettyErr = errors.Wrap(err, "HTTPS serve error")
 		instance.Logger.Panic(prettyErr)
 	}
 }

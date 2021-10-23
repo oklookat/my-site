@@ -1,7 +1,6 @@
-<template>
   <div class="player__controls">
     <svg
-      v-on:click="prev"
+      on:click={() => prev()}
       class="player__controls-item player__prev-butt"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 406.76 169.37"
@@ -16,31 +15,33 @@
       />
     </svg>
     <div class="player__controls-item player__play-pause">
+      {#if !isPlaying}
       <svg
-        v-if="!player?.audioPlayer.isPlaying"
-        v-on:click="play"
-        class="player__play-butt"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 152.76 169.37"
-      >
-        <path
-          d="M173.62,320.29V179.71a14.38,14.38,0,0,1,21.47-12.51l124,70.29a14.38,14.38,0,0,1,0,25l-124,70.29A14.38,14.38,0,0,1,173.62,320.29Z"
-          transform="translate(-173.62 -165.31)"
-        />
-      </svg>
+      on:click={() => play()}
+      class="player__play-butt"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 152.76 169.37"
+    >
+      <path
+        d="M173.62,320.29V179.71a14.38,14.38,0,0,1,21.47-12.51l124,70.29a14.38,14.38,0,0,1,0,25l-124,70.29A14.38,14.38,0,0,1,173.62,320.29Z"
+        transform="translate(-173.62 -165.31)"
+      />
+    </svg>
+      {/if}
+      {#if isPlaying}
       <svg
-        v-if="player?.audioPlayer.isPlaying"
-        v-on:click="pause"
-        class="player__controls-item player__pause-butt"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 207 310"
-      >
-        <rect width="70" height="310" />
-        <rect x="137" width="70" height="310" />
-      </svg>
+      on:click={() => pause()}
+      class="player__controls-item player__pause-butt"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 207 310"
+    >
+      <rect width="70" height="310" />
+      <rect x="137" width="70" height="310" />
+    </svg>
+      {/if}
     </div>
     <svg
-      v-on:click="next"
+      on:click={() => next()}
       class="player__controls-item player__next-butt"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 406.76 169.37"
@@ -55,29 +56,31 @@
       />
     </svg>
   </div>
-</template>
 
-<script setup lang="ts">
-import Composition from "./Composition"
+<script lang="ts">
+import type PlayerLogic from "./PlayerLogic"
 
-const props = defineProps({
-  player: Composition,
+export let pl: PlayerLogic
+let isPlaying = false
+pl.player.isPlaying.subscribe((v) => {
+  isPlaying = v
 })
 
+
 function next() {
-  props.player?.next()
+  pl.next()
 }
 
 function prev() {
-  props.player?.prev()
+  pl.prev()
 }
 
 function play() {
-  props.player?.play()
+  pl.play()
 }
 
 function pause() {
-  props.player?.pause()
+  pl.pause()
 }
 </script>
 

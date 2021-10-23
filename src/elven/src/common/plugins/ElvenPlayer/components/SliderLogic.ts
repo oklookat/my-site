@@ -1,13 +1,14 @@
-import {reactive} from "vue"
 import Service from "@/common/plugins/ElvenPlayer/tools/Service"
+import { writable } from 'svelte/store';
+import type { Writable } from 'svelte/store'
 
 interface ISlider {
     element: any
-    isMouseDown: boolean
-    percents: number
+    isMouseDown: Writable<boolean>
+    percents: Writable<number>
 }
 
-export default class Composition {
+export default class SliderLogic {
 
     public slider: ISlider
     private readonly _onMovingMouseDown = this.onMovingMouseDown.bind(this)
@@ -17,17 +18,16 @@ export default class Composition {
     constructor() {
         this.slider = {
             element: null,
-            isMouseDown: false,
-            percents: 100,
+            isMouseDown: writable(false),
+            percents: writable(100),
         }
-        this.slider = reactive(this.slider)
     }
 
     // init not in constructor, because composition api specific thing
     public init(element: HTMLElement) {
         this.slider.element = element
-        this.slider.element.addEventListener('mousedown', this._onMovingMouseDown, {passive: false})
-        this.slider.element.addEventListener('touchstart', this._onMovingMouseDown, {passive: false})
+        this.slider.element.addEventListener('mousedown', this._onMovingMouseDown, { passive: false })
+        this.slider.element.addEventListener('touchstart', this._onMovingMouseDown, { passive: false })
     }
 
     public destroy() {
@@ -37,20 +37,20 @@ export default class Composition {
 
     // when user click / pressed / touch
     private onMovingMouseDown(event) {
-        this.slider.isMouseDown = true
+        this.slider.isMouseDown.set(true)
         // pre-compute moving, because user already clicked
         this.onDocumentMouseMove(event)
         // setup document events, not local, because more comfortable control all this stuff when you moving as you like
-        document.addEventListener("mousemove", this._onDocumentMouseMove, {passive: false})
-        document.addEventListener('mouseup', this._onDocumentMouseUp, {passive: false})
-        document.addEventListener("touchmove", this._onDocumentMouseMove, {passive: false})
-        document.addEventListener("touchend", this._onDocumentMouseUp, {passive: false})
-        document.addEventListener("touchcancel", this._onDocumentMouseUp, {passive: false})
+        document.addEventListener("mousemove", this._onDocumentMouseMove, { passive: false })
+        document.addEventListener('mouseup', this._onDocumentMouseUp, { passive: false })
+        document.addEventListener("touchmove", this._onDocumentMouseMove, { passive: false })
+        document.addEventListener("touchend", this._onDocumentMouseUp, { passive: false })
+        document.addEventListener("touchcancel", this._onDocumentMouseUp, { passive: false })
     }
 
     // remove moving events
     private movingCleanup() {
-        this.slider.isMouseDown = false
+        this.slider.isMouseDown.set(false)
         document.removeEventListener("mousemove", this._onDocumentMouseMove)
         document.removeEventListener('mouseup', this._onDocumentMouseUp)
         document.removeEventListener("touchmove", this._onDocumentMouseMove)
@@ -67,7 +67,7 @@ export default class Composition {
     private onDocumentMouseUp() {
         // cleanup and set stuff
         // when the mouse button or touch is up after pressing
-        this.slider.isMouseDown = false
+        this.slider.isMouseDown.set(false)
         this.movingCleanup()
     }
 
@@ -96,7 +96,7 @@ export default class Composition {
             clickPosition = 1
         }
         const _at = clickPosition * 100
-        this.slider.percents = Service.computePercents(_at, 100)
+        this.slider.percents.set(Service.computePercents(_at, 100))
     }
 
 }

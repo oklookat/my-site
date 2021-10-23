@@ -1,14 +1,12 @@
-<template>
+
 <div class="progress__container">
-  <div class="progress__line" :style="{width: `${percents}%`}">
+  <div class="progress__line" style="width: {percents}%">
   </div>
 </div>
-</template>
 
-<script setup lang="ts">
-const props = defineProps({
-  percents: Number
-})
+
+<script lang="ts">
+export let percents: number
 </script>
 
 <style scoped>

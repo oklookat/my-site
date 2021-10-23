@@ -38,7 +38,7 @@ func (q *queryFileGetAll) getAll() (files []ModelFile, totalPages int, err error
 		return nil, 0, nil
 	}
 	files = make([]ModelFile, 0)
-	totalPages = int(math.Round(float64(totalPages / filesPageSize)))
+	totalPages = int(math.Round(float64(totalPages) / float64(filesPageSize)))
 	if q.page > totalPages {
 		return
 	}

@@ -80,6 +80,7 @@ func (f *entityFile) controllerCreateOne(response http.ResponseWriter, request *
 		return
 	}
 	if found {
+		_ = os.Remove(processed.Temp.Name())
 		fileJSON, err := json.Marshal(fileInDB)
 		if err != nil {
 			f.err500(response, request, err)

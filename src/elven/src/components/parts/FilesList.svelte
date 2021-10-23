@@ -48,7 +48,7 @@
   // convert file path, extension etc
   function converter(file: IFile): IFile {
     file.extension = convertExtension(file.extension);
-    file.path = convertPreviewPath(file.path);
+    file.path = convertPath(file.path);
     return file;
   }
 
@@ -68,7 +68,7 @@
     return Extensions.getReadable(extension);
   }
 
-  function convertPreviewPath(path) {
+  function convertPath(path) {
     return `${import.meta.env.VITE_UPLOADS_URL}/${path}`;
   }
 </script>
@@ -84,7 +84,7 @@
       <div class="file__main">
         {#if file.extension === "IMAGE"}
           <div class="file__item file__preview" on:click|stopPropagation>
-            <img src={file.path} />
+            <img src={file.path} alt="" />
           </div>
         {:else if file.extension === "VIDEO"}
           <div class="file__item file__preview" on:click|stopPropagation>
@@ -105,20 +105,24 @@
     }}
   >
     <div class="overlay__selected">
-      <div
-        class="overlay__item file__play"
-        v-if="selected.extension === 'AUDIO'"
-        v-on:click="playAudio(selected.path)"
-      >
-        play
-      </div>
+      {#if selected.extension === "AUDIO"}
+        <div
+          class="overlay__item file__play"
+          on:click={() => playAudio(selected.path)}
+        >
+          play
+        </div>
+      {/if}
       <div
         class="overlay__item file__copy-link"
-        v-on:click="copyLink(selected)"
+        on:click={() => copyLink(selected)}
       >
         copy link
       </div>
-      <div class="overlay__item file__delete" v-on:click="onDelete(selected)">
+      <div
+        class="overlay__item file__delete"
+        on:click={() => onDelete(selected)}
+      >
         delete
       </div>
     </div>
