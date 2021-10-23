@@ -118,7 +118,7 @@
   .slider__sl,
   .slider__bubble {
     position: absolute;
-    background-color: #9d6a89;
+    background-color: #a097dc;
   }
 
   .slider__sl {

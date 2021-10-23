@@ -11,6 +11,7 @@ export let percents: number
 
 <style scoped>
 .progress__container{
+  border-radius: inherit;
   width: 100%;
   height: 100%;
 }

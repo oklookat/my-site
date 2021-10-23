@@ -36,7 +36,7 @@
       --color-hover: #303030;
       --color-border: #2c2c2c;
       --color-helper: #8ce6e6;
-      --color-header-active: #202020;
+      --color-header-active: rgba(105, 105, 105, 0.1);
       --color-header-text: white;
     }
   }
@@ -64,6 +64,7 @@
   }
 
   .container {
+    min-height: 100vh;
     word-break: break-word;
     display: flex;
     flex-direction: column;
@@ -106,6 +107,7 @@
     flex-direction: row;
     align-items: center;
   }
+  
 
   .item:hover {
     background-color: var(--color-hover);
@@ -252,7 +254,7 @@
   /* THEME END */
   /* -------- EDITOR.JS END -------- */
 
-  /* MULTIMEDIA & ADAPTIVE START */
+  /* MULTIMEDIA */
   img,
   video {
     min-height: 240px;
@@ -261,15 +263,12 @@
     border-radius: var(--border-radius);
   }
 
-  @media screen and (min-width: 1px) {
+  @media screen and (min-width: 0px) {
     img,
     video {
       max-width: 100%;
       max-height: 320px;
     }
-  }
-
-  @media screen and (min-width: 512px) {
   }
 
   @media screen and (min-width: 604px) {
@@ -286,4 +285,3 @@
       height: 40%;
     }
   }
-  /* MULTIMEDIA & ADAPTIVE END */

@@ -1,17 +1,13 @@
-import ElvenProgressC from "./ElvenProgressC.svelte"
+import Progress from "./Progress.svelte"
 
 
-export default class ElvenProgress {
+export default class ElvenProgressPlugin {
 
     private progress
 
-    constructor() {
-        const el = document.querySelector('#elven__progress')
-        if (!el) {
-            throw Error('elvenProgress: element not found')
-        }
-        this.progress = new ElvenProgressC({
-            target: el
+    constructor(element: HTMLElement) {
+        this.progress = new Progress({
+            target: element
         })
         window.$elvenProgress = this
     }

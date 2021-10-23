@@ -1,36 +1,56 @@
 <script lang="ts">
-  import { link } from "svelte-spa-router";
-  import active from "svelte-spa-router/active";
+  import { onDestroy } from "svelte";
+
+  import { link, location, push } from "svelte-spa-router";
+
+  let path = "";
+
+  const s1 = location.subscribe((v) => {
+    path = v;
+  });
+
+  onDestroy(() => {
+    s1();
+  });
+
+  function goIndex() {
+    push("/");
+  }
+
+  function goArticles() {
+    push("/articles");
+  }
+  
+  function goFiles() {
+    push("/files");
+  }
 </script>
 
 <div class="header__container">
-  <div class="header__universal">
-    <nav class="header__navigation">
-      <div class="header__item">
-        <a
-          href="/"
-          use:link
-          use:active={{ path: "/", className: "header__item-active" }}>elven</a
-        >
-      </div>
-      <div class="header__item">
-        <a
-          href="/articles"
-          use:link
-          use:active={{ path: "/articles/*", className: "header__item-active" }}
-          >articles</a
-        >
-      </div>
-      <div class="header__item">
-        <a
-          href="/files"
-          use:link
-          use:active={{ path: "/files/*", className: "header__item-active" }}
-          >files</a
-        >
-      </div>
-    </nav>
-  </div>
+  <nav class="header__navigation">
+    <div
+      class="header__item {path === '/' ? 'header__item-active' : ''}"
+      on:click={() => goIndex()}
+    >
+      elven
+    </div>
+    <div
+      class="header__item {path.startsWith('/articles')
+        ? 'header__item-active'
+        : ''}"
+      on:click={() => goArticles()}
+    >
+      articles
+    </div>
+    <div
+      class="header__item {path.startsWith('/files')
+        ? 'header__item-active'
+        : ''}"
+      on:click={() => goFiles()}
+    >
+      files
+    </div>
+  </nav>
 </div>
 
 <style>
@@ -43,12 +63,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .header__universal {
-    height: 100%;
-    width: 100%;
-    max-width: 975px;
   }
 
   .header__item {
@@ -66,6 +80,7 @@
   }
 
   .header__navigation {
+    max-width: 975px;
     height: 100%;
     width: 100%;
     display: flex;

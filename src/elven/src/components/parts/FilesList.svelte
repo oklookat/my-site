@@ -2,7 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import type { IFile } from "@/types/file";
   import Dates from "@/common/tools/Dates";
-  import Sizes from "@/common/tools/Sizes.js";
+  import Sizes from "@/common/tools/Sizes";
   import Extensions from "@/common/tools/Extensions";
   import Overlay from "@/components/ui/Overlay.svelte";
 
@@ -88,7 +88,12 @@
           </div>
         {:else if file.extension === "VIDEO"}
           <div class="file__item file__preview" on:click|stopPropagation>
-            <video controls src={file.path} />
+            <video controls src={file.path}>
+              <track default
+              kind="captions"
+              srclang="en"
+              src="" />
+            </video>
           </div>
         {/if}
         <div class="file__item file__name">{file.original_name}</div>

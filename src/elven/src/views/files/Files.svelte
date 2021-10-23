@@ -6,18 +6,18 @@
   import FilesList from "@/components/parts/FilesList.svelte";
   import Pagination from "@/components/ui/Pagination.svelte";
 
-  let filesLoaded: boolean = false;
+  let isLoaded: boolean = false;
   // service
   let isSortOverlayActive: boolean = false;
   let sortBy: string = "created";
   let sortFirst: string = "newest";
-  // meta
-  let currentPage: number = 1;
-  let totalPages: number = 1;
   // files
   let files: Array<IFile> = [];
   let meta: IMeta = iMetaDefault;
   let show: "newest";
+  let perPage: number = 0;
+  let currentPage: number = 1;
+  let totalPages: number = 1;
   // file input for upload
   let input;
 
@@ -28,41 +28,51 @@
   function getFiles(pageA = currentPage, showA = show) {
     currentPage = pageA;
     show = showA;
-    filesLoaded = false;
+    isLoaded = false;
     FileAdapter.getFiles(pageA, showA).then((result) => {
       files = result.data;
       meta = result.meta;
       currentPage = meta.current_page;
       totalPages = meta.total_pages;
-      filesLoaded = true;
+      perPage = meta.per_page;
+      isLoaded = true;
     });
-  }
-
-  async function refresh() {
-    let isTrueFiles = filesLoaded && files.length < 1;
-    // if (isTrueFiles) { // no files in current page
-    //     while (isTrueFiles) {
-    //         // moving back until the pages ends or data appears
-    //         this.currentPage--
-    //         await this.getFiles()
-    //         if (this.currentPage <= 1) {
-    //             break
-    //         }
-    //         isTrueFiles = this.loaded.value && this.files.value.length < 1
-    //     }
-    // }
   }
 
   async function deleteFile(file: IFile) {
     const isDelete = confirm("delete file?");
     if (isDelete) {
       FileAdapter.delete(file.id).then(() => {
-        deleteFileFromArray(file);
+        deleteFromArray(file);
+        refresh();
       });
     }
   }
 
-  async function onFileInputChange(event) {
+  function deleteFromArray(file: IFile) {
+    files = files.filter((f) => f !== file);
+    if (files.length < perPage) {
+      getFiles();
+    }
+  }
+
+  async function refresh() {
+    let isTrueFiles = isLoaded && files.length < 1;
+    if (isTrueFiles) {
+      // no files in current page
+      while (isTrueFiles) {
+        // moving back until the pages ends or data appears
+        currentPage--;
+        await getFiles();
+        if (currentPage <= 1) {
+          break;
+        }
+        isTrueFiles = isLoaded && files.length < 1;
+      }
+    }
+  }
+
+  async function onInputChange(event) {
     const files = event.target.files;
     if (files.length < 1) {
       return 0;
@@ -78,12 +88,6 @@
     input.value = "";
     input.click();
   }
-
-  function deleteFileFromArray(file: IFile) {
-    const index = files.indexOf(file);
-    files.splice(index, 1);
-    return true;
-  }
 </script>
 
 <div class="files__container">
@@ -93,31 +97,30 @@
         upload
       </div>
       <input
-        bind:this={input}
         id="file__input"
         type="file"
         multiple
         style="display: none"
-        on:input={onFileInputChange}
+        bind:this={input}
+        on:input={onInputChange}
       />
     </div>
   </div>
 
-  {#if filesLoaded && files.length < 1}
+  {#if isLoaded && files.length < 1}
     <div class="files__404">
-      <div>no files :(</div>
+      <div>No files :(</div>
     </div>
   {/if}
 
-  {#if filesLoaded && files.length > 0}
-  <FilesList files={files} on:delete={(e) => deleteFile(e.detail)} />
+  {#if isLoaded && files.length > 0}
+    <FilesList {files} on:delete={(e) => deleteFile(e.detail)} />
+    <Pagination
+      {totalPages}
+      {currentPage}
+      on:changed={(e) => getFiles(e.detail)}
+    />
   {/if}
-
-  <Pagination
-    totalPages={totalPages}
-    currentPage={currentPage}
-    on:changed={(e) => getFiles(e.detail)}
-  />
 </div>
 
 <style scoped>

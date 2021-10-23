@@ -1,8 +1,7 @@
-import Service from "@/common/plugins/ElvenPlayer/tools/Service"
-import type {TConvertSecondsMode} from "@/common/plugins/ElvenPlayer/tools/Service"
 import { writable } from 'svelte/store';
 import type { Writable } from 'svelte/store'
 
+type TConvertSecondsMode = 'auto' | 'hours' | 'minutes'
 interface IPlayer {
     // is player component active
     active: boolean
@@ -69,7 +68,7 @@ export default class PlayerLogic {
     }
 
     public init() {
-        if(this.eventsInitialized){
+        if (this.eventsInitialized) {
             return
         }
         this.player.element.addEventListener('playing', this._onPlaying)
@@ -81,7 +80,7 @@ export default class PlayerLogic {
     }
 
     public async destroy() {
-        if(!this.eventsInitialized){
+        if (!this.eventsInitialized) {
             return
         }
         this.player.element.removeEventListener('playing', this._onPlaying)
@@ -160,7 +159,7 @@ export default class PlayerLogic {
     // playback management
     public setCurrentAudio(playlistIndex = this.player.currentPlaying.index) {
         if (this.player.currentPlaying.playlist.length < 1) {
-            return Error('Audio: empty playlist')
+            return Error('elvenPlayer: empty playlist')
         }
         this.player.element.src = this.player.currentPlaying.playlist[playlistIndex]
     }
@@ -193,7 +192,13 @@ export default class PlayerLogic {
 
     public setTimeByPercents(percents: number) {
         const duration = this.player.element.duration
-        this.player.element.currentTime = Service.round((duration / 100) * percents, 4)
+        const timeConverted = Math.floor((duration / 100) * percents)
+        // set maximum time when percents > total time
+        if (timeConverted > duration) {
+            this.player.element.currentTime = duration
+            return
+        }
+        this.player.element.currentTime = timeConverted
     }
 
     public setVolumeByPercents(percents: number) {
@@ -226,45 +231,102 @@ export default class PlayerLogic {
         // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/networkState
         switch (event.target.error.code) {
             case event.target.error.MEDIA_ERR_ABORTED:
-                console.error('Audio: aborted')
+                console.error('elvenPlayer: aborted')
                 break
             case event.target.error.MEDIA_ERR_NETWORK:
-                console.error('Audio: network error')
+                console.error('elvenPlayer: network error')
                 break
             case event.target.error.MEDIA_ERR_DECODE:
-                console.error('Audio: decode error. Maybe audio damaged or something?')
+                console.error('elvenPlayer: decode error. Maybe audio damaged or something?')
                 break
             case event.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                console.log(this.player.element.src)
                 if (this.player.element.src === 'https://null/') {
                     return
                 }
-                console.error('Audio: not supported')
+                if (event.target.error && event.target.error.message) {
+                    console.error(`elvenPlayer: not supported. Error: ${event.target.error.message}`)
+                } else {
+                    console.error(`elvenPlayer: not supported.`)
+                }
                 break
             default:
-                console.error('Audio: unknown error')
+                console.error('elvenPlayer: unknown error')
                 break
         }
     }
 
     private onTimeUpdate() {
         if (!this.player.isProgressMouseDown) {
-            this.player.currentPlaying.percentsReached.set(Service.computePercents(this.player.element.currentTime, this.player.element.duration))
-            this.player.currentPlaying.percentsBuffered.set(Service.computeBuffered(this.player.element))
+            this.player.currentPlaying.percentsReached.set(PlayerLogic.computePercents(this.player.element.currentTime, this.player.element.duration))
+            this.player.currentPlaying.percentsBuffered.set(PlayerLogic.computeBuffered(this.player.element))
         }
         if (this.player.element.duration) {
-            this.player.currentPlaying.duration.set(Service.convertSeconds(this.player.element.duration, 'auto'))
+            this.player.currentPlaying.duration.set(PlayerLogic.convertSeconds(this.player.element.duration, 'auto'))
             let mode: TConvertSecondsMode
             if (this.player.element.duration < 3600) {
                 mode = 'minutes'
             } else {
                 mode = 'hours'
             }
-            this.player.currentPlaying.currentTime.set(Service.convertSeconds(this.player.element.currentTime, mode))
+            this.player.currentPlaying.currentTime.set(PlayerLogic.convertSeconds(this.player.element.currentTime, mode))
         } else {
             this.player.currentPlaying.duration.set('00:00')
             this.player.currentPlaying.currentTime.set('00:00')
         }
+    }
+
+    private static computePercents(current: number, total: number): number {
+        let percents = (current / total) * 100
+        percents = Math.round(percents)
+        if (percents >= 100) {
+            percents = 100
+        } else if (total < 1) {
+            percents = 0
+        }
+        return percents
+    }
+
+    // convert seconds to string like '01:23'
+    private static convertSeconds(seconds: number, mode: TConvertSecondsMode): string {
+        // https://stackoverflow.com/a/1322771/16762009
+        switch (mode) {
+            case 'auto':
+                if (seconds < 3600) {
+                    // like 00:01
+                    return returnMinutes(seconds)
+                } else {
+                    // like 01:23:12
+                    return returnHours(seconds)
+                }
+            case 'hours':
+                // like 01:23:12
+                return returnHours(seconds)
+            case 'minutes':
+                // like 00:01
+                return returnMinutes(seconds)
+        }
+
+        function returnHours(seconds: number) {
+            return new Date(seconds * 1000).toISOString().substr(11, 8)
+        }
+
+        function returnMinutes(seconds: number) {
+            return new Date(seconds * 1000).toISOString().substr(14, 5)
+        }
+    }
+
+    private static computeBuffered(playerEL: HTMLAudioElement): number {
+        const currentTime = Math.round(playerEL.currentTime)
+        const duration = playerEL.duration
+        if (duration > 0) {
+            for (let i = 0; i < playerEL.buffered.length; i++) {
+                const len = playerEL.buffered.length - 1 - i
+                if (playerEL.buffered.start(len) < currentTime) {
+                    return Math.round(this.computePercents(playerEL.buffered.end(len), duration))
+                }
+            }
+        }
+        return 0
     }
 
 }

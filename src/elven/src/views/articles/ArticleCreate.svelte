@@ -3,10 +3,11 @@
   import Head from "@editorjs/header";
   import ImageTool from "@editorjs/image";
   import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter";
-  import type TextareaResizer from "@/common/tools/TextareaResizer";
+  import TextareaResizer from "@/common/tools/TextareaResizer";
   import type { IArticle } from "@/types/article";
   import Overlay from "@/components/ui/Overlay.svelte";
   import { onDestroy, onMount } from "svelte";
+  import {push} from 'svelte-spa-router'
 
   export let article: IArticle = {
     id: "",
@@ -18,6 +19,7 @@
     published_at: "",
     updated_at: "",
   };
+  export let params = {}
   export let timeoutID: ReturnType<typeof setTimeout> | null = null;
   export let editorTimeoutID: ReturnType<typeof setTimeout> | null = null;
   export let editorLoadAttempts = 0;
@@ -26,30 +28,31 @@
   export let errorOverlayContent = "";
   let textareaResizer: TextareaResizer;
 
+  let editor: EditorJS
+
   onMount(async () => {
-    // const route = useRoute();
-    // let id = null;
-    // if (route.params.id) {
-    //   id = route.params.id.toString();
-    // }
-    // await initEditor();
-    // if (id) {
-    //   article.id = id;
-    //   const isSuccess = await initEditArticle();
-    //   if (isSuccess) {
-    //     await setEditorData();
-    //   } else {
-    //     isEditorInitialized = true;
-    //   }
-    // } else {
-    //   isEditorInitialized = true;
-    // }
-    // textareaResizer = new TextareaResizer("article-title");
-    // textareaResizer.start();
+    let id = null;
+    if (params.id) {
+      id = params.id.toString();
+    }
+    await initEditor();
+    if (id) {
+      article.id = id;
+      const isSuccess = await initEditArticle();
+      if (isSuccess) {
+        await setEditorData();
+      } else {
+        isEditorInitialized = true;
+      }
+    } else {
+      isEditorInitialized = true;
+    }
+    textareaResizer = new TextareaResizer("article-title");
+    textareaResizer.start();
   });
 
   onDestroy(async () => {
-    await window.editor.destroy();
+    await editor.destroy();
     textareaResizer.destroy();
     if (editorTimeoutID) {
       clearTimeout(editorTimeoutID);
@@ -57,7 +60,7 @@
   });
 
   function initEditor() {
-    window.editor = new EditorJS({
+    editor = new EditorJS({
       holder: "editor",
       tools: {
         paragraph: {
@@ -98,7 +101,7 @@
     }
     timeoutID = setTimeout(async () => {
       let saveAllowed = false;
-      await window.editor.save().then((outputData) => {
+      await editor.save().then((outputData) => {
         if (outputData.blocks.length >= 1) {
           saveAllowed = true;
           article.content = outputData;
@@ -128,12 +131,12 @@
     } catch (err) {
       if (err === 404) {
         errorOverlayContent =
-          "Article not found. You are redirected to create a new article.";
+          "Article not found. You redirected to create a new article.";
       } else {
         errorOverlayContent = `Strange error: ${err}`;
       }
       article.id = "";
-      await router.push({ name: "ArticleCreate" });
+      await push('/articles/create')
       isErrorOverlayActive = true;
       return Promise.resolve(false);
     }
@@ -153,7 +156,7 @@
           clearInterval(editorTimeoutID);
           return;
         }
-        await window.editor.render(article.content);
+        await editor.render(article.content);
         isEditorInitialized = true;
         clearInterval(editorTimeoutID);
       } catch (err) {
@@ -171,16 +174,16 @@
       placeholder="Actually..."
       rows="1"
       maxlength="124"
-      v-model="article.title"
-      on:input={autoSave}
+      bind:value={article.title}
+      on:input={() => autoSave()}
     />
     <div class="editor-container">
-      <div id="editor" on:input={autoSave} />
+      <div id="editor" on:input={() => autoSave()} />
     </div>
 
     <Overlay
-      v-bind:active="isErrorOverlayActive"
-      v-on:deactivated="isErrorOverlayActive = false"
+      bind:active={isErrorOverlayActive}
+      on:deactivated={() => isErrorOverlayActive = false}
     >
       {{ errorOverlayContent }}
       <div

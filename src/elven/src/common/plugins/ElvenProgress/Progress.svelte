@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy} from "svelte";
+  import { onDestroy } from "svelte";
 
   // controlled by plugin
   export let isLoading = false;

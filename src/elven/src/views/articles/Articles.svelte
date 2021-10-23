@@ -1,16 +1,17 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { push } from "svelte-spa-router";
   import type { IArticle } from "@/types/article";
   import type { IMeta } from "@/types/global";
   import ArticleAdapter from "@/common/adapters/Main/ArticleAdapter";
   import Overlay from "@/components/ui/Overlay.svelte";
   import Pagination from "@/components/ui/Pagination.svelte";
   import ArticlesList from "@/components/parts/ArticlesList.svelte";
-  import { onMount } from "svelte";
 
   // service
-  let isArticlesLoaded = false;
+  let isLoaded = false;
   let isToolsOverlayActive = false;
-  let selectedArticle: IArticle | null = null;
+  let selected: IArticle | null = null;
   // articles
   let articles: Array<IArticle> = [];
   let articlesMeta: IMeta | null = null;
@@ -24,11 +25,12 @@
   let totalPages = 1;
   let currentPage = 1;
 
+  // main
   onMount(async () => {
     await getArticles();
   });
 
-  async function getArticles(
+  function getArticles(
     pageA = page,
     showA = show,
     sortByA = sortBy,
@@ -38,25 +40,46 @@
     show = showA;
     sortBy = sortByA;
     sortFirst = sortFirstA;
-    isArticlesLoaded = false;
+    isLoaded = false;
     ArticleAdapter.getArticles(pageA, showA, sortByA, sortFirstA).then(
-      async (result) => {
+      (result) => {
         articles = result.data;
         articlesMeta = result.meta;
         perPage = articlesMeta.per_page;
         currentPage = articlesMeta.current_page;
         totalPages = articlesMeta.total_pages;
-        isArticlesLoaded = true;
+        isLoaded = true;
       }
     );
   }
 
-  async function editArticle(article) {
-    //await router.push({ name: 'ArticleCreate', params: { id: article.id } })
+  async function edit(article) {
+    await push(`/articles/create/${article.id}`);
+  }
+
+  function select(article) {
+    isToolsOverlayActive = true;
+    selected = article;
+  }
+
+  async function publish(article) {
+    await ArticleAdapter.publishArticle(article).then(() => {
+      deleteArticleFromArray(article);
+      isToolsOverlayActive = false;
+    });
+    refreshArticles();
+  }
+
+  async function toDrafts(article) {
+    await ArticleAdapter.makeDraftArticle(article).then(() => {
+      deleteArticleFromArray(article);
+      isToolsOverlayActive = false;
+    });
+    refreshArticles();
   }
 
   async function deleteArticle(article) {
-    const isDelete = confirm("delete article?");
+    const isDelete = confirm("Delete article?");
     if (isDelete) {
       await ArticleAdapter.deleteArticle(article.id);
       deleteArticleFromArray(article);
@@ -65,69 +88,46 @@
     }
   }
 
-  async function publishArticle(article) {
-    await ArticleAdapter.publishArticle(article).then(() => {
-      deleteArticleFromArray(article);
-      isToolsOverlayActive = false;
-    });
-    refreshArticles();
-  }
-
-  async function makeDraftArticle(article) {
-    await ArticleAdapter.makeDraftArticle(article).then(() => {
-      deleteArticleFromArray(article);
-      isToolsOverlayActive = false;
-    });
-    refreshArticles();
+  function deleteArticleFromArray(article) {
+    articles = articles.filter((a) => a !== article);
+    if(articles.length < perPage){
+      getArticles()
+    }
   }
 
   async function refreshArticles() {
     // refresh is need when for ex. you deleted all articles on current page
     // and we need to check, is data on current page exists?
     // if page > 1 and no data, we moving back (currentPage--) and get new articles
-    let notArticles = isArticlesLoaded && articles.length < 1;
-    console.log(notArticles);
-    if (notArticles) {
-      // no articles in current page
-      while (notArticles) {
-        // moving back until the pages ends or data appears
-        currentPage--;
-        await getArticles();
-        if (currentPage <= 1) {
-          break;
-        }
-        notArticles = isArticlesLoaded && articles.length < 1;
+    let notArticles = isLoaded && articles.length < 1;
+    // no articles in current page
+    while (notArticles) {
+      // moving back until the pages ends or data appears
+      currentPage--;
+      await getArticles();
+      if (currentPage <= 1) {
+        break;
       }
+      notArticles = isLoaded && articles.length < 1;
     }
   }
 
   async function setSort(sort) {
-    window.$elvenNotify.add('testing')
     sortBy = sort;
     page = 1;
     await getArticles();
   }
+
   async function setSortDate(age = "newest") {
     sortFirst = age;
     page = 1;
     await getArticles();
   }
-
-  function deleteArticleFromArray(article) {
-    const index = articles.indexOf(article);
-    articles.splice(index, 1);
-    return true;
-  }
-
-  function selectArticle(article) {
-    isToolsOverlayActive = true;
-    selectedArticle = article;
-  }
 </script>
 
 <div class="articles__container">
   <div class="articles__create">
-    <a href="#/articles/create">create</a>
+    <a href="#/articles/create">new</a>
   </div>
   <div class="articles__toolbar">
     <div class="articles__show">
@@ -184,10 +184,10 @@
   </div>
 
   {#if articles && articles.length > 0}
-    <ArticlesList {articles} on:selected={(e) => selectArticle(e.detail)} />
+    <ArticlesList {articles} on:selected={(e) => select(e.detail)} />
   {/if}
 
-  {#if isArticlesLoaded && articles.length < 1}
+  {#if isLoaded && articles.length < 1}
     <div class="articles__404">
       <div>no articles :(</div>
     </div>
@@ -205,30 +205,22 @@
   >
     <!-- tools -->
     <div class="overlay__article-manage" v-if="isToolsOverlayActive">
-      {#if selectedArticle && selectedArticle.is_published}
+      {#if selected && selected.is_published}
         <div
           class="overlay__item make__draft"
-          on:click={() => makeDraftArticle(selectedArticle)}
+          on:click={() => toDrafts(selected)}
         >
           make a draft
         </div>
       {:else}
-        <div
-          class="overlay__item publish"
-          v-on:click="publishArticle(selectedArticle)"
-        >
+        <div class="overlay__item publish" on:click={() => publish(selected)}>
           publish
         </div>
       {/if}
-      <div
-        class="overlay__item edit"
-        on:click={() => editArticle(selectedArticle)}
-      >
-        edit
-      </div>
+      <div class="overlay__item edit" on:click={() => edit(selected)}>edit</div>
       <div
         class="overlay__item delete"
-        on:click={() => deleteArticle(selectedArticle)}
+        on:click={() => deleteArticle(selected)}
       >
         delete
       </div>
@@ -293,8 +285,7 @@
     gap: 24px;
   }
 
-  .overlay__article-manage,
-  .overlay__articles-sort {
+  .overlay__article-manage {
     width: 100%;
     display: flex;
     flex-direction: column;

@@ -1,7 +1,9 @@
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
+    import { quintOut } from "svelte/easing";
+    import { crossfade } from "svelte/transition";
     import type { IArticle } from "@/types/article";
     import Dates from "@/common/tools/Dates";
-    import { createEventDispatcher } from "svelte";
 
     const dispatch = createEventDispatcher();
 
@@ -17,8 +19,10 @@
 </script>
 
 <div class="articles__list">
-    {#each articles as article, index (article.id)}
-        <article class="article" on:click={() => onSelected(article)}>
+    {#each articles as article (article.id)}
+        <article 
+        class="article" 
+        on:click={() => onSelected(article)}>
             <div class="article__meta">
                 {#if !article.is_published}
                     <div class="article__item article__updated">

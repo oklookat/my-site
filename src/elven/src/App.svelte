@@ -2,12 +2,12 @@
   import "./assets/global.css";
   import { onDestroy, onMount } from "svelte";
   import Router from "svelte-spa-router";
-  import routes from "./routes";
-  import ElvenProgress from "@/common/plugins/ElvenProgress/ElvenProgress"
-  import ElvenNotify from "@/common/plugins/ElvenNotify/ElvenNotify";
   import { location } from "svelte-spa-router";
-  import ServiceWrapper from "./components/parts/ServiceWrapper.svelte";
+  import routes from "./routes";
   import ServiceWrapper2 from "./components/parts/ServiceWrapper2.svelte";
+  import Header from "@/components/parts/Header.svelte";
+  import ElvenProgressPlugin from "@/common/plugins/ElvenProgress/ElvenProgressPlugin";
+  import ElvenNotifyPlugin from "@/common/plugins/ElvenNotify/ElvenNotifyPlugin"
 
   let isNotAuth = $location !== "/login" && $location !== "/logout";
   location.subscribe((value) => {
@@ -15,30 +15,37 @@
   });
 
   // init plugins
-  let elvenProgress: ElvenProgress;
-  let elvenNotify: ElvenNotify;
+  let elvenProgressEL
+  let elvenNotifyEL
+  let elvenProgress: ElvenProgressPlugin;
+  let elvenNotify: ElvenNotifyPlugin;
   onMount(() => {
-    elvenProgress = new ElvenProgress();
-    elvenNotify = new ElvenNotify();
+    elvenProgress = new ElvenProgressPlugin(elvenProgressEL);
+    elvenNotify = new ElvenNotifyPlugin(elvenNotifyEL);
   });
   onDestroy(() => {
     elvenProgress.destroy();
     elvenNotify.destroy();
   });
+  // TODO: check user not by local storage. On secured routes get user by request to something like /users/me and check isAdmin field
 </script>
 
 <div class="container">
-  <div id="elven__notify" />
   {#if isNotAuth}
-    <ServiceWrapper />
+  <div class="global__header">
+    <Header />
+  </div>
   {/if}
-  <div id="elven__progress" />
+  <div id="elven__progress" bind:this={elvenProgressEL}/>
   <div class="content">
     <div style="height: 16px;" />
     <Router {routes} />
     <div style="height: 64px;" />
   </div>
+  <div id="elven__notify" bind:this={elvenNotifyEL} />
   {#if isNotAuth}
+  <div class="service-2">
     <ServiceWrapper2 />
+  </div>
   {/if}
 </div>

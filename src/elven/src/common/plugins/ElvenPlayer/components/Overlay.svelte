@@ -33,13 +33,15 @@
     }
   }
 
-  function deactivate() {
+  function deactivate(event) {
+    if (event.which !== 1 && event.type !== "touchstart") {
+      return;
+    }
     noScroll = false;
     dispatch("deactivated");
   }
 
   function onProgressSliderTriggered(percents: number) {
-    console.log(percents);
     pl.setTimeByPercents(percents);
   }
 
@@ -77,43 +79,13 @@
   });
 </script>
 
-<div class="overlay__container" bind:this={audioOverlayContainer} on:click|self={() => deactivate()}>
+<div
+  class="overlay__container"
+  bind:this={audioOverlayContainer}
+  on:mousedown|self|stopPropagation={deactivate}
+>
   <div class="content">
-
-    <div class="playback__cover">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-        <g id="back">
-          <rect width="300" height="300" rx="18.75" />
-        </g>
-        <g id="melody">
-          <rect
-            x="78"
-            y="163"
-            width="90"
-            height="80"
-            rx="25"
-            style="fill:#fcfcfc"
-          />
-          <rect
-            x="132.64"
-            y="56"
-            width="35"
-            height="166"
-            rx="11.5"
-            style="fill:#fcfcfc"
-          />
-          <rect
-            x="133"
-            y="56"
-            width="100"
-            height="40"
-            rx="20"
-            style="fill:#fcfcfc"
-          />
-        </g>
-      </svg>
-    </div>
-
+    
     <div class="playback__time">
       <div class="sliders__time">
         <div class="progress__buffered">
@@ -176,21 +148,16 @@
     z-index: 9999;
     overflow: auto;
     max-width: 365px;
-    max-height: 365px;
+    max-height: 524px;
     width: 294px;
-    height: 524px;
+    height: 224px;
     box-sizing: border-box;
     font-size: 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 18px;
-  }
-
-  .playback__cover {
-    height: 150px;
-    width: 150px;
+    gap: 24px;
   }
 
   .playback__time,
@@ -198,11 +165,12 @@
     height: max-content;
     display: flex;
     flex-direction: column;
-    gap: 4px;
   }
 
   .playback__time {
+    margin-bottom: 24px;
     width: 80%;
+    gap: 12px;
   }
 
   .sliders__time,
@@ -210,7 +178,7 @@
     position: relative;
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.5);
-    height: 18px;
+    height: 14px;
     width: 100%;
   }
 
@@ -246,7 +214,7 @@
 
   @media (prefers-color-scheme: light) {
     .content {
-      background-color: #ECECEC;
+      background-color: #ececec;
       color: black;
     }
   }

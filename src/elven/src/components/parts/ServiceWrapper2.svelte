@@ -11,6 +11,4 @@
     });
 </script>
 
-<div class="service-2">
-    <div id="elven__player"></div>
-</div>
+<div id="elven__player"></div>

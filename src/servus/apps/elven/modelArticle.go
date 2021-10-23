@@ -87,7 +87,7 @@ func (q *queryArticleGetAll) getAll() (articles []ModelArticle, totalPages int, 
 		return nil, 0, nil
 	}
 	articles = make([]ModelArticle, 0)
-	totalPages = int(math.Round(float64(totalPages / articlesPageSize)))
+	totalPages = int(math.Round(float64(totalPages) / float64(articlesPageSize)))
 	if q.page > totalPages {
 		return
 	}
