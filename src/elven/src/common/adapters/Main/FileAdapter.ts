@@ -15,7 +15,7 @@ export default class FileAdapter {
                 if (response.data) {
                     return Promise.resolve(response.data as IFilesData)
                 } else {
-                    return Promise.reject('Нет данных.')
+                    return Promise.reject('No data.')
                 }
             })
             .catch(error => {

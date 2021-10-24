@@ -1,33 +1,36 @@
 package elven
 
 import (
-	"github.com/pkg/errors"
-	"servus/core/external/validator"
+	"encoding/json"
+	"net/http"
+	"servus/core/external/errorMan"
 )
 
 // entityUser - manage users.
 type entityUser struct {
+	*entityBase
 }
 
-
-// validatorUsername - validate username from ModelUser. Used in cmd create user.
-func (u *entityUser) validatorUsername(username string) error {
-	if validator.MinMax(&username, 4, 24) {
-		return errors.New("username: min length 4 and max 24")
-	}
-	if !validator.IsAlphanumeric(&username) {
-		return errors.New("username: allowed only alphanumeric")
-	}
-	return nil
+type ResponseUser struct {
+	IsAdmin bool `json:"is_admin"`
+	Username string `json:"username"`
+	LastIP *string `json:"last_ip"`
+	LastAgent *string `json:"last_agent"`
 }
 
-// validatorPassword - validate ModelUser password. Used in cmd create user.
-func (u *entityUser) validatorPassword(password string) error {
-	if len(password) < 8 || len(password) > 64 {
-		return errors.New("password: min length 8 and max 64")
+func (u *entityUser) controllerGetMe(response http.ResponseWriter, request *http.Request) {
+	auth := PipeAuth{}
+	auth.get(request)
+	var resp = ResponseUser{}
+	resp.IsAdmin = auth.IsAdmin
+	resp.Username = auth.User.Username
+	resp.LastIP = auth.Token.LastIP
+	resp.LastAgent = auth.Token.LastAgent
+	bytes, err := json.Marshal(resp)
+	if err != nil {
+		u.Send(response, errorMan.ThrowServer(), 500)
+		return
 	}
-	if !validator.IsAlphanumericWithSymbols(&password) {
-		return errors.New("password: allowed only alphanumeric and some symbols")
-	}
-	return nil
+	u.Send(response, string(bytes), 200)
+	return
 }

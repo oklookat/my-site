@@ -31,6 +31,6 @@ func bootEntities() {
 	eAuth = &entityAuth{entityBase: eBase}
 	eArticle = &entityArticle{entityBase: eBase}
 	eFile = &entityFile{entityBase: eBase}
-	eUser = &entityUser{}
+	eUser = &entityUser{entityBase: eBase}
 	eToken = &entityToken{}
 }

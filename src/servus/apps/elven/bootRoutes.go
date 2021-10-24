@@ -30,6 +30,10 @@ func bootRoutes() {
 	routerFiles.HandleFunc("", eFile.controllerCreateOne).Methods(http.MethodPost)
 	routerFiles.HandleFunc("/{id}", eFile.controllerDeleteOne).Methods(http.MethodDelete)
 	//
+	var routerUsers = routerElven.PathPrefix("/users").Subrouter()
+	routerUsers.Use(eBase.middlewareAuthorizedOnly)
+	routerUsers.HandleFunc("/me", eUser.controllerGetMe).Methods(http.MethodGet)
+	//
 	var useBeforeRouter = instance.HTTP.Middleware.CORS(instance.HTTP.Middleware.Security(router))
 	http.Handle("/", useBeforeRouter)
 }

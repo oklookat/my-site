@@ -1,5 +1,5 @@
-import {wrap} from 'svelte-spa-router/wrap'
-import {push} from 'svelte-spa-router'
+import { wrap } from 'svelte-spa-router/wrap'
+import { push } from 'svelte-spa-router'
 import { AuthStorage } from "@/common/tools/LStorage"
 
 import Index from '@/views/Index.svelte'
@@ -9,10 +9,11 @@ import Articles from '@/views/articles/Articles.svelte'
 import ArticleCreate from '@/views/articles/ArticleCreate.svelte'
 import Files from '@/views/files/Files.svelte'
 import Settings from '@/views/settings/Settings.svelte'
+import Account from '@/views/account/Account.svelte'
 
 function isAdmin() {
     const authorized = AuthStorage.get()
-    if(!authorized){
+    if (!authorized) {
         push('/login')
         return true
     }
@@ -28,31 +29,37 @@ const routes = {
     '/logout': wrap({
         component: Logout,
         conditions: [
-            () => {return isAdmin()}
+            () => { return isAdmin() }
         ]
     }),
     '/articles': wrap({
         component: Articles,
         conditions: [
-            () => {return isAdmin()}
+            () => { return isAdmin() }
         ]
     }),
     '/articles/create/:id?': wrap({
         component: ArticleCreate,
         conditions: [
-            () => {return isAdmin()}
+            () => { return isAdmin() }
         ]
     }),
     '/files': wrap({
         component: Files,
         conditions: [
-            () => {return isAdmin()}
+            () => { return isAdmin() }
         ]
     }),
     '/settings': wrap({
         component: Settings,
         conditions: [
-            () => {return isAdmin()}
+            () => { return isAdmin() }
+        ]
+    }),
+    '/account': wrap({
+        component: Account,
+        conditions: [
+            () => { return isAdmin() }
         ]
     }),
 }

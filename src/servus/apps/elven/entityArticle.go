@@ -96,7 +96,7 @@ func (a *entityArticle) controllerCreateOne(response http.ResponseWriter, reques
 		a.Send(response, em.GetJSON(), 400)
 		return
 	}
-	var article = ModelArticle{UserID: pAuth.User.ID, IsPublished: false, Title: val.Title, Content: val.Content}
+	var article = ModelArticle{UserID: pAuth.User.ID, IsPublished: false, Title: *val.Title, Content: *val.Content}
 	err := article.create()
 	if err != nil {
 		a.err500(response, request, err)
@@ -129,8 +129,12 @@ func (a *entityArticle) controllerUpdateOne(response http.ResponseWriter, reques
 		a.Send(response, errorMan.ThrowNotFound(), 404)
 		return
 	}
-	article.Title = body.Title
-	article.Content = body.Content
+	if body.Title != nil {
+		article.Title = *body.Title
+	}
+	if body.Content != nil {
+		article.Content = *body.Content
+	}
 	if body.IsPublished != nil {
 		article.IsPublished = *body.IsPublished
 	}

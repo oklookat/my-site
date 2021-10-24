@@ -13,8 +13,8 @@ type ResponseContent struct {
 // BodyArticle - represents the body of the request that the user should send. Used in create and update methods.
 type BodyArticle struct {
 	IsPublished *bool  `json:"is_published"`
-	Title       string `json:"title"`
-	Content     struct {
+	Title       *string `json:"title"`
+	Content     *struct {
 		Time   int64 `json:"time"`
 		Blocks []struct {
 			ID   string      `json:"id"`

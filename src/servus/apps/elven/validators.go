@@ -2,6 +2,7 @@ package elven
 
 import (
 	"encoding/json"
+	"github.com/pkg/errors"
 	"net/http"
 	"servus/core/external/errorMan"
 	"servus/core/external/validator"
@@ -135,12 +136,21 @@ func (a *entityArticle) validatorBody(request *http.Request) (val *BodyArticle, 
 	val = &BodyArticle{}
 	err = json.NewDecoder(request.Body).Decode(val)
 	if err != nil {
-		em.Add("title", "wrong value provided.")
-		em.Add("content", "wrong value provided.")
+		em.Add("body", "wrong value provided.")
 		return
 	}
-	if len(val.Title) > 124 {
-		em.Add("title", "max length 124.")
+	if val.Content != nil {
+		var contentInvalid = len(val.Content.Blocks) < 1 || len(val.Content.Version) < 1 || len(strconv.FormatInt(val.Content.Time, 10)) < 8
+		if contentInvalid {
+			em.Add("content", "wrong value provided.")
+		}
+	}
+	if val.Title != nil {
+		if len(*val.Title) < 1 {
+			em.Add("title", "min length 1.")
+		} else if len(*val.Title) > 124 {
+			em.Add("title", "max length 124.")
+		}
 	}
 	return
 }
@@ -197,4 +207,26 @@ func (f *entityFile) validatorControllerGetAll(request *http.Request, isAdmin bo
 		val.page = page
 	}
 	return
+}
+
+// validatorUsername - validate username from ModelUser. Used in cmd create user.
+func (u *entityUser) validatorUsername(username string) error {
+	if validator.MinMax(&username, 4, 24) {
+		return errors.New("username: min length 4 and max 24")
+	}
+	if !validator.IsAlphanumeric(&username) {
+		return errors.New("username: allowed only alphanumeric")
+	}
+	return nil
+}
+
+// validatorPassword - validate ModelUser password. Used in cmd create user.
+func (u *entityUser) validatorPassword(password string) error {
+	if len(password) < 8 || len(password) > 64 {
+		return errors.New("password: min length 8 and max 64")
+	}
+	if !validator.IsAlphanumericWithSymbols(&password) {
+		return errors.New("password: allowed only alphanumeric and some symbols")
+	}
+	return nil
 }

@@ -127,8 +127,8 @@ func (a *ModelArticle) create() (err error) {
 // update - update article in database.
 func (a *ModelArticle) update() (err error) {
 	a.hookBeforeChange()
-	var query = "UPDATE articles SET user_id=$1, is_published=$2, title=$3, content=$4, slug=$5 WHERE id=$6 RETURNING *"
-	err = instance.DB.Conn.Get(a, query, a.UserID, a.IsPublished, a.Title, a.Content, a.Slug, a.ID)
+	var query = "UPDATE articles SET user_id=$1, is_published=$2, title=$3, content=$4, slug=$5, published_at=$6 WHERE id=$7 RETURNING *"
+	err = instance.DB.Conn.Get(a, query, a.UserID, a.IsPublished, a.Title, a.Content, a.Slug, a.PublishedAt, a.ID)
 	err = instance.DB.CheckError(err)
 	if err != nil {
 		return
@@ -166,15 +166,20 @@ func (a *ModelArticle) hookBeforeChange() {
 	if len(a.Title) == 0 {
 		a.Title = "Untitled"
 	}
-	// create temp slug (ULID)
+	// create temp slug (ULID).
 	t := time.Now()
 	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
 	a.Slug = ulid.MustNew(ulid.Timestamp(t), entropy).String()
+	// check published.
+	if a.IsPublished && a.PublishedAt == nil {
+		var cur = time.Now()
+		a.PublishedAt = &cur
+	}
 }
 
 // hookAfterChange - executes after article create or update.
 func (a *ModelArticle) hookAfterChange() (err error) {
-	// create normal slug
+	// create normal slug.
 	a.Slug = slug.Make(a.Title) + "-" + a.ID
 	var query = "UPDATE articles SET slug=$1 WHERE id=$2 RETURNING *"
 	row := instance.DB.Conn.QueryRowx(query, a.Slug, a.ID)

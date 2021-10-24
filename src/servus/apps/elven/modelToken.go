@@ -20,11 +20,17 @@ type ModelToken struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
-// create - create ModelToken in database. WARNING: its function writes only token and user id, other data will be ignored. For write full data see dbTokenUpdate.
+// create - create ModelToken in database.
 func (t *ModelToken) create() (err error) {
-	var query = "INSERT INTO tokens (user_id, token) VALUES ($1, $2) RETURNING *"
-	row := instance.DB.Conn.QueryRowx(query, &t.UserID, &t.Token)
-	err = row.StructScan(t)
+	var query = "INSERT INTO tokens (user_id, token, last_ip, last_agent, auth_ip, auth_agent) VALUES (:user_id, :token, :last_ip, :last_agent, :auth_ip, :auth_agent) RETURNING *"
+	stmt, err := instance.DB.Conn.PrepareNamed(query)
+	if err != nil {
+		return
+	}
+	defer func() {
+		_ = stmt.Close()
+	}()
+	err = stmt.Get(t, t)
 	err = instance.DB.CheckError(err)
 	return
 }
