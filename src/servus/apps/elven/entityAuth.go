@@ -35,33 +35,12 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 		return
 	}
 	// token generating.
-	// first we generate fake token model to get created token ID.
-	var tokenModel = ModelToken{UserID: user.ID, Token: "-1"}
-	err = tokenModel.create()
+	var tokenModel = ModelToken{}
+	err, encryptedToken, _ := tokenModel.generate(user.ID)
 	if err != nil {
 		a.err500(response, request, err)
 		return
 	}
-	defer func() {
-		if err != nil {
-			_ = tokenModel.deleteByID()
-		}
-	}()
-	// then we get newly created token model id and encrypt it. That's we send to user as token.
-	encryptedToken, err := instance.Encryption.AES.Encrypt(tokenModel.ID)
-	if err != nil {
-		a.err500(response, request, err)
-		return
-	}
-	// get hash from generated token.
-	// user gets encrypted token, but database gets hash. In general, we do the same as with the password.
-	encryptedTokenHash, err := instance.Encryption.Argon.Hash(encryptedToken)
-	if err != nil {
-		a.err500(response, request, err)
-		return
-	}
-	// now we replace fake token with real token in database.
-	tokenModel.Token = encryptedTokenHash
 	err = tokenModel.setAuthAgents(request)
 	if err != nil {
 		a.err500(response, request, err)

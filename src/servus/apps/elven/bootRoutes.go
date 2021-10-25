@@ -33,6 +33,7 @@ func bootRoutes() {
 	var routerUsers = routerElven.PathPrefix("/users").Subrouter()
 	routerUsers.Use(eBase.middlewareAuthorizedOnly)
 	routerUsers.HandleFunc("/me", eUser.controllerGetMe).Methods(http.MethodGet)
+	routerUsers.HandleFunc("/me/change", eUser.controllerChange).Methods(http.MethodPost)
 	//
 	var useBeforeRouter = instance.HTTP.Middleware.CORS(instance.HTTP.Middleware.Security(router))
 	http.Handle("/", useBeforeRouter)

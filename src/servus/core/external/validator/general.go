@@ -18,7 +18,7 @@ func IsAlphanumeric(text *string) bool {
 	if text == nil {
 		return false
 	}
-	alphanumeric := regexp.MustCompile("^[a-zA-Z0-9_]*$")
+	alphanumeric := regexp.MustCompile("^[a-zA-Z0-9]*$")
 	return alphanumeric.MatchString(*text)
 }
 
@@ -27,7 +27,7 @@ func IsAlphanumericWithSymbols(text *string) bool {
 	if text == nil {
 		return false
 	}
-	alphaWithSymbols := regexp.MustCompile("^[a-zA-Z0-9~`!@#$%^&*()_\\-+={\\[}\\]|:;\"'<,>.?\\/\\\\\\\\]*$")
+	alphaWithSymbols := regexp.MustCompile("^[a-zA-Z0-9\\-+~\"'\\x60(){\\[}|:;,.!=@#$%^&?№*\\\\\\\\/<>]*$")
 	return alphaWithSymbols.MatchString(*text)
 }
 

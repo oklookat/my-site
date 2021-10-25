@@ -65,7 +65,7 @@ func (a *Argon) Check(data, hash string) (match bool, err error) {
 // created with. This can be useful if you want to update your hash params over time (which you
 // should).
 func (a *Argon) matchHash(data, hash string) (match bool, config *Argon, err error) {
-	params, salt, key, err := a.parseHash(hash)
+	params, salt, key, err := a.ParseHash(hash)
 	if err != nil {
 		return false, nil, err
 	}
@@ -81,9 +81,9 @@ func (a *Argon) matchHash(data, hash string) (match bool, config *Argon, err err
 	return false, params, nil
 }
 
-// parseHash - expects a hash created from this package, and parses it to return the params used to
+// ParseHash - expects a hash created from this package, and parses it to return the params used to
 // create it, as well as the salt and key (password hash).
-func (a *Argon) parseHash(hash string) (config *Argon, salt, key []byte, err error) {
+func (a *Argon) ParseHash(hash string) (config *Argon, salt, key []byte, err error) {
 	values := strings.Split(hash, "$")
 	if len(values) != 6 {
 		return nil, nil, nil, ErrArgonInvalidHash

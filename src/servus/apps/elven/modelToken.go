@@ -134,3 +134,36 @@ func (t *ModelToken) setLastAgents(request *http.Request) (err error) {
 	err = t.update()
 	return
 }
+
+// generate - generate token.
+// returns: token - token for user, hash - saved in db as ModelToken.Token.
+func (t *ModelToken) generate(userID string) (err error, token string, hash string) {
+	// token generating.
+	// first we generate fake token model to get created token ID.
+	t.UserID = userID
+	t.Token = "-1"
+	err = t.create()
+	if err != nil {
+		return
+	}
+	defer func() {
+		if err != nil {
+			_ = t.deleteByID()
+		}
+	}()
+	// then we get newly created token model id and encrypt it. That's we send to user as token.
+	token, err = instance.Encryption.AES.Encrypt(t.ID)
+	if err != nil {
+		return
+	}
+	// get hash from generated token.
+	// user gets encrypted token, but database gets hash. In general, we do the same as with the password.
+	hash, err = instance.Encryption.Argon.Hash(token)
+	if err != nil {
+		return
+	}
+	// now we replace fake token with real token in database.
+	t.Token = hash
+	err = t.update()
+	return
+}

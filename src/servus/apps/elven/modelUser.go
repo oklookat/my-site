@@ -35,6 +35,17 @@ func (u *ModelUser) create() (err error) {
 	return
 }
 
+func (u *ModelUser) update() (err error) {
+	err = u.hookBeforeChange()
+	if err != nil {
+		return
+	}
+	var query = "UPDATE users SET role=$1, username=$2, password=$3 WHERE id=$4 RETURNING *"
+	err = instance.DB.Conn.Get(u, query, u.Role, u.Username, u.Password, u.ID)
+	err = instance.DB.CheckError(err)
+	return
+}
+
 // findByID - find user in database by id in ModelUser.
 func (u *ModelUser) findByID() (found bool, err error) {
 	var query = "SELECT * FROM users WHERE id=$1 LIMIT 1"
@@ -74,6 +85,21 @@ func (u *ModelUser) deleteByID() (err error) {
 	err = instance.DB.CheckError(err)
 	if err == sql.ErrNoRows {
 		return nil
+	}
+	return
+}
+
+// hookBeforeChange - change data before send it to DB.
+func (u *ModelUser) hookBeforeChange() (err error){
+	// check if password not hashed.
+	conf, _, _, _ := instance.Encryption.Argon.ParseHash(u.Password)
+	if conf == nil {
+		// not hashed
+		hash, err := instance.Encryption.Argon.Hash(u.Password)
+		if err != nil {
+			return err
+		}
+		u.Password = hash
 	}
 	return
 }

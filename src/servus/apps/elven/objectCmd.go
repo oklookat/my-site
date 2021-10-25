@@ -67,12 +67,12 @@ chooseUsername:
 		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	err = eUser.validatorUsername(username)
+	var user = ModelUser{Username: username}
+	err = user.validateUsername()
 	if err != nil {
 		instance.Logger.Error(fmt.Sprintf("elven: validation failed. Error: %v", err.Error()))
 		goto chooseUsername
 	}
-	var user = ModelUser{Username: username}
 	found, err := user.findByUsername()
 	if err != nil {
 		var errPretty = errors.Wrap(err, "elven: failed to find user. Error")
@@ -113,13 +113,13 @@ choosePassword:
 		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	err = eUser.validatorPassword(password)
+	user = ModelUser{Role: role, Username: username, Password: password}
+	err = user.validatePassword()
 	if err != nil {
 		instance.Logger.Error(fmt.Sprintf("elven: validation failed. Error: %v", err.Error()))
 		goto choosePassword
 	}
 	// create
-	user = ModelUser{Role: role, Username: username, Password: password}
 	err = user.create()
 	if err != nil {
 		var errPretty = errors.Wrap(err, fmt.Sprintf("elven: error while creating %v. Error", sign))

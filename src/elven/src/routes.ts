@@ -9,7 +9,6 @@ import Articles from '@/views/articles/Articles.svelte'
 import ArticleCreate from '@/views/articles/ArticleCreate.svelte'
 import Files from '@/views/files/Files.svelte'
 import Settings from '@/views/settings/Settings.svelte'
-import Account from '@/views/account/Account.svelte'
 
 function isAdmin() {
     const authorized = AuthStorage.get()
@@ -52,12 +51,6 @@ const routes = {
     }),
     '/settings': wrap({
         component: Settings,
-        conditions: [
-            () => { return isAdmin() }
-        ]
-    }),
-    '/account': wrap({
-        component: Account,
         conditions: [
             () => { return isAdmin() }
         ]

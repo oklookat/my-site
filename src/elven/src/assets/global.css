@@ -10,7 +10,7 @@
       --color-text-inactive: #656565;
       --color-text-selection: #b5a9ff;
       --color-level-1: #ffffff;
-      --color-level-2: #ffffff;
+      --color-level-2: #ebebeb;
       --color-scrollbar: #505050;
       --color-scrollbar-hover: #707070;
       --color-placeholder: #808080;
@@ -136,7 +136,7 @@
 
   input {
     color: var(--color-text);
-    background-color: var(--color-level-1);
+    background-color: var(--color-level-2);
     border: 1px solid var(--color-border);
     min-height: 24px;
     border-radius: 4px;
@@ -161,11 +161,18 @@
   }
 
   button {
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-level-2);
     color: var(--color-text);
+    min-height: 24px;
   }
 
   button:disabled,
   button[disabled] {
+    cursor: not-allowed;
     color: var(--color-text-inactive);
   }
 
