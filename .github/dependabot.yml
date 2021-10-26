@@ -7,13 +7,11 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/src/backend"
+    directory: "/src/elven"
     schedule:
       interval: "daily"
       
-  - package-ecosystem: "npm"
-    directory: "/src/elvenfront"
+  - package-ecosystem: "gomod"
+    directory: "/src/servus"
     schedule:
       interval: "daily"
-    ignore: 
-     - dependency-name: "sass-loader"
