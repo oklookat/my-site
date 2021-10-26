@@ -37,13 +37,13 @@ func (u *entityUser) controllerGetMe(response http.ResponseWriter, request *http
 // controllerChange - change username or password.
 // body: what change (username or password); password to confirm; new value for change.
 func (u *entityUser) controllerChange(response http.ResponseWriter, request *http.Request) {
-	var data = struct {
-		what     string
-		password string
-		newValue string
+	var body = struct {
+		What     string
+		Password string
+		NewValue string
 	}{}
 	em := errorMan.NewValidation()
-	err := json.NewDecoder(request.Body).Decode(&data)
+	err := json.NewDecoder(request.Body).Decode(&body)
 	if err != nil {
 		em.Add("body", "wrong value provided.")
 		u.Send(response, em.GetJSON(), 400)
@@ -51,25 +51,39 @@ func (u *entityUser) controllerChange(response http.ResponseWriter, request *htt
 	}
 	auth := PipeAuth{}
 	auth.get(request)
-	match, err := instance.Encryption.Argon.Check(data.password, auth.User.Password)
+	match, err := instance.Encryption.Argon.Check(body.Password, auth.User.Password)
 	if err != nil || !match {
 		u.Send(response, errorMan.ThrowNotAuthorized(), 401)
 		return
 	}
-	switch data.what {
+	var changeUsername = false
+	switch body.What {
 	case "username":
-		auth.User.Username = data.newValue
+		changeUsername = true
+		auth.User.Username = body.NewValue
 		err = auth.User.validateUsername()
 		break
 	case "password":
-		auth.User.Password = data.password
+		auth.User.Password = body.NewValue
 		err = auth.User.validatePassword()
 		break
 	}
 	if err != nil {
-		em.Add(data.what, "wrong value provided.")
+		em.Add(body.What, "wrong value provided.")
 		u.Send(response, em.GetJSON(), 400)
 		return
+	}
+	if changeUsername {
+		userExists, err := auth.User.findByUsername()
+		if err != nil {
+			u.Send(response, errorMan.ThrowServer(), 500)
+			return
+		}
+		if userExists {
+			em.Add("username", "already exists")
+			u.Send(response, em.GetJSON(), 400)
+			return
+		}
 	}
 	err = auth.User.update()
 	if err != nil {

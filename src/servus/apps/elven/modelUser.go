@@ -2,6 +2,7 @@ package elven
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 )
 
@@ -24,7 +25,7 @@ type ModelUser struct {
 
 // create - create user in database.
 func (u *ModelUser) create() (err error) {
-	u.Password, err = instance.Encryption.Argon.Hash(u.Password)
+	err = u.hookBeforeChange()
 	if err != nil {
 		instance.Logger.Error(err.Error())
 		return
@@ -91,6 +92,8 @@ func (u *ModelUser) deleteByID() (err error) {
 
 // hookBeforeChange - change data before send it to DB.
 func (u *ModelUser) hookBeforeChange() (err error){
+	// convert to lower
+	u.Username = strings.ToLower(u.Username)
 	// check if password not hashed.
 	conf, _, _, _ := instance.Encryption.Argon.ParseHash(u.Password)
 	if conf == nil {

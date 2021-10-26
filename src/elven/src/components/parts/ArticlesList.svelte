@@ -1,9 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
-    import { quintOut } from "svelte/easing";
-    import { crossfade } from "svelte/transition";
-    import type { IArticle } from "@/types/article";
-    import Dates from "@/common/tools/Dates";
+    import type { IArticle } from "@/types/ArticleTypes";
+    import Dates from "@/tools/Dates";
 
     const dispatch = createEventDispatcher();
 

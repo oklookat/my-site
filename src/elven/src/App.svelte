@@ -4,10 +4,10 @@
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
   import routes from "./routes";
-  import ServiceWrapper2 from "./components/parts/ServiceWrapper2.svelte";
+  import ElvenProgressPlugin from "@/plugins/ElvenProgress/ElvenProgressPlugin";
+  import ElvenNotifyPlugin from "@/plugins/ElvenNotify/ElvenNotifyPlugin";
   import Header from "@/components/parts/Header.svelte";
-  import ElvenProgressPlugin from "@/common/plugins/ElvenProgress/ElvenProgressPlugin";
-  import ElvenNotifyPlugin from "@/common/plugins/ElvenNotify/ElvenNotifyPlugin"
+  import ServiceWrapper2 from "./components/parts/ServiceWrapper2.svelte";
 
   let isNotAuth = $location !== "/login" && $location !== "/logout";
   location.subscribe((value) => {
@@ -15,14 +15,16 @@
   });
 
   // init plugins
-  let elvenProgressEL
-  let elvenNotifyEL
+  let elvenProgressEL;
+  let elvenNotifyEL;
   let elvenProgress: ElvenProgressPlugin;
   let elvenNotify: ElvenNotifyPlugin;
+
   onMount(() => {
     elvenProgress = new ElvenProgressPlugin(elvenProgressEL);
     elvenNotify = new ElvenNotifyPlugin(elvenNotifyEL);
   });
+
   onDestroy(() => {
     elvenProgress.destroy();
     elvenNotify.destroy();
@@ -32,11 +34,11 @@
 
 <div class="container">
   {#if isNotAuth}
-  <div class="global__header">
-    <Header />
-  </div>
+    <div class="global__header">
+      <Header />
+    </div>
   {/if}
-  <div id="elven__progress" bind:this={elvenProgressEL}/>
+  <div id="elven__progress" bind:this={elvenProgressEL} />
   <div class="content">
     <div style="height: 16px;" />
     <Router {routes} />
@@ -44,8 +46,8 @@
   </div>
   <div id="elven__notify" bind:this={elvenNotifyEL} />
   {#if isNotAuth}
-  <div class="service-2">
-    <ServiceWrapper2 />
-  </div>
+    <div class="service-2">
+      <ServiceWrapper2 />
+    </div>
   {/if}
 </div>

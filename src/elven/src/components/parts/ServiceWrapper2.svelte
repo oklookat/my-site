@@ -1,5 +1,5 @@
 <script lang="ts">
-    import ElvenPlayerPlugin from "@/common/plugins/ElvenPlayer/ElvenPlayerPlugin";
+    import ElvenPlayerPlugin from "@/plugins/ElvenPlayer/ElvenPlayerPlugin";
     import { onDestroy, onMount } from "svelte";
 
     let player: ElvenPlayerPlugin;

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
-
-  import { link, location, push } from "svelte-spa-router";
+  import { location, push } from "svelte-spa-router";
 
   let path = "";
 

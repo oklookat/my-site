@@ -36,12 +36,11 @@
       clearTimeout(pageInputTimeoutID);
     }
     pageInputTimeoutID = setTimeout(() => {
-      let bad = isNaN(inputPage);
-      if (bad) {
+      const inputPageInt = parseInt(inputPage, 10)
+      if (isNaN(inputPageInt)) {
         return;
       }
-      const inputPageInt = parseInt(inputPage, 10);
-      bad =
+      let bad =
         inputPageInt > totalPagesData ||
         inputPageInt < 1 ||
         inputPageInt === currentPageData;

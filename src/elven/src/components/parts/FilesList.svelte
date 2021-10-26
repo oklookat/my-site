@@ -1,9 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { IFile } from "@/types/file";
-  import Dates from "@/common/tools/Dates";
-  import Sizes from "@/common/tools/Sizes";
-  import Extensions from "@/common/tools/Extensions";
+  import type { IFile } from "@/types/FileTypes";
+  import { Env } from "@/tools/Paths";
+  import Dates from "@/tools/Dates";
+  import Sizes from "@/tools/Sizes";
+  import Extensions from "@/tools/Extensions";
   import Overlay from "@/components/ui/Overlay.svelte";
 
   let selected: IFile | null = null;
@@ -47,29 +48,15 @@
 
   // convert file path, extension etc
   function converter(file: IFile): IFile {
-    file.extension = convertExtension(file.extension);
-    file.path = convertPath(file.path);
+    file.path = `${Env.getUploads()}/${file.path}`;
+    file.extensionType = Extensions.getType(file.extension);
+    file.sizeConverted = Sizes.convert(file.size);
+    file.createdAtConverted = Dates.convert(file.created_at);
     return file;
   }
 
   function playAudio(path: string) {
     window.$elvenPlayer.play(path);
-  }
-
-  function convertDate(date) {
-    return Dates.convert(date);
-  }
-
-  function convertSize(size) {
-    return Sizes.convert(size);
-  }
-
-  function convertExtension(extension) {
-    return Extensions.getReadable(extension);
-  }
-
-  function convertPath(path) {
-    return `${import.meta.env.VITE_UPLOADS_URL}/${path}`;
   }
 </script>
 
@@ -78,26 +65,23 @@
     <div class="file" on:click={() => onSelected(file)}>
       <div class="file__meta">
         <div class="file__item file__uploaded-date">
-          {convertDate(file.created_at)}
+          {file.createdAtConverted}
         </div>
       </div>
       <div class="file__main">
-        {#if file.extension === "IMAGE"}
+        {#if file.extensionType === "image"}
           <div class="file__item file__preview" on:click|stopPropagation>
             <img src={file.path} alt="" />
           </div>
-        {:else if file.extension === "VIDEO"}
+        {:else if file.extensionType === "video"}
           <div class="file__item file__preview" on:click|stopPropagation>
             <video controls src={file.path}>
-              <track default
-              kind="captions"
-              srclang="en"
-              src="" />
+              <track default kind="captions" srclang="en" src="" />
             </video>
           </div>
         {/if}
         <div class="file__item file__name">{file.original_name}</div>
-        <div class="file__item file__size">{convertSize(file.size)}</div>
+        <div class="file__item file__size">{file.sizeConverted}</div>
       </div>
     </div>
   {/each}
@@ -110,7 +94,7 @@
     }}
   >
     <div class="overlay__selected">
-      {#if selected.extension === "AUDIO"}
+      {#if selected.extensionType === "audio"}
         <div
           class="overlay__item file__play"
           on:click={() => playAudio(selected.path)}
