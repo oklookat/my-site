@@ -1,5 +1,5 @@
-# this is obsolete version, dont use it, but if you want:
-## 1. frontend (elvenfront) uses url's from golang api routes, need correct url's to nodejs routes
+# this is obsolete version, dont use it. But if you want:
+## 1. frontend (elvenfront) uses url's from golang api routes, need correct url's to nodejs routes.
 
 # oklookat.ru source (elven) #
 
