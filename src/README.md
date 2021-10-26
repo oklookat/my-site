@@ -1,5 +1,7 @@
-# oklookat.ru source (elven) #
+# this is obsolete version, dont use it, but if you want:
+## 1. frontend (elvenfront) uses url's from golang api routes, need correct url's to nodejs routes
 
+# oklookat.ru source (elven) #
 
 ## Powered by
 ### Backend
@@ -36,7 +38,7 @@ Vue.js v3 - https://vuejs.org/
 - ```node ace serve --watch``` = run in dev
 - ```node ace build --production``` = build prod
 ### Elven frontend (elvenfront)
-- ```npm run serve``` = run in dev
+- ```npm run dev``` = run in dev
 
 
 ## F.A.Q
