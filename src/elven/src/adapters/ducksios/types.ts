@@ -1,58 +1,56 @@
-// basic types
+// basic
 export type TRequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "HEAD" | "OPTIONS" | "PATCH"
-
-export type THeader = {
-    name: string
-    value: string
-}
-
-export type TRequestParam = {
-    name: string
-    value: string | number
-}
-
 export type TRequestBody = string | number | object | Blob | BufferSource | FormData | URLSearchParams | ReadableStream
+
+export type THeaders = {
+    [name: string]: string | number
+}
+
+export type TRequestParams = {
+    [name: string]: string | number
+}
 
 export type TResponse = { 
     body: any
     statusCode: number
 }
 
-export interface IError extends TResponse {
+export type TError = TResponse & {
     type: "timeout" | "network" | "response"
-}
-
-// hooks
-export interface IHooks {
-    onRequest?: () => null
-    onRequestError?: (err: IError) => null
-
-    onResponse?: () => null
-    onResponseError?: (err: IError) => null
-
-    onUploadProgress?: () => null
-    onUploaded?: () => null
-    onUploadError?: (err: IError) => null
 }
 
 // config
 export type TBasicConfig = {
     withCredentials?: boolean
-    headers?: Array<THeader>
+    headers?: THeaders
     hooks?: IHooks
-    //
+    // base auth
     baseAuth?: boolean
     baseAuthUser?: string
     baseAuthPassword?: string
 }
 
-export interface IGlobalConfig extends TBasicConfig {
+export type TGlobalConfig = TBasicConfig & {
     timeout?: number
     baseURL?: string
 }
 
-export interface IRequestConfig extends TBasicConfig {
+export type TRequestConfig = TBasicConfig & {
     url: string
     body?: TRequestBody
-    params?: Array<TRequestParam>
+    params?: TRequestParams
+}
+
+// hooks
+export interface IHooks {
+    // request hooks
+    onRequest?: (config: TRequestConfig) => void
+    onRequestError?: (err: TError) => void
+    // response hooks
+    onResponse?: (response: TResponse) => void
+    onResponseError?: (err: TError) => void
+    // upload hooks
+    onUploadProgress?: () => void
+    onUploaded?: () => void
+    onUploadError?: (err: TError) => void
 }

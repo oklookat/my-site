@@ -7,10 +7,10 @@ import (
 
 // ConfigFile - configuration file.
 type ConfigFile struct {
-	Debug    bool   `json:"Debug"`
-	Timezone string `json:"Timezone"`
-	Host     string `json:"Host"`
-	Port     string `json:"Port"`
+	Debug    bool   `json:"debug"`
+	Timezone string `json:"timezone"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
 	DB       struct {
 		Driver   string `json:"driver"`
 		Postgres struct {
@@ -20,7 +20,7 @@ type ConfigFile struct {
 			Password string `json:"password"`
 			DbName   string `json:"database"`
 		} `json:"postgres"`
-	} `json:"DB"`
+	} `json:"db"`
 	Logger struct {
 		WriteToConsole bool `json:"writeToConsole"`
 		WriteToFile    struct {
@@ -28,7 +28,7 @@ type ConfigFile struct {
 			MaxLogFiles int   `json:"maxLogFiles"`
 			MaxLogSize  int64 `json:"maxLogSize"`
 		} `json:"writeToFile"`
-	} `json:"Logger"`
+	} `json:"logger"`
 	Security struct {
 		HTTPS struct {
 			Active   bool   `json:"active"`
@@ -63,6 +63,9 @@ type ConfigFile struct {
 			AES struct {
 				Secret string `json:"secret"`
 			} `json:"aes"`
+			Bcrypt struct {
+				Cost int `json:"cost"`
+			} `json:"bcrypt"`
 			Argon  struct {
 				Memory      uint32 `json:"memory"`
 				Iterations  uint32 `json:"iterations"`
@@ -70,15 +73,12 @@ type ConfigFile struct {
 				SaltLength  uint32 `json:"saltLength"`
 				KeyLength   uint32 `json:"keyLength"`
 			} `json:"argon"`
-			Bcrypt struct {
-				Cost int `json:"cost"`
-			} `json:"bcrypt"`
 		} `json:"encryption"`
 	}
 	Uploads struct {
 		To   string `json:"to"`
 		Temp string `json:"temp"`
-	} `json:"Uploads"`
+	} `json:"uploads"`
 }
 
 // boot - load config file from path.

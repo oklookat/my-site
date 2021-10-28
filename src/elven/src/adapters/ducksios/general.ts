@@ -1,75 +1,66 @@
-import { IGlobalConfig, TRequestMethod, IRequestConfig, THeader, IError, TResponse } from './types'
+import type { TGlobalConfig, TRequestConfig, TRequestMethod, THeaders, TRequestBody, TResponse, TError } from './types'
 
-class Ducksios {
+export default class Ducksios {
 
-    public config: IGlobalConfig = {
+    public config: TGlobalConfig = {
         timeout: 15000,
-        baseAuth: false
+        baseURL: null,
+        withCredentials: false,
+        headers: null,
+        hooks: null,
+        baseAuth: false,
     }
 
-    constructor(config?: IGlobalConfig) {
+    constructor(config?: TGlobalConfig) {
         if (config) {
-            if (config.timeout) {
-                this.config.timeout = config.timeout
-            }
-            if (config.baseURL) {
-                this.config.baseURL = config.baseURL
-            }
-            if (config.headers) {
-                this.config.headers = config.headers
+            for (const value in config) {
+                this.config[value] = config[value]
             }
         }
     }
 
-    public async GET(config: IRequestConfig) {
-        this.buildXHR("GET", config)
+    //////////// methods
+
+    public async GET(config: TRequestConfig) {
+        return this.buildAndSend("GET", config)
     }
 
-    public async POST(config: IRequestConfig) {
-        this.buildXHR("POST", config)
+    public async POST(config: TRequestConfig) {
+        return this.buildAndSend("POST", config)
     }
 
-    public async PUT(config: IRequestConfig) {
-        this.buildXHR("PUT", config)
+    public async PUT(config: TRequestConfig) {
+        return this.buildAndSend("PUT", config)
     }
 
-    public async DELETE(config: IRequestConfig) {
-        this.buildXHR("DELETE", config)
+    public async DELETE(config: TRequestConfig) {
+        return this.buildAndSend("DELETE", config)
     }
 
-    public async HEAD(config: IRequestConfig) {
-        this.buildXHR("HEAD", config)
+    public async HEAD(config: TRequestConfig) {
+        return this.buildAndSend("HEAD", config)
     }
 
-    public async OPTIONS(config: IRequestConfig) {
-        this.buildXHR("OPTIONS", config)
+    public async OPTIONS(config: TRequestConfig) {
+        return this.buildAndSend("OPTIONS", config)
     }
 
-    public async PATCH(config: IRequestConfig) {
-        this.buildXHR("PATCH", config)
+    public async PATCH(config: TRequestConfig) {
+        return this.buildAndSend("PATCH", config)
     }
 
-    // cancel request
-    public stop() {
+    //////////// senders
 
-    }
-
-    // TODO: array with xhr(?) and request config, and add on load end (destroy). And add onprogress.
-
-    // create XMLHttpRequest (this.xhr)
-    private buildXHR(method: TRequestMethod, requestConfig: IRequestConfig): XMLHttpRequest {
+    private async buildAndSend(method: TRequestMethod, requestConfig: TRequestConfig): Promise<TResponse> {
         let xhr = new XMLHttpRequest();
         xhr.timeout = this.config.timeout
-        // url + baseURL
-        let url = requestConfig.url
-        if (this.config.baseURL) {
-            url = `${this.config.baseURL}/${url}`
-        }
+        requestConfig = this.setURL(requestConfig)
         // credentials
         let withCredentials = false
         if (this.config.withCredentials) {
             withCredentials = this.config.withCredentials
-        } else if (requestConfig.withCredentials) {
+        }
+        if (requestConfig.withCredentials) {
             withCredentials = requestConfig.withCredentials
         }
         xhr.withCredentials = withCredentials
@@ -77,47 +68,136 @@ class Ducksios {
         let baseAuthUser: string | undefined = undefined
         let baseAuthPassword: string | undefined = undefined
         if (this.config.baseAuth || requestConfig.baseAuth) {
-            if (this.config.baseAuthUser) {
-                baseAuthUser = this.config.baseAuthUser
+            let user = this.config.baseAuthUser
+            if (user) {
+                baseAuthUser = user
             }
-            if (requestConfig.baseAuthUser) {
-                baseAuthUser = requestConfig.baseAuthUser
+            user = requestConfig.baseAuthUser
+            if (user) {
+                baseAuthUser = user
             }
-            if (this.config.baseAuthPassword) {
-                baseAuthPassword = this.config.baseAuthPassword
+            let password = this.config.baseAuthPassword
+            if (password) {
+                baseAuthPassword = password
             }
-            if (requestConfig.baseAuthPassword) {
-                baseAuthPassword = requestConfig.baseAuthPassword
+            password = requestConfig.baseAuthPassword
+            if (password) {
+                baseAuthPassword = password
             }
         }
-        // hooks
-        xhr = this.bootHooks(xhr, requestConfig)
-        // open
+        // send
+        const url = requestConfig.url
         xhr.open(method, url, true, baseAuthUser, baseAuthPassword)
-        xhr = this.parseHeaders(xhr, requestConfig)
-        return xhr
+        xhr = this.setRequestHeaders(xhr, requestConfig)
+        return this.send(xhr, requestConfig)
     }
 
-    // set headers by request and global config
-    private parseHeaders(xhr: XMLHttpRequest, requestConfig: IRequestConfig): XMLHttpRequest {
-        const set = (headers: Array<THeader>) => {
-            for (const header of headers) {
-                xhr.setRequestHeader(header.name, header.value)
+    // send request and setup hooks
+    private async send(xhr: XMLHttpRequest, requestConfig: TRequestConfig): Promise<TResponse> {
+        let body = this.parseRequestBody(requestConfig.body)
+        xhr.send(body)
+        // after send request
+        this.onRequest(requestConfig)
+        return new Promise((resolve, reject) => {
+            // when we get response from server
+            xhr.onload = () => {
+                this.onResponse(xhr, requestConfig)
+                    .then((response) => {
+                        resolve(response)
+                    })
+                    .catch(err => {
+                        reject(err as TError)
+                    })
+            }
+            // network error (not HTTP)
+            xhr.onerror = () => {
+                const err: TError = {
+                    type: "network",
+                    statusCode: 0,
+                    body: null
+                }
+                reject(this.onRequestError(requestConfig, err))
+            }
+            // timeout
+            xhr.ontimeout = () => {
+                const err: TError = {
+                    type: "timeout",
+                    statusCode: 408,
+                    body: null
+                }
+                reject(this.onResponseError(requestConfig, err))
+            }
+        })
+    }
+
+    //////////// parsers
+
+    // set url and request params
+    private setURL(requestConfig: TRequestConfig): TRequestConfig {
+        // set base
+        let url = requestConfig.url
+        const baseURL = this.config.baseURL
+        if(baseURL) {
+            url = `${baseURL}/${url}`
+        }
+        // control slashes
+        const set = url.match(/([^:]\/{2,3})/g)
+        for (const str in set) {
+            var replace_with = set[str].substr(0, 1) + '/';
+            url = url.replace(set[str], replace_with);
+        }
+        // set params
+        let urlObj = new URL(url)
+        if (requestConfig.params) {
+            for (const param in requestConfig.params) {
+                urlObj.searchParams.set(param, requestConfig.params[param].toString())
             }
         }
-        const globalHeaders = this.config.headers && this.config.headers.length > 0
+        requestConfig.url = urlObj.toString()
+        return requestConfig
+    }
+
+    // set request headers by request and global config
+    private setRequestHeaders(xhr: XMLHttpRequest, requestConfig: TRequestConfig): XMLHttpRequest {
+        const set = (headers: THeaders) => {
+            for (const header in headers) {
+                xhr.setRequestHeader(header, headers[header].toString())
+            }
+        }
+        const globalHeaders = this.config.headers
         if (globalHeaders) {
             set(this.config.headers)
         }
-        const localHeaders = requestConfig.headers && requestConfig.headers.length > 0
+        const localHeaders = requestConfig.headers
         if (localHeaders) {
             set(requestConfig.headers)
         }
         return xhr
     }
 
-    // try to parse body if object. Returns body.
-    private parseBody(xhr: XMLHttpRequest): any {
+    // TODO: auto parse json and add request cancel, progress
+
+    // parse body to json (if object) before send request. Returns body.
+    private parseRequestBody(body: TRequestBody): any {
+        if(!body) {
+            return
+        }
+        // const toJSON = !(body instanceof Blob) && !(body instanceof Buffer) && !(body instanceof FormData) 
+        // && !(body instanceof URLSearchParams) && !(body instanceof ReadableStream) && typeof body === 'object'
+        // if (toJSON) {
+        //     try {
+        //         body = JSON.stringify(body)
+        //     } catch (err) {
+
+        //     }
+        // } else if (typeof body === 'number') {
+        //     body = body.toString()
+        // }
+        return body
+    }
+
+    // try to parse body. Returns body.
+    private parseResponseBody(xhr: XMLHttpRequest): any {
         let body = xhr.response
         if (body) {
             try {
@@ -130,94 +210,73 @@ class Ducksios {
         return body
     }
 
-    // setup hooks by request and global config
-    private bootHooks(xhr: XMLHttpRequest, requestConfig: IRequestConfig): XMLHttpRequest {
-        // network error (not HTTP)
-        xhr.onerror = () => {
-            const err: IError = {
-                type: "network",
-                statusCode: 0,
-                body: null
+    //////////// hooks
+
+    // when get response from server
+    private async onResponse(xhr: XMLHttpRequest, requestConfig: TRequestConfig): Promise<TResponse> {
+        return new Promise((resolve, reject) => {
+            const statusCode = xhr.status
+            const body = this.parseResponseBody(xhr)
+            if (statusCode != 200) {
+                const err: TError = {
+                    type: "response",
+                    statusCode: statusCode,
+                    body: body
+                }
+                reject(this.onResponseError(requestConfig, err))
+                return
             }
-            this.onRequestError(requestConfig, err)
-        }
-        // timeout
-        xhr.ontimeout = () => {
-            const err: IError = {
-                type: "timeout",
-                statusCode: 408,
-                body: null
+            const resp: TResponse = {
+                body: body,
+                statusCode: statusCode
             }
-            this.onResponseError(requestConfig, err)
-        }
-        // on request send
-        xhr.onloadstart = () => {
-            this.onRequest(requestConfig)
-        }
-        // on response
-        xhr.onload = () => {
-            this.onResponse(xhr, requestConfig)
-        }
-        return xhr
+            let hook = this.config.hooks && typeof this.config.hooks.onResponse === 'function'
+            if (hook) {
+                this.config.hooks.onResponse(resp)
+            }
+            hook = requestConfig.hooks && typeof requestConfig.hooks.onResponse === 'function'
+            if (hook) {
+                requestConfig.hooks.onResponse(resp)
+            }
+            resolve(resp)
+        })
     }
 
-    // hook: when client send request
-    private onRequest(requestConfig: IRequestConfig) {
-        const globalRequestHook = this.config.hooks && typeof this.config.hooks.onRequest === 'function'
-        if (globalRequestHook) {
+    // executes user hooks when client send request
+    private onRequest(requestConfig: TRequestConfig) {
+        let hook = this.config.hooks && typeof this.config.hooks.onRequest === 'function'
+        if (hook) {
             this.config.hooks.onRequest(requestConfig)
         }
-        const localRequestHook = requestConfig.hooks && typeof requestConfig.hooks.onRequest === 'function'
-        if (localRequestHook) {
+        hook = requestConfig.hooks && typeof requestConfig.hooks.onRequest === 'function'
+        if (hook) {
             requestConfig.hooks.onRequest(requestConfig)
         }
     }
 
-    // hook: when server send reponse
-    private onResponse(xhr: XMLHttpRequest, requestConfig: IRequestConfig) {
-        const statusCode = xhr.status
-        const body = this.parseBody(xhr)
-        if (statusCode != 200) {
-            const err: IError = {
-                type: "response",
-                statusCode: statusCode,
-                body: body
-            }
-            this.onResponseError(requestConfig, err)
-            return
-        }
-        const resp: TResponse = {
-            body: body,
-            statusCode: statusCode
-        }
-    }
-
-    // hook: when error like no internet etc
-    private onRequestError(requestConfig: IRequestConfig, err: IError) {
-        const globalRequestErrorHook = this.config.hooks && typeof this.config.hooks.onRequestError === 'function'
-        if (globalRequestErrorHook) {
+    // executes user hooks when error like no internet etc
+    private onRequestError(requestConfig: TRequestConfig, err: TError): TError {
+        let hook = this.config.hooks && typeof this.config.hooks.onRequestError === 'function'
+        if (hook) {
             this.config.hooks.onRequestError(err)
         }
-        const localRequestErrorHook = requestConfig.hooks && typeof requestConfig.hooks.onRequestError === 'function'
-        if (localRequestErrorHook) {
+        hook = requestConfig.hooks && typeof requestConfig.hooks.onRequestError === 'function'
+        if (hook) {
             requestConfig.hooks.onRequestError(err)
         }
+        return err
     }
 
-    // hook: when HTTP error like 404
-    private onResponseError(requestConfig: IRequestConfig, err: IError) {
-        const globalResponseErrorHook = this.config.hooks && typeof this.config.hooks.onResponseError === 'function'
-        if (globalResponseErrorHook) {
+    // executes user hooks when HTTP error like 404
+    private onResponseError(requestConfig: TRequestConfig, err: TError): TError {
+        let hook = this.config.hooks && typeof this.config.hooks.onResponseError === 'function'
+        if (hook) {
             this.config.hooks.onResponseError(err)
         }
-        const localResponseErrorHook = requestConfig.hooks && typeof requestConfig.hooks.onResponseError === 'function'
-        if (localResponseErrorHook) {
+        hook = requestConfig.hooks && typeof requestConfig.hooks.onResponseError === 'function'
+        if (hook) {
             requestConfig.hooks.onResponseError(err)
         }
-    }
-
-    // hook: when XHR end
-    private onLoadEnd() {
-
+        return err
     }
 }

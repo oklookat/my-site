@@ -82,11 +82,12 @@ func ProcessFromForm(request *http.Request, formKey string, tempDir string) (dat
 		err = ErrBadFileProvided
 		return
 	}
-	// create temp file.
+	// create temp dir
 	err = os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
 		return
 	}
+	// create temp file.
 	tempFile, err := os.CreateTemp(tempDir, "tmp-*")
 	if err != nil {
 		return

@@ -1,4 +1,4 @@
-import { Axios } from './Axios'
+import Duck from './Duck'
 import { AuthStorage } from "@/tools/LocalStorage";
 
 class AuthAdapter {
@@ -10,7 +10,7 @@ class AuthAdapter {
             type: 'cookie',
         }
         try {
-            await Axios.post('auth/login', data)
+            await Duck.POST({url: 'auth/login', body: data})
             AuthStorage.set(true)
             return Promise.resolve()
         } catch {
@@ -21,7 +21,7 @@ class AuthAdapter {
     public static async logout() {
         AuthStorage.set(false)
         try {
-            await Axios.post('auth/logout')
+            await Duck.POST({url: 'auth/logout'})
         } catch (err) {
             return Promise.reject()
         }
