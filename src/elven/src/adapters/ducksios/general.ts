@@ -1,4 +1,4 @@
-import type { TGlobalConfig, TRequestConfig, TRequestMethod, THeaders, TRequestBody, TResponse, TError } from './types'
+import type { TGlobalConfig, TRequestConfig, TRequestMethod, THeaders, TRequestBody, TResponse, TError, THook } from './types'
 
 export default class Ducksios {
 
@@ -94,40 +94,152 @@ export default class Ducksios {
 
     // send request and setup hooks
     private async send(xhr: XMLHttpRequest, requestConfig: TRequestConfig): Promise<TResponse> {
-        let body = this.parseRequestBody(requestConfig.body)
-        xhr.send(body)
-        // after send request
-        this.onRequest(requestConfig)
+        // call hooks when downloading from server
+        xhr.onprogress = (e) => {
+            this.onDownload(e, requestConfig)
+        }
+        // call hooks when upload to server
+        xhr.upload.onprogress = (e) => {
+            this.onUploadProgress(e, requestConfig)
+        }
+        // call hooks when data uploaded to server
+        xhr.upload.onload = (e) => {
+            this.onUploaded(e, requestConfig)
+        }
+        // return response or error
         return new Promise((resolve, reject) => {
-            // when we get response from server
+            // call hooks when we get response from server
             xhr.onload = () => {
-                this.onResponse(xhr, requestConfig)
-                    .then((response) => {
-                        resolve(response)
-                    })
-                    .catch(err => {
-                        reject(err as TError)
-                    })
+                try {
+                    const response = this.onResponse(xhr, requestConfig)
+                    resolve(response)
+                } catch (err) {
+                    // HTTP error (mostly)
+                    reject(err)
+                }
             }
-            // network error (not HTTP)
+            // call hooks when network error (not HTTP)
             xhr.onerror = () => {
                 const err: TError = {
                     type: "network",
-                    statusCode: 0,
+                    statusCode: xhr.status,
                     body: null
                 }
-                reject(this.onRequestError(requestConfig, err))
+                this.onError(err, requestConfig)
+                reject(err)
             }
-            // timeout
+            // call hooks when timeout
             xhr.ontimeout = () => {
                 const err: TError = {
                     type: "timeout",
-                    statusCode: 408,
+                    statusCode: xhr.status,
                     body: null
                 }
-                reject(this.onResponseError(requestConfig, err))
+                this.onError(err, requestConfig)
+                reject(err)
             }
+            xhr.send(this.parseRequestBody(requestConfig.body))
+            this.onRequest(requestConfig)
         })
+    }
+
+    //////////// hooks
+
+    private executeUserHooks(name: THook, requestConfig: TRequestConfig, data: TRequestConfig | TError | ProgressEvent<EventTarget>) {
+        let hook = this.config.hooks && typeof this.config.hooks[name] === 'function'
+        if (hook) {
+            this.config.hooks[name](data)
+        }
+        hook = requestConfig.hooks && typeof requestConfig.hooks[name] === 'function'
+        if (hook) {
+            requestConfig.hooks[name](data)
+        }
+    }
+
+    // when error
+    private onError(err: TError, requestConfig: TRequestConfig) {
+        this.executeUserHooks("onError", requestConfig, err)
+
+    }
+
+    // when get response from server
+    private onResponse(xhr: XMLHttpRequest, requestConfig: TRequestConfig): TResponse {
+        const statusCode = xhr.status
+        const body = this.parseResponseBody(xhr)
+        if (statusCode != 200) {
+            const err: TError = {
+                type: "response",
+                statusCode: statusCode,
+                body: body
+            }
+            // execute user hooks
+            this.onError(err, requestConfig)
+            // send error
+            throw err
+        }
+        const resp: TResponse = {
+            body: body,
+            statusCode: statusCode
+        }
+        // execute user hooks
+        let hook = this.config.hooks && typeof this.config.hooks.onResponse === 'function'
+        if (hook) {
+            this.config.hooks.onResponse(resp)
+        }
+        hook = requestConfig.hooks && typeof requestConfig.hooks.onResponse === 'function'
+        if (hook) {
+            requestConfig.hooks.onResponse(resp)
+        }
+        // send response
+        return resp
+    }
+
+    // execute user hooks when client send request
+    private onRequest(requestConfig: TRequestConfig) {
+        let hook = this.config.hooks && typeof this.config.hooks.onRequest === 'function'
+        if (hook) {
+            this.config.hooks.onRequest(requestConfig)
+        }
+        hook = requestConfig.hooks && typeof requestConfig.hooks.onRequest === 'function'
+        if (hook) {
+            requestConfig.hooks.onRequest(requestConfig)
+        }
+    }
+
+    // execute user hooks when downloading data from server
+    private onDownload(e: ProgressEvent<EventTarget>, requestConfig: TRequestConfig) {
+        let hook = this.config.hooks && typeof this.config.hooks.onDownload === 'function'
+        if (hook) {
+            this.config.hooks.onDownload(e)
+        }
+        hook = requestConfig.hooks && typeof requestConfig.hooks.onDownload === 'function'
+        if (hook) {
+            requestConfig.hooks.onDownload(e)
+        }
+    }
+
+    // execute user hooks when upload data to server
+    private onUploadProgress(e: ProgressEvent<EventTarget>, requestConfig: TRequestConfig) {
+        let hook = this.config.hooks && typeof this.config.hooks.onUploadProgress === 'function'
+        if (hook) {
+            this.config.hooks.onUploadProgress(e)
+        }
+        hook = requestConfig.hooks && typeof requestConfig.hooks.onUploadProgress === 'function'
+        if (hook) {
+            requestConfig.hooks.onUploadProgress(e)
+        }
+    }
+
+    // execute user hooks when data uploaded to server
+    private onUploaded(e: ProgressEvent<EventTarget>, requestConfig: TRequestConfig) {
+        let hook = this.config.hooks && typeof this.config.hooks.onUploaded === 'function'
+        if (hook) {
+            this.config.hooks.onUploaded(e)
+        }
+        hook = requestConfig.hooks && typeof requestConfig.hooks.onUploaded === 'function'
+        if (hook) {
+            requestConfig.hooks.onUploaded(e)
+        }
     }
 
     //////////// parsers
@@ -137,7 +249,7 @@ export default class Ducksios {
         // set base
         let url = requestConfig.url
         const baseURL = this.config.baseURL
-        if(baseURL) {
+        if (baseURL) {
             url = `${baseURL}/${url}`
         }
         // control slashes
@@ -179,7 +291,7 @@ export default class Ducksios {
 
     // parse body to json (if object) before send request. Returns body.
     private parseRequestBody(body: TRequestBody): any {
-        if(!body) {
+        if (!body) {
             return
         }
         // const toJSON = !(body instanceof Blob) && !(body instanceof Buffer) && !(body instanceof FormData) 
@@ -208,75 +320,5 @@ export default class Ducksios {
             body = null
         }
         return body
-    }
-
-    //////////// hooks
-
-    // when get response from server
-    private async onResponse(xhr: XMLHttpRequest, requestConfig: TRequestConfig): Promise<TResponse> {
-        return new Promise((resolve, reject) => {
-            const statusCode = xhr.status
-            const body = this.parseResponseBody(xhr)
-            if (statusCode != 200) {
-                const err: TError = {
-                    type: "response",
-                    statusCode: statusCode,
-                    body: body
-                }
-                reject(this.onResponseError(requestConfig, err))
-                return
-            }
-            const resp: TResponse = {
-                body: body,
-                statusCode: statusCode
-            }
-            let hook = this.config.hooks && typeof this.config.hooks.onResponse === 'function'
-            if (hook) {
-                this.config.hooks.onResponse(resp)
-            }
-            hook = requestConfig.hooks && typeof requestConfig.hooks.onResponse === 'function'
-            if (hook) {
-                requestConfig.hooks.onResponse(resp)
-            }
-            resolve(resp)
-        })
-    }
-
-    // executes user hooks when client send request
-    private onRequest(requestConfig: TRequestConfig) {
-        let hook = this.config.hooks && typeof this.config.hooks.onRequest === 'function'
-        if (hook) {
-            this.config.hooks.onRequest(requestConfig)
-        }
-        hook = requestConfig.hooks && typeof requestConfig.hooks.onRequest === 'function'
-        if (hook) {
-            requestConfig.hooks.onRequest(requestConfig)
-        }
-    }
-
-    // executes user hooks when error like no internet etc
-    private onRequestError(requestConfig: TRequestConfig, err: TError): TError {
-        let hook = this.config.hooks && typeof this.config.hooks.onRequestError === 'function'
-        if (hook) {
-            this.config.hooks.onRequestError(err)
-        }
-        hook = requestConfig.hooks && typeof requestConfig.hooks.onRequestError === 'function'
-        if (hook) {
-            requestConfig.hooks.onRequestError(err)
-        }
-        return err
-    }
-
-    // executes user hooks when HTTP error like 404
-    private onResponseError(requestConfig: TRequestConfig, err: TError): TError {
-        let hook = this.config.hooks && typeof this.config.hooks.onResponseError === 'function'
-        if (hook) {
-            this.config.hooks.onResponseError(err)
-        }
-        hook = requestConfig.hooks && typeof requestConfig.hooks.onResponseError === 'function'
-        if (hook) {
-            requestConfig.hooks.onResponseError(err)
-        }
-        return err
     }
 }

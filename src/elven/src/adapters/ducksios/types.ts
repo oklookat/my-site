@@ -16,7 +16,8 @@ export type TResponse = {
 }
 
 export type TError = TResponse & {
-    type: "timeout" | "network" | "response"
+    type: "timeout" | "network" | "request" | "response"
+    details?: ProgressEvent<EventTarget>
 }
 
 // config
@@ -42,15 +43,21 @@ export type TRequestConfig = TBasicConfig & {
 }
 
 // hooks
+export type THook = {
+    name: "onRequest" | "onResponse" | "onDownload" | "onUploadProgress" | "onUploaded" | "onError"
+    data: string
+}
+
 export interface IHooks {
     // request hooks
     onRequest?: (config: TRequestConfig) => void
-    onRequestError?: (err: TError) => void
     // response hooks
     onResponse?: (response: TResponse) => void
-    onResponseError?: (err: TError) => void
-    // upload hooks
-    onUploadProgress?: () => void
-    onUploaded?: () => void
-    onUploadError?: (err: TError) => void
+    // download from server hooks
+    onDownload?: (e: ProgressEvent<EventTarget>) => void
+    // upload to server hooks
+    onUploadProgress?: (e: ProgressEvent<EventTarget>) => void
+    onUploaded?: (e: ProgressEvent<EventTarget>) => void
+    // error
+    onError?: (err: TError) => void
 }

@@ -1,9 +1,8 @@
-import type { AxiosError } from "axios"
-
+import type { TError } from "@/adapters/ducksios/types"
 
 export class AdapterError {
 
-    public static handle(err: AxiosError<any>): string {
+    public static handle(err: TError): string {
         const message = this.sort(err)
         if (window.$elvenNotify) {
             window.$elvenNotify.add(message)
@@ -11,11 +10,11 @@ export class AdapterError {
         return message
     }
 
-    private static sort(err: AxiosError<any>): string {
+    private static sort(err: TError): string {
         // server send response with error
-        if (err.response) {
-            let statusCode: number = err.response.status
-            let apiStatusCode: number = err.response.data.statusCode
+        if (err.type === "response") {
+            let statusCode: number = err.statusCode
+            let apiStatusCode: number = err.body.statusCode
             // if status code exists in response body
             if (apiStatusCode) {
                 statusCode = apiStatusCode
@@ -41,12 +40,11 @@ export class AdapterError {
             }
         }
         // server not sent response
-        if (err.request) {
-            if (err.code && err.code === 'ECONNABORTED') {
-                return `Server not responding.`
-            }
-            console.error(err.message)
-            return `Unknown error while request.`
+        if (err.type === "timeout") {
+            return `Server not responding.`
+        }
+        if(err.type === "network") {
+            return 'Network error.'
         }
         console.log(err)
         return 'Very unknown error.'
