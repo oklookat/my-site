@@ -20,15 +20,15 @@ export type TError = TResponse & {
     details?: ProgressEvent<EventTarget>
 }
 
+export interface PromiseWithCancel extends Promise<TResponse> {
+    cancel: (xhr: XMLHttpRequest) => void
+}
+
 // config
 export type TBasicConfig = {
     withCredentials?: boolean
     headers?: THeaders
     hooks?: IHooks
-    // base auth
-    baseAuth?: boolean
-    baseAuthUser?: string
-    baseAuthPassword?: string
 }
 
 export type TGlobalConfig = TBasicConfig & {
@@ -43,9 +43,21 @@ export type TRequestConfig = TBasicConfig & {
 }
 
 // hooks
-export type THook = {
-    name: "onRequest" | "onResponse" | "onDownload" | "onUploadProgress" | "onUploaded" | "onError"
-    data: string
+export type TBasicHook = {
+    config: TRequestConfig
+}
+export type THook = TBasicHook & {
+    name: "onRequest"
+    data: TRequestConfig
+} | TBasicHook & {
+    name: "onResponse"
+    data: TResponse
+} | TBasicHook & {
+    name: "onDownload" | "onUploadProgress" | "onUploaded"
+    data: ProgressEvent<EventTarget>
+} | TBasicHook & {
+    name: "onError"
+    data: TError
 }
 
 export interface IHooks {
