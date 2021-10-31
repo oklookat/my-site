@@ -1,3 +1,5 @@
+import type CancelToken from "./CancelToken"
+
 // basic
 export type TRequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "HEAD" | "OPTIONS" | "PATCH"
 export type TRequestBody = string | number | object | Blob | BufferSource | FormData | URLSearchParams | ReadableStream
@@ -10,18 +12,18 @@ export type TRequestParams = {
     [name: string]: string | number
 }
 
-export type TResponse = { 
+export type TResponse = {
     body: any
     statusCode: number
 }
 
-export type TError = TResponse & {
-    type: "timeout" | "network" | "request" | "response"
-    details?: ProgressEvent<EventTarget>
-}
-
-export interface PromiseWithCancel extends Promise<TResponse> {
-    cancel: (xhr: XMLHttpRequest) => void
+export type TError = {
+    type: "timeout" | "network" | "request"
+} | TResponse & {
+    type: "response"
+} | {
+    type: "cancel"
+    message?: string | number
 }
 
 // config
@@ -40,6 +42,7 @@ export type TRequestConfig = TBasicConfig & {
     url: string
     body?: TRequestBody
     params?: TRequestParams
+    cancelToken?: CancelToken
 }
 
 // hooks

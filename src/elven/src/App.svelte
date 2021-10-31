@@ -4,29 +4,26 @@
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
   import routes from "./routes";
-  import ElvenProgressPlugin from "@/plugins/ElvenProgress/ElvenProgressPlugin";
   import ElvenNotifyPlugin from "@/plugins/ElvenNotify/ElvenNotifyPlugin";
   import Header from "@/components/parts/Header.svelte";
   import ServiceWrapper2 from "./components/parts/ServiceWrapper2.svelte";
+import Progress from "./plugins/ElvenProgress/Progress.svelte";
 
   let isNotAuth = $location !== "/login" && $location !== "/logout";
   location.subscribe((value) => {
     isNotAuth = value !== "/login" && value !== "/logout";
   });
 
+  // TODO: rewrite plugins like Progress
   // init plugins
-  let elvenProgressEL;
   let elvenNotifyEL;
-  let elvenProgress: ElvenProgressPlugin;
   let elvenNotify: ElvenNotifyPlugin;
 
   onMount(() => {
-    elvenProgress = new ElvenProgressPlugin(elvenProgressEL);
     elvenNotify = new ElvenNotifyPlugin(elvenNotifyEL);
   });
 
   onDestroy(() => {
-    elvenProgress.destroy();
     elvenNotify.destroy();
   });
   // TODO: check user not by local storage. On secured routes get user by request to something like /users/me and check isAdmin field
@@ -38,7 +35,9 @@
       <Header />
     </div>
   {/if}
-  <div id="elven__progress" bind:this={elvenProgressEL} />
+  <div id="elven__progress">
+    <Progress></Progress>
+  </div>
   <div class="content">
     <div style="height: 16px;" />
     <Router {routes} />

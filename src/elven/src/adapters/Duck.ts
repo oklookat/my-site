@@ -1,37 +1,40 @@
 import { AdapterError } from "@/tools/ErrorHandler"
 import { Env } from "@/tools/Paths"
-import type { IHooks, TGlobalConfig } from "./ducksios/types"
-import Ducksios from "./ducksios/general"
+import type { IHooks, TGlobalConfig } from "@/plugins/ducksios/Types"
+import Ducksios from "@/plugins/ducksios/Core"
 
 const apiURL = Env.getAPI()
 
 const hooks: IHooks = {
     onRequest: () => {
-        console.log(`request hooked`)
-        window.$elvenProgress.start()
+        console.log('on request hooked')
+        window.$elvenProgress.startBasic()
     },
     onResponse: () => {
-        console.log('response hooked')
-        window.$elvenProgress.finish()
+        console.log('on response hooked')
+        window.$elvenProgress.finishBasic()
+        window.$elvenProgress.resetPercents()
     },
     onError: (err) => {
-        console.log(`${err.type} error hooked`)
-        window.$elvenProgress.finish()
+        window.$elvenProgress.finishBasic()
+        window.$elvenProgress.resetPercents()
         AdapterError.handle(err)
-    },
-    onDownload: (e) => {
-        console.log('download hooked')
     },
     onUploadProgress: (e) => {
         console.log('upload progress hooked')
         if (e.lengthComputable) {
-            console.log(`Получено ${e.loaded} из ${e.total} байт`);
+            const percents = (e.loaded / e.total) * 100
+            window.$elvenProgress.setPercents(percents)
+            console.log(`uploaded: ${percents}%`)
         } else {
-            console.log(`Получено ${e.loaded} байт`); // если в ответе нет заголовка Content-Length
+            // no Content-Length
+            console.log(`uploaded ${e.loaded} bytes`);
         }
     },
     onUploaded: () => {
         console.log('uploaded hooked')
+        window.$elvenProgress.finishBasic()
+        window.$elvenProgress.resetPercents()
     },
 }
 

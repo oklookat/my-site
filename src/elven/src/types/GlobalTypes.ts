@@ -1,6 +1,6 @@
 import type ElvenPlayerPlugin from "@/plugins/ElvenPlayer/ElvenPlayerPlugin"
 import type ElvenNotifyPlugin from "@/plugins/ElvenNotify/ElvenNotifyPlugin"
-import type ElvenProgressPlugin from "@/plugins/ElvenProgress/ElvenProgressPlugin"
+import type { IElvenProgress } from "@/plugins/ElvenProgress/Types"
 
 export interface IMeta {
     per_page: number
@@ -18,6 +18,6 @@ declare global {
     interface Window {
         $elvenPlayer: ElvenPlayerPlugin
         $elvenNotify: ElvenNotifyPlugin
-        $elvenProgress: ElvenProgressPlugin
+        $elvenProgress: IElvenProgress
     }
 }

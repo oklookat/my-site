@@ -1,20 +1,30 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
 
-  // controlled by plugin
-  export let isLoading = false;
-  $: watchLoading(isLoading);
-  function watchLoading(value) {
-    loading(value);
-  }
+  // plugin controls
+  window.$elvenProgress = {
+    startBasic: () => {
+      startBasic();
+    },
+    finishBasic: () => {
+      finishBasic();
+    },
+    setPercents: (value) => {
+      percents = value;
+    },
+    resetPercents: () => {
+      percents = 0;
+      destroy();
+    }
+  };
 
-  //// settings
+  // settings
   let height = "3px";
-  let moveSpeed = 100;
   let loadingStartTo = 45;
   let loadingStartSpeed = 30;
   let loadingFinishSpeed = 5;
-  // main
+
+  // element percents
   let percents = 0;
 
   onDestroy(() => {
@@ -25,19 +35,20 @@
     percents = 0;
   }
 
-  function loading(start: boolean) {
-    if (start) {
-      const intervalID = setInterval(() => {
-        // freeze progress at loadingStartTo
-        if (percents < loadingStartTo) {
-          percents++;
-        } else {
-          clearInterval(intervalID);
-        }
-      }, loadingStartSpeed);
-      return;
-    }
-    // finish (go to 100 and destroy)
+  // freeze progress at loadingStartTo
+  function startBasic() {
+    const intervalID = setInterval(() => {
+      if (percents < loadingStartTo) {
+        percents++;
+      } else {
+        clearInterval(intervalID);
+      }
+    }, loadingStartSpeed);
+    return;
+  }
+
+  // finish (go to 100 and destroy)
+  function finishBasic() {
     percents = loadingStartTo;
     const intervalID = setInterval(() => {
       if (percents < 100) {
@@ -47,7 +58,6 @@
         destroy();
       }
     }, loadingFinishSpeed);
-    return;
   }
 </script>
 

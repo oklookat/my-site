@@ -1,4 +1,4 @@
-import type { TError } from "@/adapters/ducksios/types"
+import type { TError } from "@/plugins/ducksios/Types"
 
 export class AdapterError {
 
@@ -12,6 +12,12 @@ export class AdapterError {
 
     private static sort(err: TError): string {
         // server send response with error
+        if(err.type === "cancel") {
+            if(!err.message) {
+                return 'Request cancelled.'
+            }
+            return `Request cancelled: ${err.message}`
+        }
         if (err.type === "response") {
             let statusCode: number = err.statusCode
             let apiStatusCode: number = err.body.statusCode
