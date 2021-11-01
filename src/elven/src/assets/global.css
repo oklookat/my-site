@@ -225,6 +225,14 @@ button:disabled, button[disabled] {
 
 /* THEME START */
 
+.cdx-notify {
+  background: var(--color-level-2) !important;
+  color: var(--color-text)
+}
+.cdx-notify--error {
+  background: #fff;
+}
+
 .cdx-button {
   background: var(--color-level-1);
   color: var(--color-text-inactive);

@@ -1,64 +1,44 @@
 <script lang="ts">
-  import EditorJS from "@editorjs/editorjs";
+  import EditorJS, { OutputData } from "@editorjs/editorjs";
   import Head from "@editorjs/header";
   import ImageTool from "@editorjs/image";
   import ArticleAdapter from "@/adapters/ArticleAdapter";
   import TextareaResizer from "@/tools/TextareaResizer";
-  import type { IArticle } from "@/types/ArticleTypes";
+  import type { TArticle, TContent } from "@/types/ArticleTypes";
   import Overlay from "@/components/ui/Overlay.svelte";
   import { onDestroy, onMount } from "svelte";
   import { push } from "svelte-spa-router";
 
-  export let article: IArticle = {
-    id: "",
-    user_id: "",
-    is_published: false,
+  export let params: { id?: string } = { id: null };
+
+  let editor: EditorJS;
+  let autoSaveThrottle: ReturnType<typeof setTimeout> | null = null;
+  let textareaResizer: TextareaResizer;
+  // title element for textarea resize
+  let articleTitleEL: HTMLElement | null;
+  let article: TArticle = {
     title: "",
     content: null,
-    slug: "",
-    published_at: "",
-    updated_at: "",
   };
-  export let params = {};
-  export let timeoutID: ReturnType<typeof setTimeout> | null = null;
-  export let editorTimeoutID: ReturnType<typeof setTimeout> | null = null;
-  export let editorLoadAttempts = 0;
-  export let isEditorInitialized = false;
-  export let isErrorOverlayActive = false;
-  export let errorOverlayContent = "";
-  let textareaResizer: TextareaResizer;
-  let articleTitleEL;
-  let editor: EditorJS;
 
   onMount(async () => {
-    let id = null;
-    if (params.id) {
-      id = params.id.toString();
-    }
-    await initEditor();
-    if (id) {
-      article.id = id;
-      const isSuccess = await initEditArticle();
-      if (isSuccess) {
-        await setEditorData();
-      } else {
-        isEditorInitialized = true;
-      }
-    } else {
-      isEditorInitialized = true;
-    }
     textareaResizer = new TextareaResizer(articleTitleEL);
-  });
-
-  onDestroy(async () => {
-    await editor.destroy();
-    textareaResizer.destroy();
-    if (editorTimeoutID) {
-      clearTimeout(editorTimeoutID);
+    let id = params.id;
+    // if edit mode
+    if (id) {
+      try {
+        article = await get(id);
+      } catch (err) {}
     }
+    initEditor(article.content);
   });
 
-  function initEditor() {
+  onDestroy(() => {
+    editor.destroy();
+    textareaResizer.destroy();
+  });
+
+  function initEditor(data?: OutputData) {
     editor = new EditorJS({
       holder: "editor",
       tools: {
@@ -87,89 +67,49 @@
         },
       },
       minHeight: 0,
-      data: {},
+      data
     });
   }
 
+  async function get(id: string) {
+    try {
+      const result = await ArticleAdapter.get(id);
+      return Promise.resolve(result);
+    } catch (err) {
+      return Promise.reject();
+    }
+  }
+
   async function autoSave() {
-    if (!isEditorInitialized) {
-      throw Error("editor not initialized");
+    if (autoSaveThrottle) {
+      clearTimeout(autoSaveThrottle);
     }
-    if (timeoutID && timeoutID) {
-      clearTimeout(timeoutID);
-    }
-    timeoutID = setTimeout(async () => {
-      let saveAllowed = false;
+    autoSaveThrottle = setTimeout(async () => {
+      let empty = false;
       await editor.save().then((outputData) => {
-        if (outputData.blocks.length >= 1) {
-          saveAllowed = true;
-          article.content = outputData;
-        }
+        empty = outputData.blocks.length < 1;
+        article.content = outputData;
       });
-      if (!saveAllowed) {
+      // not save if empty
+      if (empty) {
         return;
       }
-      if (article.id.length < 1) {
-        await ArticleAdapter.create(article).then((newArticle) => {
+      // if not saved before (new article)
+      if (!article.id) {
+        ArticleAdapter.create(article).then((newArticle) => {
           article.id = newArticle.id;
         });
-      } else {
-        await ArticleAdapter.update(article);
+        return;
       }
+      ArticleAdapter.update(article);
     }, 1000);
-  }
-
-  async function initEditArticle() {
-    if (article.id.length < 1) {
-      return Promise.resolve(false);
-    }
-    try {
-      const result = await ArticleAdapter.get(article.id);
-      article = result;
-      return Promise.resolve(true);
-    } catch (err) {
-      if (err === 404) {
-        errorOverlayContent =
-          "Article not found. You redirected to create a new article.";
-      } else {
-        errorOverlayContent = `Strange error: ${err}`;
-      }
-      article.id = "";
-      await push("/articles/create");
-      isErrorOverlayActive = true;
-      return Promise.resolve(false);
-    }
-  }
-
-  async function setEditorData() {
-    editorTimeoutID = setInterval(async () => {
-      if (editorLoadAttempts > 20) {
-        isEditorInitialized = false;
-        clearInterval(editorTimeoutID);
-        throw Error(
-          "failed while trying load data to editor. Is internet down? Server problems? Or article content have bad format, like bad/not JSON parsed."
-        );
-      }
-      try {
-        if (article.id.length < 1) {
-          clearInterval(editorTimeoutID);
-          return;
-        }
-        await editor.render(article.content);
-        isEditorInitialized = true;
-        clearInterval(editorTimeoutID);
-      } catch (err) {
-        console.info(`Trying to load data in editor... Last error: ${err}`);
-        editorLoadAttempts++;
-      }
-    }, 500);
   }
 </script>
 
-<div class="articles-create-container">
-  <div class="articles-create-main">
+<div class="create__container">
+  <div class="create">
     <textarea
-      id="article-title"
+      id="title"
       placeholder="Actually..."
       rows="1"
       maxlength="124"
@@ -177,27 +117,15 @@
       bind:this={articleTitleEL}
       on:input={() => autoSave()}
     />
-    <div class="editor-container">
+
+    <div class="editor__container">
       <div id="editor" on:input={() => autoSave()} />
     </div>
-
-    <Overlay
-      bind:active={isErrorOverlayActive}
-      on:deactivated={() => (isErrorOverlayActive = false)}
-    >
-      {{ errorOverlayContent }}
-      <div
-        class="error-ok-button"
-        on:click={() => (isErrorOverlayActive = false)}
-      >
-        Ок
-      </div>
-    </Overlay>
   </div>
 </div>
 
 <style>
-  .articles-create-container {
+  .create__container {
     max-width: 732px;
     margin: auto;
     background-color: var(--color-level-1);
@@ -206,13 +134,20 @@
   }
 
   @media screen and (max-width: 1919px) {
-    .articles-create-container {
+    .create__container {
       width: 95%;
       max-width: 512px;
     }
   }
 
-  .articles-create-main {
+  @media screen and (max-width: 1023px) {
+    .create__container {
+      width: 95%;
+      height: 95%;
+    }
+  }
+
+  .create {
     width: 85%;
     height: 95%;
     margin: auto;
@@ -221,7 +156,7 @@
     gap: 24px;
   }
 
-  #article-title {
+  #title {
     margin-top: 12px;
     min-height: 38px;
     text-indent: 0;
@@ -231,7 +166,7 @@
     font-weight: bold;
   }
 
-  .editor-container {
+  .editor__container {
     width: 100%;
   }
 
@@ -239,7 +174,7 @@
     height: 100%;
   }
 
-  .error-ok-button {
+  .error__ok-butt {
     border-radius: var(--border-radius);
     background-color: var(--color-text);
     width: 25%;
@@ -252,12 +187,5 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-  }
-
-  @media screen and (max-width: 1023px) {
-    .articles-create-main {
-      width: 95%;
-      height: 95%;
-    }
   }
 </style>

@@ -18,11 +18,11 @@ func bootRoutes() {
 	//
 	var routerArticles = routerElven.PathPrefix("/articles").Subrouter()
 	routerArticles.Use(eBase.middlewareReadOnly)
-	routerArticles.HandleFunc("", eArticle.controllerGetAll).Methods(http.MethodGet)
-	routerArticles.HandleFunc("/{id}", eArticle.controllerGetOne).Methods(http.MethodGet)
-	routerArticles.HandleFunc("", eArticle.controllerCreateOne).Methods(http.MethodPost)
-	routerArticles.HandleFunc("/{id}", eArticle.controllerUpdateOne).Methods(http.MethodPut)
-	routerArticles.HandleFunc("/{id}", eArticle.controllerDeleteOne).Methods(http.MethodDelete)
+	routerArticles.HandleFunc("", eArticle.getAll).Methods(http.MethodGet)
+	routerArticles.HandleFunc("/{id}", eArticle.getOne).Methods(http.MethodGet)
+	routerArticles.HandleFunc("", eArticle.create).Methods(http.MethodPost)
+	routerArticles.HandleFunc("/{id}", eArticle.update).Methods(http.MethodPut, http.MethodPatch)
+	routerArticles.HandleFunc("/{id}", eArticle.delete).Methods(http.MethodDelete)
 	//
 	var routerFiles = routerElven.PathPrefix("/files").Subrouter()
 	routerFiles.Use(eBase.middlewareAdminOnly)

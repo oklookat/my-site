@@ -9,7 +9,7 @@ export type THeaders = {
 }
 
 export type TRequestParams = {
-    [name: string]: string | number
+    [name: string]: string | number | boolean
 }
 
 export type TResponse = {

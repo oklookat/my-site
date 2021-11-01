@@ -15,14 +15,14 @@ type entityArticle struct {
 	*entityBase
 }
 
-// controllerGetAll - GET url/
+// getAll - GET url/
 // params:
 // page = number
 // show = published, drafts
 // by = created, updated, published
 // start = newest (DESC), oldest (ASC)
 // preview = true (content < 480 symbols), false - gives you full articles.
-func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *http.Request) {
+func (a *entityArticle) getAll(response http.ResponseWriter, request *http.Request) {
 	var err error
 	var isAdmin = false
 	var auth = PipeAuth{}
@@ -57,8 +57,8 @@ func (a *entityArticle) controllerGetAll(response http.ResponseWriter, request *
 	a.Send(response, string(jsonResponse), 200)
 }
 
-// controllerGetOne - GET url/id.
-func (a *entityArticle) controllerGetOne(response http.ResponseWriter, request *http.Request) {
+// getOne - GET url/id.
+func (a *entityArticle) getOne(response http.ResponseWriter, request *http.Request) {
 	var isAdmin = false
 	var auth = PipeAuth{}
 	auth.get(request)
@@ -87,8 +87,8 @@ func (a *entityArticle) controllerGetOne(response http.ResponseWriter, request *
 	a.Send(response, string(articleJson), 200)
 }
 
-// controllerCreateOne - POST url/.
-func (a *entityArticle) controllerCreateOne(response http.ResponseWriter, request *http.Request) {
+// create - POST url/.
+func (a *entityArticle) create(response http.ResponseWriter, request *http.Request) {
 	var pAuth = PipeAuth{}
 	pAuth.get(request)
 	val, em, _ := a.validatorBody(request)
@@ -110,13 +110,8 @@ func (a *entityArticle) controllerCreateOne(response http.ResponseWriter, reques
 	a.Send(response, string(articleJson), 200)
 }
 
-// controllerUpdateOne - PUT url/id.
-func (a *entityArticle) controllerUpdateOne(response http.ResponseWriter, request *http.Request) {
-	body, em, err := a.validatorBody(request)
-	if em.HasErrors() {
-		a.Send(response, em.GetJSON(), 400)
-		return
-	}
+// update - PUT (update all available fields) or PATCH (update specific field) url/id.
+func (a *entityArticle) update(response http.ResponseWriter, request *http.Request) {
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article = ModelArticle{ID: id}
@@ -129,14 +124,35 @@ func (a *entityArticle) controllerUpdateOne(response http.ResponseWriter, reques
 		a.Send(response, errorMan.ThrowNotFound(), 404)
 		return
 	}
-	if body.Title != nil {
-		article.Title = *body.Title
+	body, em, err := a.validatorBody(request)
+	if em.HasErrors() {
+		a.Send(response, em.GetJSON(), 400)
+		return
 	}
-	if body.Content != nil {
-		article.Content = *body.Content
-	}
-	if body.IsPublished != nil {
-		article.IsPublished = *body.IsPublished
+	var isTitle = body.Title != nil
+	var isContent = body.Content != nil
+	var isPublished = body.IsPublished != nil
+	// if PUT method we need full article to update. If PATCH - we need at least one field.
+	if request.Method == http.MethodPut {
+		if !isTitle || !isContent || !isPublished {
+			em.Add("body", "provide all values.")
+			a.Send(response, em.GetJSON(), 400)
+			return
+		} else {
+			article.Title = *body.Title
+			article.Content = *body.Content
+			article.IsPublished = *body.IsPublished
+		}
+	} else if request.Method == http.MethodPatch {
+		if isTitle {
+			article.Title = *body.Title
+		}
+		if isContent {
+			article.Content = *body.Content
+		}
+		if isPublished {
+			article.IsPublished = *body.IsPublished
+		}
 	}
 	err = article.update()
 	if err != nil {
@@ -151,8 +167,8 @@ func (a *entityArticle) controllerUpdateOne(response http.ResponseWriter, reques
 	a.Send(response, string(jsonArticle), 200)
 }
 
-// controllerDeleteOne - DELETE url/id.
-func (a *entityArticle) controllerDeleteOne(response http.ResponseWriter, request *http.Request) {
+// delete - DELETE url/id.
+func (a *entityArticle) delete(response http.ResponseWriter, request *http.Request) {
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article = ModelArticle{ID: id}

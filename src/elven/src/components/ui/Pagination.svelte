@@ -4,7 +4,7 @@
   export let totalPages: number;
   export let currentPage: number;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{ changed: number }>();
 
   function dispatchChanged(page: number) {
     dispatch("changed", page);
@@ -36,7 +36,7 @@
       clearTimeout(pageInputTimeoutID);
     }
     pageInputTimeoutID = setTimeout(() => {
-      const inputPageInt = parseInt(inputPage, 10)
+      const inputPageInt = parseInt(inputPage, 10);
       if (isNaN(inputPageInt)) {
         return;
       }
@@ -92,7 +92,7 @@
   </div>
 {/if}
 
-<style scoped>
+<style>
   .pagination__container {
     border-radius: 8px;
     background-color: var(--color-level-1);

@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-
 // validatorControllerLogin - validate request body when user try to log in.
 func (a *entityAuth) validatorControllerLogin(request *http.Request) (val *bodyAuth, em *errorMan.EValidation, err error) {
 	em = errorMan.NewValidation()
@@ -139,18 +138,24 @@ func (a *entityArticle) validatorBody(request *http.Request) (val *BodyArticle, 
 		em.Add("body", "wrong value provided.")
 		return
 	}
-	if val.Content != nil {
-		var contentInvalid = len(val.Content.Blocks) < 1 || len(val.Content.Version) < 1 || len(strconv.FormatInt(val.Content.Time, 10)) < 8
+	var isContent = val.Content != nil
+	if isContent {
+		var contentInvalid = len(val.Content.Blocks) < 1
 		if contentInvalid {
 			em.Add("content", "wrong value provided.")
 		}
 	}
-	if val.Title != nil {
+	var isTitle = val.Title != nil
+	if isTitle {
 		if len(*val.Title) < 1 {
-			em.Add("title", "min length 1.")
+			*val.Title = "Untitled"
 		} else if len(*val.Title) > 124 {
 			em.Add("title", "max length 124.")
 		}
+	}
+	var isPublished = val.IsPublished != nil
+	if !isTitle && !isContent && !isPublished {
+		em.Add("body", "cannot be empty.")
 	}
 	return
 }

@@ -30,11 +30,14 @@ type ModelArticle struct {
 type ArticleContent struct {
 	Time   int64 `json:"time"`
 	Blocks []struct {
-		ID   string      `json:"id"`
-		Type string      `json:"type"`
-		Data interface{} `json:"data"`
+		ID    *string     `json:"id"`
+		Type  string      `json:"type"`
+		Data  interface{} `json:"data"`
+		//Tunes *[]struct {
+		//	Name interface{} `json:"name"`
+		//} `json:"tunes"`
 	} `json:"blocks"`
-	Version string `json:"version"`
+	Version *string `json:"version"`
 }
 
 // queryArticleGetAll - validated query params in article GetAll.
@@ -92,7 +95,7 @@ func (q *queryArticleGetAll) getAll() (articles []ModelArticle, totalPages int, 
 		return
 	}
 	// get articles.
-	rows, err := instance.DB.Conn.Queryx(query, articlesPageSize, (q.page - 1) * articlesPageSize)
+	rows, err := instance.DB.Conn.Queryx(query, articlesPageSize, (q.page-1)*articlesPageSize)
 	err = instance.DB.CheckError(err)
 	for rows.Next() {
 		article := ModelArticle{}

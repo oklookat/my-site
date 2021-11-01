@@ -1,127 +1,128 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { push } from "svelte-spa-router";
-  import type { IArticle } from "@/types/ArticleTypes";
+  import type {
+    TArticle,
+    TBy,
+    TParams,
+    TShow,
+    TStart,
+  } from "@/types/ArticleTypes";
   import type { IMeta } from "@/types/GlobalTypes";
   import ArticleAdapter from "@/adapters/ArticleAdapter";
   import Overlay from "@/components/ui/Overlay.svelte";
   import Pagination from "@/components/ui/Pagination.svelte";
   import ArticlesList from "@/components/parts/ArticlesList.svelte";
 
-  // service
-  let isLoaded = false;
-  let isToolsOverlayActive = false;
-  let selected: IArticle | null = null;
-  // articles
-  let articles: Array<IArticle> = [];
-  let articlesMeta: IMeta | null = null;
-  // params
-  let show = "published";
-  let sortBy = "updated";
-  let sortFirst = "newest";
-  // pagination
-  let page = 1;
-  let perPage = 1;
-  let totalPages = 1;
-  let currentPage = 1;
+  let loaded = false;
+  let toolsOverlay = false;
+  let selected: TArticle | null = null;
+  let articles: Array<TArticle> = [];
+  let meta: IMeta | null = null;
+  let params: TParams = {
+    page: 1,
+    show: "published",
+    by: "updated",
+    start: "newest",
+    preview: false,
+  };
 
   // main
   onMount(async () => {
-    await getArticles();
+    await getAll();
   });
 
-  function getArticles(
-    pageA = page,
-    showA = show,
-    sortByA = sortBy,
-    sortFirstA = sortFirst
-  ) {
-    page = pageA;
-    show = showA;
-    sortBy = sortByA;
-    sortFirst = sortFirstA;
-    isLoaded = false;
-    ArticleAdapter.getAll(pageA, showA, sortByA, sortFirstA).then(
-      (result) => {
-        articles = result.data;
-        articlesMeta = result.meta;
-        perPage = articlesMeta.per_page;
-        currentPage = articlesMeta.current_page;
-        totalPages = articlesMeta.total_pages;
-        isLoaded = true;
-      }
-    );
-  }
-
-  async function edit(article) {
-    await push(`/articles/create/${article.id}`);
-  }
-
-  function select(article) {
-    isToolsOverlayActive = true;
-    selected = article;
-  }
-
-  async function publish(article) {
-    await ArticleAdapter.publish(article).then(() => {
-      deleteArticleFromArray(article);
-      isToolsOverlayActive = false;
+  async function getAll(p?: TParams) {
+    if (!p) {
+      p = params;
+    } else {
+      params = p;
+    }
+    loaded = false;
+    ArticleAdapter.getAll(params).then((result) => {
+      articles = result.data;
+      meta = result.meta;
+      loaded = true;
     });
-    refreshArticles();
   }
 
-  async function toDrafts(article) {
-    await ArticleAdapter.makeDraft(article).then(() => {
-      deleteArticleFromArray(article);
-      isToolsOverlayActive = false;
+  async function edit(id: string) {
+    await push(`/articles/create/${id}`);
+  }
+
+  function select(a: TArticle) {
+    toolsOverlay = true;
+    selected = a;
+  }
+
+  async function publish(id: string) {
+    await ArticleAdapter.publish(id).then(() => {
+      deleteFromArray(id);
+      toolsOverlay = false;
     });
-    refreshArticles();
+    refresh();
   }
 
-  async function deleteArticle(article) {
+  async function toDrafts(id: string) {
+    await ArticleAdapter.makeDraft(id).then(() => {
+      deleteFromArray(id);
+      toolsOverlay = false;
+    });
+    refresh();
+  }
+
+  async function deleteArticle(id: string) {
     const isDelete = confirm("Delete article?");
     if (isDelete) {
-      await ArticleAdapter.delete(article.id);
-      deleteArticleFromArray(article);
-      isToolsOverlayActive = false;
-      refreshArticles();
+      await ArticleAdapter.delete(id);
+      deleteFromArray(id);
+      toolsOverlay = false;
+      refresh();
     }
   }
 
-  function deleteArticleFromArray(article) {
-    articles = articles.filter((a) => a !== article);
-    if(articles.length < perPage){
-      getArticles()
+  function deleteFromArray(id: string) {
+    articles = articles.filter((a) => a.id !== id);
+    if (articles.length < meta.per_page) {
+      getAll();
     }
   }
 
-  async function refreshArticles() {
+  async function setBy(by: TBy = "published") {
+    params.by = by;
+    params.page = 1;
+    await getAll();
+  }
+
+  async function setStart(start: TStart = "newest") {
+    params.start = start;
+    params.page = 1;
+    await getAll();
+  }
+
+  async function setShow(show: TShow) {
+    params.show = show;
+    params.page = 1;
+    await getAll();
+  }
+
+  async function onPageChanged(page: number) {
+    params.page = page;
+    await getAll();
+  }
+
+  async function refresh() {
     // refresh is need when for ex. you deleted all articles on current page
     // and we need to check, is data on current page exists?
     // if page > 1 and no data, we moving back (currentPage--) and get new articles
-    let notArticles = isLoaded && articles.length < 1;
-    // no articles in current page
-    while (notArticles) {
+    while (loaded && articles.length < 1) {
       // moving back until the pages ends or data appears
-      currentPage--;
-      await getArticles();
-      if (currentPage <= 1) {
+      params.page--;
+      await getAll();
+      if (params.page <= 1) {
         break;
       }
-      notArticles = isLoaded && articles.length < 1;
     }
-  }
-
-  async function setSort(sort) {
-    sortBy = sort;
-    page = 1;
-    await getArticles();
-  }
-
-  async function setSortDate(age = "newest") {
-    sortFirst = age;
-    page = 1;
-    await getArticles();
   }
 </script>
 
@@ -131,52 +132,52 @@
   </div>
   <div class="articles__toolbar">
     <div class="articles__show">
-      {#if show === "published"}
+      {#if params.show === "published"}
         <div
           class="articles__item articles__show-published"
-          on:click={() => getArticles(undefined, "drafts")}
+          on:click={() => setShow("drafts")}
         >
           show published
         </div>
       {/if}
-      {#if show === "drafts"}
+      {#if params.show === "drafts"}
         <div
           class="articles__item articles__show-drafts"
-          on:click={() => getArticles(undefined, "published")}
+          on:click={() => setShow("published")}
         >
           show drafts
         </div>
       {/if}
     </div>
     <div class="articles__sort-by-date">
-      {#if sortFirst === "newest"}
-        <div class="articles__item" on:click={() => setSortDate("oldest")}>
+      {#if params.start === "newest"}
+        <div class="articles__item" on:click={() => setStart("oldest")}>
           newest
         </div>
       {/if}
-      {#if sortFirst === "oldest"}
-        <div class="articles__item" on:click={() => setSortDate("newest")}>
+      {#if params.start === "oldest"}
+        <div class="articles__item" on:click={() => setStart("newest")}>
           oldest
         </div>
       {/if}
     </div>
     <div class="articles__sort-by">
-      {#if sortBy === "updated"}
-        <div class="articles__item" on:click={() => setSort("published")}>
+      {#if params.by === "updated"}
+        <div class="articles__item" on:click={() => setBy("published")}>
           by updated date
         </div>
       {/if}
-      {#if sortBy === "published"}
+      {#if params.by === "published"}
         <div
           class="articles__item"
           v-if="sortBy === 'published'"
-          on:click={() => setSort("created")}
+          on:click={() => setBy("created")}
         >
           by published date
         </div>
       {/if}
-      {#if sortBy === "created"}
-        <div class="articles__item" on:click={() => setSort("updated")}>
+      {#if params.by === "created"}
+        <div class="articles__item" on:click={() => setBy("updated")}>
           by created date
         </div>
       {/if}
@@ -187,40 +188,46 @@
     <ArticlesList {articles} on:selected={(e) => select(e.detail)} />
   {/if}
 
-  {#if isLoaded && articles.length < 1}
+  {#if loaded && articles.length < 1}
     <div class="articles__404">
       <div>no articles :(</div>
     </div>
   {/if}
 
-  <Pagination
-    {totalPages}
-    {currentPage}
-    on:changed={(e) => getArticles(e.detail)}
-  />
+  {#if meta}
+    <Pagination
+      totalPages={meta.total_pages}
+      currentPage={meta.current_page}
+      on:changed={(e) => onPageChanged(e.detail)}
+    />
+  {/if}
 
   <Overlay
-    bind:active={isToolsOverlayActive}
-    on:deactivated={() => (isToolsOverlayActive = false)}
+    bind:active={toolsOverlay}
+    on:deactivated={() => (toolsOverlay = false)}
   >
-    <!-- tools -->
     <div class="overlay__article-manage" v-if="isToolsOverlayActive">
       {#if selected && selected.is_published}
         <div
           class="overlay__item make__draft"
-          on:click={() => toDrafts(selected)}
+          on:click={() => toDrafts(selected.id)}
         >
           make a draft
         </div>
       {:else}
-        <div class="overlay__item publish" on:click={() => publish(selected)}>
+        <div
+          class="overlay__item publish"
+          on:click={() => publish(selected.id)}
+        >
           publish
         </div>
       {/if}
-      <div class="overlay__item edit" on:click={() => edit(selected)}>edit</div>
+      <div class="overlay__item edit" on:click={() => edit(selected.id)}>
+        edit
+      </div>
       <div
         class="overlay__item delete"
-        on:click={() => deleteArticle(selected)}
+        on:click={() => deleteArticle(selected.id)}
       >
         delete
       </div>
