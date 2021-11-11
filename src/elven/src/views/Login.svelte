@@ -34,9 +34,9 @@
   }
 </script>
 
-<div class="login-container">
-  <div class="login-inputs">
-    <div class="logo-text">elven</div>
+<div class="login">
+  <div class="login__inputs">
+    <div class="login__logo logo__text">elven</div>
     <input
       type="text"
       name="username"
@@ -52,7 +52,7 @@
   </div>
   <button
     disabled={!username || !password}
-    class="login-button"
+    class="login__send"
     bind:this={loginButton}
     on:click={makeLogin}
   >
@@ -60,44 +60,42 @@
   </button>
 </div>
 
-<style>
-  .login-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-  }
-
-  .login-inputs {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 108px;
-    gap: 14px;
-  }
-  .logo-text {
-    margin-bottom: 16px;
-  }
-
+<style lang="scss">
   input {
     height: 48px;
     width: 264px;
     box-shadow: 0 0 19px 0 rgba(34, 60, 80, 0.02);
   }
 
-  .login-button {
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 0 19px 0 rgba(34, 60, 80, 0.02);
-    background-color: var(--color-level-1);
-    border-radius: 8px;
+  .login {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    user-select: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    width: 264px;
-    height: 48px;
+    gap: 18px;
+    &__logo {
+      margin-bottom: 16px;
+    }
+    &__inputs {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 108px;
+      gap: 14px;
+    }
+    &__send {
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 19px 0 rgba(34, 60, 80, 0.02);
+      background-color: var(--color-level-1);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      width: 264px;
+      height: 48px;
+    }
   }
 </style>

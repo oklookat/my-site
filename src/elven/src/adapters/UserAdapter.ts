@@ -1,5 +1,5 @@
 import Duck from './Duck'
-import type { TUser, TUserChange } from '@/types/UserTypes'
+import type { TUser, TUserChange } from '@/types/user'
 
 export default class UserAdapter {
 

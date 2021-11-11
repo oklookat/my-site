@@ -5,6 +5,7 @@ export default class Dates {
     private static readonly secTitles = ['second', 'seconds']
     private static readonly months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
+    /** convert date to string like: '12 minutes ago' or '12 jan 1970 at 12:22'   */
     public static convert(date: string | number | Date): string {
         let d = new Date(date)
         const currentDate = new Date()
@@ -45,7 +46,7 @@ export default class Dates {
             const minutes = this.numberWithZero(d.getMinutes())
             return `yesterday at ${hours}:${minutes}`
         }
-        // current year or not
+        // current year?
         const day = this.numberWithZero(d.getDate())
         const month = d.getMonth()
         // in JS Date() January starts with 0, not 1, so we can use it in months array without subtraction
@@ -59,6 +60,7 @@ export default class Dates {
         }
     }
 
+    /** second(s)? minute(s)? hour(s)? */
     private static declensionOfNumbers(number: number, titles: Array<string>): string {
         number = Math.abs(number)
         if (number === 1) {
@@ -67,6 +69,7 @@ export default class Dates {
         return titles[1]
     }
 
+    /** example: 9 = 09 */
     private static numberWithZero(value: number | string) {
         return ("0" + value).slice(-2)
     }

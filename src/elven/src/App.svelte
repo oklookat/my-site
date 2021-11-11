@@ -1,5 +1,5 @@
 <script lang="ts">
-  import "./assets/global.css";
+  import "./assets/global.scss";
   import { onDestroy, onMount } from "svelte";
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
@@ -7,7 +7,7 @@
   import ElvenNotifyPlugin from "@/plugins/ElvenNotify/ElvenNotifyPlugin";
   import Header from "@/components/parts/Header.svelte";
   import ServiceWrapper2 from "./components/parts/ServiceWrapper2.svelte";
-import Progress from "./plugins/ElvenProgress/Progress.svelte";
+  import Progress from "./plugins/ElvenProgress/Progress.svelte";
 
   let isNotAuth = $location !== "/login" && $location !== "/logout";
   location.subscribe((value) => {
@@ -36,7 +36,7 @@ import Progress from "./plugins/ElvenProgress/Progress.svelte";
     </div>
   {/if}
   <div id="elven__progress">
-    <Progress></Progress>
+    <Progress />
   </div>
   <div class="content">
     <div style="height: 16px;" />

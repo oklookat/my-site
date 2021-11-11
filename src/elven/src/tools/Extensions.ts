@@ -1,4 +1,4 @@
-export type exType = 'unknown' | 'image' | 'video' | 'audio'
+export type TFileType = 'unknown' | 'image' | 'video' | 'audio'
 
 export default class Extensions {
 
@@ -6,7 +6,7 @@ export default class Extensions {
     private static readonly videoExtensions = ['mp4', 'mov', 'wmv', 'avi', 'flv', 'mkv', 'webm']
     private static readonly audioExtensions = ['mp3', 'm4a', 'flac', 'wav', 'wma', 'aac', 'alac', 'oog', 'aiff']
 
-    public static getType(extension: string): exType {
+    public static getType(extension: string): TFileType {
         extension = extension.toLowerCase()
         const image = this.imageExtensions.includes(extension)
         if (image) {

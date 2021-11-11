@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { IFile } from "@/types/FileTypes";
+  import type { IFile } from "@/types/file";
   import { Env } from "@/tools/Paths";
   import Dates from "@/tools/Dates";
   import Sizes from "@/tools/Sizes";

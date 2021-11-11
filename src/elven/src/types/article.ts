@@ -1,4 +1,4 @@
-import type { IMeta } from "./GlobalTypes"
+import type { IMeta } from "./global"
 
 export type TData = {
     meta: IMeta
@@ -34,6 +34,6 @@ export type TContent = {
         id?: string
         type: any
         data: any
-        tunes?: {[name: string]: any}
+        //tunes?: {[name: string]: any}
     }[]
 }

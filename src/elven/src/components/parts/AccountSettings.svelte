@@ -1,8 +1,8 @@
 <script lang="ts">
     import UserAdapter from "@/adapters/UserAdapter";
     import Overlay from "@/components/ui/Overlay.svelte";
-    import type { TUser, TUserChange } from "@/types/UserTypes";
-    import { usernameValidate, passwordValidate } from "@/types/UserTypes";
+    import type { TUser, TUserChange } from "@/types/user";
+    import { usernameValidate, passwordValidate } from "@/types/user";
     import { onMount } from "svelte";
 
     let userData: TUser;
@@ -102,7 +102,7 @@
 </script>
 
 {#if userDataLoaded}
-    <div class="block account__settings">
+    <div class="block account">
         <div class="big">{userData.username}</div>
         <div style="cursor: pointer;" on:click={() => activeUsername()}>
             Change username
@@ -117,57 +117,61 @@
     active={changeOverlayActive}
     on:deactivated={() => (changeOverlayActive = false)}
 >
-    <div class="overlay__change">
-        {#if changer.what === "username"}
-            <input
-                type="text"
-                placeholder="New username"
-                bind:value={changer.newValue}
-                on:input={onUsernameInput}
-            />
-        {:else if changer.what === "password"}
+    <div class="overlay">
+        <div class="overlay__change">
+            {#if changer.what === "username"}
+                <input
+                    type="text"
+                    placeholder="New username"
+                    bind:value={changer.newValue}
+                    on:input={onUsernameInput}
+                />
+            {:else if changer.what === "password"}
+                <input
+                    type="password"
+                    placeholder="New password"
+                    bind:value={changer.newValue}
+                    on:input={onPasswordInput}
+                />
+            {/if}
             <input
                 type="password"
-                placeholder="New password"
-                bind:value={changer.newValue}
-                on:input={onPasswordInput}
+                placeholder="Password"
+                bind:value={changer.password}
+                on:input={onPasswordConfirmInput}
             />
-        {/if}
-        <input
-            type="password"
-            placeholder="Password"
-            bind:value={changer.password}
-            on:input={onPasswordConfirmInput}
-        />
-        <button
-            disabled={!(newValueValid && passwordConfirmValid)}
-            on:click={change}>Change</button
-        >
+            <button
+                disabled={!(newValueValid && passwordConfirmValid)}
+                on:click={change}>Change</button
+            >
+        </div>
     </div>
 </Overlay>
 
-<style>
-    .account__settings {
+<style lang="scss">
+    .account {
         height: 122px;
     }
 
-    .overlay__change {
-        width: 100%;
-        height: 100%;
-        margin-top: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-    .overlay__change > input {
-        align-self: center;
-        height: 46px;
-        max-width: 164px;
-    }
-    .overlay__change > button {
-        margin-top: 8px;
-        height: 36px;
-        width: 84px;
-        align-self: center;
+    .overlay {
+        &__change {
+            width: 100%;
+            height: 100%;
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            > input {
+                align-self: center;
+                height: 46px;
+                max-width: 164px;
+            }
+            > button {
+                margin-top: 8px;
+                height: 36px;
+                width: 84px;
+                align-self: center;
+            }
+        }
     }
 </style>

@@ -1,26 +1,24 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
-    import type { IArticle } from "@/types/ArticleTypes";
+    import type { TArticle } from "@/types/article";
     import Dates from "@/tools/Dates";
 
     const dispatch = createEventDispatcher();
 
-    export let articles: Array<IArticle> = [];
+    export let articles: Array<TArticle> = [];
 
     function convertDate(date) {
         return Dates.convert(date);
     }
 
-    function onSelected(article: IArticle) {
+    function onSelected(article: TArticle) {
         dispatch("selected", article);
     }
 </script>
 
 <div class="articles__list">
     {#each articles as article (article.id)}
-        <article 
-        class="article" 
-        on:click={() => onSelected(article)}>
+        <article class="article" on:click={() => onSelected(article)}>
             <div class="article__meta">
                 {#if !article.is_published}
                     <div class="article__item article__updated">
@@ -49,7 +47,7 @@
     {/each}
 </div>
 
-<style>
+<style lang="scss">
     .articles__list {
         height: 100%;
         width: 100%;
@@ -69,41 +67,35 @@
         flex-direction: column;
         padding-bottom: 12px;
         gap: 8px;
-    }
-
-    .article__item {
-        font-size: 1.1rem;
-        line-height: 1.5rem;
-        margin-top: 8px;
-        margin-left: 12px;
-        margin-right: 12px;
-    }
-
-    .article__meta {
-        display: flex;
-        flex-direction: row;
-        color: var(--color-text-inactive);
-    }
-
-    .article__main {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .article__title {
-        font-size: 1.5rem;
-        line-height: 2rem;
-        letter-spacing: 0.0099rem;
-    }
-
-    .article__preview {
-        height: 100%;
-    }
-
-    .article__updated,
-    .article__published,
-    .article__is-draft {
-        font-size: 0.9rem;
+        &__item {
+            font-size: 1.1rem;
+            line-height: 1.5rem;
+            margin-top: 8px;
+            margin-left: 12px;
+            margin-right: 12px;
+        }
+        &__meta {
+            display: flex;
+            flex-direction: row;
+            color: var(--color-text-inactive);
+        }
+        &__main {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        &__title {
+            font-size: 1.5rem;
+            line-height: 2rem;
+            letter-spacing: 0.0099rem;
+        }
+        &__preview {
+            height: 100%;
+        }
+        &__updated,
+        &__published,
+        &__is-draft {
+            font-size: 0.9rem;
+        }
     }
 </style>

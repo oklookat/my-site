@@ -1,13 +1,11 @@
 <script lang="ts">
-  import EditorJS, { OutputData } from "@editorjs/editorjs";
-  import Head from "@editorjs/header";
+  import EditorJS from "@editorjs/editorjs";
+  import Header from "@editorjs/header";
   import ImageTool from "@editorjs/image";
   import ArticleAdapter from "@/adapters/ArticleAdapter";
   import TextareaResizer from "@/tools/TextareaResizer";
-  import type { TArticle, TContent } from "@/types/ArticleTypes";
-  import Overlay from "@/components/ui/Overlay.svelte";
+  import type { TArticle } from "@/types/article";
   import { onDestroy, onMount } from "svelte";
-  import { push } from "svelte-spa-router";
 
   export let params: { id?: string } = { id: null };
 
@@ -38,7 +36,7 @@
     textareaResizer.destroy();
   });
 
-  function initEditor(data?: OutputData) {
+  function initEditor(data?: any) {
     editor = new EditorJS({
       holder: "editor",
       tools: {
@@ -48,12 +46,12 @@
           },
         },
         header: {
-          class: Head,
+          class: Header,
           inlineToolbar: true,
           config: {
             placeholder: "Header",
-            levels: [2, 3, 4],
-            defaultLevel: 3,
+            levels: [2],
+            defaultLevel: 2,
           },
         },
         image: {
@@ -66,8 +64,7 @@
           },
         },
       },
-      minHeight: 0,
-      data
+      data,
     });
   }
 
@@ -124,27 +121,9 @@
   </div>
 </div>
 
-<style>
-  .create__container {
-    max-width: 732px;
-    margin: auto;
-    background-color: var(--color-level-1);
-    border-radius: 6px;
-    padding-bottom: 24px;
-  }
-
-  @media screen and (max-width: 1919px) {
-    .create__container {
-      width: 95%;
-      max-width: 512px;
-    }
-  }
-
-  @media screen and (max-width: 1023px) {
-    .create__container {
-      width: 95%;
-      height: 95%;
-    }
+<style lang="scss">
+  textarea::placeholder {
+    color: black;
   }
 
   .create {
@@ -154,6 +133,22 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    &__container {
+      max-width: 732px;
+      margin: auto;
+      background-color: white;
+      color: black;
+      border-radius: 6px;
+      padding-bottom: 24px;
+      @media screen and (max-width: 1023px) {
+        width: 95%;
+        height: 95%;
+      }
+      @media screen and (max-width: 1919px) {
+        width: 95%;
+        max-width: 512px;
+      }
+    }
   }
 
   #title {
@@ -172,20 +167,5 @@
 
   #editor {
     height: 100%;
-  }
-
-  .error__ok-butt {
-    border-radius: var(--border-radius);
-    background-color: var(--color-text);
-    width: 25%;
-    height: 10%;
-    color: var(--color-body);
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
   }
 </style>

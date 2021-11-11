@@ -1,5 +1,5 @@
 import Duck from './Duck'
-import type { TArticle, TData, TParams } from '@/types/ArticleTypes'
+import type { TArticle, TData, TParams } from '@/types/article'
 
 class ArticleAdapter {
 

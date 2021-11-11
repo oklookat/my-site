@@ -1,22 +1,19 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import ChangeCredentials from "@/components/parts/ChangeCredentials.svelte";
-    import Overlay from "@/components/ui/Overlay.svelte";
+    import AccountSettings from "@/components/parts/AccountSettings.svelte";
 
     onMount(() => {});
 </script>
 
-<div class="settings__container">
-    <div class="settings__content">
-        <div class="toolbar__one">
-            <a class="block account__logout" href="#/logout">Logout</a>
-        </div>
-        <ChangeCredentials />
+<div class="settings">
+    <div class="toolbar">
+        <a class="block toolbar__logout" href="#/logout">Logout</a>
     </div>
+    <AccountSettings />
 </div>
 
-<style>
-    .settings__container {
+<style lang="scss">
+    .settings {
         width: 95%;
         height: 100%;
         min-height: 64px;
@@ -24,25 +21,18 @@
         margin: auto;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-    }
-
-    .settings__content {
-        display: flex;
-        flex-direction: column;
         gap: 14px;
     }
 
-    .toolbar__one {
+    .toolbar {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         grid-template-rows: 1fr;
-    }
-
-    .account__logout {
-        height: 42px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        &__logout {
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     }
 </style>

@@ -1,4 +1,4 @@
-import type { TError } from "@/plugins/ducksios/Types"
+import type { TError } from "@/plugins/ducksios/types"
 
 export class AdapterError {
 

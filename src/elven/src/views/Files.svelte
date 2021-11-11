@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import FileAdapter from "@/adapters/FileAdapter";
-  import { IMeta, iMetaDefault } from "@/types/GlobalTypes";
-  import type { IFile } from "@/types/FileTypes";
+  import { IMeta, iMetaDefault } from "@/types/global";
+  import type { IFile } from "@/types/file";
   import FilesList from "@/components/parts/FilesList.svelte";
   import Pagination from "@/components/ui/Pagination.svelte";
 
@@ -19,81 +19,80 @@
   let currentPage: number = 1;
   let totalPages: number = 1;
   // file input for upload
-  let input;
+  let inputEL: HTMLInputElement;
 
   onMount(() => {
     getFiles();
   });
 
-  function getFiles(pageA = currentPage, showA = show) {
+  async function getFiles(pageA = currentPage, showA = show) {
+    if(pageA < 1) {
+      pageA = 1
+    }
     currentPage = pageA;
     show = showA;
     isLoaded = false;
-    FileAdapter.getAll(pageA, showA).then((result) => {
+    try {
+      const result = await FileAdapter.getAll(pageA, showA);
       files = result.data;
       meta = result.meta;
       currentPage = meta.current_page;
       totalPages = meta.total_pages;
       perPage = meta.per_page;
       isLoaded = true;
-    });
+    } catch (err) {}
   }
 
   async function deleteFile(file: IFile) {
-    const isDelete = confirm("delete file?");
-    if (isDelete) {
-      FileAdapter.delete(file.id).then(() => {
-        deleteFromArray(file);
-        refresh();
-      });
+    const isDelete = confirm("Delete file?");
+    if (!isDelete) {
+      return;
     }
+    try {
+      await FileAdapter.delete(file.id);
+      await deleteFromArray(file);
+    } catch (err) {}
   }
 
-  function deleteFromArray(file: IFile) {
+  async function deleteFromArray(file: IFile) {
     files = files.filter((f) => f !== file);
-    if (files.length < perPage) {
-      getFiles();
-    }
+    await refresh();
   }
 
   async function refresh() {
-    let isTrueFiles = isLoaded && files.length < 1;
-    if (isTrueFiles) {
-      // no files in current page
-      while (isTrueFiles) {
-        // moving back until the pages ends or data appears
-        currentPage--;
-        await getFiles();
-        if (currentPage <= 1) {
-          break;
-        }
-        isTrueFiles = isLoaded && files.length < 1;
-      }
+    let noFiles = isLoaded && (files.length < 1 || files.length < perPage);
+    // no files in current page
+    while (noFiles && currentPage > 1) {
+      // moving back until the pages ends or data appears
+      currentPage--;
+      await getFiles();
+      noFiles = isLoaded && files.length < 1;
     }
   }
 
-  async function onInputChange(event) {
-    const files = event.target.files;
+  async function onInputChange(e) {
+    const files = <FileList>e.target.files;
     if (files.length < 1) {
       return 0;
     }
-    await FileAdapter.upload(files);
-    await getFiles();
+    FileAdapter.upload(files).then(() => {
+      getFiles();
+    });
   }
 
   function onUploadClick() {
-    if (!input) {
+    if (!inputEL) {
       return;
     }
-    input.value = "";
-    input.click();
+    inputEL.value = "";
+    inputEL.click();
   }
 </script>
 
-<div class="files__container">
+<div class="files">
   <div class="files__tools">
-    <div class="file__upload">
-      <div class="file__upload-butt" on:click={() => onUploadClick()}>
+    <div class="files__upload">
+      <div class="files__upload-button" on:click={() => onUploadClick()}>
         upload
       </div>
       <input
@@ -101,7 +100,7 @@
         type="file"
         multiple
         style="display: none"
-        bind:this={input}
+        bind:this={inputEL}
         on:input={onInputChange}
       />
     </div>
@@ -123,43 +122,39 @@
   {/if}
 </div>
 
-<style scoped>
-  .files__container {
+<style lang="scss">
+  .files {
     width: 95%;
     max-width: 512px;
     margin: auto;
     display: flex;
     flex-direction: column;
     gap: 14px;
-  }
-
-  .files__tools {
-    background-color: var(--color-level-1);
-    font-size: 1rem;
-    width: 100%;
-    height: 54px;
-    border-radius: var(--border-radius);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .file__upload {
-    margin-left: 12px;
-  }
-
-  .file__upload-butt {
-    cursor: pointer;
-  }
-
-  .files__404 {
-    background-color: var(--color-level-1);
-    height: 240px;
-    border-radius: var(--border-radius);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 24px;
+    &__tools {
+      background-color: var(--color-level-1);
+      font-size: 1rem;
+      width: 100%;
+      height: 54px;
+      border-radius: var(--border-radius);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+    &__404 {
+      background-color: var(--color-level-1);
+      height: 240px;
+      border-radius: var(--border-radius);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+    }
+    &__upload {
+      margin-left: 12px;
+      &-button {
+        cursor: pointer;
+      }
+    }
   }
 </style>

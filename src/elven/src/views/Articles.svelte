@@ -7,8 +7,8 @@
     TParams,
     TShow,
     TStart,
-  } from "@/types/ArticleTypes";
-  import type { IMeta } from "@/types/GlobalTypes";
+  } from "@/types/article";
+  import type { IMeta } from "@/types/global";
   import ArticleAdapter from "@/adapters/ArticleAdapter";
   import Overlay from "@/components/ui/Overlay.svelte";
   import Pagination from "@/components/ui/Pagination.svelte";
@@ -33,17 +33,17 @@
   });
 
   async function getAll(p?: TParams) {
-    if (!p) {
-      p = params;
-    } else {
-      params = p;
+    p = !p ? params : p;
+    if (p.page < 1) {
+      p.page = 1;
     }
     loaded = false;
-    ArticleAdapter.getAll(params).then((result) => {
+    try {
+      const result = await ArticleAdapter.getAll(params);
       articles = result.data;
       meta = result.meta;
       loaded = true;
-    });
+    } catch (err) {}
   }
 
   async function edit(id: string) {
@@ -60,7 +60,7 @@
       deleteFromArray(id);
       toolsOverlay = false;
     });
-    refresh();
+    await refresh();
   }
 
   async function toDrafts(id: string) {
@@ -68,24 +68,21 @@
       deleteFromArray(id);
       toolsOverlay = false;
     });
-    refresh();
+    await refresh();
   }
 
   async function deleteArticle(id: string) {
     const isDelete = confirm("Delete article?");
     if (isDelete) {
       await ArticleAdapter.delete(id);
-      deleteFromArray(id);
+      await deleteFromArray(id);
       toolsOverlay = false;
-      refresh();
     }
   }
 
-  function deleteFromArray(id: string) {
+  async function deleteFromArray(id: string) {
     articles = articles.filter((a) => a.id !== id);
-    if (articles.length < meta.per_page) {
-      getAll();
-    }
+    await refresh();
   }
 
   async function setBy(by: TBy = "published") {
@@ -112,11 +109,9 @@
   }
 
   async function refresh() {
-    // refresh is need when for ex. you deleted all articles on current page
-    // and we need to check, is data on current page exists?
-    // if page > 1 and no data, we moving back (currentPage--) and get new articles
-    while (loaded && articles.length < 1) {
-      // moving back until the pages ends or data appears
+    let noArticles =
+      loaded && (articles.length < 1 || articles.length < meta.per_page);
+    while (noArticles) {
       params.page--;
       await getAll();
       if (params.page <= 1) {
@@ -126,7 +121,7 @@
   }
 </script>
 
-<div class="articles__container">
+<div class="articles">
   <div class="articles__create">
     <a href="#/articles/create">new</a>
   </div>
@@ -206,37 +201,26 @@
     bind:active={toolsOverlay}
     on:deactivated={() => (toolsOverlay = false)}
   >
-    <div class="overlay__article-manage" v-if="isToolsOverlayActive">
+    <div class="overlay">
       {#if selected && selected.is_published}
-        <div
-          class="overlay__item make__draft"
-          on:click={() => toDrafts(selected.id)}
-        >
+        <div class="overlay__item" on:click={() => toDrafts(selected.id)}>
           make a draft
         </div>
       {:else}
-        <div
-          class="overlay__item publish"
-          on:click={() => publish(selected.id)}
-        >
+        <div class="overlay__item" on:click={() => publish(selected.id)}>
           publish
         </div>
       {/if}
-      <div class="overlay__item edit" on:click={() => edit(selected.id)}>
-        edit
-      </div>
-      <div
-        class="overlay__item delete"
-        on:click={() => deleteArticle(selected.id)}
-      >
+      <div class="overlay__item" on:click={() => edit(selected.id)}>edit</div>
+      <div class="overlay__item" on:click={() => deleteArticle(selected.id)}>
         delete
       </div>
     </div>
   </Overlay>
 </div>
 
-<style>
-  .articles__container {
+<style lang="scss">
+  .articles {
     width: 95%;
     height: 100%;
     max-width: 512px;
@@ -244,71 +228,64 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+    &__item {
+      cursor: pointer;
+    }
+    &__toolbar {
+      background-color: var(--color-level-1);
+      padding-left: 12px;
+      font-size: 0.8rem;
+      min-height: 36px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      font-weight: bold;
+    }
+    &__create {
+      background-color: var(--color-level-1);
+      height: 36px;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      > a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        :hover {
+          background-color: var(--color-hover);
+        }
+      }
+    }
+    &__404 {
+      background-color: var(--color-level-1);
+      height: 240px;
+      border-radius: var(--border-radius);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+    }
   }
 
-  .articles__create {
-    background-color: var(--color-level-1);
-    height: 36px;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-  }
-
-  .articles__create > a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-  }
-
-  .articles__create > a:hover {
-    background-color: var(--color-hover);
-  }
-
-  .articles__toolbar {
-    background-color: var(--color-level-1);
-    padding-left: 12px;
-    font-size: 0.8rem;
-    min-height: 36px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    font-weight: bold;
-  }
-
-  .articles__item {
-    cursor: pointer;
-  }
-
-  .articles__404 {
-    background-color: var(--color-level-1);
-    height: 240px;
-    border-radius: var(--border-radius);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 24px;
-  }
-
-  .overlay__article-manage {
+  .overlay {
     width: 100%;
     display: flex;
     flex-direction: column;
-  }
-
-  .overlay__item {
-    height: 64px;
-    width: 100%;
-    font-size: 1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .overlay__item:hover {
-    background-color: var(--color-hover);
+    &__item {
+      transition: background-color 80ms ease-out;
+      height: 64px;
+      width: 100%;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    &__item:hover {
+      background-color: var(--color-hover);
+    }
   }
 </style>

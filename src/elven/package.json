@@ -1,6 +1,6 @@
 {
   "name": "elven",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,10 +9,12 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
+    "@editorjs/image": "^2.6.1",
     "@sveltejs/vite-plugin-svelte": "^1.0.0-next.11",
     "@tsconfig/svelte": "^2.0.1",
     "@types/byte-size": "^8.1.0",
     "@types/node": "^16.11.6",
+    "sass": "^1.43.4",
     "svelte": "^3.37.0",
     "svelte-check": "^2.1.0",
     "svelte-preprocess": "^4.7.2",
@@ -23,8 +25,6 @@
   "dependencies": {
     "@editorjs/editorjs": "^2.22.2",
     "@editorjs/header": "^2.6.1",
-    "@editorjs/image": "^2.6.1",
-    "axios": "^0.24.0",
     "byte-size": "^8.1.0",
     "svelte-spa-router": "^3.2.0"
   }

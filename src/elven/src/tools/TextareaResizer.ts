@@ -1,3 +1,6 @@
+/**
+ * resize textarea depending on text size or window resize
+ */
 export default class TextareaResizer {
 
     private element: HTMLElement

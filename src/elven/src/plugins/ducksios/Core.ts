@@ -1,8 +1,9 @@
-import type { TGlobalConfig, TRequestConfig, TRequestMethod, TResponse, TError, THook } from './Types'
-import Parser from './Parser'
-import Service from './Service'
+import type { TGlobalConfig, TRequestConfig, TRequestMethod, TResponse, TError, THook } from "./types"
+import Parser from "./parser"
+import Service from "./service"
 
 
+/** axios-like XHR wrapper */
 export default class Ducksios {
 
     public config: TGlobalConfig = {
@@ -21,34 +22,42 @@ export default class Ducksios {
         }
     }
 
+    /** send request (GET) */
     public async GET(config: TRequestConfig): Promise<TResponse> {
         return this.buildAndSend("GET", config)
     }
 
+    /** send request (POST) */
     public async POST(config: TRequestConfig) {
         return this.buildAndSend("POST", config)
     }
 
+    /** send request (PUT) */
     public async PUT(config: TRequestConfig) {
         return this.buildAndSend("PUT", config)
     }
 
+    /** send request (DELETE) */
     public async DELETE(config: TRequestConfig) {
         return this.buildAndSend("DELETE", config)
     }
 
+    /** send request (HEAD) */
     public async HEAD(config: TRequestConfig) {
         return this.buildAndSend("HEAD", config)
     }
 
+    /** send request (OPTIONS) */
     public async OPTIONS(config: TRequestConfig) {
         return this.buildAndSend("OPTIONS", config)
     }
 
+    /** send request (PATCH) */
     public async PATCH(config: TRequestConfig) {
         return this.buildAndSend("PATCH", config)
     }
 
+    /** create XHR, set settings and headers, then send request via {@link setupHooksAndSend} */
     private async buildAndSend(method: TRequestMethod, rc: TRequestConfig): Promise<TResponse> {
         let xhr = new XMLHttpRequest();
         xhr.timeout = this.config.timeout
@@ -71,24 +80,25 @@ export default class Ducksios {
         return this.setupHooksAndSend(xhr, rc)
     }
 
+    /** parse request body, set hooks, send request */
     private async setupHooksAndSend(xhr: XMLHttpRequest, rc: TRequestConfig): Promise<TResponse> {
         const parsed = Parser.requestBody(rc.body, rc, this.config)
         rc = parsed.r
-        // downloading from server
+        // when downloading from server
         xhr.onprogress = (e) => {
             this.onDownload(e, rc)
         }
-        // file upload to server
+        // when file upload to server
         xhr.upload.onprogress = (e) => {
             this.onUploadProgress(e, rc)
         }
-        // file uploaded to server
+        // when file uploaded to server
         xhr.upload.onload = (e) => {
             this.onUploaded(e, rc)
         }
         // return response or error
         return new Promise((resolve, reject) => {
-            // response from server
+            // when response from server
             xhr.onload = () => {
                 try {
                     const response = this.onResponse(xhr, rc)
@@ -98,7 +108,7 @@ export default class Ducksios {
                     reject(err)
                 }
             }
-            // network error (not HTTP)
+            // when network error (not HTTP)
             xhr.onerror = () => {
                 const err: TError = {
                     type: "network"
@@ -106,7 +116,7 @@ export default class Ducksios {
                 this.onError(err, rc)
                 reject(err)
             }
-            // timeout
+            // when timeout
             xhr.ontimeout = () => {
                 const err: TError = {
                     type: "timeout"
@@ -114,9 +124,11 @@ export default class Ducksios {
                 this.onError(err, rc)
                 reject(err)
             }
-            // cancel request if token passed
+            // is cancel token provided
             if (rc.cancelToken) {
+                // rewrite CancelToken.cancel function
                 rc.cancelToken.cancel = (message?: string) => {
+                    // now when calls cancel(), executes this:
                     xhr.abort()
                     const err: TError = {
                         type: "cancel",
@@ -131,7 +143,7 @@ export default class Ducksios {
         })
     }
 
-    // execute hooks when request or response error
+    /** execute hooks when request or response error */
     private onError(err: TError, rc: TRequestConfig) {
         const h: THook = {
             name: "onError",
@@ -141,7 +153,7 @@ export default class Ducksios {
         this.executeHooks(h)
     }
 
-    // execute hooks when client send request
+    /** execute hooks when client send request */
     private onRequest(rc: TRequestConfig) {
         const h: THook = {
             name: "onRequest",
@@ -151,7 +163,7 @@ export default class Ducksios {
         this.executeHooks(h)
     }
 
-    // execute hooks when get response from server
+    /** execute hooks when get response from server */
     private onResponse(xhr: XMLHttpRequest, rc: TRequestConfig): TResponse {
         const statusCode = xhr.status
         const body = Parser.responseBody(xhr.response)
@@ -181,7 +193,7 @@ export default class Ducksios {
         return resp
     }
 
-    // execute hooks when downloading data from server
+    /** execute hooks when downloading data from server */
     private onDownload(e: ProgressEvent<EventTarget>, rc: TRequestConfig) {
         const h: THook = {
             name: "onDownload",
@@ -191,7 +203,7 @@ export default class Ducksios {
         this.executeHooks(h)
     }
 
-    // execute hooks when upload data to server
+    /** execute hooks when upload data to server */
     private onUploadProgress(e: ProgressEvent<EventTarget>, rc: TRequestConfig) {
         const h: THook = {
             name: "onUploadProgress",
@@ -201,7 +213,7 @@ export default class Ducksios {
         this.executeHooks(h)
     }
 
-    // execute hooks when data uploaded to server
+    /** execute hooks when data uploaded to server */
     private onUploaded(e: ProgressEvent<EventTarget>, rc: TRequestConfig) {
         const h: THook = {
             name: "onUploaded",
@@ -211,7 +223,7 @@ export default class Ducksios {
         this.executeHooks(h)
     }
 
-    // execute hooks depending on global and request config
+    /** execute hooks depending on global and request config */
     private executeHooks(h: THook) {
         let hook = this.config.hooks && h.name in this.config.hooks && typeof this.config.hooks[h.name] === 'function'
         if (hook) {

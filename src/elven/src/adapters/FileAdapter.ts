@@ -1,5 +1,5 @@
 import Duck from './Duck'
-import type { IFilesData } from '@/types/FileTypes'
+import type { IFilesData } from '@/types/file'
 
 export default class FileAdapter {
 

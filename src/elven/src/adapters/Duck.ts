@@ -1,7 +1,7 @@
 import { AdapterError } from "@/tools/ErrorHandler"
 import { Env } from "@/tools/Paths"
-import type { IHooks, TGlobalConfig } from "@/plugins/ducksios/Types"
-import Ducksios from "@/plugins/ducksios/Core"
+import type { IHooks, TGlobalConfig } from "@/plugins/ducksios/types"
+import Ducksios from "@/plugins/ducksios/core"
 
 const apiURL = Env.getAPI()
 
