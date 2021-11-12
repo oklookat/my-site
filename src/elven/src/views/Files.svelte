@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import FileAdapter from "@/adapters/FileAdapter";
-  import { IMeta, iMetaDefault } from "@/types/global";
-  import type { IFile } from "@/types/file";
+  import type { TMeta } from "@/types/global";
+  import type { TFile } from "@/types/file";
   import FilesList from "@/components/parts/FilesList.svelte";
   import Pagination from "@/components/ui/Pagination.svelte";
 
@@ -12,8 +12,8 @@
   let sortBy: string = "created";
   let sortFirst: string = "newest";
   // files
-  let files: Array<IFile> = [];
-  let meta: IMeta = iMetaDefault;
+  let files: Array<TFile> = [];
+  let meta: TMeta
   let show: "newest";
   let perPage: number = 0;
   let currentPage: number = 1;
@@ -43,7 +43,7 @@
     } catch (err) {}
   }
 
-  async function deleteFile(file: IFile) {
+  async function deleteFile(file: TFile) {
     const isDelete = confirm("Delete file?");
     if (!isDelete) {
       return;
@@ -54,7 +54,7 @@
     } catch (err) {}
   }
 
-  async function deleteFromArray(file: IFile) {
+  async function deleteFromArray(file: TFile) {
     files = files.filter((f) => f !== file);
     await refresh();
   }

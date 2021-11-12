@@ -5,6 +5,7 @@ import Ducksios from "@/plugins/ducksios/core"
 
 const apiURL = Env.getAPI()
 
+
 const hooks: IHooks = {
     onRequest: () => {
         console.log('on request hooked')
