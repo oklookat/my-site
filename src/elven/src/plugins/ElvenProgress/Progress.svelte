@@ -1,22 +1,24 @@
 <script lang="ts">
+  import type { IElvenProgress } from "@/plugins/ElvenProgress/types";
   import { onDestroy } from "svelte";
 
   // plugin controls
-  window.$elvenProgress = {
-    startBasic: () => {
+  class Plugin implements IElvenProgress {
+    public startBasic() {
       startBasic();
-    },
-    finishBasic: () => {
+    }
+    public finishBasic() {
       finishBasic();
-    },
-    setPercents: (value) => {
+    }
+    public setPercents(value: number) {
       percents = value;
-    },
-    resetPercents: () => {
+    }
+    public resetPercents() {
       percents = 0;
       destroy();
     }
-  };
+  }
+  window.$elvenProgress = new Plugin();
 
   // settings
   let height = "3px";

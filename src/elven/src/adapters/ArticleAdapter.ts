@@ -1,7 +1,7 @@
 import Duck from './Duck'
 import type { TArticle, TData, TParams } from '@/types/article'
 
-class ArticleAdapter {
+export default class ArticleAdapter {
 
     public static async getAll(params: TParams): Promise<TData> {
         try {
@@ -66,5 +66,3 @@ class ArticleAdapter {
         }
     }
 }
-
-export default ArticleAdapter

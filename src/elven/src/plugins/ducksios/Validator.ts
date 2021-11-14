@@ -1,5 +1,5 @@
 // from: https://github.com/axios/axios/blob/76f09afc03fbcf392d31ce88448246bcd4f91f8c/lib/utils.js
-// MIT license stuff:
+// MIT license stuff (axios):
 /**
 Copyright (c) 2014-present Matt Zabriskie
 Permission is hereby granted, free of charge, to any person obtaining a copy

@@ -5,7 +5,7 @@ export default class Dates {
     private static readonly secTitles = ['second', 'seconds']
     private static readonly months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
-    /** convert date to string like: '12 minutes ago' or '12 jan 1970 at 12:22'   */
+    /** convert date to string like: '12 minutes ago' or '12 jan 1970 at 12:22' */
     public static convert(date: string | number | Date): string {
         let d = new Date(date)
         const currentDate = new Date()

@@ -1,48 +1,33 @@
 <script lang="ts">
+  import type {
+    IElvenNotify,
+    TNotification,
+    TNotificationFull,
+  } from "@/plugins/ElvenNotify/types";
   import { quintOut } from "svelte/easing";
   import { crossfade } from "svelte/transition";
 
-  interface INotificationFull {
-    id: number;
-    timeoutID: NodeJS.Timeout | null;
-    intervalID: ReturnType<typeof setInterval> | null; // need for calc progress
-    timeWhenGone: number; // ms when timeout ends
-    percents: number;
-    self: INotification; // notification object
-    executed: boolean;
-    execute: () => void;
-  }
-  interface INotification {
-    message: string;
-  }
-
-  //// settings
   // when notification will be deleted (in ms)
   const deletedIn = 5000;
   // max notifications on desktop
   const maxNotificationsD = 8;
   // max notifications on mobile
   const maxNotificationsM = 2;
-
-  //// main
-  let notifications: Array<INotificationFull> = [];
+  // this array displayed in component
+  let notifications: Array<TNotificationFull> = [];
+  // used for set notification id
   let notificationsCounter = 0;
 
-  // used by plugin
-  export let addNot: string = null;
-  $: watchNotification(addNot);
-  function watchNotification(value) {
-    addNotification(value);
-    addNot = null;
-  }
-
-  function addNotification(message) {
-    if (!message) {
-      return;
+  /** plugin controls */
+  class Plugin implements IElvenNotify {
+    public add(notification: TNotification) {
+      add(notification);
     }
-    const notification = {
-      message: message,
-    };
+  }
+  window.$elvenNotify = new Plugin();
+
+  /** add user notification, then create full notification*/
+  function add(n: TNotification) {
     // clear counter if no notifications
     if (notifications.length < 1) {
       notificationsCounter = 0;
@@ -57,44 +42,24 @@
     if (isMaxNotifications) {
       deleteNotification(notifications[0]);
     }
-    // add notification
-    setNotification(notification);
+    set(n);
   }
 
-  function setNotification(notification: INotification) {
-    const fullNotification: INotificationFull = {
+  /** create full notification and push to array */
+  function set(notification: TNotification) {
+    const full: TNotificationFull = {
       id: notificationsCounter++,
+      self: notification, // notification object
+      percents: 0,
+      timeWhenGone: 0, // ms when timeout ends
+      executed: false,
       timeoutID: null,
       intervalID: null, // need for calc progress
-      timeWhenGone: 0, // ms when timeout ends
-      percents: 0,
-      self: notification, // notification object
-      executed: false,
-      execute: function () {
-        if (this.executed) {
-          // already initialized
-          return;
-        }
-        // init
-        this.timeoutID = setTimeout(() => {
-          // delete himself from array after time
-          deleteNotification(this);
-        }, deletedIn);
-        // calc time when notification be deleted
-        this.timeWhenGone = new Date().getTime() + deletedIn; // set time once item deleted
-        this.intervalID = setInterval(() => {
-          calcPercents(this, deletedIn);
-          // make reactive
-          notifications[notificationsCounter + 1] =
-            notifications[notificationsCounter + 1];
-        }, 100); // interval time = performance. timer transition time = this time + 20ms
-        this.executed = true;
-      },
     };
-    notifications = [...notifications, fullNotification];
+    notifications = [...notifications, full];
   }
 
-  function deleteNotification(context: INotificationFull) {
+  function deleteNotification(context: TNotificationFull) {
     const index = notifications.findIndex((obj) => obj.id === context.id);
     if (index > -1) {
       clearTimeouts(index);
@@ -103,26 +68,44 @@
     }
   }
 
-  function clearTimeouts(index) {
+  function clearTimeouts(index: number) {
     clearTimeout(notifications[index].timeoutID as unknown as number);
     clearInterval(notifications[index].intervalID as unknown as number);
   }
 
-  function calcPercents(objContext, deletedIn) {
+  function calcPercents(ctx: TNotificationFull, deletedIn: number) {
     const now = new Date().getTime();
     // if date when item should be deleted
-    if (now >= objContext.timeWhenGone) {
-      clearInterval(objContext.intervalID);
+    if (now >= ctx.timeWhenGone) {
+      clearInterval(ctx.intervalID);
     }
     // get the difference between current date and time when item deleted
-    const diff = Math.abs(now - objContext.timeWhenGone);
+    const diff = Math.abs(now - ctx.timeWhenGone);
     // get how much is left as a percentage. deletedIn = 100%
-    objContext.percents = (diff / deletedIn) * 100;
+    ctx.percents = (diff / deletedIn) * 100;
   }
 
-  function execute(notification: INotificationFull): INotificationFull {
-    notification.execute();
-    return notification;
+  /** init timers */
+  function execute(n: TNotificationFull): TNotificationFull {
+    // already initialized
+    if (n.executed) {
+      return n;
+    }
+    // init
+    n.timeoutID = setTimeout(() => {
+      // delete from array after time
+      deleteNotification(n);
+    }, deletedIn);
+    // calc time when notification be deleted
+    n.timeWhenGone = new Date().getTime() + deletedIn; // set time once item deleted
+    n.intervalID = setInterval(() => {
+      calcPercents(n, deletedIn);
+      // make reactive
+      notifications[notificationsCounter + 1] =
+        notifications[notificationsCounter + 1];
+    }, 100); // interval time = performance. timer transition time = this time + 20ms
+    n.executed = true;
+    return n;
   }
 
   // animation
@@ -145,7 +128,7 @@
   });
 </script>
 
-<div class="notify__container">
+<div class="notify">
   <div class="notify__notifications">
     {#each notifications.map(execute) as notification (notification.id)}
       <div
@@ -169,7 +152,7 @@
 </div>
 
 <style>
-  .notify__container {
+  .notify {
     width: 100%;
     z-index: 9999;
     bottom: 0;
@@ -229,8 +212,6 @@
     background-color: rgb(190, 190, 190);
   }
 
-  /* -------- MEDIA START -------- */
-  /* ---- theming start ---- */
   @media (prefers-color-scheme: light) {
     .notify__notification {
       color: #fff;
@@ -245,10 +226,8 @@
       border: 1px solid rgb(60, 60, 60);
     }
   }
-  /* ---- theming end ---- */
-  /* ---- adaptive start ---- */
   @media screen and (min-width: 765px) {
-    .notify__container {
+    .notify {
       margin-right: 12px;
       height: min-content;
       width: 224px;
@@ -273,6 +252,4 @@
       margin-top: 8px;
     }
   }
-  /* ---- adaptive end ---- */
-  /* -------- MEDIA END -------- */
 </style>

@@ -1,20 +1,17 @@
 export class AuthStorage {
 
     public static set(value: boolean) {
-        let converted = "0"
-        if (value) {
-            converted = "1"
-        }
-        localStorage.setItem("elven-authenticated", converted)
+        const converted = value ? '1': '0'
+        localStorage.setItem('elven-authenticated', converted)
     }
 
     public static get(): boolean {
-        const state = localStorage.getItem("elven-authenticated")
-        return state === "1"
+        const state = localStorage.getItem('elven-authenticated')
+        return state === '1'
     }
 
     public static remove() {
-        localStorage.removeItem("elven-authenticated")
+        localStorage.removeItem('elven-authenticated')
     }
 
 }

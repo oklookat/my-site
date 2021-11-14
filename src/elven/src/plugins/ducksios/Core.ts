@@ -124,7 +124,7 @@ export default class Ducksios {
                 this.onError(err, rc)
                 reject(err)
             }
-            // is cancel token provided
+            // if cancel token provided
             if (rc.cancelToken) {
                 // rewrite CancelToken.cancel function
                 rc.cancelToken.cancel = (message?: string) => {

@@ -10,6 +10,14 @@
     dispatch("changed", page);
   }
 
+  function onNextButton() {
+    dispatchChanged(currentPageData + 1);
+  }
+
+  function onPrevButton() {
+    dispatchChanged(currentPageData - 1);
+  }
+
   let active = false;
   let totalPagesData = 1;
   let currentPageData = 1;
@@ -51,18 +59,10 @@
       dispatchChanged(currentPageData);
     }, 1000);
   }
-
-  function onNextButton() {
-    dispatchChanged(currentPageData + 1);
-  }
-
-  function onPrevButton() {
-    dispatchChanged(currentPageData - 1);
-  }
 </script>
 
 {#if active}
-  <div class="pagination__container">
+  <div class="pagination">
     <div class="pagination__paginator">
       <div class="pagination__prev-page">
         {#if currentPageData !== 1}
@@ -92,8 +92,8 @@
   </div>
 {/if}
 
-<style>
-  .pagination__container {
+<style lang="scss">
+  .pagination {
     border-radius: 8px;
     background-color: var(--color-level-1);
     height: 82px;
@@ -101,61 +101,52 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-  }
-
-  .pagination__paginator {
-    height: 36px;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-  }
-
-  .pagination__next-page,
-  .pagination__prev-page {
-    width: 25%;
-  }
-
-  .pagination__next-page-butt {
-    border-top-right-radius: 8px;
-  }
-
-  .pagination__prev-page-butt {
-    border-top-left-radius: 8px;
-  }
-
-  .pagination__next-page-butt,
-  .pagination__prev-page-butt {
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-  }
-
-  .pagination__next-page-butt:hover,
-  .pagination__prev-page-butt:hover {
-    background-color: var(--color-hover);
-  }
-
-  .pagination__next-page-butt,
-  .pagination__prev-page-butt,
-  .pagination__pages-input {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-  }
-
-  .pagination__pages-input {
-    width: 50%;
-    background-color: var(--color-level-2);
-  }
-
-  .pagination__pages-input > input {
-    border: none;
-    background-color: var(--color-hover);
-    width: 100%;
-    height: inherit;
-    text-align: center;
-    font-size: 1.2rem;
-    box-sizing: border-box;
+    &__paginator {
+      height: 36px;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+    }
+    &__next-page,
+    &__prev-page {
+      width: 25%;
+    }
+    &__next-page-butt {
+      border-top-right-radius: 8px;
+    }
+    &__prev-page-butt {
+      border-top-left-radius: 8px;
+    }
+    &__next-page-butt,
+    &__prev-page-butt {
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    &__next-page-butt:hover,
+    &__prev-page-butt:hover {
+      background-color: var(--color-hover);
+    }
+    &__next-page-butt,
+    &__prev-page-butt,
+    &__pages-input {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+    &__pages-input {
+      width: 50%;
+      background-color: var(--color-level-2);
+      > input {
+        border: none;
+        background-color: var(--color-hover);
+        width: 100%;
+        height: inherit;
+        text-align: center;
+        font-size: 1.2rem;
+        box-sizing: border-box;
+      }
+    }
   }
 </style>

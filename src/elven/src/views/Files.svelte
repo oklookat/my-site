@@ -3,17 +3,20 @@
   import FileAdapter from "@/adapters/FileAdapter";
   import type { TMeta } from "@/types/global";
   import type { TFile } from "@/types/file";
-  import FilesList from "@/components/parts/FilesList.svelte";
+  import File from "@/components/parts/File.svelte";
   import Pagination from "@/components/ui/Pagination.svelte";
+  import Overlay from "@/components/ui/Overlay.svelte";
 
   let isLoaded: boolean = false;
   // service
   let isSortOverlayActive: boolean = false;
   let sortBy: string = "created";
   let sortFirst: string = "newest";
+  let selected: TFile | null = null;
+  let selectionOverlay = false;
   // files
   let files: Array<TFile> = [];
-  let meta: TMeta
+  let meta: TMeta;
   let show: "newest";
   let perPage: number = 0;
   let currentPage: number = 1;
@@ -26,8 +29,8 @@
   });
 
   async function getFiles(pageA = currentPage, showA = show) {
-    if(pageA < 1) {
-      pageA = 1
+    if (pageA < 1) {
+      pageA = 1;
     }
     currentPage = pageA;
     show = showA;
@@ -87,6 +90,32 @@
     inputEL.value = "";
     inputEL.click();
   }
+
+  function onSelected(file: TFile) {
+    selectionOverlay = true;
+    selected = file;
+  }
+
+  function onDelete(file: TFile) {
+    selectionOverlay = false;
+    deleteFile(file);
+  }
+
+  async function copyLink(file: TFile) {
+    try {
+      await navigator.clipboard.writeText(file.path);
+      selectionOverlay = false;
+      const message = "Link copied to clipboard.";
+      window.$elvenNotify.add({ message });
+    } catch (err) {
+      const message = "Copy to clipboard: not have permission.";
+      window.$elvenNotify.add({ message });
+    }
+  }
+
+  function playAudio(path: string) {
+    window.$elvenPlayer.play(path);
+  }
 </script>
 
 <div class="files">
@@ -113,7 +142,43 @@
   {/if}
 
   {#if isLoaded && files.length > 0}
-    <FilesList {files} on:delete={(e) => deleteFile(e.detail)} />
+    <div class="files__list">
+      {#each files as file (file.id)}
+        <File {file} on:selected={(e) => onSelected(e.detail)} />
+      {/each}
+
+      <Overlay
+        bind:active={selectionOverlay}
+        on:deactivated={() => {
+          selectionOverlay = false;
+          selected = null;
+        }}
+      >
+        <div class="overlay">
+          {#if selected.extensionType === "audio"}
+            <div
+              class="overlay__item file__play"
+              on:click={() => playAudio(selected.path)}
+            >
+              play
+            </div>
+          {/if}
+          <div
+            class="overlay__item file__copy-link"
+            on:click={() => copyLink(selected)}
+          >
+            copy link
+          </div>
+          <div
+            class="overlay__item file__delete"
+            on:click={() => onDelete(selected)}
+          >
+            delete
+          </div>
+        </div>
+      </Overlay>
+    </div>
+
     <Pagination
       {totalPages}
       {currentPage}
@@ -155,6 +220,30 @@
       &-button {
         cursor: pointer;
       }
+    }
+    &__list {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 42px;
+      gap: 12px;
+    }
+  }
+
+  .overlay {
+    width: 100%;
+    &__item {
+      height: 64px;
+      width: 100%;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    &__item:hover {
+      background-color: var(--color-hover);
     }
   }
 </style>

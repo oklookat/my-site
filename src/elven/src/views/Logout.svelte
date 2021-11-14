@@ -4,7 +4,7 @@
   import AuthAdapter from "@/adapters/AuthAdapter";
 
   onMount(async () => {
-    AuthAdapter.logout();
+    await AuthAdapter.logout();
     push("/login");
   });
 </script>

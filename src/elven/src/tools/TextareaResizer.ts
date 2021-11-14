@@ -10,7 +10,7 @@ export default class TextareaResizer {
 
     constructor(element: HTMLElement) {
         if (!element.style) {
-            throw Error(`TextareaResizer: wrong element`)
+            throw Error(`TextareaResizer: wrong element provided.`)
         }
         this.element = element
         this.start()

@@ -1,7 +1,7 @@
 import Duck from './Duck'
 import { AuthStorage } from "@/tools/LocalStorage";
 
-class AuthAdapter {
+export default class AuthAdapter {
 
     public static async login(username: string, password: string) {
         const data = {
@@ -27,5 +27,3 @@ class AuthAdapter {
         }
     }
 }
-
-export default AuthAdapter

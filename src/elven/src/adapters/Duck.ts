@@ -6,22 +6,22 @@ import Ducksios from "@/plugins/ducksios/core"
 const apiURL = Env.getAPI()
 
 
-const hooks: IHooks = {
-    onRequest: () => {
+class Hooks implements IHooks {
+    onRequest() {
         console.log('on request hooked')
         window.$elvenProgress.startBasic()
-    },
-    onResponse: () => {
+    }
+    onResponse() {
         console.log('on response hooked')
         window.$elvenProgress.finishBasic()
         window.$elvenProgress.resetPercents()
-    },
-    onError: (err) => {
+    }
+    onError(err) {
         window.$elvenProgress.finishBasic()
         window.$elvenProgress.resetPercents()
         AdapterError.handle(err)
-    },
-    onUploadProgress: (e) => {
+    }
+    onUploadProgress(e) {
         console.log('upload progress hooked')
         if (e.lengthComputable) {
             const percents = (e.loaded / e.total) * 100
@@ -31,18 +31,18 @@ const hooks: IHooks = {
             // no Content-Length
             console.log(`uploaded ${e.loaded} bytes`);
         }
-    },
-    onUploaded: () => {
+    }
+    onUploaded() {
         console.log('uploaded hooked')
         window.$elvenProgress.finishBasic()
         window.$elvenProgress.resetPercents()
-    },
+    }
 }
 
 const config: TGlobalConfig = {
     withCredentials: true,
     baseURL: apiURL,
-    hooks: hooks,
+    hooks: new Hooks(),
 }
 
 const Duck = new Ducksios(config)

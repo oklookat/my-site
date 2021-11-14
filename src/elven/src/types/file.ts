@@ -1,12 +1,12 @@
-import type { exType } from '@/tools/Extensions'
+import type { TFileType } from '@/tools/Extensions'
 import type { TMeta } from './global'
 
-export interface TFilesData {
+export type TFilesData = {
     meta: TMeta
     data: Array<TFile>
 }
 
-export interface TFile {
+export type TFile = {
     id: string
     user_id: string
     hash: string
@@ -18,7 +18,7 @@ export interface TFile {
     created_at: string
     updated_at: string
     //
-    extensionType?: exType
+    extensionType?: TFileType
     sizeConverted?: string
     createdAtConverted?: string
 }

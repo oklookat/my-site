@@ -23,7 +23,7 @@
     document.removeEventListener("keydown", onEnter);
   });
 
-  function onEnter(event) {
+  function onEnter(event: KeyboardEvent) {
     // remove double-login when focused on 'log in' button (pressed enter by document event + pressed enter on log in)
     if (event.target === loginButton) {
       return;
@@ -61,12 +61,6 @@
 </div>
 
 <style lang="scss">
-  input {
-    height: 48px;
-    width: 264px;
-    box-shadow: 0 0 19px 0 rgba(34, 60, 80, 0.02);
-  }
-
   .login {
     display: flex;
     flex-direction: column;
@@ -81,6 +75,11 @@
       align-items: center;
       margin-top: 108px;
       gap: 14px;
+      > input {
+        height: 48px;
+        width: 264px;
+        box-shadow: 0 0 19px 0 rgba(34, 60, 80, 0.02);
+      }
     }
     &__send {
       border: 1px solid rgba(0, 0, 0, 0.1);

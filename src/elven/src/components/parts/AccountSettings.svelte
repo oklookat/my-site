@@ -69,7 +69,8 @@
     // hook before changing username
     function beforeUsername(): boolean {
         if (changer.newValue === userData.username) {
-            window.$elvenNotify.add("You already have this username.");
+            const message = "You already have this username."
+            window.$elvenNotify.add({message});
             return true;
         }
         return false;

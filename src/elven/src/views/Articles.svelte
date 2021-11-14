@@ -1,24 +1,18 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { push } from "svelte-spa-router";
-  import type {
-    TArticle,
-    TBy,
-    TParams,
-    TShow,
-    TStart,
-  } from "@/types/article";
-  import type { IMeta } from "@/types/global";
+  import type { TArticle, TBy, TParams, TShow, TStart } from "@/types/article";
+  import type { TMeta } from "@/types/global";
   import ArticleAdapter from "@/adapters/ArticleAdapter";
   import Overlay from "@/components/ui/Overlay.svelte";
   import Pagination from "@/components/ui/Pagination.svelte";
-  import ArticlesList from "@/components/parts/ArticlesList.svelte";
+  import Article from "@/components/parts/Article.svelte";
 
   let loaded = false;
   let toolsOverlay = false;
-  let selected: TArticle | null = null;
+  let selected: TArticle;
   let articles: Array<TArticle> = [];
-  let meta: IMeta | null = null;
+  let meta: TMeta;
   let params: TParams = {
     page: 1,
     show: "published",
@@ -180,7 +174,11 @@
   </div>
 
   {#if articles && articles.length > 0}
-    <ArticlesList {articles} on:selected={(e) => select(e.detail)} />
+    <div class="articles__list">
+      {#each articles as article (article.id)}
+        <Article {article} on:selected={(e) => select(e.detail)} />
+      {/each}
+    </div>
   {/if}
 
   {#if loaded && articles.length < 1}
@@ -268,6 +266,15 @@
       align-items: center;
       gap: 24px;
     }
+  }
+
+  .articles__list {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 42px;
+    gap: 12px;
   }
 
   .overlay {

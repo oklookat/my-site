@@ -1,7 +1,7 @@
-import type { IMeta } from "./global"
+import type { TMeta } from "./global"
 
 export type TData = {
-    meta: IMeta
+    meta: TMeta
     data: Array<TArticle>
 }
 

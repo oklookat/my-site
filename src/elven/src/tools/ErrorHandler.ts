@@ -5,7 +5,7 @@ export class AdapterError {
     public static handle(err: TError): string {
         const message = this.sort(err)
         if (window.$elvenNotify) {
-            window.$elvenNotify.add(message)
+            window.$elvenNotify.add({message})
         }
         return message
     }
@@ -52,7 +52,7 @@ export class AdapterError {
         if(err.type === "network") {
             return 'Network error.'
         }
-        console.log(err)
+        console.error(err)
         return 'Very unknown error.'
     }
 }
