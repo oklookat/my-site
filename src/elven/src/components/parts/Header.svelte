@@ -56,7 +56,6 @@
     color: var(--color-header-text);
     height: var(--header-height);
     width: 100%;
-    max-width: 975px;
     display: flex;
     align-items: center;
     justify-content: center;

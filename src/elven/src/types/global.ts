@@ -1,4 +1,4 @@
-import type ElvenPlayerPlugin from "@/plugins/ElvenPlayer/ElvenPlayerPlugin"
+import type { IElvenPlayer } from "@/plugins/ElvenPlayer/types"
 import type { IElvenNotify } from "@/plugins/ElvenNotify/types"
 import type { IElvenProgress } from "@/plugins/ElvenProgress/types"
 
@@ -10,7 +10,7 @@ export type TMeta = {
 
 declare global {
     interface Window {
-        $elvenPlayer: ElvenPlayerPlugin
+        $elvenPlayer: IElvenPlayer
         $elvenNotify: IElvenNotify
         $elvenProgress: IElvenProgress
     }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy, onMount } from "svelte";
-  import SliderLogic from "../logic/SliderLogic";
+  import SliderLogic from "./logic";
 
   const dispatch = createEventDispatcher();
 
@@ -85,58 +85,42 @@
   });
 </script>
 
-<div class="slider__container" bind:this={container}>
+<div class="slider" bind:this={container}>
   {#if ready}
-    <div class="slider__sliders">
-      <div class="slider__sl" style="width: {elementPercents}" />
-      <div class="slider__bubble" style="left: calc({elementPercents} - 3px)" />
-    </div>
+    <div class="slider__line" style="width: {elementPercents}" />
+    <div class="slider__bubble" style="left: calc({elementPercents} - 3px)" />
   {/if}
 </div>
 
-<style>
-  .slider__container {
-    width: 100%;
-    height: 100%;
-  }
-
-  .slider__sliders {
+<style lang="scss">
+  .slider {
     width: calc(100% - 3px);
     height: 100%;
+    box-sizing: border-box;
     position: relative;
     display: flex;
     align-items: center;
-  }
-
-  .slider__container,
-  .slider__sliders,
-  .slider__sl,
-  .slider__bubble {
     cursor: pointer;
-  }
-
-  .slider__sl,
-  .slider__bubble {
-    position: absolute;
-    background-color: #a097dc;
-  }
-
-  .slider__sl {
-    border-top-left-radius: 2px;
-    border-bottom-left-radius: 2px;
-    width: 0;
-    height: 100%;
-    top: auto;
-    bottom: 0;
-  }
-
-  .slider__bubble {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    box-sizing: border-box;
-    left: 0;
-    margin-left: -6px;
-    transition: width, height 100ms;
+    &__line,
+    &__bubble {
+      position: absolute;
+      background-color: #a097dc;
+    }
+    &__line {
+      border-top-left-radius: 2px;
+      border-bottom-left-radius: 2px;
+      top: auto;
+      bottom: 0;
+      width: 0;
+      height: 100%;
+    }
+    &__bubble {
+      transition: width, height 100ms;
+      border-radius: 50%;
+      left: 0;
+      margin-left: -6px;
+      width: 20px;
+      height: 20px;
+    }
   }
 </style>
