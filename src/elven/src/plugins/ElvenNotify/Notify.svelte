@@ -132,7 +132,7 @@
   <div class="notify__notifications">
     {#each notifications.map(execute) as notification (notification.id)}
       <div
-        class="notify__notification"
+        class="notification"
         on:click={() => deleteNotification(notification)}
         in:receive={{ key: notification.id }}
         out:send={{ key: notification.id }}
@@ -151,7 +151,7 @@
   </div>
 </div>
 
-<style>
+<style lang="scss">
   .notify {
     width: 100%;
     z-index: 9999;
@@ -159,73 +159,56 @@
     margin-bottom: 8px;
     position: fixed;
     overflow: hidden;
+    &__notifications {
+      width: 100%;
+      gap: 8px;
+      height: max-content;
+      display: flex;
+      flex-direction: column-reverse;
+      box-sizing: border-box;
+      position: relative;
+    }
   }
 
-  .notify__notifications {
-    width: 100%;
-    gap: 8px;
-    height: max-content;
-    display: flex;
-    flex-direction: column-reverse;
-    box-sizing: border-box;
-    position: relative;
-  }
-
-  .notify__notification {
+  .notification {
+    cursor: pointer;
+    border-radius: 6px;
+    color: white;
+    backdrop-filter: blur(15px) saturate(180%);
     width: 240px;
     min-height: 52px;
     border-radius: 6px;
-    cursor: pointer;
     align-self: center;
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: 1fr min-content;
-  }
-
-  .notification__message {
-    margin-top: 4px;
-    margin-left: 12px;
-    margin-right: 8px;
-  }
-
-  .notification__timer-wrapper {
-    width: 50%;
-    margin-bottom: 12px;
-    margin-top: 12px;
-    justify-self: center;
-  }
-
-  .notification__timer {
-    border-radius: 4px;
-    height: 4px;
-    transition: transform 120ms linear;
-    background-color: rgba(255, 255, 255, 0.8);
-  }
-
-  .notify__notification {
-    border-radius: 6px;
-    color: black;
-    backdrop-filter: blur(15px) saturate(180%);
-  }
-
-  .notify__notification > .notification__timer-wrapper > .notification__timer {
-    background-color: rgb(190, 190, 190);
-  }
-
-  @media (prefers-color-scheme: light) {
-    .notify__notification {
-      color: #fff;
+    &__message {
+      margin-top: 4px;
+      margin-left: 12px;
+      margin-right: 8px;
+    }
+    &__timer-wrapper {
+      width: 50%;
+      margin-bottom: 12px;
+      margin-top: 12px;
+      justify-self: center;
+    }
+    &__timer {
+      border-radius: 4px;
+      height: 4px;
+      transition: transform 120ms linear;
+      background-color: rgb(190, 190, 190);
+    }
+    @media (prefers-color-scheme: light) {
       background-color: rgb(130, 130, 130);
       border: 1px solid rgb(120, 120, 120);
     }
-  }
-  @media (prefers-color-scheme: dark) {
-    .notify__notification {
-      color: #fff;
+    @media (prefers-color-scheme: dark) {
       background-color: rgb(50, 50, 50);
       border: 1px solid rgb(60, 60, 60);
     }
   }
+
   @media screen and (min-width: 765px) {
     .notify {
       margin-right: 12px;
@@ -233,23 +216,21 @@
       width: 224px;
       right: 0;
       bottom: 0;
+      &__notifications {
+        height: max-content;
+        width: max-content;
+        flex-direction: column;
+      }
     }
 
-    .notify__notifications {
-      height: max-content;
-      width: max-content;
-      flex-direction: column;
-    }
-
-    .notify__notification {
+    .notification {
       position: relative;
       width: 214px;
       min-height: 52px;
-    }
-
-    .notification__timer-wrapper {
-      margin-bottom: 8px;
-      margin-top: 8px;
+      &__timer-wrapper {
+        margin-bottom: 8px;
+        margin-top: 8px;
+      }
     }
   }
 </style>

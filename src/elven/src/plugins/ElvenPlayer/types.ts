@@ -21,20 +21,7 @@ export type TPlaylist = {
     sources: TSources
 }
 
-export interface IState {
-    store: TState
-    set isPlaying(v: boolean)
-    set positionNum(v: number)
-    set positionPercents(v: number)
-    set positionPretty(v: string)
-    set bufferedPercents(v: number)
-    set durationNum(v: number)
-    set durationPretty(v: string)
-    set volumePercents(v: number)
-    set volumeNum(v: number)
-}
-export type TState = {
-    active: boolean
+export type TStore = {
     isPlaying: Writable<boolean>
     /** controls volume */
     volume: {
@@ -63,4 +50,17 @@ export type TState = {
             percents: Writable<number>
         }
     }
+}
+
+export interface IState {
+    store: TStore
+    set isPlaying(v: boolean)
+    set positionNum(v: number)
+    set positionPercents(v: number)
+    set positionPretty(v: string)
+    set bufferedPercents(v: number)
+    set durationNum(v: number)
+    set durationPretty(v: string)
+    set volumePercents(v: number)
+    set volumeNum(v: number)
 }

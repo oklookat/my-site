@@ -3,32 +3,30 @@
 
   const dispatch = createEventDispatcher();
 
-  let noScroll = false;
-  $: watchNoScroll(noScroll);
-  function watchNoScroll(value) {
-    switchScroll();
-  }
+  const setScroll = (v: boolean) => {
+    if (!v) {
+      dispatch("deactivated");
+    }
+    document.body.style.overflow = v ? "hidden" : null;
+  };
 
-  let container;
+  let container: HTMLDivElement;
   onMount(() => {
     document.body.appendChild(container);
-    noScroll = true;
+    setScroll(true);
   });
 
   onDestroy(() => {
-    document.body.style.overflow = null;
+    setScroll(false);
   });
 
-  function switchScroll() {
-    document.body.style.overflow = noScroll ? "hidden" : null;
-  }
-
-  function deactivate(event) {
-    if (event.which !== 1 && event.type !== "touchstart") {
+  function deactivate(e: MouseEvent | TouchEvent) {
+    const notLMB = e instanceof MouseEvent && e.button !== 0;
+    if (notLMB) {
+      // prevent decativate when not LMB clicked
       return;
     }
-    noScroll = false;
-    dispatch("deactivated");
+    setScroll(false);
   }
 </script>
 

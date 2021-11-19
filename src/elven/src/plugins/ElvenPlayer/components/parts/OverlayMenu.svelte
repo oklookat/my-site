@@ -5,50 +5,52 @@
     import PlaybackControls from "./PlaybackControls.svelte";
     import Progress from "../ui/Progress.svelte";
     import Slider from "../ui/slider/Slider.svelte";
+    import type { Unsubscriber } from "svelte/store";
 
     export let core: Core;
     export let active: boolean;
 
-    function onProgressSliderTriggered(percents: number) {
-        core.dom.currentTimePercents = percents;
-    }
+    const onProgressSliderTriggered = (perc: number) =>
+        (core.dom.currentTimePercents = perc);
+    const onVolumeSliderTriggered = (perc: number) =>
+        (core.dom.volumePercents = perc);
 
-    function onVolumeSliderTriggered(percents: number) {
-        core.dom.volumePercents = percents;
-    }
+    const unsubs: Unsubscriber[] = [];
 
-    // state
-    let bufferedPercents = 0;
-    const s1 = core.state.store.current.buffered.percents.subscribe((v) => {
+    let bufferedPercents: number;
+    const u1 = core.state.store.current.buffered.percents.subscribe((v) => {
         bufferedPercents = v;
     });
+    unsubs.push(u1);
 
-    let currentTimePretty = "00:00";
-    const s2 = core.state.store.current.position.pretty.subscribe((v) => {
+    let currentTimePretty: string;
+    const u2 = core.state.store.current.position.pretty.subscribe((v) => {
         currentTimePretty = v;
     });
+    unsubs.push(u2);
 
-    let currentTimePercents = 0;
-    const s3 = core.state.store.current.position.percents.subscribe((v) => {
+    let currentTimePercents: number;
+    const u3 = core.state.store.current.position.percents.subscribe((v) => {
         currentTimePercents = v;
     });
+    unsubs.push(u3);
 
-    let durationPretty = "00:00";
-    const s4 = core.state.store.current.duration.pretty.subscribe((v) => {
+    let durationPretty: string;
+    const u4 = core.state.store.current.duration.pretty.subscribe((v) => {
         durationPretty = v;
     });
+    unsubs.push(u4);
 
-    let volumePercents = 100;
-    const s5 = core.state.store.volume.percents.subscribe((v) => {
+    let volumePercents: number;
+    const u5 = core.state.store.volume.percents.subscribe((v) => {
         volumePercents = v;
     });
+    unsubs.push(u5);
 
     onDestroy(() => {
-        s1();
-        s2();
-        s3();
-        s4();
-        s5();
+        for (const unsub of unsubs) {
+            unsub();
+        }
     });
 </script>
 
@@ -63,7 +65,8 @@
                     <div class="slider__time">
                         <Slider
                             afterUp={true}
-                            on:slide={(e) => onProgressSliderTriggered(e.detail)}
+                            on:slide={(e) =>
+                                onProgressSliderTriggered(e.detail)}
                             bind:percents={currentTimePercents}
                         />
                     </div>
@@ -77,7 +80,7 @@
                     </div>
                 </div>
             </div>
-    
+
             <div class="slider__volume">
                 <Slider
                     percents={volumePercents}
@@ -85,7 +88,7 @@
                     on:slide={(e) => onVolumeSliderTriggered(e.detail)}
                 />
             </div>
-    
+
             <div class="playback">
                 <PlaybackControls {core} />
             </div>

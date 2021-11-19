@@ -1,10 +1,9 @@
 import { writable } from 'svelte/store';
-import type { IState, TState } from "../types";
+import type { IState, TStore } from "../types";
 
 export default class State implements IState {
 
-    public store: TState = {
-        active: false,
+    public store: TStore = {
         isPlaying: writable(false),
         volume: {
             num: writable(1.0),

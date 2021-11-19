@@ -1,95 +1,102 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy, onMount } from "svelte";
-  import SliderLogic from "./logic";
+  import Core from "./core";
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    /** on slider percents changed */
+    slide: number;
+    /** on slider mouse down changed */
+    mouseDown: boolean;
+  }>();
 
-  // dispatch event only after mouse up
+  /** dispatch percents event only after mouse up */
   export let afterUp: boolean = false;
-  // initial percents
-  export let percents = 0;
 
-  // used only for slider style
-  let elementPercents = "0%";
+  /** set percents */
+  export let percents: number = 0;
 
-  // slider container - used by logic class. Need for set events etc.
-  let container;
+  let container: HTMLDivElement;
+  let core: Core;
+  let mouseDown = false;
 
-  // main logic
-  let sl = new SliderLogic();
+  /** percents when user dragging slider */
+  let slidePercents = percents;
+  /** this will be displayed */
+  let finalPercents = percents;
+  /** set style on slider element */
+  const setFinalPercents = (perc: number) => {
+    finalPercents = perc;
+  };
 
-  // init
+  /** when we subscribing to store, callback immediately called. We don't need this. */
   let ready = false;
+  let unsub1;
+  let unsub2;
 
-  // set style on slider element
-  function calcStyles(percents: number) {
-    elementPercents = `${percents}%`;
-  }
-
-  let isMouseDown = false;
-  let slidePercents = 0;
-  // when user mouse down on slider
-  const s1 = sl.slider.isMouseDown.subscribe((v) => {
-    isMouseDown = v;
-    dispatcher();
-  });
-  // when user change percents by dragging a slider
-  const s2 = sl.slider.percents.subscribe((v) => {
-    slidePercents = v;
-    dispatcher();
-  });
-
-  // dispatch events
-  function dispatcher() {
-    const isMouseUp = !isMouseDown;
-    if (afterUp) {
-      // dispatch event only when mouse up after dragging
-      if (isMouseUp) {
-        dispatch("slide", slidePercents);
+  function subscribe() {
+    // when user mouse down on slider
+    unsub1 = core.state.store.isMouseDown.subscribe((v) => {
+      if (!ready) {
+        return;
       }
-    } else {
-      // dispatch event after dragging
-      dispatch("slide", slidePercents);
-    }
-    // set percents on element anyway
-    calcStyles(slidePercents);
+      mouseDown = v;
+      dispatcher("mouse");
+    });
+    // when user change percents by dragging a slider
+    unsub2 = core.state.store.percents.subscribe((v) => {
+      if (!ready) {
+        return;
+      }
+      slidePercents = v;
+      dispatcher("perc");
+    });
   }
 
-  // on slider percents changed by prop
-  $: watchPercents(percents);
-  function watchPercents(v) {
-    if (isMouseDown) {
-      // block change percents because now user drag slider
-      return;
-    }
-    calcStyles(percents);
+  function unsubscribe() {
+    unsub1();
+    unsub2();
   }
 
-  // init
   onMount(() => {
-    if (percents > 0) {
-      calcStyles(percents);
-    }
-    if (!container) {
-      return;
-    }
-    sl.init(container);
+    core = new Core(container);
+    subscribe()
     ready = true;
   });
 
-  // cleanup
   onDestroy(() => {
-    s1();
-    s2();
-    sl.destroy();
+    unsubscribe()
+    core.destroy();
   });
+
+  /** watch when percents prop changed */
+  $: watchPercents(percents);
+  function watchPercents(perc: number) {
+    if (mouseDown) {
+      // if user dragging slider, prevent change style by prop
+      return;
+    }
+    setFinalPercents(perc);
+  }
+
+  /** dispatch slide events */
+  function dispatcher(by: "mouse" | "perc") {
+    if (by === "mouse") {
+      dispatch("mouseDown", mouseDown);
+    }
+    if (afterUp && !mouseDown) {
+      // dispatch event only when mouse up after dragging
+      dispatch("slide", slidePercents);
+    } else if (!afterUp && mouseDown) {
+      // dispatch event after dragging
+      dispatch("slide", slidePercents);
+    }
+    setFinalPercents(slidePercents);
+  }
 </script>
 
 <div class="slider" bind:this={container}>
-  {#if ready}
-    <div class="slider__line" style="width: {elementPercents}" />
-    <div class="slider__bubble" style="left: calc({elementPercents} - 3px)" />
-  {/if}
+  <div class="slider__line" style="width: {finalPercents}%" />
+  <div class="slider__bubble" style="left: calc({finalPercents}% - 3px)" />
 </div>
 
 <style lang="scss">
