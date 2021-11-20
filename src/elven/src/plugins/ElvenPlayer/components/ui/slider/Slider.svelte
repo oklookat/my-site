@@ -5,8 +5,8 @@
   const dispatch = createEventDispatcher<{
     /** on slider percents changed */
     slide: number;
-    /** on slider mouse down changed */
-    mouseDown: boolean;
+    /** on slider mouse up (true) or down (false) */
+    mouse: boolean;
   }>();
 
   /** dispatch percents event only after mouse up */
@@ -81,7 +81,7 @@
   /** dispatch slide events */
   function dispatcher(by: "mouse" | "perc") {
     if (by === "mouse") {
-      dispatch("mouseDown", mouseDown);
+      dispatch("mouse", mouseDown);
     }
     if (afterUp && !mouseDown) {
       // dispatch event only when mouse up after dragging

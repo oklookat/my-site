@@ -1,17 +1,15 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy } from "svelte";
   import type { IElvenPlayer, TPlaylist, TSource } from "./types";
   import Core from "./core";
   import PlaybackControls from "./components/parts/PlaybackControls.svelte";
-  import OverlayMenu from "@/plugins/ElvenPlayer/components/parts/OverlayMenu.svelte";
+  import OverlayMenu from "./components/parts/OverlayMenu.svelte";
 
   export let isActive = false;
+
   let isOverlay = false;
 
-  let core: Core;
-  onMount(() => {
-    core = new Core();
-  });
+  let core = new Core();
 
   onDestroy(() => {
     core.destroy();

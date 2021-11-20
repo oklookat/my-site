@@ -1,25 +1,30 @@
+import type { IEvents, IState } from "../types";
 import Utils from "./utils";
-import type { IEvents, IState, TConvertSecondsMode } from "../types";
+import Logger from "./logger";
 
 
+/** updates playback state */
 export default class Events implements IEvents {
-    private state: IState
-    private next: () => void
 
-    constructor(state: IState, next: () => void) {
+    private state: IState
+
+    constructor(state: IState) {
         this.state = state
-        this.next = next
     }
 
     public onPlaying() {
-        this.state.isPlaying = true
+        this.state.playing = true
+        this.state.ended = false
     }
+
     public onPause() {
-        this.state.isPlaying = false
+        this.state.playing = false
+        this.state.ended = false
     }
+
     public onEnded() {
-        this.state.isPlaying = false
-        this.next()
+        this.state.playing = false
+        this.state.ended = true
     }
 
     public onTimeUpdate(e: Event) {
@@ -29,40 +34,42 @@ export default class Events implements IEvents {
         let duration = el.duration
         const badDuration = !duration || isNaN(duration) || duration === Infinity
         duration = badDuration ? 0 : duration
-        this.state.bufferedPercents = Utils.computeBuffered(currentTime, duration, buffered)
+        this.state.bufferedPercents = Utils.getBufferedPercents(currentTime, duration, buffered)
         this.state.durationNum = duration
-        this.state.durationPretty = Utils.convertSeconds(duration, 'auto')
+        this.state.durationPretty = Utils.getPretty(duration, 'auto')
         this.state.positionNum = currentTime
-        const mode: TConvertSecondsMode = duration < 3600 ? 'minutes' : 'hours'
-        this.state.positionPretty = Utils.convertSeconds(currentTime, mode)
-        this.state.positionPercents = Utils.computePercents(currentTime, duration)
+        this.state.positionPretty = Utils.getPositionPretty(currentTime, duration)
+        this.state.positionPercents = Utils.getPercents(currentTime, duration)
     }
 
-    public onError(event) {
+    public onError(e: Event) {
+        // TODO: recover player after error
         // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/networkState
-        switch (event.target.error.code) {
-            case event.target.error.MEDIA_ERR_ABORTED:
-                console.error('elvenPlayer: aborted')
+        const valid = e.target && e.target instanceof HTMLMediaElement
+        if (!valid) {
+            Logger.error('unknown error, invalid event target')
+            return
+        }
+        const target = e.target as HTMLMediaElement
+        const err = target.error
+        const msg = err.message ? ` ${err.message}` : ''
+        switch (err.code) {
+            case MediaError.MEDIA_ERR_ABORTED:
+                Logger.error(`aborted.${msg}`)
                 break
-            case event.target.error.MEDIA_ERR_NETWORK:
-                console.error('elvenPlayer: network error')
+            case MediaError.MEDIA_ERR_NETWORK:
+                Logger.error(`network error.${msg}`)
                 break
-            case event.target.error.MEDIA_ERR_DECODE:
-                console.error('elvenPlayer: decode error. Maybe audio damaged or something?')
+            case MediaError.MEDIA_ERR_DECODE:
+                Logger.error(`decode error. Maybe audio damaged or something?${msg}`)
                 break
-            case event.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                // if (this.player.element.src === 'https://null/') {
-                //     return
-                // }
-                if (event.target.error && event.target.error.message) {
-                    console.error(`elvenPlayer: not supported. Error: ${event.target.error.message}`)
-                } else {
-                    console.error(`elvenPlayer: not supported.`)
-                }
+            case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                Logger.error(`not supported.${msg}`)
                 break
             default:
-                console.error('elvenPlayer: unknown error')
+                Logger.error(`unknown error.${msg}`)
                 break
         }
     }
+
 }

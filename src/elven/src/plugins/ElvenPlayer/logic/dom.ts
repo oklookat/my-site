@@ -1,27 +1,100 @@
+import Utils from "./utils"
 import type { IEvents } from "../types"
 
-/** controls one audio element */
+
+/** controls audio element and adds helpful things */
 export default class DOM {
 
     private element: HTMLAudioElement
-    private _source: string
     private events: IEvents
 
-    constructor(source: string, events: IEvents, volume?: number) {
-        this.source = source
-        this.element = new Audio(this.source)
-        this.element.volume = volume ? volume : 1.0
+    constructor(events: IEvents, source?: string, volume?: number) {
+        this.element = new Audio(source)
+        this.volume = volume ? volume : 1.0
         this.events = events
         this.manageEvents(true)
     }
 
-    /** destroy audio element */
-    public destroy() {
-        if (!this.element || !this.events) {
-            return
-        }
-        this.manageEvents(false)
-        this.element = null
+    /** get source */
+    public get source(): string {
+        return this.element.currentSrc
+    }
+
+    /** set source */
+    public set source(src: string) {
+        this.element.src = src
+    }
+
+    /** get current position of audio in seconds */
+    public get currentTime(): number {
+        return this.element.currentTime
+    }
+
+    /** set current position of audio in seconds */
+    public set currentTime(v: number) {
+        const dur = this.duration
+        // set max or min time if v bigger or lower then duration
+        v = v > dur ? dur : v < 0 ? 0 : v
+        this.element.currentTime = v
+    }
+
+    /** get current time percents. Where 100 - audio ends. */
+    public get currentTimePercents(): number {
+        return Utils.getPercents(this.currentTime, this.duration)
+    }
+
+    /** set current time by percents. Where 100 - audio ends. */
+    public set currentTimePercents(perc: number) {
+        const dur = this.duration
+        perc = Utils.percentsToCurrentTime(perc, dur)
+        this.currentTime = perc
+    }
+
+    /** get volume (0 - 1) */
+    public get volume(): number {
+        let vol = this.element.volume
+        vol = vol > 1 ? 1.0 : vol < 0 ? 0 : vol
+        return this.element.volume
+    }
+
+    /** set volume (0 - 1) */
+    public set volume(vol: number) {
+        // if volume > 1 or < 0 set min or max volume
+        vol = vol > 1 ? 1.0 : vol < 0 ? 0 : vol
+        this.element.volume = vol
+    }
+
+    /** set volume in percents (0 - 100) */
+    public set volumePercents(perc: number) {
+        this.volume = perc / 100
+    }
+
+    /** get volume in percents (0 - 100) */
+    public get volumePercents(): number {
+        return this.volume * 100
+    }
+
+    /** get audio duration in seconds */
+    public get duration(): number {
+        return this.element.duration
+    }
+
+    /** get audio buffered */
+    public get buffered(): TimeRanges {
+        return this.element.buffered
+    }
+
+    /** convert percents position to seconds */
+    public getCurrentTimeByPercents(perc: number): number {
+        const dur = this.duration
+        return Utils.percentsToCurrentTime(perc, dur)
+    }
+
+    /** convert percents position to string like '01:11' */
+    public getCurrentTimePrettyByPercents(perc: number): string {
+        const dur = this.duration
+        const time = this.getCurrentTimeByPercents(perc)
+        return Utils.getPositionPretty(time, dur)
     }
 
     /** add (true) / remove (false) events */
@@ -34,13 +107,22 @@ export default class DOM {
         this.element[action]('error', this.events.onError.bind(this.events))
     }
 
+    /** destroy audio element and events */
+    public destroy() {
+        if (!this.element || !this.events) {
+            return
+        }
+        this.manageEvents(false)
+        this.stop()
+        this.element = null
+    }
+
     /** play audio */
     public async play(): Promise<void> {
         try {
             await this.element.play()
             return Promise.resolve()
         } catch (err) {
-            return Promise.reject(err)
         }
     }
 
@@ -52,71 +134,6 @@ export default class DOM {
     /** stop audio */
     public stop() {
         this.element.pause()
-        this.element.currentTime = 0
+        this.currentTime = 0
     }
-
-    public get source(): string {
-        return this._source
-    }
-
-    public set source(s: string) {
-        if (this.element) {
-            this.element.src = s
-        }
-        this._source = s
-    }
-
-    /** get current position of audio in seconds */
-    public get currentTime(): number {
-        return this.element.currentTime
-    }
-
-    /** set current position of audio in seconds */
-    public set currentTime(v: number) {
-        this.element.currentTime = v
-    }
-
-    /** set current time by percents. Where 100 - audio ends. */
-    public set currentTimePercents(percents: number) {
-        const total = this.element.duration
-        const percToTime = Math.floor((total / 100) * percents)
-        // set maximum time when percents > total time, otherwise set converted time
-        this.element.currentTime = percToTime > total ? total : percToTime
-    }
-
-    /** get volume in float */
-    public get volume(): number {
-        return this.element.volume
-    }
-
-    /** set volume in float */
-    public set volume(v: number) {
-        this.element.volume = v
-    }
-
-    /** set volume in percents */
-    public set volumePercents(percents: number) {
-        let vol = (percents / 100)
-        // if volume > 1 or < 0 set min or max volume
-        vol = vol > 1.0 ? 1.0 : vol < 0 ? 0 : vol
-        this.element.volume = vol
-    }
-
-    /** get volume in percents */
-    public get volumePercents(): number {
-        let vol = this.element.volume * 100
-        vol = vol > 100 ? 100 : vol < 0 ? 0 : vol
-        return vol
-    }
-
-    /** get total time of audio in seconds */
-    public get duration(): number {
-        return this.element.duration
-    }
-
-    /** get audio buffered TimeRanges */
-    public get buffered(): TimeRanges {
-        return this.element.buffered
-    }
-
 }

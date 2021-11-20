@@ -1,15 +1,18 @@
 import { writable } from 'svelte/store';
 import type { IState, TStore } from "../types";
 
+
+/** manage audio player store */
 export default class State implements IState {
 
     public store: TStore = {
-        isPlaying: writable(false),
+        playing: writable(false),
         volume: {
             num: writable(1.0),
             percents: writable(100)
         },
         current: {
+            ended: writable(false),
             duration: {
                 num: writable(0),
                 pretty: writable('00:00')
@@ -25,8 +28,12 @@ export default class State implements IState {
         }
     }
 
-    public set isPlaying(v: boolean) {
-        this.store.isPlaying.set(v)
+    public set playing(v: boolean) {
+        this.store.playing.set(v)
+    }
+
+    public set ended(v: boolean) {
+        this.store.current.ended.set(v)
     }
 
     public set positionNum(v: number) {

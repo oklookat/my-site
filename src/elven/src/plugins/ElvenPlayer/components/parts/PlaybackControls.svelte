@@ -4,7 +4,7 @@
   export let core: Core;
 
   let isPlaying = false;
-  core.state.store.isPlaying.subscribe((v) => {
+  core.state.store.playing.subscribe((v) => {
     isPlaying = v;
   });
 
