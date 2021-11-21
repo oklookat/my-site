@@ -1,17 +1,112 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import type { IElvenPlayer, TPlaylist, TSource } from "./types";
+  import type {
+    IElvenPlayer,
+    TComponentStore,
+    TPlaylist,
+    TSource,
+  } from "./types";
   import Core from "./core";
   import PlaybackControls from "./components/parts/PlaybackControls.svelte";
   import OverlayMenu from "./components/parts/OverlayMenu.svelte";
+  import type { Unsubscriber } from "svelte/store";
 
-  export let isActive = false;
+  /** is player active */
+  export let active = false;
 
   let isOverlay = false;
 
   let core = new Core();
+  const unsubs: Unsubscriber[] = [];
+
+  /** player state */
+  let store: TComponentStore = {
+    playing: false,
+    volume: {
+      percents: 0,
+    },
+    current: {
+      buffered: {
+        percents: 0,
+      },
+      time: {
+        draggingNow: false,
+        percents: 0,
+        pretty: "00:00",
+      },
+      duration: {
+        pretty: "00:00",
+      },
+    },
+  };
+
+  /** stores */
+
+  const unsub1 = core.state.store.playing.subscribe((v) => {
+    store.playing = v;
+  });
+
+  const unsub2 = core.state.store.current.buffered.percents.subscribe((v) => {
+    store.current.buffered.percents = v;
+  });
+
+  const unsub3 = core.state.store.current.time.percents.subscribe((v) => {
+    store.current.time.percents = v;
+  });
+
+  const unsub4 = core.state.store.current.time.pretty.subscribe((v) => {
+    // not setting pretty if user dragging time slider now (time preview)
+    if (store.current.time.draggingNow) {
+      return;
+    }
+    store.current.time.pretty = v;
+  });
+
+  const unsub5 = core.state.store.current.duration.pretty.subscribe((v) => {
+    store.current.duration.pretty = v;
+  });
+
+  const unsub6 = core.state.store.volume.percents.subscribe((v) => {
+    store.volume.percents = v;
+  });
+
+  unsubs.push(unsub1, unsub2, unsub3, unsub4, unsub5, unsub6);
+
+  /** events */
+
+  function onPlay() {
+    core.play();
+  }
+
+  function onPause() {
+    core.pause();
+  }
+
+  function onNext() {
+    core.next();
+  }
+
+  function onPrev() {
+    core.prev();
+  }
+
+  function setVolumePercents(perc: number) {
+    core.dom.volumePercents = perc;
+  }
+
+  function setCurrentTimePercents(perc: number) {
+    core.dom.currentTimePercents = perc;
+  }
+
+  function setCurrentTimePreview(perc: number) {
+    store.current.time.pretty =
+      core.dom.convertPercentsToCurrentTimePretty(perc);
+  }
 
   onDestroy(() => {
+    for (const unsub of unsubs) {
+      unsub();
+    }
     core.destroy();
   });
 
@@ -27,13 +122,14 @@
     public async play(url: string) {
       this.setPlaylist({ position: 0, sources: [url] });
       await core.play();
-      isActive = true;
+      active = true;
     }
   }
+
   window.$elvenPlayer = new Plugin();
 </script>
 
-{#if isActive}
+{#if active}
   <div class="player">
     <div class="player__show">
       <svg
@@ -48,14 +144,20 @@
     </div>
 
     <div class="player__controls" on:click|stopPropagation>
-      <PlaybackControls {core} />
+      <PlaybackControls
+        bind:isPlaying={store.playing}
+        on:play={() => onPlay()}
+        on:pause={() => onPause()}
+        on:next={() => onNext()}
+        on:prev={() => onPrev()}
+      />
     </div>
 
     <div class="player__close">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 255.07 295.91"
-        on:click={() => (isActive = false)}
+        on:click={() => (active = false)}
       >
         <path
           d="M135,390.18h0a33.69,33.69,0,0,0,48-4.29L369.93,159.34a35.1,35.1,0,0,0-4.19-48.86h0a33.69,33.69,0,0,0-48,4.29L130.83,341.33A35.09,35.09,0,0,0,135,390.18Z"
@@ -69,7 +171,22 @@
     </div>
   </div>
 
-  <OverlayMenu bind:core bind:active={isOverlay} />
+  <OverlayMenu
+    bind:store
+    bind:active={isOverlay}
+    on:volumeChanged={(e) => setVolumePercents(e.detail)}
+    on:currentTimeChanged={(e) => setCurrentTimePercents(e.detail)}
+    on:currentTimePreviewChanged={(e) => setCurrentTimePreview(e.detail)}
+  >
+    <PlaybackControls
+      slot="playbackControls"
+      bind:isPlaying={store.playing}
+      on:play={() => onPlay()}
+      on:pause={() => onPause()}
+      on:next={() => onNext()}
+      on:prev={() => onPrev()}
+    />
+  </OverlayMenu>
 {/if}
 
 <style lang="scss">

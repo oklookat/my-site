@@ -1,27 +1,29 @@
 <script lang="ts">
-  import type Core from "../../core";
+  import { createEventDispatcher } from "svelte";
 
-  export let core: Core;
+  export let isPlaying: boolean = false;
 
-  let isPlaying = false;
-  core.state.store.playing.subscribe((v) => {
-    isPlaying = v;
-  });
-
-  function next() {
-    core.next();
-  }
-
-  function prev() {
-    core.prev();
-  }
+  const dispatch = createEventDispatcher<{
+    play: null;
+    pause: null;
+    next: null;
+    prev: null;
+  }>();
 
   function play() {
-    core.play();
+    dispatch("play");
   }
 
   function pause() {
-    core.pause();
+    dispatch("pause");
+  }
+
+  function next() {
+    dispatch("next");
+  }
+
+  function prev() {
+    dispatch("prev");
   }
 </script>
 

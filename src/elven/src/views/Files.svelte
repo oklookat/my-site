@@ -113,8 +113,8 @@
     }
   }
 
-  function playAudio(path: string) {
-    window.$elvenPlayer.play(path);
+  function playAudio(url: URL) {
+    window.$elvenPlayer.play(url.href);
   }
 </script>
 
@@ -158,7 +158,7 @@
           {#if selected.extensionType === "audio"}
             <div
               class="overlay__item file__play"
-              on:click={() => playAudio(selected.path)}
+              on:click={() => playAudio(selected.pathConverted)}
             >
               play
             </div>

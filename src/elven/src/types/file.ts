@@ -17,8 +17,9 @@ export type TFile = {
     size: number
     created_at: string
     updated_at: string
-    //
-    extensionType?: TFileType
+    // not in model
+    pathConverted?: URL
     sizeConverted?: string
     createdAtConverted?: string
+    extensionType?: TFileType
 }

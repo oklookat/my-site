@@ -17,7 +17,7 @@ export default class State implements IState {
                 num: writable(0),
                 pretty: writable('00:00')
             },
-            position: {
+            time: {
                 num: writable(0),
                 pretty: writable('00:00'),
                 percents: writable(0)
@@ -36,18 +36,6 @@ export default class State implements IState {
         this.store.current.ended.set(v)
     }
 
-    public set positionNum(v: number) {
-        this.store.current.position.num.set(v)
-    }
-
-    public set positionPercents(v: number) {
-        this.store.current.position.percents.set(v)
-    }
-
-    public set positionPretty(v: string) {
-        this.store.current.position.pretty.set(v)
-    }
-
     public set bufferedPercents(v: number) {
         this.store.current.buffered.percents.set(v)
     }
@@ -58,6 +46,18 @@ export default class State implements IState {
 
     public set durationPretty(v: string) {
         this.store.current.duration.pretty.set(v)
+    }
+
+    public set currentTimeNum(v: number) {
+        this.store.current.time.num.set(v)
+    }
+
+    public set currentTimePercents(v: number) {
+        this.store.current.time.percents.set(v)
+    }
+
+    public set currentTimePretty(v: string) {
+        this.store.current.time.pretty.set(v)
     }
 
     public set volumePercents(v: number) {

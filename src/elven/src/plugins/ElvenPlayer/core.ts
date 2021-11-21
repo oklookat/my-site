@@ -33,7 +33,10 @@ export default class Core {
             return
         }
         this._playlist = playlist
-        const index = sources[playlist.position] ? playlist.position : 0
+        let index = 0
+        if (sources[playlist.position]) {
+            index = playlist.position
+        }
         this.dom.source = sources[index]
     }
 

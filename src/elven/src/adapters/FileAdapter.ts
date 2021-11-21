@@ -20,7 +20,7 @@ export default class FileAdapter {
             const formData = new FormData()
             formData.append('file', files[file])
             try {
-                await Duck.POST({ url: 'files', body: formData})
+                await Duck.POST({ url: 'files', body: formData })
             } catch (err) {
             }
         }

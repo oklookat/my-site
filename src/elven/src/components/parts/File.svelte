@@ -19,12 +19,23 @@
         dispatch("selected", file);
     }
 
-    // convert file path, extension etc
+    /** convert file path, extension etc */
+    // TODO: split converter functions(?)
     function converter(file: TFile): TFile {
-        file.path = `${Env.getUploads()}/${file.path}`;
-        file.extensionType = Extensions.getType(file.extension);
-        file.sizeConverted = Sizes.convert(file.size);
-        file.createdAtConverted = Dates.convert(file.created_at);
+        let isNeedPath = !(file.pathConverted instanceof URL);
+        if (isNeedPath) {
+            const path = `${Env.getUploads()}/${file.path}`;
+            file.pathConverted = new URL(path);
+        }
+        if (!file.extensionType) {
+            file.extensionType = Extensions.getType(file.extension);
+        }
+        if (!file.sizeConverted) {
+            file.sizeConverted = Sizes.convert(file.size);
+        }
+        if (!file.createdAtConverted) {
+            file.createdAtConverted = Dates.convert(file.created_at);
+        }
         return file;
     }
 </script>
@@ -38,11 +49,11 @@
     <div class="file__main">
         {#if file.extensionType === "image"}
             <div class="file__item file__preview" on:click|stopPropagation>
-                <img src={file.path} alt="" />
+                <img src={file.pathConverted.href} alt="" />
             </div>
         {:else if file.extensionType === "video"}
             <div class="file__item file__preview" on:click|stopPropagation>
-                <video controls src={file.path}>
+                <video controls src={file.pathConverted.href}>
                     <track default kind="captions" srclang="en" src="" />
                 </video>
             </div>

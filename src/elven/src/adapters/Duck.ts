@@ -8,11 +8,9 @@ const apiURL = Env.getAPI()
 
 class Hooks implements IHooks {
     onRequest() {
-        console.log('on request hooked')
         window.$elvenProgress.startBasic()
     }
     onResponse() {
-        console.log('on response hooked')
         window.$elvenProgress.finishBasic()
         window.$elvenProgress.resetPercents()
     }
@@ -22,7 +20,6 @@ class Hooks implements IHooks {
         AdapterError.handle(err)
     }
     onUploadProgress(e) {
-        console.log('upload progress hooked')
         if (e.lengthComputable) {
             const percents = (e.loaded / e.total) * 100
             window.$elvenProgress.setPercents(percents)
@@ -33,7 +30,6 @@ class Hooks implements IHooks {
         }
     }
     onUploaded() {
-        console.log('uploaded hooked')
         window.$elvenProgress.finishBasic()
         window.$elvenProgress.resetPercents()
     }

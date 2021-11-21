@@ -37,33 +37,60 @@ export type TPlaylist = {
 export type TStore = {
     /** is audio playing now */
     playing: Writable<boolean>
-    /** controls volume */
     volume: {
-        /** in float (1.0) */
+        /** in float */
         num: Writable<number>,
-        /** in percents (100) */
+        /** in percents */
         percents: Writable<number>
     }
+    /** current playing */
     current: {
         /** is audio ended */
         ended: Writable<boolean>
-        duration: {
-            /** total time of audio in seconds */
-            num: Writable<number>
-            /** total time of audio like '04:23' */
-            pretty: Writable<string>
-        }
-        position: {
-            /** current time of audio in seconds */
-            num: Writable<number>
-            /** current time of audio like '01:23' */
-            pretty: Writable<string>
-            /** percents of audio reached */
-            percents: Writable<number>
-        }
+        /** buffered */
         buffered: {
-            /** percents of buffered audio */
+            /** in percents */
             percents: Writable<number>
+        }
+        /** total time */
+        duration: {
+            /** in seconds */
+            num: Writable<number>
+            /** in string like '04:20' */
+            pretty: Writable<string>
+        }
+        /** current time */
+        time: {
+            /** in seconds */
+            num: Writable<number>
+            /** in percents */
+            percents: Writable<number>
+            /** in string '01:37' */
+            pretty: Writable<string>
+        }
+    }
+}
+
+/** local copy of TStore (almost), 
+ * that updating by subscription or by external changes. 
+ * Used in component */
+export type TComponentStore = {
+    playing: boolean
+    volume: {
+        percents: number
+    }
+    current: {
+        buffered: {
+            percents: number
+        }
+        time: {
+            /** is user dragging time slider */
+            draggingNow: boolean
+            percents: number
+            pretty: string
+        }
+        duration: {
+            pretty: string
         }
     }
 }
@@ -73,12 +100,16 @@ export interface IState {
     store: TStore
     set playing(v: boolean)
     set ended(v: boolean)
-    set positionNum(v: number)
-    set positionPercents(v: number)
-    set positionPretty(v: string)
+
     set bufferedPercents(v: number)
+
     set durationNum(v: number)
     set durationPretty(v: string)
+
+    set currentTimeNum(v: number)
+    set currentTimePercents(v: number)
+    set currentTimePretty(v: string)
+
     set volumePercents(v: number)
     set volumeNum(v: number)
 }

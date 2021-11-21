@@ -37,13 +37,12 @@ export default class Events implements IEvents {
         this.state.bufferedPercents = Utils.getBufferedPercents(currentTime, duration, buffered)
         this.state.durationNum = duration
         this.state.durationPretty = Utils.getPretty(duration, 'auto')
-        this.state.positionNum = currentTime
-        this.state.positionPretty = Utils.getPositionPretty(currentTime, duration)
-        this.state.positionPercents = Utils.getPercents(currentTime, duration)
+        this.state.currentTimeNum = currentTime
+        this.state.currentTimePretty = Utils.convertCurrentTimePretty(currentTime, duration)
+        this.state.currentTimePercents = Utils.getPercents(currentTime, duration)
     }
 
     public onError(e: Event) {
-        // TODO: recover player after error
         // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/networkState
         const valid = e.target && e.target instanceof HTMLMediaElement
         if (!valid) {

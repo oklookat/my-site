@@ -27,7 +27,6 @@ export function passwordValidate(password: string): boolean {
 	}
 	const reg1 = new RegExp(`^[a-zA-Z0-9\-+~"'\x60(){\[}|:;,.!=@#$%^&?№*\\\\/<>]*$`)
 	const alphanumWithSymbols = password.search(reg1)
-	console.log(alphanumWithSymbols)
 	const isValid = alphanumWithSymbols !== -1
 	return isValid
 }

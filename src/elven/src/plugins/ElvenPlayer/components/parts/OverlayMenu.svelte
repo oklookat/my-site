@@ -1,89 +1,42 @@
 <script lang="ts">
-    import { onDestroy } from "svelte";
-    import type Core from "../../core";
     import Overlay from "../ui/Overlay.svelte";
     import PlaybackControls from "./PlaybackControls.svelte";
     import Progress from "../ui/Progress.svelte";
     import Slider from "../ui/slider/Slider.svelte";
-    import type { Unsubscriber } from "svelte/store";
     import TimeSlider from "./TimeSlider.svelte";
+    import { createEventDispatcher } from "svelte";
+    import type { TComponentStore } from "@/plugins/ElvenPlayer/types";
 
-    export let core: Core;
     export let active: boolean;
 
+    export let store: TComponentStore;
+
+    const dispatch = createEventDispatcher<{
+        /** in percents */
+        volumeChanged: number;
+        /** in percents */
+        currentTimeChanged: number;
+        /** when user drag time slider. In percents */
+        currentTimePreviewChanged: number;
+    }>();
+
     /** current player state */
-    const state = {
-        volume: {
-            percents: 0,
-        },
-        current: {
-            buffered: {
-                percents: 0,
-            },
-            position: {
-                draggingNow: false,
-                percents: 0,
-                pretty: "00:00",
-            },
-            duration: {
-                pretty: "00:00",
-            },
-        },
-    };
-
-    const unsubs: Unsubscriber[] = [];
-
-    const u1 = core.state.store.current.buffered.percents.subscribe((v) => {
-        state.current.buffered.percents = v;
-    });
-    unsubs.push(u1);
-
-    const u2 = core.state.store.current.position.percents.subscribe((v) => {
-        state.current.position.percents = v;
-    });
-    unsubs.push(u2);
-
-    const u3 = core.state.store.current.position.pretty.subscribe((v) => {
-        // not setting pretty if user dragging time slider now (time preview)
-        if (state.current.position.draggingNow) {
-            return;
-        }
-        state.current.position.pretty = v;
-    });
-    unsubs.push(u3);
-
-    const u4 = core.state.store.current.duration.pretty.subscribe((v) => {
-        state.current.duration.pretty = v;
-    });
-    unsubs.push(u4);
-
-    const u5 = core.state.store.volume.percents.subscribe((v) => {
-        state.volume.percents = v;
-    });
-    unsubs.push(u5);
 
     function onVolumeChanged(perc: number) {
-        core.dom.volumePercents = perc;
+        dispatch("volumeChanged", perc);
     }
 
-    function setPositionPercents(perc: number) {
-        core.dom.currentTimePercents = perc;
+    function onCurrentTimeChanged(perc: number) {
+        dispatch("currentTimeChanged", perc);
     }
 
-    function setPositionPreview(perc: number) {
-        state.current.position.pretty =
-            core.dom.getCurrentTimePrettyByPercents(perc);
+    function onCurrentTimePreviewChanged(perc: number) {
+        dispatch("currentTimePreviewChanged", perc);
     }
 
-    function setPositionDraggingNow(v: boolean) {
-        state.current.position.draggingNow = v;
+    function setCurrentTimeDraggingNow(v: boolean) {
+        store.current.time.draggingNow = v;
     }
-
-    onDestroy(() => {
-        for (const unsub of unsubs) {
-            unsub();
-        }
-    });
 </script>
 
 {#if active}
@@ -92,42 +45,40 @@
             <div class="current">
                 <div class="current__sliders">
                     <div class="progress__buffered">
-                        <Progress
-                            bind:percents={state.current.buffered.percents}
-                        />
+                        <Progress bind:percents={store.current.buffered.percents} />
                     </div>
                     <div class="slider__time">
                         <TimeSlider
-                            positionPercents={state.current.position.percents}
-                            on:positionSet={(e) =>
-                                setPositionPercents(e.detail)}
-                            on:positionPreview={(e) =>
-                                setPositionPreview(e.detail)}
+                            positionPercents={store.current.time.percents}
                             on:draggingNow={(e) =>
-                                setPositionDraggingNow(e.detail)}
+                                setCurrentTimeDraggingNow(e.detail)}
+                            on:currentTimeChanged={(e) =>
+                                onCurrentTimeChanged(e.detail)}
+                            on:currentTimePreview={(e) =>
+                                onCurrentTimePreviewChanged(e.detail)}
                         />
                     </div>
                 </div>
                 <div class="current__info">
                     <div class="current__position">
-                        {state.current.position.pretty}
+                        {store.current.time.pretty}
                     </div>
                     <div class="current__total">
-                        {state.current.duration.pretty}
+                        {store.current.duration.pretty}
                     </div>
                 </div>
             </div>
 
             <div class="slider__volume">
                 <Slider
-                    percents={state.volume.percents}
+                    percents={store.volume.percents}
                     afterUp={false}
                     on:slide={(e) => onVolumeChanged(e.detail)}
                 />
             </div>
 
             <div class="playback">
-                <PlaybackControls {core} />
+                <slot name="playbackControls"></slot>
             </div>
         </div>
     </Overlay>

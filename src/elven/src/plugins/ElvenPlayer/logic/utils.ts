@@ -1,3 +1,4 @@
+import Logger from "./logger"
 import type { TConvertSecondsMode } from "../types"
 
 export default class Utils {
@@ -6,7 +7,11 @@ export default class Utils {
     public static getPercents(value: number, total: number): number {
         let percents = (value / total) * 100
         percents = Math.round(percents)
-        percents = percents > 100 ? 100 : percents < 0 ? 0 : percents
+        if (percents > 100) {
+            percents = 100
+        } else if (percents < 0) {
+            percents = 0
+        }
         return percents
     }
 
@@ -29,31 +34,41 @@ export default class Utils {
                 sub = modes.minutes
                 break
         }
-        return new Date(seconds * 1000).toISOString().substr(sub[0], sub[1])
+        let pretty = '00:00'
+        try {
+            pretty = new Date(seconds * 1000).toISOString().substr(sub[0], sub[1])
+        } catch (err) {
+            Logger.warn('getPretty(): invalid value')
+        }
+        return pretty
     }
 
     /** get buffered percents */
     public static getBufferedPercents(currentTime: number, duration: number, buffered: TimeRanges): number {
-        if (duration > 0) {
-            for (let i = 0; i < buffered.length; i++) {
-                const len = buffered.length - 1 - i
-                if (buffered.start(len) < currentTime) {
-                    const perc = this.getPercents(buffered.end(len), duration)
-                    return Math.round(perc)
-                }
+        if (duration < 0) {
+            return 0
+        }
+        for (let i = 0; i < buffered.length; i++) {
+            const len = buffered.length - 1 - i
+            if (buffered.start(len) > currentTime) {
+                continue
             }
+            const perc = this.getPercents(buffered.end(len), duration)
+            return Math.round(perc)
         }
         return 0
     }
 
-    /** get current position like '01:23' */
-    public static getPositionPretty(currentTime: number, duration: number): string {
+    /** get current time like '01:23' or '01:23:23' by seconds and duration seconds */
+    public static convertCurrentTimePretty(currentTime: number, duration: number): string {
         const mode: TConvertSecondsMode = duration < 3600 ? 'minutes' : 'hours'
         return this.getPretty(currentTime, mode)
     }
 
-    /** convert percents to position in seconds */
-    public static percentsToCurrentTime(perc: number, duration: number): number {
-        return Math.round((duration / 100) * perc)
+    /** convert current time percents to seconds position by duration */
+    public static convertPercentsToCurrentTime(perc: number, duration: number): number {
+        const sec = (duration / 100) * perc
+        return Math.round(sec)
     }
+
 }

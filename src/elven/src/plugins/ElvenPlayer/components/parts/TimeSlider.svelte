@@ -6,9 +6,9 @@
         /** when user dragging slider or not */
         draggingNow: boolean;
         /** when user dragging slider returns percents */
-        positionPreview: number;
+        currentTimePreview: number;
         /** after dragging slider returns percents */
-        positionSet: number;
+        currentTimeChanged: number;
     }>();
 
     /** is user currently dragging slider */
@@ -23,12 +23,12 @@
     function onSlide(perc: number) {
         // if mouse up after slide time, we set audio position by percents
         if (!draggingNow) {
-            dispatch("positionSet", perc);
+            dispatch("currentTimeChanged", perc);
             return;
         }
         // if mouse down, we write time percents to buff, and calculate pretty preview
         tempPositionPercents = perc;
-        dispatch("positionPreview", perc);
+        dispatch("currentTimePreview", perc);
     }
 
     function onMouse(v: boolean) {
@@ -36,7 +36,7 @@
         dispatch("draggingNow", draggingNow);
         // if not dragging set position
         if (!draggingNow) {
-            dispatch("positionSet", tempPositionPercents);
+            dispatch("currentTimeChanged", tempPositionPercents);
         }
     }
 </script>
@@ -47,6 +47,3 @@
     bind:percents={positionPercents}
     on:mouse={(e) => onMouse(e.detail)}
 />
-
-<style lang="scss">
-</style>
