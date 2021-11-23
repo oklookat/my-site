@@ -114,7 +114,8 @@
   }
 
   function playAudio(url: URL) {
-    window.$elvenPlayer.play(url.href);
+    window.$elvenPlayer.playlist = {position: 0, sources: [url.href]}
+    window.$elvenPlayer.play()
   }
 </script>
 

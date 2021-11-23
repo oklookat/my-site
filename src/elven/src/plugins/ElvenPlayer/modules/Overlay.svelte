@@ -11,6 +11,7 @@
   };
 
   let container: HTMLDivElement;
+
   onMount(() => {
     document.body.appendChild(container);
     setScroll(true);

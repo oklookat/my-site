@@ -1,11 +1,10 @@
 <script lang="ts">
-    import Overlay from "../ui/Overlay.svelte";
-    import PlaybackControls from "./PlaybackControls.svelte";
-    import Progress from "../ui/Progress.svelte";
-    import Slider from "../ui/slider/Slider.svelte";
+    import Overlay from "../modules/Overlay.svelte";
+    import Progress from "../modules/Progress.svelte";
+    import Slider from "../modules/slider/Slider.svelte";
     import TimeSlider from "./TimeSlider.svelte";
     import { createEventDispatcher } from "svelte";
-    import type { TComponentStore } from "@/plugins/ElvenPlayer/types";
+    import type { TComponentStore } from "../types";
 
     export let active: boolean;
 
@@ -45,7 +44,7 @@
             <div class="current">
                 <div class="current__sliders">
                     <div class="progress__buffered">
-                        <Progress bind:percents={store.current.buffered.percents} />
+                        <Progress bind:percents={store.current.buffered.percents} --color="#383659" --border-radius="12px" />
                     </div>
                     <div class="slider__time">
                         <TimeSlider
@@ -102,6 +101,8 @@
         gap: 18px;
         &__sliders {
             position: relative;
+            background-color: #000;
+            border-radius: 4px;
             .progress__buffered,
             .slider__time {
                 position: absolute;
@@ -122,10 +123,10 @@
     .slider__volume,
     .progress__buffered {
         border-radius: 4px;
-        background-color: rgba(0, 0, 0, 0.5);
     }
 
     .slider__volume {
+        background-color: #000;
         position: relative;
         width: 50%;
         height: 14px;

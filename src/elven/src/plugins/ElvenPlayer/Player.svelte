@@ -1,29 +1,27 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import type {
     IElvenPlayer,
     TComponentStore,
     TPlaylist,
     TSource,
   } from "./types";
-  import Core from "./core";
-  import PlaybackControls from "./components/parts/PlaybackControls.svelte";
-  import OverlayMenu from "./components/parts/OverlayMenu.svelte";
+  import PlaybackControls from "./parts/PlaybackControls.svelte";
+  import OverlayMenu from "./parts/OverlayMenu.svelte";
   import type { Unsubscriber } from "svelte/store";
 
   /** is player active */
-  export let active = false;
+  let active: boolean = false;
+  export let core: IElvenPlayer;
 
+  /** is player controls overlay active */
   let isOverlay = false;
-
-  let core = new Core();
-  const unsubs: Unsubscriber[] = [];
 
   /** player state */
   let store: TComponentStore = {
     playing: false,
     volume: {
-      percents: 0,
+      percents: 100,
     },
     current: {
       buffered: {
@@ -40,41 +38,70 @@
     },
   };
 
-  /** stores */
+  let unsub1: Unsubscriber,
+    unsub2: Unsubscriber,
+    unsub3: Unsubscriber,
+    unsub4: Unsubscriber,
+    unsub5: Unsubscriber,
+    unsub6: Unsubscriber;
+  let unsubs: Unsubscriber[] = [];
 
-  const unsub1 = core.state.store.playing.subscribe((v) => {
-    store.playing = v;
+  onMount(() => {
+    init();
   });
 
-  const unsub2 = core.state.store.current.buffered.percents.subscribe((v) => {
-    store.current.buffered.percents = v;
+  onDestroy(() => {
+    destroy();
   });
 
-  const unsub3 = core.state.store.current.time.percents.subscribe((v) => {
-    store.current.time.percents = v;
-  });
+  function init() {
+    unsub1 = core.state.store.playing.onChange((v) => {
+      if (v) {
+        active = true;
+      }
+      store.playing = v;
+    });
 
-  const unsub4 = core.state.store.current.time.pretty.subscribe((v) => {
-    // not setting pretty if user dragging time slider now (time preview)
-    if (store.current.time.draggingNow) {
-      return;
+    unsub2 = core.state.store.current.buffered.percents.onChange((v) => {
+      store.current.buffered.percents = v;
+    });
+
+    unsub3 = core.state.store.current.time.percents.onChange((v) => {
+      store.current.time.percents = v;
+    });
+
+    unsub4 = core.state.store.current.time.pretty.onChange((v) => {
+      // not setting pretty if user dragging time slider now (time preview)
+      if (store.current.time.draggingNow) {
+        return;
+      }
+      store.current.time.pretty = v;
+    });
+
+    unsub5 = core.state.store.current.duration.pretty.onChange((v) => {
+      store.current.duration.pretty = v;
+    });
+
+    unsub6 = core.state.store.volume.percents.onChange((v) => {
+      store.volume.percents = v;
+    });
+
+    unsubs.push(unsub1, unsub2, unsub3, unsub4, unsub5, unsub6);
+  }
+
+  function destroy() {
+    for (const unsub of unsubs) {
+      unsub();
     }
-    store.current.time.pretty = v;
-  });
-
-  const unsub5 = core.state.store.current.duration.pretty.subscribe((v) => {
-    store.current.duration.pretty = v;
-  });
-
-  const unsub6 = core.state.store.volume.percents.subscribe((v) => {
-    store.volume.percents = v;
-  });
-
-  unsubs.push(unsub1, unsub2, unsub3, unsub4, unsub5, unsub6);
+    unsubs = [];
+    active = false;
+    core.stop();
+  }
 
   /** events */
 
   function onPlay() {
+    active = true;
     core.play();
   }
 
@@ -90,6 +117,11 @@
     core.prev();
   }
 
+  function onClose() {
+    active = false;
+    core.stop();
+  }
+
   function setVolumePercents(perc: number) {
     core.dom.volumePercents = perc;
   }
@@ -102,31 +134,6 @@
     store.current.time.pretty =
       core.dom.convertPercentsToCurrentTimePretty(perc);
   }
-
-  onDestroy(() => {
-    for (const unsub of unsubs) {
-      unsub();
-    }
-    core.destroy();
-  });
-
-  class Plugin implements IElvenPlayer {
-    public async addToPlaylist(url: TSource) {
-      core.addToPlaylist(url);
-    }
-
-    public setPlaylist(playlist: TPlaylist) {
-      core.playlist = playlist;
-    }
-
-    public async play(url: string) {
-      this.setPlaylist({ position: 0, sources: [url] });
-      await core.play();
-      active = true;
-    }
-  }
-
-  window.$elvenPlayer = new Plugin();
 </script>
 
 {#if active}
@@ -157,7 +164,7 @@
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 255.07 295.91"
-        on:click={() => (active = false)}
+        on:click={() => onClose()}
       >
         <path
           d="M135,390.18h0a33.69,33.69,0,0,0,48-4.29L369.93,159.34a35.1,35.1,0,0,0-4.19-48.86h0a33.69,33.69,0,0,0-48,4.29L130.83,341.33A35.09,35.09,0,0,0,135,390.18Z"

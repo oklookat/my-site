@@ -111,7 +111,7 @@
     &__line,
     &__bubble {
       position: absolute;
-      background-color: #a097dc;
+      background-color: #918CE6;
     }
     &__line {
       border-top-left-radius: 2px;

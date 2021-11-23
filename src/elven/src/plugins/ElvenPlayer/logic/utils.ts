@@ -18,6 +18,7 @@ export default class Utils {
     /** convert seconds to string like '01:23' */
     public static getPretty(seconds: number, mode: TConvertSecondsMode): string {
         // https://stackoverflow.com/a/1322771/16762009
+        seconds = Math.round(seconds)
         const modes = {
             hours: [11, 8],
             minutes: [14, 5]

@@ -152,6 +152,12 @@
 </div>
 
 <style lang="scss">
+  @mixin _desktop {
+    @media (min-width: 765px) {
+      @content;
+    }
+  }
+
   .notify {
     width: 100%;
     z-index: 9999;
@@ -167,6 +173,18 @@
       flex-direction: column-reverse;
       box-sizing: border-box;
       position: relative;
+    }
+    @include _desktop() {
+      margin-right: 12px;
+      height: min-content;
+      width: 224px;
+      right: 0;
+      bottom: 0;
+      &__notifications {
+        height: max-content;
+        width: max-content;
+        flex-direction: column;
+      }
     }
   }
 
@@ -199,31 +217,7 @@
       transition: transform 120ms linear;
       background-color: rgb(190, 190, 190);
     }
-    @media (prefers-color-scheme: light) {
-      background-color: rgb(130, 130, 130);
-      border: 1px solid rgb(120, 120, 120);
-    }
-    @media (prefers-color-scheme: dark) {
-      background-color: rgb(50, 50, 50);
-      border: 1px solid rgb(60, 60, 60);
-    }
-  }
-
-  @media screen and (min-width: 765px) {
-    .notify {
-      margin-right: 12px;
-      height: min-content;
-      width: 224px;
-      right: 0;
-      bottom: 0;
-      &__notifications {
-        height: max-content;
-        width: max-content;
-        flex-direction: column;
-      }
-    }
-
-    .notification {
+    @include _desktop() {
       position: relative;
       width: 214px;
       min-height: 52px;
@@ -231,6 +225,14 @@
         margin-bottom: 8px;
         margin-top: 8px;
       }
+    }
+    @media (prefers-color-scheme: light) {
+      background-color: rgb(130, 130, 130);
+      border: 1px solid rgb(120, 120, 120);
+    }
+    @media (prefers-color-scheme: dark) {
+      background-color: rgb(50, 50, 50);
+      border: 1px solid rgb(60, 60, 60);
     }
   }
 </style>

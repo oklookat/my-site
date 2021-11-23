@@ -1,4 +1,4 @@
-import type { IEvents, IState, TPlaylist, TSource } from "./types";
+import type { IEvents, IState, TPlaylist, TSource, IElvenPlayer } from "./types";
 import DOM from "./logic/dom";
 import State from "./logic/state";
 import Events from "./logic/events";
@@ -7,10 +7,11 @@ import type { Unsubscriber } from "svelte/store";
 
 
 /** controls audio player */
-export default class Core {
+export default class ElvenPlayer implements IElvenPlayer {
 
     public state: IState
     public dom: DOM
+    private initialized: boolean = false
     private unsubs: Unsubscriber[] = []
     private events: IEvents
     private _playlist: TPlaylist = {
@@ -22,30 +23,25 @@ export default class Core {
         this.init()
     }
 
-    public get playlist(): TPlaylist {
-        return this._playlist
+    public init() {
+        this.state = new State()
+        this.events = new Events(this.state)
+        this.dom = new DOM(this.events)
+        this.subscribe()
+        this.initialized = true
+        window.$elvenPlayer = this
     }
 
-    public set playlist(playlist: TPlaylist) {
-        const sources = playlist.sources
-        if (sources.length === 0) {
-            Logger.error('empty playlist')
-            return
-        }
-        this._playlist = playlist
-        let index = 0
-        if (sources[playlist.position]) {
-            index = playlist.position
-        }
-        this.dom.source = sources[index]
-    }
-
-    public addToPlaylist(source: TSource) {
-        this._playlist.sources.push(source)
+    public destroy() {
+        this.unsubscribe()
+        this.dom.destroy()
+        this.dom = null
+        this.initialized = false
+        window.$elvenPlayer = null
     }
 
     private subscribe() {
-        const u1 = this.state.store.current.ended.subscribe(v => {
+        const u1 = this.state.store.current.ended.onChange(v => {
             if (v) {
                 this.next()
             }
@@ -60,19 +56,12 @@ export default class Core {
         this.unsubs = []
     }
 
-    public init() {
-        this.state = new State()
-        this.events = new Events(this.state)
-        this.dom = new DOM(this.events)
-        this.subscribe()
-    }
-
-    public destroy() {
-        this.unsubscribe()
-        this.dom.destroy()
+    public addToPlaylist(source: TSource) {
+        this._playlist.sources.push(source)
     }
 
     public async play() {
+        this.checkForInit()
         try {
             await this.dom.play()
         } catch (err) {
@@ -81,10 +70,12 @@ export default class Core {
     }
 
     public pause() {
+        this.checkForInit()
         this.dom.pause()
     }
 
     public stop() {
+        this.checkForInit()
         this.dom.stop()
     }
 
@@ -117,6 +108,30 @@ export default class Core {
         this.playlist.position--
         this.dom.source = prev
         this.play()
+    }
+
+    private checkForInit() {
+        if (!this.initialized) {
+            this.init()
+        }
+    }
+
+    public get playlist(): TPlaylist {
+        return this._playlist
+    }
+
+    public set playlist(playlist: TPlaylist) {
+        const sources = playlist.sources
+        if (sources.length === 0) {
+            Logger.error('empty playlist')
+            return
+        }
+        this._playlist = playlist
+        let index = 0
+        if (sources[playlist.position]) {
+            index = playlist.position
+        }
+        this.dom.source = sources[index]
     }
 
 }

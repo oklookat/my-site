@@ -46,7 +46,6 @@
         clearInterval(intervalID);
       }
     }, loadingStartSpeed);
-    return;
   }
 
   // finish (go to 100 and destroy)
@@ -64,20 +63,21 @@
 </script>
 
 <div class="progressbar__container">
-  <div id="progressbar__line" style="width: {percents}%; height: {height}" />
+  <div class="progressbar__line" style="width: {percents}%; height: {height}" />
 </div>
 
-<style>
-  .progressbar__container {
-    cursor: default;
-    position: absolute;
-    width: 100%;
-    height: 6px;
-  }
-
-  #progressbar__line {
-    height: 100%;
-    width: 0;
-    background-color: #a097dc;
+<style lang="scss">
+  .progressbar {
+    &__container {
+      cursor: default;
+      position: absolute;
+      width: 100%;
+      height: 6px;
+    }
+    &__line {
+      height: 100%;
+      width: 0;
+      background-color: #a097dc;
+    }
   }
 </style>

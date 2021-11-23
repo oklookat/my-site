@@ -1,6 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
-    import Slider from "../ui/slider/Slider.svelte";
+    import Slider from "../modules/slider/Slider.svelte";
 
     const dispatch = createEventDispatcher<{
         /** when user dragging slider or not */

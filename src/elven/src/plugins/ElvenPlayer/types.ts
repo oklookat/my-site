@@ -1,14 +1,31 @@
-import type { Writable } from 'svelte/store'
+import type DOM from "./logic/dom"
 
 export type TConvertSecondsMode = 'auto' | 'hours' | 'minutes'
 export type TSource = string
 export type TSources = Array<string>
 
+/** store */
+export interface IStore<T> {
+    /** get value */
+    get(value?: T): void
+    /** set value */
+    set(value?: T): void
+    /** hook when value changed. Returns unsubscribe function */
+    onChange(hook: (value?: T) => void): () => void
+}
+
 /** plugin */
 export interface IElvenPlayer {
+    state: IState
+    dom: DOM
+    play(): void
+    pause(): void
+    stop(): void
+    next(): void
+    prev(): void
     addToPlaylist: (source: TSource) => void
-    setPlaylist: (playlist: TPlaylist) => void
-    play: (source: TSource) => void
+    set playlist(playlist: TPlaylist)
+    get playlist(): TPlaylist
 }
 
 /** audio element events */
@@ -36,37 +53,37 @@ export type TPlaylist = {
 /** state of player */
 export type TStore = {
     /** is audio playing now */
-    playing: Writable<boolean>
+    playing: IStore<boolean>
     volume: {
         /** in float */
-        num: Writable<number>,
+        num: IStore<number>
         /** in percents */
-        percents: Writable<number>
+        percents: IStore<number>
     }
     /** current playing */
     current: {
         /** is audio ended */
-        ended: Writable<boolean>
+        ended: IStore<boolean>
         /** buffered */
         buffered: {
             /** in percents */
-            percents: Writable<number>
+            percents: IStore<number>
         }
         /** total time */
         duration: {
             /** in seconds */
-            num: Writable<number>
+            num: IStore<number>
             /** in string like '04:20' */
-            pretty: Writable<string>
+            pretty: IStore<string>
         }
         /** current time */
         time: {
             /** in seconds */
-            num: Writable<number>
+            num: IStore<number>
             /** in percents */
-            percents: Writable<number>
+            percents: IStore<number>
             /** in string '01:37' */
-            pretty: Writable<string>
+            pretty: IStore<string>
         }
     }
 }

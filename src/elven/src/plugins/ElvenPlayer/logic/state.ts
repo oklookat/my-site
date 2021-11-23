@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import BasicStore from '../modules/basicStore';
 import type { IState, TStore } from "../types";
 
 
@@ -6,24 +6,24 @@ import type { IState, TStore } from "../types";
 export default class State implements IState {
 
     public store: TStore = {
-        playing: writable(false),
+        playing: new BasicStore(false),
         volume: {
-            num: writable(1.0),
-            percents: writable(100)
+            num: new BasicStore(1.0),
+            percents: new BasicStore(100)
         },
         current: {
-            ended: writable(false),
+            ended: new BasicStore(false),
             duration: {
-                num: writable(0),
-                pretty: writable('00:00')
+                num: new BasicStore(0),
+                pretty: new BasicStore('00:00')
             },
             time: {
-                num: writable(0),
-                pretty: writable('00:00'),
-                percents: writable(0)
+                num: new BasicStore(0),
+                pretty: new BasicStore('00:00'),
+                percents: new BasicStore(0)
             },
             buffered: {
-                percents: writable(0)
+                percents: new BasicStore(0)
             }
         }
     }
