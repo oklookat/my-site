@@ -1,4 +1,4 @@
-import type { IEvents, IState } from "../types";
+import type { IEvents, IStore } from "../types";
 import Utils from "./utils";
 import Logger from "./logger";
 
@@ -6,25 +6,25 @@ import Logger from "./logger";
 /** updates playback state */
 export default class Events implements IEvents {
 
-    private state: IState
+    private store: IStore
 
-    constructor(state: IState) {
-        this.state = state
+    constructor(store: IStore) {
+        this.store = store
     }
 
     public onPlaying() {
-        this.state.playing = true
-        this.state.ended = false
+        this.store.playing = true
+        this.store.ended = false
     }
 
     public onPause() {
-        this.state.playing = false
-        this.state.ended = false
+        this.store.playing = false
+        this.store.ended = false
     }
 
     public onEnded() {
-        this.state.playing = false
-        this.state.ended = true
+        this.store.playing = false
+        this.store.ended = true
     }
 
     public onTimeUpdate(e: Event) {
@@ -34,12 +34,12 @@ export default class Events implements IEvents {
         let duration = el.duration
         const badDuration = !duration || isNaN(duration) || duration === Infinity
         duration = badDuration ? 0 : duration
-        this.state.bufferedPercents = Utils.getBufferedPercents(currentTime, duration, buffered)
-        this.state.durationNum = duration
-        this.state.durationPretty = Utils.getPretty(duration, 'auto')
-        this.state.currentTimeNum = currentTime
-        this.state.currentTimePretty = Utils.convertCurrentTimePretty(currentTime, duration)
-        this.state.currentTimePercents = Utils.getPercents(currentTime, duration)
+        this.store.bufferedPercents = Utils.getBufferedPercents(currentTime, duration, buffered)
+        this.store.durationNum = duration
+        this.store.durationPretty = Utils.getPretty(duration, 'auto')
+        this.store.currentTimeNum = currentTime
+        this.store.currentTimePretty = Utils.convertCurrentTimePretty(currentTime, duration)
+        this.store.currentTimePercents = Utils.getPercents(currentTime, duration)
     }
 
     public onError(e: Event) {

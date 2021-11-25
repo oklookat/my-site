@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from "svelte";
   import type {
     IElvenPlayer,
-    TComponentStore,
+    TComponentState,
     TPlaylist,
     TSource,
   } from "./types";
@@ -18,7 +18,7 @@
   let isOverlay = false;
 
   /** player state */
-  let store: TComponentStore = {
+  let state: TComponentState = {
     playing: false,
     volume: {
       percents: 100,
@@ -55,35 +55,35 @@
   });
 
   function init() {
-    unsub1 = core.state.store.playing.onChange((v) => {
+    unsub1 = core.store.state.playing.onChange((v) => {
       if (v) {
         active = true;
       }
-      store.playing = v;
+      state.playing = v;
     });
 
-    unsub2 = core.state.store.current.buffered.percents.onChange((v) => {
-      store.current.buffered.percents = v;
+    unsub2 = core.store.state.current.buffered.percents.onChange((v) => {
+      state.current.buffered.percents = v;
     });
 
-    unsub3 = core.state.store.current.time.percents.onChange((v) => {
-      store.current.time.percents = v;
+    unsub3 = core.store.state.current.time.percents.onChange((v) => {
+      state.current.time.percents = v;
     });
 
-    unsub4 = core.state.store.current.time.pretty.onChange((v) => {
+    unsub4 = core.store.state.current.time.pretty.onChange((v) => {
       // not setting pretty if user dragging time slider now (time preview)
-      if (store.current.time.draggingNow) {
+      if (state.current.time.draggingNow) {
         return;
       }
-      store.current.time.pretty = v;
+      state.current.time.pretty = v;
     });
 
-    unsub5 = core.state.store.current.duration.pretty.onChange((v) => {
-      store.current.duration.pretty = v;
+    unsub5 = core.store.state.current.duration.pretty.onChange((v) => {
+      state.current.duration.pretty = v;
     });
 
-    unsub6 = core.state.store.volume.percents.onChange((v) => {
-      store.volume.percents = v;
+    unsub6 = core.store.state.volume.percents.onChange((v) => {
+      state.volume.percents = v;
     });
 
     unsubs.push(unsub1, unsub2, unsub3, unsub4, unsub5, unsub6);
@@ -131,7 +131,7 @@
   }
 
   function setCurrentTimePreview(perc: number) {
-    store.current.time.pretty =
+    state.current.time.pretty =
       core.dom.convertPercentsToCurrentTimePretty(perc);
   }
 </script>
@@ -152,7 +152,7 @@
 
     <div class="player__controls" on:click|stopPropagation>
       <PlaybackControls
-        bind:isPlaying={store.playing}
+        bind:isPlaying={state.playing}
         on:play={() => onPlay()}
         on:pause={() => onPause()}
         on:next={() => onNext()}
@@ -179,7 +179,7 @@
   </div>
 
   <OverlayMenu
-    bind:store
+    bind:state
     bind:active={isOverlay}
     on:volumeChanged={(e) => setVolumePercents(e.detail)}
     on:currentTimeChanged={(e) => setCurrentTimePercents(e.detail)}
@@ -187,7 +187,7 @@
   >
     <PlaybackControls
       slot="playbackControls"
-      bind:isPlaying={store.playing}
+      bind:isPlaying={state.playing}
       on:play={() => onPlay()}
       on:pause={() => onPause()}
       on:next={() => onNext()}

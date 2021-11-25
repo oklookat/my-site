@@ -1,12 +1,15 @@
-import type { Writable } from 'svelte/store'
-
-export type TStore = {
-    isMouseDown: Writable<boolean>
-    percents: Writable<number>
+export interface IState<T> {
+    get(): T
+    set(value?: T): void
+    /** hook when value changed. Returns unsubscribe function */
+    onChange(hook: (value?: T) => void): () => void
 }
 
-export interface IState {
-    store: TStore
+export interface IStore {
+    state: {
+        isMouseDown: IState<boolean>
+        percents: IState<number>
+    }
     get isMouseDown(): boolean
     set isMouseDown(v: boolean)
     set percents(v: number)

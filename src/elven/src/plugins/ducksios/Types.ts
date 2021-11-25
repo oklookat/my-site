@@ -1,7 +1,15 @@
 import type CancelToken from "./cancel"
 
 /** request method */
-export type TRequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "HEAD" | "OPTIONS" | "PATCH"
+export enum RequestMethod {
+    GET = "GET",
+    POST = "POST",
+    PUT = "PUT",
+    DELETE = "DELETE",
+    HEAD = "HEAD",
+    OPTIONS = "OPTIONS",
+    PATCH = "PATCH"
+}
 
 /** available request body */
 export type TRequestBody = string | number | object | Blob | BufferSource | FormData | URLSearchParams | ReadableStream

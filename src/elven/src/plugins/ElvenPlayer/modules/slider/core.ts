@@ -1,17 +1,17 @@
 import Utils from "./utils"
-import State from "./state"
-import type { IState } from "./types"
+import Store from "./store"
+import type { IStore } from "./types"
 
 export default class Core {
 
-    public state: IState
+    public store: IStore
     public container: HTMLDivElement
     private readonly _containerMouseDown = this.containerMouseDown.bind(this)
     private readonly _documentMouseMove = this.computeMoving.bind(this)
     private readonly _documentMouseUp = this.documentEvents.bind(this, false)
 
     constructor(container: HTMLDivElement) {
-        this.state = new State()
+        this.store = new Store()
         this.container = container
         this.containerEvents(true)
     }
@@ -32,7 +32,7 @@ export default class Core {
      * @param add true = add events; false = remove events
      */
     private documentEvents(add: boolean) {
-        if (!add) { this.state.isMouseDown = false }
+        if (!add) { this.store.isMouseDown = false }
         const notPassive = { passive: false }
         const action = add ? 'addEventListener' : 'removeEventListener'
         document[action]("mousemove", this._documentMouseMove, notPassive)
@@ -54,7 +54,7 @@ export default class Core {
         if (e instanceof MouseEvent && e.button !== 0) {
             return
         }
-        this.state.isMouseDown = true
+        this.store.isMouseDown = true
         // pre-compute moving, because user already clicked
         this.computeMoving(e)
         // setup document events. We no add events to container 
@@ -69,7 +69,7 @@ export default class Core {
         const rect = this.container.getBoundingClientRect()
         let pageX = Utils.getPageX(e)
         pageX = pageX - rect.left
-        if (this.state.isMouseDown) {
+        if (this.store.isMouseDown) {
             this.computeView(pageX)
         }
     }
@@ -77,9 +77,13 @@ export default class Core {
     /** final get click position relatively of slider element in percents */
     private computeView(pageX: number) {
         let clickPosition = Utils.getClickPercentsWidth(pageX, this.container)
-        clickPosition = clickPosition < 0 ? 0 : clickPosition > 1 ? 1 : clickPosition
-        const percents = Math.round(clickPosition * 100)
-        this.state.percents = percents
+        if (clickPosition < 0) {
+            clickPosition = 0
+        } else if (clickPosition > 1) {
+            clickPosition = 1
+        }
+        const percents = clickPosition * 100
+        this.store.percents = percents
     }
 
 }

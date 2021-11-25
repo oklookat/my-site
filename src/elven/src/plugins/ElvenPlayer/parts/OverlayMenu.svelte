@@ -4,11 +4,11 @@
     import Slider from "../modules/slider/Slider.svelte";
     import TimeSlider from "./TimeSlider.svelte";
     import { createEventDispatcher } from "svelte";
-    import type { TComponentStore } from "../types";
+    import type { TComponentState } from "../types";
 
     export let active: boolean;
 
-    export let store: TComponentStore;
+    export let state: TComponentState;
 
     const dispatch = createEventDispatcher<{
         /** in percents */
@@ -34,7 +34,7 @@
     }
 
     function setCurrentTimeDraggingNow(v: boolean) {
-        store.current.time.draggingNow = v;
+        state.current.time.draggingNow = v;
     }
 </script>
 
@@ -44,11 +44,11 @@
             <div class="current">
                 <div class="current__sliders">
                     <div class="progress__buffered">
-                        <Progress bind:percents={store.current.buffered.percents} --color="#383659" --border-radius="12px" />
+                        <Progress bind:percents={state.current.buffered.percents} --color="#383659" --border-radius="12px" />
                     </div>
                     <div class="slider__time">
                         <TimeSlider
-                            positionPercents={store.current.time.percents}
+                            positionPercents={state.current.time.percents}
                             on:draggingNow={(e) =>
                                 setCurrentTimeDraggingNow(e.detail)}
                             on:currentTimeChanged={(e) =>
@@ -60,17 +60,17 @@
                 </div>
                 <div class="current__info">
                     <div class="current__position">
-                        {store.current.time.pretty}
+                        {state.current.time.pretty}
                     </div>
                     <div class="current__total">
-                        {store.current.duration.pretty}
+                        {state.current.duration.pretty}
                     </div>
                 </div>
             </div>
 
             <div class="slider__volume">
                 <Slider
-                    percents={store.volume.percents}
+                    percents={state.volume.percents}
                     afterUp={false}
                     on:slide={(e) => onVolumeChanged(e.detail)}
                 />

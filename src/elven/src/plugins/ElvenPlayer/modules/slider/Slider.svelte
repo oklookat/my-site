@@ -35,7 +35,7 @@
 
   function subscribe() {
     // when user mouse down on slider
-    unsub1 = core.state.store.isMouseDown.subscribe((v) => {
+    unsub1 = core.store.state.isMouseDown.onChange((v) => {
       if (!ready) {
         return;
       }
@@ -43,7 +43,7 @@
       dispatcher("mouse");
     });
     // when user change percents by dragging a slider
-    unsub2 = core.state.store.percents.subscribe((v) => {
+    unsub2 = core.store.state.percents.onChange((v) => {
       if (!ready) {
         return;
       }
@@ -59,12 +59,12 @@
 
   onMount(() => {
     core = new Core(container);
-    subscribe()
+    subscribe();
     ready = true;
   });
 
   onDestroy(() => {
-    unsubscribe()
+    unsubscribe();
     core.destroy();
   });
 
@@ -111,7 +111,7 @@
     &__line,
     &__bubble {
       position: absolute;
-      background-color: #918CE6;
+      background-color: #918ce6;
     }
     &__line {
       border-top-left-radius: 2px;

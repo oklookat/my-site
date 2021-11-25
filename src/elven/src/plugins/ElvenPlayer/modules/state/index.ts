@@ -1,8 +1,8 @@
 import type { THooks, IHook, IHookRemove } from "./types"
 import { THookName } from "./types"
 
-
-export default class BasicStore<T> {
+/** basic state management */
+export default class State<T> {
 
     /** manipulated value */
     private value: T

@@ -1,4 +1,5 @@
-import type { TGlobalConfig, TRequestConfig, TRequestMethod, TResponse, TError, THook } from "./types"
+import type { TGlobalConfig, TRequestConfig, TResponse, TError, THook } from "./types"
+import { RequestMethod } from "./types"
 import Parser from "./parser"
 import Service from "./service"
 
@@ -24,41 +25,41 @@ export default class Ducksios {
 
     /** send request (GET) */
     public async GET(config: TRequestConfig): Promise<TResponse> {
-        return this.buildAndSend("GET", config)
+        return this.buildAndSend(RequestMethod.GET, config)
     }
 
     /** send request (POST) */
     public async POST(config: TRequestConfig) {
-        return this.buildAndSend("POST", config)
+        return this.buildAndSend(RequestMethod.POST, config)
     }
 
     /** send request (PUT) */
     public async PUT(config: TRequestConfig) {
-        return this.buildAndSend("PUT", config)
+        return this.buildAndSend(RequestMethod.PUT, config)
     }
 
     /** send request (DELETE) */
     public async DELETE(config: TRequestConfig) {
-        return this.buildAndSend("DELETE", config)
+        return this.buildAndSend(RequestMethod.DELETE, config)
     }
 
     /** send request (HEAD) */
     public async HEAD(config: TRequestConfig) {
-        return this.buildAndSend("HEAD", config)
+        return this.buildAndSend(RequestMethod.HEAD, config)
     }
 
     /** send request (OPTIONS) */
     public async OPTIONS(config: TRequestConfig) {
-        return this.buildAndSend("OPTIONS", config)
+        return this.buildAndSend(RequestMethod.OPTIONS, config)
     }
 
     /** send request (PATCH) */
     public async PATCH(config: TRequestConfig) {
-        return this.buildAndSend("PATCH", config)
+        return this.buildAndSend(RequestMethod.PATCH, config)
     }
 
     /** create XHR, set settings and headers, then send request via {@link setupHooksAndSend} */
-    private async buildAndSend(method: TRequestMethod, rc: TRequestConfig): Promise<TResponse> {
+    private async buildAndSend(method: RequestMethod, rc: TRequestConfig): Promise<TResponse> {
         let xhr = new XMLHttpRequest();
         xhr.timeout = this.config.timeout
         // set url

@@ -1,18 +1,17 @@
-import type { IEvents, IState, TPlaylist, TSource, IElvenPlayer } from "./types";
+import type { IEvents, IStore, TPlaylist, TSource, IElvenPlayer, IStateUnsubscriber } from "./types";
 import DOM from "./logic/dom";
-import State from "./logic/state";
+import Store from "./logic/store";
 import Events from "./logic/events";
 import Logger from "./logic/logger";
-import type { Unsubscriber } from "svelte/store";
 
 
 /** controls audio player */
 export default class ElvenPlayer implements IElvenPlayer {
 
-    public state: IState
+    public store: IStore
     public dom: DOM
     private initialized: boolean = false
-    private unsubs: Unsubscriber[] = []
+    private unsubs: IStateUnsubscriber[] = []
     private events: IEvents
     private _playlist: TPlaylist = {
         position: 0,
@@ -24,8 +23,8 @@ export default class ElvenPlayer implements IElvenPlayer {
     }
 
     public init() {
-        this.state = new State()
-        this.events = new Events(this.state)
+        this.store = new Store()
+        this.events = new Events(this.store)
         this.dom = new DOM(this.events)
         this.subscribe()
         this.initialized = true
@@ -41,7 +40,7 @@ export default class ElvenPlayer implements IElvenPlayer {
     }
 
     private subscribe() {
-        const u1 = this.state.store.current.ended.onChange(v => {
+        const u1 = this.store.state.current.ended.onChange(v => {
             if (v) {
                 this.next()
             }
