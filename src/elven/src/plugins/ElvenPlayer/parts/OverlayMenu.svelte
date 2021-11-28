@@ -1,14 +1,14 @@
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
     import Overlay from "../modules/Overlay.svelte";
     import Progress from "../modules/Progress.svelte";
     import Slider from "../modules/slider/Slider.svelte";
     import TimeSlider from "./TimeSlider.svelte";
-    import { createEventDispatcher } from "svelte";
-    import type { TComponentState } from "../types";
+    import type { ComponentState } from "../types";
 
     export let active: boolean;
 
-    export let state: TComponentState;
+    export let state: ComponentState;
 
     const dispatch = createEventDispatcher<{
         /** in percents */

@@ -1,33 +1,33 @@
-import type { TMeta } from "./global"
+import type { Meta } from "./global"
 
-export type TData = {
-    meta: TMeta
-    data: Array<TArticle>
+export type Data = {
+    meta: Meta
+    data: Array<Article>
 }
 
-export type TShow = 'published' | 'drafts'
-export type TBy = 'created' | 'published' | 'updated'
-export type TStart = 'newest' | 'oldest'
-export type TParams = {
+export type Show = 'published' | 'drafts'
+export type By = 'created' | 'published' | 'updated'
+export type Start = 'newest' | 'oldest'
+export type Params = {
     page: number
-    show: TShow
-    by: TBy
-    start: TStart
+    show: Show
+    by: By
+    start: Start
     preview: boolean
 }
 
-export type TArticle = {
+export type Article = {
     id?: string
     user_id?: string
     is_published?: boolean
     title: string
-    content: TContent
+    content: Content
     slug?: string
     published_at?: string
     updated_at?: string
 }
 
-export type TContent = {
+export type Content = {
     version?: string
     time?: number
     blocks: {

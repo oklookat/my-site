@@ -1,17 +1,17 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
-    import type { TArticle } from "@/types/article";
+    import type { Article } from "@/types/article";
     import Dates from "@/tools/Dates";
 
-    export let article: TArticle;
+    export let article: Article;
 
-    const dispatch = createEventDispatcher<{ selected: TArticle }>();
+    const dispatch = createEventDispatcher<{ selected: Article }>();
 
     function convertDate(date) {
         return Dates.convert(date);
     }
 
-    function onSelected(article: TArticle) {
+    function onSelected(article: Article) {
         dispatch("selected", article);
     }
 </script>

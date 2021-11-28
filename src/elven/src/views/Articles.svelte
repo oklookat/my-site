@@ -1,19 +1,19 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { push } from "svelte-spa-router";
-  import type { TArticle, TBy, TParams, TShow, TStart } from "@/types/article";
-  import type { TMeta } from "@/types/global";
+  import type { Article, By, Params, Show, Start } from "@/types/article";
+  import type { Meta } from "@/types/global";
   import ArticleAdapter from "@/adapters/ArticleAdapter";
   import Overlay from "@/components/ui/Overlay.svelte";
   import Pagination from "@/components/ui/Pagination.svelte";
-  import Article from "@/components/parts/Article.svelte";
+  import CArticle from "@/components/parts/Article.svelte";
 
   let loaded = false;
   let toolsOverlay = false;
-  let selected: TArticle;
-  let articles: Array<TArticle> = [];
-  let meta: TMeta;
-  let params: TParams = {
+  let selected: Article;
+  let articles: Array<Article> = [];
+  let meta: Meta;
+  let params: Params = {
     page: 1,
     show: "published",
     by: "updated",
@@ -26,7 +26,7 @@
     await getAll();
   });
 
-  async function getAll(p?: TParams) {
+  async function getAll(p?: Params) {
     p = !p ? params : p;
     if (p.page < 1) {
       p.page = 1;
@@ -44,7 +44,7 @@
     await push(`/articles/create/${id}`);
   }
 
-  function select(a: TArticle) {
+  function select(a: Article) {
     toolsOverlay = true;
     selected = a;
   }
@@ -79,19 +79,19 @@
     await refresh();
   }
 
-  async function setBy(by: TBy = "published") {
+  async function setBy(by: By = "published") {
     params.by = by;
     params.page = 1;
     await getAll();
   }
 
-  async function setStart(start: TStart = "newest") {
+  async function setStart(start: Start = "newest") {
     params.start = start;
     params.page = 1;
     await getAll();
   }
 
-  async function setShow(show: TShow) {
+  async function setShow(show: Show) {
     params.show = show;
     params.page = 1;
     await getAll();
@@ -176,7 +176,7 @@
   {#if articles && articles.length > 0}
     <div class="articles__list">
       {#each articles as article (article.id)}
-        <Article {article} on:selected={(e) => select(e.detail)} />
+        <CArticle {article} on:selected={(e) => select(e.detail)} />
       {/each}
     </div>
   {/if}
@@ -266,15 +266,14 @@
       align-items: center;
       gap: 24px;
     }
-  }
-
-  .articles__list {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    min-height: 42px;
-    gap: 12px;
+    &__list {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 42px;
+      gap: 12px;
+    }
   }
 
   .overlay {

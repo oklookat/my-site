@@ -1,13 +1,16 @@
 <script lang="ts">
+  // main style
   import "./assets/global.scss";
-  import Router from "svelte-spa-router";
-  import { location } from "svelte-spa-router";
+  // routing
+  import Router, { location } from "svelte-spa-router";
   import routes from "@/routes";
   // components
   import Header from "@/components/parts/Header.svelte";
   import ServiceWrapper2 from "@/components/parts/ServiceWrapper2.svelte";
+  // plugins
   import Progress from "@/plugins/ElvenProgress/Progress.svelte";
-  import Notify from "@/plugins/ElvenNotify/Notify.svelte"
+  //import Notify from "@/plugins/ElvenNotify/Notify.svelte";
+  import Notify from "@/plugins/ElvenNotify/NotifyStandalone.svelte";
 
   let isNotAuth = $location !== "/login" && $location !== "/logout";
   location.subscribe((value) => {
@@ -17,14 +20,14 @@
 </script>
 
 <div class="container">
+  <div id="progress">
+    <Progress />
+  </div>
   {#if isNotAuth}
-    <div class="global__header">
+    <div class="header">
       <Header />
     </div>
   {/if}
-  <div id="elven__progress">
-    <Progress />
-  </div>
   <div class="content">
     <div style="height: 16px;" />
     <Router {routes} />

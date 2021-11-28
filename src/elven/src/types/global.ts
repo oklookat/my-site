@@ -1,8 +1,8 @@
-import type { IElvenPlayer } from "@/plugins/ElvenPlayer/types"
-import type { IElvenNotify } from "@/plugins/ElvenNotify/types"
-import type { IElvenProgress } from "@/plugins/ElvenProgress/types"
+import type { ElvenPlayer } from "@/plugins/ElvenPlayer/types"
+import type { ElvenNotify } from "@/plugins/ElvenNotify/types"
+import type { ElvenProgress } from "@/plugins/ElvenProgress/types"
 
-export type TMeta = {
+export type Meta = {
     per_page: number
     total_pages: number
     current_page: number
@@ -10,8 +10,8 @@ export type TMeta = {
 
 declare global {
     interface Window {
-        $elvenPlayer: IElvenPlayer
-        $elvenNotify: IElvenNotify
-        $elvenProgress: IElvenProgress
+        $elvenPlayer: ElvenPlayer
+        $elvenNotify: ElvenNotify
+        $elvenProgress: ElvenProgress
     }
 }

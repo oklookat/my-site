@@ -1,44 +1,44 @@
 import { AdapterError } from "@/tools/ErrorHandler"
 import { Env } from "@/tools/Paths"
-import type { IHooks, TGlobalConfig } from "@/plugins/ducksios/types"
-import Ducksios from "@/plugins/ducksios/core"
+import type { Hooks as IHooks, GlobalConfig } from "@/plugins/ducksios/types"
+import Ducksios from "@/plugins/ducksios"
 
 const apiURL = Env.getAPI()
 
-
-class Hooks implements IHooks {
+const Hooks: IHooks = {
     onRequest() {
         window.$elvenProgress.startBasic()
-    }
+    },
     onResponse() {
         window.$elvenProgress.finishBasic()
         window.$elvenProgress.resetPercents()
-    }
+    },
     onError(err) {
         window.$elvenProgress.finishBasic()
         window.$elvenProgress.resetPercents()
         AdapterError.handle(err)
-    }
+    },
     onUploadProgress(e) {
-        if (e.lengthComputable) {
-            const percents = (e.loaded / e.total) * 100
-            window.$elvenProgress.setPercents(percents)
-            console.log(`uploaded: ${percents}%`)
-        } else {
+        if (!e.data.lengthComputable) {
             // no Content-Length
-            console.log(`uploaded ${e.loaded} bytes`);
+            console.log(`uploaded ${e.data.loaded} bytes`);
+            return
         }
-    }
+        const percents = (e.data.loaded / e.data.total) * 100
+        window.$elvenProgress.percents = percents
+        console.log(`uploaded: ${percents}%`)
+    },
     onUploaded() {
         window.$elvenProgress.finishBasic()
         window.$elvenProgress.resetPercents()
     }
 }
 
-const config: TGlobalConfig = {
+
+const config: GlobalConfig = {
     withCredentials: true,
     baseURL: apiURL,
-    hooks: new Hooks(),
+    hooks: Hooks,
 }
 
 const Duck = new Ducksios(config)

@@ -1,9 +1,9 @@
-export type TUser = {
+export type User = {
 	is_admin: boolean
 	username: string
 }
 
-export type TUserChange = {
+export type UserChange = {
 	what: 'username' | 'password'
 	password: string
 	newValue: string

@@ -1,19 +1,21 @@
-import type { IEvents, IStore, TPlaylist, TSource, IElvenPlayer, IStateUnsubscriber } from "./types";
+import type { Events as IEvents, Store as IStore, Playlist, Source, ElvenPlayer as IElvenPlayer, Unsubscribe } from "./types";
 import DOM from "./logic/dom";
 import Store from "./logic/store";
 import Events from "./logic/events";
 import Logger from "./logic/logger";
+import Utils from "./logic/utils";
 
-
+// warning: Chrome has bug with FLAC double-rewind to the end (PTS not defined). Idk how fix that, except decrease time of rewinding to end
 /** controls audio player */
 export default class ElvenPlayer implements IElvenPlayer {
 
     public store: IStore
-    public dom: DOM
+    private dom: DOM
     private initialized: boolean = false
-    private unsubs: IStateUnsubscriber[] = []
+    private unsubs: Unsubscribe[] = []
     private events: IEvents
-    private _playlist: TPlaylist = {
+
+    private _playlist: Playlist = {
         position: 0,
         sources: []
     }
@@ -41,7 +43,8 @@ export default class ElvenPlayer implements IElvenPlayer {
 
     private subscribe() {
         const u1 = this.store.state.current.ended.onChange(v => {
-            if (v) {
+            if (v && this.store.playing) {
+                console.log('lf')
                 this.next()
             }
         })
@@ -55,12 +58,12 @@ export default class ElvenPlayer implements IElvenPlayer {
         this.unsubs = []
     }
 
-    public addToPlaylist(source: TSource) {
+    public addToPlaylist(source: Source) {
         this._playlist.sources.push(source)
     }
 
     public async play() {
-        this.checkForInit()
+        this.initIfNotInit()
         try {
             await this.dom.play()
         } catch (err) {
@@ -69,12 +72,12 @@ export default class ElvenPlayer implements IElvenPlayer {
     }
 
     public pause() {
-        this.checkForInit()
+        this.initIfNotInit()
         this.dom.pause()
     }
 
     public stop() {
-        this.checkForInit()
+        this.initIfNotInit()
         this.dom.stop()
     }
 
@@ -99,7 +102,7 @@ export default class ElvenPlayer implements IElvenPlayer {
         // if no source behind
         const prev = this.playlist.sources[this.playlist.position - 1]
         // if current time > 2% of total time - repeat
-        const notInStart = this.dom.currentTimePercents > 2
+        const notInStart = this.currentTimePercents > 2
         if (!prev || notInStart) {
             this.repeat()
             return
@@ -109,17 +112,17 @@ export default class ElvenPlayer implements IElvenPlayer {
         this.play()
     }
 
-    private checkForInit() {
+    private initIfNotInit() {
         if (!this.initialized) {
             this.init()
         }
     }
 
-    public get playlist(): TPlaylist {
+    public get playlist(): Playlist {
         return this._playlist
     }
 
-    public set playlist(playlist: TPlaylist) {
+    public set playlist(playlist: Playlist) {
         const sources = playlist.sources
         if (sources.length === 0) {
             Logger.error('empty playlist')
@@ -131,6 +134,63 @@ export default class ElvenPlayer implements IElvenPlayer {
             index = playlist.position
         }
         this.dom.source = sources[index]
+    }
+
+    // utils
+
+    public get source(): string {
+        return this.dom.source
+    }
+
+    public set source(src: string) {
+        this.dom.source = src
+    }
+
+    public set volume(volume: number) {
+        this.dom.volume = volume
+    }
+
+    public set volumePercents(percents: number) {
+        this.dom.volume = percents / 100
+        this.store.volumePercents = percents
+    }
+
+    public get volume(): number {
+        return this.dom.volume
+    }
+
+    public get volumePercents(): number {
+        return this.dom.volume * 100
+    }
+
+    public set currentTime(seconds: number) {
+        this.dom.currentTime = seconds
+    }
+
+    public set currentTimePercents(percents: number) {
+        const seconds = this.convertPercentsToCurrentTime(percents)
+        this.dom.currentTime = seconds
+    }
+
+    public get currentTime(): number {
+        return this.dom.currentTime
+    }
+
+    public get currentTimePercents(): number {
+        return Utils.getPercents(this.dom.currentTime, this.dom.duration)
+    }
+
+    public get duration(): number {
+        return this.dom.duration
+    }
+
+    public convertPercentsToCurrentTime(percents: number): number {
+        return Utils.convertPercentsToCurrentTime(percents, this.dom.duration)
+    }
+
+    public convertPercentsToCurrentTimePretty(percents: number): string {
+        const seconds = this.convertPercentsToCurrentTime(percents)
+        return Utils.convertCurrentTimePretty(seconds, this.dom.duration)
     }
 
 }

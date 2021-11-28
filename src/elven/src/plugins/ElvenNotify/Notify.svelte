@@ -1,8 +1,8 @@
 <script lang="ts">
   import type {
-    IElvenNotify,
-    TNotification,
-    TNotificationFull,
+    ElvenNotify,
+    Notification,
+    NotificationFull,
   } from "@/plugins/ElvenNotify/types";
   import { quintOut } from "svelte/easing";
   import { crossfade } from "svelte/transition";
@@ -14,20 +14,20 @@
   // max notifications on mobile
   const maxNotificationsM = 2;
   // this array displayed in component
-  let notifications: Array<TNotificationFull> = [];
+  let notifications: NotificationFull[] = [];
   // used for set notification id
   let notificationsCounter = 0;
 
   /** plugin controls */
-  class Plugin implements IElvenNotify {
-    public add(notification: TNotification) {
+  class Plugin implements ElvenNotify {
+    public add(notification: Notification) {
       add(notification);
     }
   }
   window.$elvenNotify = new Plugin();
 
   /** add user notification, then create full notification*/
-  function add(n: TNotification) {
+  function add(n: Notification) {
     // clear counter if no notifications
     if (notifications.length < 1) {
       notificationsCounter = 0;
@@ -46,8 +46,8 @@
   }
 
   /** create full notification and push to array */
-  function set(notification: TNotification) {
-    const full: TNotificationFull = {
+  function set(notification: Notification) {
+    const full: NotificationFull = {
       id: notificationsCounter++,
       self: notification, // notification object
       percents: 0,
@@ -59,7 +59,7 @@
     notifications = [...notifications, full];
   }
 
-  function deleteNotification(context: TNotificationFull) {
+  function deleteNotification(context: NotificationFull) {
     const index = notifications.findIndex((obj) => obj.id === context.id);
     if (index > -1) {
       clearTimeouts(index);
@@ -73,7 +73,7 @@
     clearInterval(notifications[index].intervalID as unknown as number);
   }
 
-  function calcPercents(ctx: TNotificationFull, deletedIn: number) {
+  function calcPercents(ctx: NotificationFull, deletedIn: number) {
     const now = new Date().getTime();
     // if date when item should be deleted
     if (now >= ctx.timeWhenGone) {
@@ -86,7 +86,7 @@
   }
 
   /** init timers */
-  function execute(n: TNotificationFull): TNotificationFull {
+  function execute(n: NotificationFull): NotificationFull {
     // already initialized
     if (n.executed) {
       return n;

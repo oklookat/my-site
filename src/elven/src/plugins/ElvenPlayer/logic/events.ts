@@ -1,4 +1,4 @@
-import type { IEvents, IStore } from "../types";
+import type { Events as IEvents, Store } from "../types";
 import Utils from "./utils";
 import Logger from "./logger";
 
@@ -6,25 +6,24 @@ import Logger from "./logger";
 /** updates playback state */
 export default class Events implements IEvents {
 
-    private store: IStore
+    private store: Store
 
-    constructor(store: IStore) {
+    constructor(store: Store) {
         this.store = store
     }
 
     public onPlaying() {
         this.store.playing = true
-        this.store.ended = false
     }
 
     public onPause() {
         this.store.playing = false
-        this.store.ended = false
     }
 
     public onEnded() {
         this.store.playing = false
         this.store.ended = true
+        this.store.ended = false
     }
 
     public onTimeUpdate(e: Event) {
@@ -32,11 +31,13 @@ export default class Events implements IEvents {
         const currentTime = el.currentTime
         const buffered = el.buffered
         let duration = el.duration
-        const badDuration = !duration || isNaN(duration) || duration === Infinity
-        duration = badDuration ? 0 : duration
+        const badDuration = !duration || duration === Infinity
+        if (badDuration) {
+            duration = 0
+        }
         this.store.bufferedPercents = Utils.getBufferedPercents(currentTime, duration, buffered)
         this.store.durationNum = duration
-        this.store.durationPretty = Utils.getPretty(duration, 'auto')
+        this.store.durationPretty = Utils.getPretty(duration)
         this.store.currentTimeNum = currentTime
         this.store.currentTimePretty = Utils.convertCurrentTimePretty(currentTime, duration)
         this.store.currentTimePercents = Utils.getPercents(currentTime, duration)
@@ -44,11 +45,6 @@ export default class Events implements IEvents {
 
     public onError(e: Event) {
         // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/networkState
-        const valid = e.target && e.target instanceof HTMLMediaElement
-        if (!valid) {
-            Logger.error('unknown error, invalid event target')
-            return
-        }
         const target = e.target as HTMLMediaElement
         const err = target.error
         const msg = err.message ? ` ${err.message}` : ''

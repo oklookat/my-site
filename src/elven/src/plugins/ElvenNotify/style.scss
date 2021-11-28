@@ -1,0 +1,83 @@
+@mixin _desktop {
+    @media (min-width: 765px) {
+      @content;
+    }
+  }
+
+  .notify {
+    width: 100%;
+    z-index: 9999;
+    bottom: 0;
+    margin-bottom: 8px;
+    position: fixed;
+    overflow: hidden;
+    &__notifications {
+      width: 100%;
+      gap: 8px;
+      height: max-content;
+      display: flex;
+      flex-direction: column-reverse;
+      box-sizing: border-box;
+      position: relative;
+    }
+    @include _desktop() {
+      margin-right: 12px;
+      height: min-content;
+      width: 224px;
+      right: 0;
+      bottom: 0;
+      &__notifications {
+        height: max-content;
+        width: max-content;
+        flex-direction: column;
+      }
+    }
+  }
+
+  .notification {
+    cursor: pointer;
+    border-radius: 6px;
+    color: white;
+    backdrop-filter: blur(15px) saturate(180%);
+    width: 240px;
+    min-height: 52px;
+    border-radius: 6px;
+    align-self: center;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr min-content;
+    &__message {
+      margin-top: 4px;
+      margin-left: 12px;
+      margin-right: 8px;
+    }
+    &__timer-wrapper {
+      width: 50%;
+      margin-bottom: 12px;
+      margin-top: 12px;
+      justify-self: center;
+    }
+    &__timer {
+      border-radius: 4px;
+      height: 4px;
+      transition: transform 120ms linear;
+      background-color: rgb(190, 190, 190);
+    }
+    @include _desktop() {
+      position: relative;
+      width: 214px;
+      min-height: 52px;
+      &__timer-wrapper {
+        margin-bottom: 8px;
+        margin-top: 8px;
+      }
+    }
+    @media (prefers-color-scheme: light) {
+      background-color: rgb(130, 130, 130);
+      border: 1px solid rgb(120, 120, 120);
+    }
+    @media (prefers-color-scheme: dark) {
+      background-color: rgb(50, 50, 50);
+      border: 1px solid rgb(60, 60, 60);
+    }
+  }

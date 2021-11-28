@@ -1,13 +1,13 @@
-import type { THooks, IHook, IHookRemove } from "./types"
-import { THookName } from "./types"
+import type { Hooks, Hook, HookRemove } from "./types"
+import { HookName } from "./types"
 
-/** basic state management */
+/** simple state management */
 export default class State<T> {
 
     /** manipulated value */
     private value: T
     /** value hooks */
-    private hooks: THooks<T> = {
+    private hooks: Hooks<T> = {
         onChange: {
             count: 0,
             items: {}
@@ -19,14 +19,14 @@ export default class State<T> {
     }
 
     /** add user hook. Returns hook id */
-    private addHook(name: THookName, hook: IHook<T>): number {
+    private addHook(name: HookName, hook: Hook<T>): number {
         const id = this.hooks[name].count++
         this.hooks[name].items[id] = hook
         return id
     }
 
     /** remove user hook */
-    private removeHook(name: THookName, id: number) {
+    private removeHook(name: HookName, id: number) {
         const hookExists = id in this.hooks[name].items
         if (!hookExists) {
             return
@@ -35,15 +35,15 @@ export default class State<T> {
     }
 
     /** returns function that removes hook */
-    private createHookRemover(name: THookName, id: number): IHookRemove {
-        const remove: IHookRemove = () => {
+    private createHookRemover(name: HookName, id: number): HookRemove {
+        const remove: HookRemove = () => {
             this.removeHook(name, id)
         }
         return remove
     }
 
     /** call callbacks in hook list */
-    private notifyHooks(name: THookName, value: T) {
+    private notifyHooks(name: HookName, value: T) {
         const hooks = this.hooks[name].items
         for (const id in hooks) {
             hooks[id](value)
@@ -58,13 +58,13 @@ export default class State<T> {
     /** set value */
     public set(value: T) {
         this.value = value
-        this.notifyHooks(THookName.onChange, value)
+        this.notifyHooks(HookName.onChange, value)
     }
 
     /** add hook. Executes when value changed */
-    public onChange(hook: IHook<T>): IHookRemove {
-        const id = this.addHook(THookName.onChange, hook)
-        return this.createHookRemover(THookName.onChange, id)
+    public onChange(hook: Hook<T>): HookRemove {
+        const id = this.addHook(HookName.onChange, hook)
+        return this.createHookRemover(HookName.onChange, id)
     }
 
 }

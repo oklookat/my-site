@@ -1,73 +1,20 @@
 <script lang="ts">
-  import type { IElvenProgress } from "@/plugins/ElvenProgress/types";
-  import { onDestroy } from "svelte";
+  import { onMount } from "svelte";
+  import ElvenProgress from ".";
 
-  // plugin controls
-  class Plugin implements IElvenProgress {
-    public startBasic() {
-      startBasic();
-    }
-    public finishBasic() {
-      finishBasic();
-    }
-    public setPercents(value: number) {
-      percents = value;
-    }
-    public resetPercents() {
-      percents = 0;
-      destroy();
-    }
-  }
-  window.$elvenProgress = new Plugin();
+  let line: HTMLDivElement;
 
-  // settings
-  let height = "3px";
-  let loadingStartTo = 45;
-  let loadingStartSpeed = 30;
-  let loadingFinishSpeed = 5;
-
-  // element percents
-  let percents = 0;
-
-  onDestroy(() => {
-    destroy();
+  onMount(() => {
+    new ElvenProgress(line);
   });
-
-  function destroy() {
-    percents = 0;
-  }
-
-  // freeze progress at loadingStartTo
-  function startBasic() {
-    const intervalID = setInterval(() => {
-      if (percents < loadingStartTo) {
-        percents++;
-      } else {
-        clearInterval(intervalID);
-      }
-    }, loadingStartSpeed);
-  }
-
-  // finish (go to 100 and destroy)
-  function finishBasic() {
-    percents = loadingStartTo;
-    const intervalID = setInterval(() => {
-      if (percents < 100) {
-        percents++;
-      } else {
-        clearInterval(intervalID);
-        destroy();
-      }
-    }, loadingFinishSpeed);
-  }
 </script>
 
-<div class="progressbar__container">
-  <div class="progressbar__line" style="width: {percents}%; height: {height}" />
+<div class="progress__container">
+  <div class="progress__line" bind:this={line} />
 </div>
 
 <style lang="scss">
-  .progressbar {
+  .progress {
     &__container {
       cursor: default;
       position: absolute;

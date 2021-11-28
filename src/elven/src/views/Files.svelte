@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import FileAdapter from "@/adapters/FileAdapter";
-  import type { TMeta } from "@/types/global";
-  import type { TFile } from "@/types/file";
-  import File from "@/components/parts/File.svelte";
+  import type { Meta } from "@/types/global";
+  import type { File } from "@/types/file";
+  import CFile from "@/components/parts/File.svelte";
   import Pagination from "@/components/ui/Pagination.svelte";
   import Overlay from "@/components/ui/Overlay.svelte";
 
@@ -12,11 +12,11 @@
   let isSortOverlayActive: boolean = false;
   let sortBy: string = "created";
   let sortFirst: string = "newest";
-  let selected: TFile | null = null;
+  let selected: File | null = null;
   let selectionOverlay = false;
   // files
-  let files: Array<TFile> = [];
-  let meta: TMeta;
+  let files: Array<File> = [];
+  let meta: Meta;
   let show: "newest";
   let perPage: number = 0;
   let currentPage: number = 1;
@@ -46,7 +46,7 @@
     } catch (err) {}
   }
 
-  async function deleteFile(file: TFile) {
+  async function deleteFile(file: File) {
     const isDelete = confirm("Delete file?");
     if (!isDelete) {
       return;
@@ -57,7 +57,7 @@
     } catch (err) {}
   }
 
-  async function deleteFromArray(file: TFile) {
+  async function deleteFromArray(file: File) {
     files = files.filter((f) => f !== file);
     await refresh();
   }
@@ -91,17 +91,17 @@
     inputEL.click();
   }
 
-  function onSelected(file: TFile) {
+  function onSelected(file: File) {
     selectionOverlay = true;
     selected = file;
   }
 
-  function onDelete(file: TFile) {
+  function onDelete(file: File) {
     selectionOverlay = false;
     deleteFile(file);
   }
 
-  async function copyLink(file: TFile) {
+  async function copyLink(file: File) {
     try {
       await navigator.clipboard.writeText(file.path);
       selectionOverlay = false;
@@ -145,7 +145,7 @@
   {#if isLoaded && files.length > 0}
     <div class="files__list">
       {#each files as file (file.id)}
-        <File {file} on:selected={(e) => onSelected(e.detail)} />
+        <CFile {file} on:selected={(e) => onSelected(e.detail)} />
       {/each}
 
       <Overlay

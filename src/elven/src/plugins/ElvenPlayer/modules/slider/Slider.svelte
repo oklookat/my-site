@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy, onMount } from "svelte";
-  import Core from "./core";
+  import Core from ".";
 
   const dispatch = createEventDispatcher<{
     /** on slider percents changed */
@@ -108,6 +108,8 @@
     display: flex;
     align-items: center;
     cursor: pointer;
+    // important to PointerEvent
+    touch-action: pan-y;
     &__line,
     &__bubble {
       position: absolute;

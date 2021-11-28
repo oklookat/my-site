@@ -1,13 +1,13 @@
 import Duck from './Duck'
-import type { TFilesData } from '@/types/file'
+import type { Data } from '@/types/file'
 
 export default class FileAdapter {
 
-    public static async getAll(page = 1, start = 'newest'): Promise<TFilesData> {
+    public static async getAll(page = 1, start = 'newest'): Promise<Data> {
         const params = { page: page, start: start }
         try {
             const response = await Duck.GET({ url: 'files', params })
-            return Promise.resolve(response.body as TFilesData)
+            return Promise.resolve(response.body as Data)
         } catch (err) {
         }
     }

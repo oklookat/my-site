@@ -1,17 +1,17 @@
 <script lang="ts">
     import UserAdapter from "@/adapters/UserAdapter";
     import Overlay from "@/components/ui/Overlay.svelte";
-    import type { TUser, TUserChange } from "@/types/user";
+    import type { User, UserChange } from "@/types/user";
     import { usernameValidate, passwordValidate } from "@/types/user";
     import { onMount } from "svelte";
 
-    let userData: TUser;
+    let userData: User;
     let userDataLoaded = false;
 
     let changeOverlayActive = false;
     let newValueValid = false;
     let passwordConfirmValid = false;
-    let changer: TUserChange = {
+    let changer: UserChange = {
         what: "username",
         password: "",
         newValue: "",

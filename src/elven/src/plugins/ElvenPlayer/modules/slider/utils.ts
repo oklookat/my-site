@@ -2,7 +2,7 @@ export default class Utils {
 
     /** get pageX (horizontal mouse position) by mouse or touch event */
     public static getPageX(e: MouseEvent | TouchEvent): number {
-        const movedByTouch = e instanceof TouchEvent && e.touches.length > 0
+        const movedByTouch = window.TouchEvent && e instanceof TouchEvent && e.touches.length > 0
         if (movedByTouch) {
             // get first touch
             return e.touches[0].pageX
@@ -23,14 +23,24 @@ export default class Utils {
      * Multiply by 100 gives you percents.
      */
     public static getClickPercentsWidth(pageX: number, container: HTMLElement): number {
-        return (pageX - container.offsetLeft) / container.offsetWidth
+        let pos = (pageX - container.offsetLeft) / container.offsetWidth
+        if (pos < 0) {
+            pos = 0
+        } else if (pos > 1) {
+            pos = 1
+        }
+        pos = pos * 100
+        return pos
     }
 
     /** get percents of current param by setting the total param */
     public static computePercents(current: number, total: number): number {
         let percents = (current / total) * 100
-        percents = Math.round(percents)
-        percents = percents > 100 ? 100 : percents < 0 ? 0 : percents
+        if(percents > 100) {
+            percents = 100
+        } else if (percents < 0) {
+            percents = 0
+        }
         return percents
     }
     

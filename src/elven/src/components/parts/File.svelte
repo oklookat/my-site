@@ -1,27 +1,27 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
-    import type { TFile } from "@/types/file";
+    import type { File } from "@/types/file";
     import { Env } from "@/tools/Paths";
     import Dates from "@/tools/Dates";
     import Sizes from "@/tools/Sizes";
     import Extensions from "@/tools/Extensions";
 
-    const dispatch = createEventDispatcher<{ selected: TFile }>();
+    const dispatch = createEventDispatcher<{ selected: File }>();
 
-    export let file: TFile;
+    export let file: File;
     $: watchFile(file);
 
-    function watchFile(file: TFile) {
-        file = converter(file);
+    function watchFile(file: File) {
+        convert(file);
     }
 
-    function onSelected(file: TFile) {
+    function onSelected(file: File) {
         dispatch("selected", file);
     }
 
     /** convert file path, extension etc */
     // TODO: split converter functions(?)
-    function converter(file: TFile): TFile {
+    function convert(file: File) {
         let isNeedPath = !(file.pathConverted instanceof URL);
         if (isNeedPath) {
             const path = `${Env.getUploads()}/${file.path}`;
@@ -36,7 +36,6 @@
         if (!file.createdAtConverted) {
             file.createdAtConverted = Dates.convert(file.created_at);
         }
-        return file;
     }
 </script>
 

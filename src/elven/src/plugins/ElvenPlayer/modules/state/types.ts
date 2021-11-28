@@ -1,30 +1,30 @@
 /** available hooks */
-export enum THookName {
+export enum HookName {
     onChange = 'onChange'
 }
 
 /** remove hook */
-export interface IHookRemove {
+export interface HookRemove {
     (): void
 }
 
 /** user hook */
-export interface IHook<T> {
+export interface Hook<T> {
     (value?: T): void
 }
 
 /** hooks list in specific hook type (internal) */
-export type THooksList<T> = {
+export type HooksList<T> = {
     /** counter of hooks */
     count: number
     /** hooks */
     items: {
         /** one hook */
-        [id: number]: IHook<T>
+        [id: number]: Hook<T>
     }
 }
 
 /** all hooks (internal) */
-export type THooks<T> = {
-    [name in THookName]: THooksList<T>
+export type Hooks<T> = {
+    [name in HookName]: HooksList<T>
 }

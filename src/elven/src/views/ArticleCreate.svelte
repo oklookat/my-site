@@ -4,7 +4,7 @@
   import ImageTool from "@editorjs/image";
   import ArticleAdapter from "@/adapters/ArticleAdapter";
   import TextareaResizer from "@/tools/TextareaResizer";
-  import type { TArticle } from "@/types/article";
+  import type { Article } from "@/types/article";
   import { onDestroy, onMount } from "svelte";
 
   export let params: { id?: string } = { id: null };
@@ -14,7 +14,7 @@
   let textareaResizer: TextareaResizer;
   // title element for textarea resize
   let articleTitleEL: HTMLElement | null;
-  let article: TArticle = {
+  let article: Article = {
     title: "",
     content: null,
   };

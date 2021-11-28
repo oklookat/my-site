@@ -1,29 +1,29 @@
-import Statex from '../modules/state';
-import type { IStore } from "../types";
+import State from '../modules/state';
+import type { Store as IStore } from "../types";
 
 
 /** manage audio player store */
 export default class Store implements IStore {
 
     public state = {
-        playing: new Statex(false),
+        playing: new State(false),
         volume: {
-            num: new Statex(1.0),
-            percents: new Statex(100)
+            num: new State(1.0),
+            percents: new State(100)
         },
         current: {
-            ended: new Statex(false),
+            ended: new State(false),
             duration: {
-                num: new Statex(0),
-                pretty: new Statex('00:00')
+                num: new State(0),
+                pretty: new State('00:00')
             },
             time: {
-                num: new Statex(0),
-                pretty: new Statex('00:00'),
-                percents: new Statex(0)
+                num: new State(0),
+                pretty: new State('00:00'),
+                percents: new State(0)
             },
             buffered: {
-                percents: new Statex(0)
+                percents: new State(0)
             }
         }
     }

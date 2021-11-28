@@ -1,4 +1,5 @@
 // from: https://github.com/axios/axios/blob/76f09afc03fbcf392d31ce88448246bcd4f91f8c/lib/utils.js
+
 // MIT license stuff (axios):
 /**
 Copyright (c) 2014-present Matt Zabriskie
@@ -21,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
+import type { HookName, Hooks } from "../types"
 
 export class Validator {
 
@@ -44,7 +46,7 @@ export class Validator {
         return this.toString.call(val) === '[object Array]'
     }
 
-    public static isString(val): boolean {
+    public static isString(val: any): boolean {
         return typeof val === 'string'
     }
 
@@ -87,5 +89,12 @@ export class Validator {
             result = (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer)
         }
         return result
+    }
+
+    // ducksios checks
+
+    /** check is hookName in hooks */
+    public static isHookAvailable(hookName: HookName, hooks: Hooks): boolean {
+        return hooks && hookName in hooks && this.isFunction(hooks[hookName])
     }
 }

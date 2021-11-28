@@ -1,4 +1,5 @@
 // some from: https://github.com/axios/axios/blob/76f09afc03fbcf392d31ce88448246bcd4f91f8c/dist/axios.js#L1267
+
 // MIT license stuff (axios):
 /**
 Copyright (c) 2014-present Matt Zabriskie
@@ -22,14 +23,14 @@ THE SOFTWARE.
  */
 
 import Service from "./service";
-import type { TGlobalConfig, TRequestConfig } from "./types";
+import type { GlobalConfig, RequestConfig } from "../types";
 import { Validator } from "./validator";
 
 /** parse body before request and after response */
-export default class Parser {
+export default class Parse {
 
-    /** set headers if not set. If it's json auto stringify before request */
-    public static requestBody(body: any, rc: TRequestConfig, gc: TGlobalConfig): { r: TRequestConfig, b: any } {
+    /** set headers if not set. If it's json auto stringify before request. Returns body */
+    public static requestBody(body: any, rc: RequestConfig, gc: GlobalConfig): any {
         const simpleData = Validator.isFormData(body) ||
             Validator.isArrayBuffer(body) ||
             Validator.isBuffer(body) ||
@@ -37,30 +38,31 @@ export default class Parser {
             Validator.isFile(body) ||
             Validator.isBlob(body)
         if (simpleData) {
-            return { r: rc, b: body }
+            return body
         }
         if (Validator.isArrayBufferView(body)) {
-            return { r: rc, b: body.buffer }
+            return body
         }
         if (Validator.isURLSearchParams(body)) {
-            rc = Service.setContentTypeIfUnset('application/x-www-form-urlencoded; charset=utf-8', gc, rc)
-            return { r: rc, b: body.toString() }
+            Service.setContentTypeIfUnset('application/x-www-form-urlencoded; charset=utf-8', gc, rc)
+            return body
         }
         // if json convertable
         if (Validator.isObject(body)) {
-            rc = Service.setContentTypeIfUnset('application/json', gc, rc)
-            return { r: rc, b: Service.stringifySafely(body) }
+            Service.setContentTypeIfUnset('application/json', gc, rc)
+            body = Service.stringifySafely(body)
+            return body
         }
-        return { r: rc, b: body }
+        return body
     }
 
-    /** auto parse json after response */ 
+    /** auto parse json after response. Returns body */ 
     public static responseBody(body: any): any {
         if (!body) {
             return body
         }
         try {
-            return JSON.parse(body);
+            body = JSON.parse(body);
         } catch (e) {
         }
         return body

@@ -1,6 +1,6 @@
 import type CancelToken from "./cancel"
 
-/** request method */
+/** available request methods */
 export enum RequestMethod {
     GET = "GET",
     POST = "POST",
@@ -11,96 +11,127 @@ export enum RequestMethod {
     PATCH = "PATCH"
 }
 
-/** available request body */
-export type TRequestBody = string | number | object | Blob | BufferSource | FormData | URLSearchParams | ReadableStream
+/** available hooks */
+export enum HookName {
+    onRequest = "onRequest",
+    onResponse = "onResponse",
+    onDownload = "onDownload",
+    onUploadProgress = "onUploadProgress",
+    onUploaded = "onUploaded",
+    onError = "onError"
+}
 
-/** typical request headers */
-export type THeaders = {
+/** available request errors */
+export enum RequestError {
+    /** connection timeout */
+    timeout = "timeout",
+    /** cors-like error */
+    network = "network",
+    /** error while request */
+    request = "request",
+    /** server error (not 2** status code) */
+    response = "response",
+    /** request has been cancelled */
+    cancel = "cancel"
+}
+
+/** available request body */
+export type RequestBody = string | number | object | Blob | BufferSource | FormData | URLSearchParams | ReadableStream
+
+/** headers */
+export type Headers = {
     [name: string]: string | number
 }
 
-/** typical request params */
-export type TRequestParams = {
+/** request params */
+export type RequestParams = {
     [name: string]: string | number | boolean
 }
 
 /** response from server */
-export type TResponse = {
+export type Response = {
     body: any
     statusCode: number
 }
 
-/** represents request errors */
-export type TError = {
-    type: "timeout" | "network" | "request"
-} | TResponse & {
-    type: "response"
+/** request errors */
+export type RequestFail = {
+    type: RequestError.timeout | RequestError.network | RequestError.request
+} | Response & {
+    type: RequestError.response
 } | {
-    type: "cancel"
+    type: RequestError.cancel
     message?: string | number
 }
 
 /** global & local configs extends this */
-export type TBasicConfig = {
+export type BasicConfig = {
     /** @see https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials */
     withCredentials?: boolean
-    headers?: THeaders
-    hooks?: IHooks
+    /** how long to wait for a response from the server (in ms)  */
+    timeout?: number
+    headers?: Headers
+    hooks?: Hooks
 }
 
 /** global configuration for all requests */
-export type TGlobalConfig = TBasicConfig & {
-    /** how long to wait for a response from the server (in ms)  */
-    timeout?: number
+export type GlobalConfig = BasicConfig & {
     /**
-     * URL like: https://example.com.
+     * URL like https://example.com.
      * Any request will paste this url before request url.
      */
     baseURL?: string
 }
 
 /** configuration for one request */
-export type TRequestConfig = TBasicConfig & {
+export type RequestConfig = BasicConfig & {
     /** URL or path like '/hello/world' if {@link TGlobalConfig.baseURL baseURL} setted */
     url: string
-    body?: TRequestBody
-    params?: TRequestParams
+    body?: RequestBody
+    params?: RequestParams
     /** token for request cancel */
     cancelToken?: CancelToken
 }
 
-/** {@link THook} extends this */
-export type TBasicHook = {
-    config: TRequestConfig
-}
 
-/** used in core for hooks executing */
-export type THook = TBasicHook & {
-    name: "onRequest"
-    data: TRequestConfig
-} | TBasicHook & {
-    name: "onResponse"
-    data: TResponse
-} | TBasicHook & {
-    name: "onDownload" | "onUploadProgress" | "onUploaded"
-    data: ProgressEvent<EventTarget>
-} | TBasicHook & {
-    name: "onError"
-    data: TError
-}
-
+/** useful data in hook */
+export type HookOutput = HookOutput.onRequest | HookOutput.onResponse | HookOutput.onLoad | HookOutput.onError
 /** execute functions on XHR lifecycle */
-export interface IHooks {
-    /** request sended */
-    onRequest?: (config: TRequestConfig) => void
-    /** response came */
-    onResponse?: (response: TResponse) => void
-    /** downloading data from server */
-    onDownload?: (e: ProgressEvent<EventTarget>) => void
-    /** uploading to server */
-    onUploadProgress?: (e: ProgressEvent<EventTarget>) => void
-    /** uploaded to server */
-    onUploaded?: (e: ProgressEvent<EventTarget>) => void
-    /** request (like 404) / network (like CORS) / timeout error */
-    onError?: (err: TError) => void
+export type Hooks = { [Name in HookName]?: (output: GetHookOutput<Name>) => void }
+/** get hook type depending on hook name */
+export type GetHookOutput<Name extends HookName, Output = HookOutput> = Output extends { name: infer U } ? Name extends U ? Output : never : never
+export namespace HookOutput {
+
+    interface Base {
+        name: HookName
+        config: RequestConfig
+        data: unknown
+    }
+
+    /** requet to server */
+    export interface onRequest extends Base {
+        name: HookName.onRequest
+        data: RequestConfig
+    }
+
+    /** response from server */
+    export interface onResponse extends Base {
+        name: HookName.onResponse
+        data: Response
+    }
+
+    /** server download / upload */
+    export interface onLoad extends Base {
+        name: HookName.onDownload | HookName.onUploadProgress | HookName.onUploaded
+        data: ProgressEvent<EventTarget>
+    }
+
+    /** any error: request / cors / timeout etc */
+    export interface onError extends Base {
+        name: HookName.onError
+        data: RequestFail
+    }
 }
+
+
+

@@ -1,24 +1,19 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import type {
-    IElvenPlayer,
-    TComponentState,
-    TPlaylist,
-    TSource,
-  } from "./types";
+  import type { ElvenPlayer, ComponentState } from "./types";
   import PlaybackControls from "./parts/PlaybackControls.svelte";
   import OverlayMenu from "./parts/OverlayMenu.svelte";
   import type { Unsubscriber } from "svelte/store";
 
   /** is player active */
   let active: boolean = false;
-  export let core: IElvenPlayer;
+  export let core: ElvenPlayer;
 
   /** is player controls overlay active */
   let isOverlay = false;
 
   /** player state */
-  let state: TComponentState = {
+  let state: ComponentState = {
     playing: false,
     volume: {
       percents: 100,
@@ -123,16 +118,15 @@
   }
 
   function setVolumePercents(perc: number) {
-    core.dom.volumePercents = perc;
+    core.volumePercents = perc;
   }
 
   function setCurrentTimePercents(perc: number) {
-    core.dom.currentTimePercents = perc;
+    core.currentTimePercents = perc;
   }
 
   function setCurrentTimePreview(perc: number) {
-    state.current.time.pretty =
-      core.dom.convertPercentsToCurrentTimePretty(perc);
+    state.current.time.pretty = core.convertPercentsToCurrentTimePretty(perc);
   }
 </script>
 

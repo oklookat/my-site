@@ -1,12 +1,12 @@
-import type { TFileType } from '@/tools/Extensions'
-import type { TMeta } from './global'
+import type { FileType } from '@/tools/Extensions'
+import type { Meta } from './global'
 
-export type TFilesData = {
-    meta: TMeta
-    data: Array<TFile>
+export type Data = {
+    meta: Meta
+    data: Array<File>
 }
 
-export type TFile = {
+export type File = {
     id: string
     user_id: string
     hash: string
@@ -21,5 +21,5 @@ export type TFile = {
     pathConverted?: URL
     sizeConverted?: string
     createdAtConverted?: string
-    extensionType?: TFileType
+    extensionType?: FileType
 }

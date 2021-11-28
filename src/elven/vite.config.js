@@ -69,16 +69,31 @@ rnMu60CcElX093lVxidAe7sNZ5xD+WCFbJ1eAtpBbpLkaeTKI2wK7Db+acVOrfeJ
 const credentials = { key: privateKey, cert: certificate }
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [svelte()],
-  optimizeDeps: { exclude: ["svelte-router-spa"] },
-  resolve: {
-    alias: [
-      { find: '@', replacement: resolve(projectRootDir, './src') },
-    ],
-  },
-  server: {
-    open: true,
-    https: credentials,
-  },
+export default defineConfig(({ command, mode }) => {
+  if (command === 'serve') {
+    return {
+      plugins: [svelte()],
+      optimizeDeps: { exclude: ["svelte-router-spa"] },
+      resolve: {
+        alias: [
+          { find: '@', replacement: resolve(projectRootDir, './src') },
+        ],
+      },
+      server: {
+        open: true,
+        https: credentials,
+      }
+    }
+  } else {
+    // command === 'build'
+    return {
+      plugins: [svelte()],
+      optimizeDeps: { exclude: ["svelte-router-spa"] },
+      resolve: {
+        alias: [
+          { find: '@', replacement: resolve(projectRootDir, './src') },
+        ],
+      }
+    }
+  }
 })

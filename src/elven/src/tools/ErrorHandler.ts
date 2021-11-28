@@ -1,8 +1,8 @@
-import type { TError } from "@/plugins/ducksios/types"
+import type { HookOutput } from "@/plugins/ducksios/types"
 
 export class AdapterError {
 
-    public static handle(err: TError): string {
+    public static handle(err: HookOutput.onError): string {
         const message = this.sort(err)
         if (window.$elvenNotify) {
             window.$elvenNotify.add({message})
@@ -10,8 +10,9 @@ export class AdapterError {
         return message
     }
 
-    private static sort(err: TError): string {
+    private static sort(output: HookOutput.onError): string {
         // server send response with error
+        const err = output.data
         if(err.type === "cancel") {
             if(!err.message) {
                 return 'Request cancelled.'

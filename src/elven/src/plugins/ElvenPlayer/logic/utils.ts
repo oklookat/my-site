@@ -1,5 +1,5 @@
 import Logger from "./logger"
-import type { TConvertSecondsMode } from "../types"
+import type { ConvertSecondsMode } from "../types"
 
 export default class Utils {
 
@@ -16,7 +16,7 @@ export default class Utils {
     }
 
     /** convert seconds to string like '01:23' */
-    public static getPretty(seconds: number, mode: TConvertSecondsMode): string {
+    public static getPretty(seconds: number, mode: ConvertSecondsMode = 'auto'): string {
         // https://stackoverflow.com/a/1322771/16762009
         seconds = Math.round(seconds)
         const modes = {
@@ -62,14 +62,13 @@ export default class Utils {
 
     /** get current time like '01:23' or '01:23:23' by seconds and duration seconds */
     public static convertCurrentTimePretty(currentTime: number, duration: number): string {
-        const mode: TConvertSecondsMode = duration < 3600 ? 'minutes' : 'hours'
+        const mode: ConvertSecondsMode = duration < 3600 ? 'minutes' : 'hours'
         return this.getPretty(currentTime, mode)
     }
 
     /** convert current time percents to seconds position by duration */
-    public static convertPercentsToCurrentTime(perc: number, duration: number): number {
-        const sec = (duration / 100) * perc
-        return Math.round(sec)
+    public static convertPercentsToCurrentTime(percents: number, duration: number): number {
+        return (duration / 100) * percents
     }
 
 }

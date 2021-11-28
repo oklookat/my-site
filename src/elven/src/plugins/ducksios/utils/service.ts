@@ -1,4 +1,5 @@
 // some from: https://github.com/axios/axios/blob/76f09afc03fbcf392d31ce88448246bcd4f91f8c/lib/utils.js
+
 // MIT license stuff (axios):
 /**
 Copyright (c) 2014-present Matt Zabriskie
@@ -21,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-import type { TGlobalConfig, TRequestConfig, THeaders, TRequestParams } from "./types";
+import type { GlobalConfig, RequestConfig, Headers, RequestParams } from "../types";
 import { Validator } from "./validator";
 
 
@@ -57,7 +58,7 @@ export default class Service {
     }
 
     /** set request params to url using {@link URL} object */
-    public static setRequestParams(url: string, params?: TRequestParams): string {
+    public static setRequestParams(url: string, params?: RequestParams): string {
         if (!params) {
             return url
         }
@@ -69,8 +70,8 @@ export default class Service {
     }
 
     /** set request headers to XHR based on settings */
-    public static setRequestHeaders(xhr: XMLHttpRequest, rc: TRequestConfig, gc: TGlobalConfig): XMLHttpRequest {
-        const set = (headers: THeaders) => {
+    public static setRequestHeaders(xhr: XMLHttpRequest, rc: RequestConfig, gc: GlobalConfig) {
+        const set = (headers: Headers) => {
             for (const header in headers) {
                 xhr.setRequestHeader(header, headers[header].toString())
             }
@@ -83,17 +84,20 @@ export default class Service {
         if (headers) {
             set(rc.headers)
         }
-        return xhr
     }
 
     /** check content type in local and global config. If content type not in local and global, set header in local config */
-    public static setContentTypeIfUnset(value: string | number, gc: TGlobalConfig, rc: TRequestConfig): TRequestConfig {
-        const notInGlobal = gc.headers && !('Content-Type' in gc.headers)
-        const notInLocal = rc.headers && !('Content-Type' in rc.headers)
-        if (notInLocal && notInGlobal) {
-            rc.headers['Content-Type'] = value
+    public static setContentTypeIfUnset(value: string | number, gc: GlobalConfig, rc: RequestConfig) {
+        if (gc.headers && ('Content-Type' in gc.headers)) {
+            return
         }
-        return rc
+        if (rc.headers && ('Content-Type' in rc.headers)) {
+            return
+        }
+        if (!rc.headers) {
+            rc.headers = {}
+        }
+        rc.headers['Content-Type'] = value
     }
 
     /** if rawValue string - check is valid json, trim and return. Otherwise - stringify and return. If error while validation or stringify - throws error */

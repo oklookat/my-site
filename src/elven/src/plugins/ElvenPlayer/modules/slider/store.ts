@@ -1,4 +1,4 @@
-import type { IStore } from "./types";
+import type { Store as IStore } from "./types";
 import State from '../state';
 
 export default class Store implements IStore {
