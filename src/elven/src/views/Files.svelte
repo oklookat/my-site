@@ -3,9 +3,9 @@
   import FileAdapter from "@/adapters/FileAdapter";
   import type { Meta } from "@/types/global";
   import type { File } from "@/types/file";
-  import CFile from "@/components/parts/File.svelte";
-  import Pagination from "@/components/ui/Pagination.svelte";
-  import Overlay from "@/components/ui/Overlay.svelte";
+  import CFile from "@/components/File.svelte";
+  import Pagination from "@/ui/Pagination.svelte";
+  import Overlay from "@/ui/Overlay.svelte";
 
   let isLoaded: boolean = false;
   // service
@@ -181,8 +181,8 @@
     </div>
 
     <Pagination
-      {totalPages}
-      {currentPage}
+      total={totalPages}
+      current={currentPage}
       on:changed={(e) => getFiles(e.detail)}
     />
   {/if}

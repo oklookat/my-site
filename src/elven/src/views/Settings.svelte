@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import AccountSettings from "@/components/parts/AccountSettings.svelte";
+    import AccountSettings from "@/components/AccountSettings.svelte";
 
     onMount(() => {});
 </script>

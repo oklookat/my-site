@@ -7,7 +7,7 @@ export default class ElvenProgress implements IElvenProgress {
     private _percents: number
     // settings
     private settings: Settings = {
-        height: '3px',
+        height: '2px',
         basicLoading: {
             startTo: 45,
             startSpeed: 30,

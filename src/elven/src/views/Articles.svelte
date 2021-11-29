@@ -4,9 +4,9 @@
   import type { Article, By, Params, Show, Start } from "@/types/article";
   import type { Meta } from "@/types/global";
   import ArticleAdapter from "@/adapters/ArticleAdapter";
-  import Overlay from "@/components/ui/Overlay.svelte";
-  import Pagination from "@/components/ui/Pagination.svelte";
-  import CArticle from "@/components/parts/Article.svelte";
+  import Overlay from "@/ui/Overlay.svelte";
+  import Pagination from "@/ui/Pagination.svelte";
+  import CArticle from "@/components/Article.svelte";
 
   let loaded = false;
   let toolsOverlay = false;
@@ -189,8 +189,8 @@
 
   {#if meta}
     <Pagination
-      totalPages={meta.total_pages}
-      currentPage={meta.current_page}
+      total={meta.total_pages}
+      current={meta.current_page}
       on:changed={(e) => onPageChanged(e.detail)}
     />
   {/if}

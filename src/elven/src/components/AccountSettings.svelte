@@ -1,6 +1,6 @@
 <script lang="ts">
     import UserAdapter from "@/adapters/UserAdapter";
-    import Overlay from "@/components/ui/Overlay.svelte";
+    import Overlay from "@/ui/Overlay.svelte";
     import type { User, UserChange } from "@/types/user";
     import { usernameValidate, passwordValidate } from "@/types/user";
     import { onMount } from "svelte";

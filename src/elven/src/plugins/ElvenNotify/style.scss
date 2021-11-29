@@ -4,36 +4,6 @@
     }
   }
 
-  .notify {
-    width: 100%;
-    z-index: 9999;
-    bottom: 0;
-    margin-bottom: 8px;
-    position: fixed;
-    overflow: hidden;
-    &__notifications {
-      width: 100%;
-      gap: 8px;
-      height: max-content;
-      display: flex;
-      flex-direction: column-reverse;
-      box-sizing: border-box;
-      position: relative;
-    }
-    @include _desktop() {
-      margin-right: 12px;
-      height: min-content;
-      width: 224px;
-      right: 0;
-      bottom: 0;
-      &__notifications {
-        height: max-content;
-        width: max-content;
-        flex-direction: column;
-      }
-    }
-  }
-
   .notification {
     cursor: pointer;
     border-radius: 6px;
@@ -51,13 +21,13 @@
       margin-left: 12px;
       margin-right: 8px;
     }
-    &__timer-wrapper {
+    &__progress-wrapper {
       width: 50%;
       margin-bottom: 12px;
       margin-top: 12px;
       justify-self: center;
     }
-    &__timer {
+    &__progress {
       border-radius: 4px;
       height: 4px;
       transition: transform 120ms linear;
@@ -67,7 +37,7 @@
       position: relative;
       width: 214px;
       min-height: 52px;
-      &__timer-wrapper {
+      &__progress-wrapper {
         margin-bottom: 8px;
         margin-top: 8px;
       }

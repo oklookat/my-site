@@ -5,12 +5,12 @@
   import Router, { location } from "svelte-spa-router";
   import routes from "@/routes";
   // components
-  import Header from "@/components/parts/Header.svelte";
-  import ServiceWrapper2 from "@/components/parts/ServiceWrapper2.svelte";
+  import Header from "@/components/Header.svelte";
+  import ServiceWrapper2 from "@/components/ServiceWrapper2.svelte";
   // plugins
   import Progress from "@/plugins/ElvenProgress/Progress.svelte";
   //import Notify from "@/plugins/ElvenNotify/Notify.svelte";
-  import Notify from "@/plugins/ElvenNotify/NotifyStandalone.svelte";
+  import Notify from "@/plugins/ElvenNotify/Notify.svelte";
 
   let isNotAuth = $location !== "/login" && $location !== "/logout";
   location.subscribe((value) => {
