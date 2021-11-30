@@ -14,7 +14,7 @@
     "@tsconfig/svelte": "^2.0.1",
     "@types/byte-size": "^8.1.0",
     "@types/node": "^16.11.10",
-    "sass": "^1.43.5",
+    "sass": "^1.44.0",
     "svelte": "^3.44.2",
     "svelte-check": "^2.2.10",
     "svelte-preprocess": "^4.7.2",
