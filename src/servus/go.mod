@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/gorilla/mux v1.8.0
 	github.com/gosimple/slug v1.11.2
-	github.com/jackc/pgx/v4 v4.14.0
+	github.com/jackc/pgx/v4 v4.14.1
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/oklog/ulid/v2 v2.0.2
 	github.com/pkg/errors v0.9.1
