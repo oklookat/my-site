@@ -1,5 +1,6 @@
 import type { HookOutput } from "@/plugins/ducksios/types"
 
+/** handle request / response errors */
 export class AdapterError {
 
     public static handle(err: HookOutput.onError): string {

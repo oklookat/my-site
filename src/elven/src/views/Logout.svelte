@@ -10,6 +10,3 @@
 </script>
 
 <div class="logout" />
-
-<style>
-</style>

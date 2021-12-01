@@ -7,6 +7,8 @@
   import Overlay from "@/ui/Overlay.svelte";
   import Pagination from "@/ui/Pagination.svelte";
   import CArticle from "@/components/Article.svelte";
+  import Toolbar from "@/ui/Toolbar.svelte";
+  import ToolbarBig from "@/ui/ToolbarBig.svelte";
 
   let loaded = false;
   let toolsOverlay = false;
@@ -116,17 +118,19 @@
 </script>
 
 <div class="articles">
-  <div class="articles__create">
+
+  <ToolbarBig>
     <a href="#/articles/create">new</a>
-  </div>
-  <div class="articles__toolbar">
+  </ToolbarBig>
+  
+  <Toolbar>
     <div class="articles__show">
       {#if params.show === "published"}
         <div
           class="articles__item articles__show-published"
           on:click={() => setShow("drafts")}
         >
-          show published
+          published
         </div>
       {/if}
       {#if params.show === "drafts"}
@@ -134,7 +138,7 @@
           class="articles__item articles__show-drafts"
           on:click={() => setShow("published")}
         >
-          show drafts
+          drafts
         </div>
       {/if}
     </div>
@@ -171,7 +175,7 @@
         </div>
       {/if}
     </div>
-  </div>
+  </Toolbar>
 
   {#if articles && articles.length > 0}
     <div class="articles__list">
@@ -228,33 +232,6 @@
     gap: 14px;
     &__item {
       cursor: pointer;
-    }
-    &__toolbar {
-      background-color: var(--color-level-1);
-      padding-left: 12px;
-      font-size: 0.8rem;
-      min-height: 36px;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 12px;
-      font-weight: bold;
-    }
-    &__create {
-      background-color: var(--color-level-1);
-      height: 36px;
-      width: 100%;
-      display: flex;
-      flex-direction: row;
-      > a {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        :hover {
-          background-color: var(--color-hover);
-        }
-      }
     }
     &__404 {
       background-color: var(--color-level-1);

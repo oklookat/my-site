@@ -25,7 +25,7 @@ THE SOFTWARE.
 import type { GlobalConfig, RequestConfig, Headers, RequestParams } from "../types";
 import { Validator } from "./validator";
 
-
+/** useful things */
 export default class Service {
 
     /**

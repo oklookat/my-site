@@ -1,4 +1,4 @@
-import type { FileType } from '@/tools/Extensions'
+import type { FileType } from '@/tools/Extension'
 import type { Meta } from './global'
 
 export type Data = {

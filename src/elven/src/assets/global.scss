@@ -1,6 +1,5 @@
 @import './themes.scss';
 
-// ::
 :root {
   --header-height: 52px;
   --border-radius: 6px;
@@ -16,6 +15,7 @@
 }
 
 ::-webkit-scrollbar {
+  height: 1px;
   width: 8px;
 }
 
@@ -25,6 +25,10 @@
   :hover {
     background: var(--color-scrollbar-hover);
   }
+}
+
+::selection {
+  background: var(--color-text-selection);
 }
 
 * {
@@ -48,35 +52,6 @@ body {
   min-height: 100%;
 }
 
-.container {
-  min-height: 100vh;
-  word-break: break-word;
-  display: flex;
-  flex-direction: column;
-}
-
-.service, .service-2 {
-  width: 100%;
-  z-index: 7777;
-}
-
-.service {
-  top: 0;
-}
-
-.service-2 {
-  bottom: 0;
-}
-
-.content {
-  height: 100%;
-  width: 100%;
-  font-size: 1.1rem;
-  line-height: 1.46rem;
-  letter-spacing: 0.0007rem;
-}
-
-// e l v e n
 .logo__text {
   font-size: 1.2rem;
   letter-spacing: 0.8rem;
@@ -86,7 +61,7 @@ body {
 
 .item {
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--border-radius);
   height: 100%;
   display: flex;
   flex-direction: row;
@@ -107,7 +82,7 @@ body {
 
 .block {
   background-color: var(--color-level-1);
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -137,10 +112,10 @@ textarea {
 
 input {
   color: var(--color-text);
-  background-color: var(--color-level-2);
+  background-color: var(--color-level-1);
   border: 1px solid var(--color-border);
   min-height: 24px;
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   text-indent: 6px;
   ::placeholder {
     opacity: 20%;
@@ -153,41 +128,30 @@ input {
 button {
   font-weight: bold;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   border: 1px solid var(--color-border);
   background-color: var(--color-level-2);
   color: var(--color-text);
   min-height: 24px;
-  :disabled, [disabled] {
-    cursor: not-allowed;
-    color: var(--color-text-inactive);
+  &:disabled, [disabled] {
+    display: none;
   }
 }
 
-// multimedia
 img, video {
   min-height: 240px;
   min-width: 240px;
   object-fit: fill;
   border-radius: var(--border-radius);
-}
-
-@media screen and (min-width: 0px) {
-  img, video {
+  @media screen and (min-width: 0px) {
     max-width: 100%;
     max-height: 320px;
   }
-}
-
-@media screen and (min-width: 604px) {
-  img, video {
+  @media screen and (min-width: 604px) {
     max-width: 60%;
     max-height: 60%;
   }
-}
-
-@media screen and (min-width: 1365px) {
-  img, video {
+  @media screen and (min-width: 1365px) {
     width: 40%;
     height: 40%;
   }

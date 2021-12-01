@@ -59,7 +59,7 @@
     align-items: center;
     justify-content: center;
     &__main {
-      border-radius: 12px;
+      border-radius: var(--border-radius);
       z-index: 9999;
       max-width: 365px;
       max-height: 524px;

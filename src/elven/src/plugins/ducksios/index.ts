@@ -4,7 +4,6 @@ import Parse from "./utils/parse"
 import Service from "./utils/service"
 import { Validator } from "./utils/validator"
 
-
 /** axios-like XHR wrapper */
 export default class Ducksios {
 

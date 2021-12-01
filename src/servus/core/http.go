@@ -17,6 +17,7 @@ type HTTP struct {
 // Send - wrapper for http.ResponseWriter. Sends response and clear errorMan errors.
 func (h *HTTP) Send(response http.ResponseWriter, body string, statusCode int) {
 	response.WriteHeader(statusCode)
+	// TODO: add 500 error handler here; notification about 500 error with useful information
 	_, err := response.Write([]byte(body))
 	if err != nil {
 		h.logger.Error("HTTP: failed to send response. Error:" + err.Error())
@@ -95,7 +96,7 @@ func (m *Middleware) Security(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		var method = request.Method
 		method = strings.ToUpper(method)
-		//////// request body size check
+		// request body size check
 		if m.config.Security.Limiter.Body.Active {
 			var isNotReadOnlyMethod = !(method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions)
 			if isNotReadOnlyMethod {
@@ -108,6 +109,7 @@ func (m *Middleware) Security(next http.Handler) http.Handler {
 					}
 				}
 				if !isBypassed {
+					// TODO: fix max body length
 					request.Body = http.MaxBytesReader(writer, request.Body, m.config.Security.Limiter.Body.MaxSize)
 					//payload, err := ioutil.ReadAll(request.Body)
 					//if err != nil {

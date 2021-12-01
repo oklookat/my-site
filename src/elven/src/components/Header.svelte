@@ -60,17 +60,17 @@
     align-items: center;
     justify-content: center;
     background-color: transparent;
+    gap: 42px;
     &__item {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 80%;
-      width: 84px;
+      width: max-content;
       cursor: pointer;
     }
     &__item-active {
-      border-radius: 4px;
-      background-color: var(--color-header-active);
+      text-decoration: underline 1px;
     }
   }
 </style>

@@ -16,12 +16,18 @@ type entityArticle struct {
 }
 
 // getAll - GET url/
-// params:
-// page = number
-// show = published, drafts
-// by = created, updated, published
-// start = newest (DESC), oldest (ASC)
-// preview = true (content < 480 symbols), false - gives you full articles.
+//
+// request params:
+//
+// page: *number of page*
+//
+// show: published, drafts
+//
+// by: created; updated; published
+//
+// start: newest (DESC); oldest (ASC)
+//
+// preview: true (content < 480 symbols); false (gives you full articles).
 func (a *entityArticle) getAll(response http.ResponseWriter, request *http.Request) {
 	var err error
 	var isAdmin = false

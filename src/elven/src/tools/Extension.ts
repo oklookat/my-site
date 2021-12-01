@@ -1,6 +1,6 @@
 export type FileType = 'unknown' | 'image' | 'video' | 'audio'
 
-export default class Extensions {
+export default class Extension {
 
     private static readonly imageExtensions = ['jpeg', 'jpg', 'gif', 'png', 'bmp', 'svg', 'webp']
     private static readonly videoExtensions = ['mp4', 'mov', 'wmv', 'avi', 'flv', 'mkv', 'webm']

@@ -27,10 +27,6 @@ const Hooks: IHooks = {
         const percents = (e.data.loaded / e.data.total) * 100
         window.$elvenProgress.percents = percents
         console.log(`uploaded: ${percents}%`)
-    },
-    onUploaded() {
-        window.$elvenProgress.finishBasic()
-        window.$elvenProgress.resetPercents()
     }
 }
 

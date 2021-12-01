@@ -5,7 +5,7 @@
 
   let username = "";
   let password = "";
-  let loginButton;
+  let loginButton: HTMLButtonElement;
 
   function makeLogin() {
     AuthAdapter.login(username, password)
@@ -40,13 +40,13 @@
     <input
       type="text"
       name="username"
-      placeholder="Username"
+      placeholder="username"
       bind:value={username}
     />
     <input
       type="password"
       name="password"
-      placeholder="Password"
+      placeholder="password"
       bind:value={password}
     />
   </div>
@@ -56,7 +56,7 @@
     bind:this={loginButton}
     on:click={makeLogin}
   >
-    Log in
+    ok
   </button>
 </div>
 
@@ -85,13 +85,6 @@
       border: 1px solid rgba(0, 0, 0, 0.1);
       box-shadow: 0 0 19px 0 rgba(34, 60, 80, 0.02);
       background-color: var(--color-level-1);
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      user-select: none;
-      cursor: pointer;
       font-size: 1.2rem;
       width: 264px;
       height: 48px;

@@ -9,7 +9,7 @@ import (
 	"unicode"
 )
 
-// Utils - must have utilities.
+// Utils - useful utilities.
 type Utils struct {
 	config *ConfigFile
 	logger Logger

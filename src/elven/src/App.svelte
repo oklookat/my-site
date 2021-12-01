@@ -9,7 +9,6 @@
   import ServiceWrapper2 from "@/components/ServiceWrapper2.svelte";
   // plugins
   import Progress from "@/plugins/ElvenProgress/Progress.svelte";
-  //import Notify from "@/plugins/ElvenNotify/Notify.svelte";
   import Notify from "@/plugins/ElvenNotify/Notify.svelte";
 
   let isNotAuth = $location !== "/login" && $location !== "/logout";
@@ -20,13 +19,9 @@
 </script>
 
 <div class="container">
-  <div id="progress">
-    <Progress />
-  </div>
+  <Progress />
   {#if isNotAuth}
-    <div class="header">
-      <Header />
-    </div>
+    <Header />
   {/if}
   <div class="content">
     <div style="height: 16px;" />
@@ -35,8 +30,34 @@
   </div>
   <Notify />
   {#if isNotAuth}
-    <div class="service-2">
+    <div class="service">
       <ServiceWrapper2 />
     </div>
   {/if}
 </div>
+
+<style lang="scss">
+  .container {
+    min-height: 100vh;
+    word-break: break-word;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content {
+    height: 100%;
+    width: 100%;
+    font-size: 1.1rem;
+    line-height: 1.46rem;
+    letter-spacing: 0.0007rem;
+  }
+
+  .service {
+    width: 100%;
+    z-index: 7777;
+  }
+
+  .service {
+    bottom: 0;
+  }
+</style>

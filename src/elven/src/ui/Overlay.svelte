@@ -36,7 +36,7 @@
 
 <style lang="scss">
   .overlay {
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.4);
     z-index: 9998;
     max-width: 100vw;
     width: 100%;
@@ -51,7 +51,7 @@
     align-items: center;
     justify-content: center;
     &__main {
-      border-radius: 12px;
+      border-radius: var(--border-radius);
       z-index: 9999;
       overflow: auto;
       max-width: 365px;

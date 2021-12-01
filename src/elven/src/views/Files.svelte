@@ -6,6 +6,7 @@
   import CFile from "@/components/File.svelte";
   import Pagination from "@/ui/Pagination.svelte";
   import Overlay from "@/ui/Overlay.svelte";
+  import ToolbarBig from "@/ui/ToolbarBig.svelte"
 
   let isLoaded: boolean = false;
   // service
@@ -114,18 +115,17 @@
   }
 
   function playAudio(url: URL) {
-    window.$elvenPlayer.playlist = {position: 0, sources: [url.href]}
-    window.$elvenPlayer.play()
+    window.$elvenPlayer.playlist = { position: 0, sources: [url.href] };
+    window.$elvenPlayer.play();
   }
 </script>
 
 <div class="files">
-  <div class="files__tools">
-    <div class="files__upload">
-      <div class="files__upload-button" on:click={() => onUploadClick()}>
+  <div class="files__toolbar">
+    <ToolbarBig>
+      <div class="files__upload" on:click={() => onUploadClick()}>
         upload
-      </div>
-      <input
+        <input
         id="file__input"
         type="file"
         multiple
@@ -133,7 +133,8 @@
         bind:this={inputEL}
         on:input={onInputChange}
       />
-    </div>
+      </div>
+    </ToolbarBig>
   </div>
 
   {#if isLoaded && files.length < 1}
@@ -196,16 +197,6 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
-    &__tools {
-      background-color: var(--color-level-1);
-      font-size: 1rem;
-      width: 100%;
-      height: 54px;
-      border-radius: var(--border-radius);
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-    }
     &__404 {
       background-color: var(--color-level-1);
       height: 240px;
@@ -217,10 +208,7 @@
       gap: 24px;
     }
     &__upload {
-      margin-left: 12px;
-      &-button {
-        cursor: pointer;
-      }
+      cursor: pointer;
     }
     &__list {
       height: 100%;

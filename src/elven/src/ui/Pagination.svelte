@@ -104,14 +104,14 @@
   }
 
   .pagination {
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     background-color: var(--color-level-1);
     height: 94px;
     display: grid;
     grid-template-columns: 2fr 1fr 2fr;
     grid-template-rows: 54px 1fr;
     align-items: center;
-    column-gap: 4px;
+    column-gap: 12px;
     &__go {
       display: flex;
       justify-content: center;
@@ -123,15 +123,14 @@
         width: 100%;
       }
     }
-    // &__prev,
-    // &__next {
-      
-    // }
-    &__prev,
-    &__next,
-    &__total {
+    &__prev, &__next, &__total {
       width: 100%;
       height: 100%;
+    }
+    &__prev > div:hover,
+    &__next > div:hover {
+      border-radius: var(--border-radius);
+      background-color: var(--color-hover);
     }
     &__total {
       grid-column: 1 / 4;

@@ -65,4 +65,5 @@ export default class ArticleAdapter {
             return Promise.reject(err)
         }
     }
+    
 }

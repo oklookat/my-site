@@ -5,10 +5,6 @@
 <div class="progress" style="width: {percents}%" />
 
 <style>
-  :root {
-    --color: #404040;
-    --border-radius: inherit;
-  }
   .progress {
     border-radius: var(--border-radius);
     height: 100%;

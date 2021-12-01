@@ -106,10 +106,10 @@
     <div class="block account">
         <div class="big">{userData.username}</div>
         <div style="cursor: pointer;" on:click={() => activeUsername()}>
-            Change username
+            change username
         </div>
         <div style="cursor: pointer;" on:click={() => activePassword()}>
-            Change password
+            change password
         </div>
     </div>
 {/if}
@@ -123,27 +123,27 @@
             {#if changer.what === "username"}
                 <input
                     type="text"
-                    placeholder="New username"
+                    placeholder="new username"
                     bind:value={changer.newValue}
                     on:input={onUsernameInput}
                 />
             {:else if changer.what === "password"}
                 <input
                     type="password"
-                    placeholder="New password"
+                    placeholder="new password"
                     bind:value={changer.newValue}
                     on:input={onPasswordInput}
                 />
             {/if}
             <input
                 type="password"
-                placeholder="Password"
+                placeholder="password"
                 bind:value={changer.password}
                 on:input={onPasswordConfirmInput}
             />
             <button
                 disabled={!(newValueValid && passwordConfirmValid)}
-                on:click={change}>Change</button
+                on:click={change}>change</button
             >
         </div>
     </div>

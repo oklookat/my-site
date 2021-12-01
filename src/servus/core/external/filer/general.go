@@ -12,10 +12,12 @@ import (
 )
 
 // DeleteEmptyDirsRecursive - delete empty dirs
+//
 // starts from path, and goes up deleting dirs (if empty) along the way.
+//
 // params:
-// path like 'D:\Test\123\456\789\' or 'D:\Test\123\456\789\file.txt'
-// if in dirs D:\Test\123\456\789\ has no files, it deletes all before find dir with files.
+//
+// path: path like 'D:\Test\123\456\789\' or 'D:\Test\123\456\789\file.txt'
 func DeleteEmptyDirsRecursive(path string) (err error) {
 	path = filepath.ToSlash(path)
 	inf, err := os.Stat(path)
@@ -62,10 +64,15 @@ func GenerateDirsByHash(hash string) (result string, err error) {
 }
 
 // ProcessFromForm -
+//
 // 1. get file from request by key
+//
 // 2. move to temp folder
+//
 // 3. get MD5 hash
+//
 // if error - deletes temp file
+//
 // returns closed temp file, file header from request, and hash.
 func ProcessFromForm(request *http.Request, formKey string, tempDir string) (data *processedFromForm, err error){
 	tempDir = filepath.ToSlash(tempDir)

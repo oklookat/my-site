@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 import type { HookName, Hooks } from "../types"
 
+/** validate things */
 export class Validator {
 
     public toString = Object.prototype.toString

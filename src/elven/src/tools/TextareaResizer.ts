@@ -3,38 +3,41 @@
  */
 export default class TextareaResizer {
 
-    private element: HTMLElement
+    private textarea: HTMLElement
     private _onInput = this.onInput.bind(this)
     private _onWindowResize = this.onWindowResize.bind(this)
     private resizeTimeout: NodeJS.Timeout
 
-    constructor(element: HTMLElement) {
-        if (!element.style) {
-            throw Error(`TextareaResizer: wrong element provided.`)
+    constructor(textarea: HTMLTextAreaElement) {
+        if (!(textarea instanceof HTMLTextAreaElement)) {
+            throw Error(`TextareaResizer: wrong element provided. Provide textarea element`)
         }
-        this.element = element
-        this.start()
-    }
-
-    private start() {
+        this.textarea = textarea
+        this.manageEvents(true)
         this.onInput()
-        this.element.addEventListener('input', this._onInput)
-        window.addEventListener('resize', this._onWindowResize)
     }
 
     public destroy() {
-        this.element.removeEventListener('input', this._onInput)
-        window.removeEventListener('resize', this._onWindowResize)
+        this.manageEvents(false)
+    }
+
+    /** add or remove events */
+    private manageEvents(add: boolean) {
+        const action = add ? 'addEventListener' : 'removeEventListener'
+        this.textarea[action]('input', this._onInput)
+        this.textarea[action]('change', this._onInput)
+        window[action]('resize', this._onWindowResize)
     }
 
     private onInput() {
-        this.element.style.height = `0px`
-        const height = this.element.clientHeight
-        const scrollHeight = this.element.scrollHeight
-        const isEqual = scrollHeight === height
-        if (!isEqual) {
-            this.element.style.height = `${scrollHeight}px`
+        this.textarea.style.height = `0`
+        const height = this.textarea.clientHeight
+        const scrollHeight = this.textarea.scrollHeight
+        const correct = scrollHeight === height
+        if (correct) {
+            return
         }
+        this.textarea.style.height = `${scrollHeight}px`
     }
 
     private onWindowResize() {
@@ -45,4 +48,5 @@ export default class TextareaResizer {
             this.onInput()
         }, 500)
     }
+
 }

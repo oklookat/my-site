@@ -61,7 +61,7 @@ export default class Dates {
     }
 
     /** second(s)? minute(s)? hour(s)? */
-    private static declensionOfNumbers(number: number, titles: Array<string>): string {
+    private static declensionOfNumbers(number: number, titles: string[]): string {
         number = Math.abs(number)
         if (number === 1) {
             return titles[0]

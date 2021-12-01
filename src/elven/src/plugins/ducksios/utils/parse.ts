@@ -26,10 +26,10 @@ import Service from "./service";
 import type { GlobalConfig, RequestConfig } from "../types";
 import { Validator } from "./validator";
 
-/** parse body before request and after response */
+/** parse things */
 export default class Parse {
 
-    /** set headers if not set. If it's json auto stringify before request. Returns body */
+    /** set headers if not set. If it's json, auto stringify before request. Returns body */
     public static requestBody(body: any, rc: RequestConfig, gc: GlobalConfig): any {
         const simpleData = Validator.isFormData(body) ||
             Validator.isArrayBuffer(body) ||
@@ -56,7 +56,7 @@ export default class Parse {
         return body
     }
 
-    /** auto parse json after response. Returns body */ 
+    /** parse json after response. Returns body */ 
     public static responseBody(body: any): any {
         if (!body) {
             return body

@@ -4,7 +4,7 @@
   import ImageTool from "@editorjs/image";
   import ArticleAdapter from "@/adapters/ArticleAdapter";
   import TextareaResizer from "@/tools/TextareaResizer";
-  import type { Article } from "@/types/article";
+  import type { Article, Content } from "@/types/article";
   import { onDestroy, onMount } from "svelte";
 
   export let params: { id?: string } = { id: null };
@@ -13,14 +13,13 @@
   let autoSaveThrottle: ReturnType<typeof setTimeout> | null = null;
   let textareaResizer: TextareaResizer;
   // title element for textarea resize
-  let articleTitleEL: HTMLElement | null;
+  let articleTitleEL: HTMLTextAreaElement;
   let article: Article = {
     title: "",
     content: null,
   };
 
   onMount(async () => {
-    textareaResizer = new TextareaResizer(articleTitleEL);
     let id = params.id;
     // if edit mode
     if (id) {
@@ -28,6 +27,9 @@
         article = await get(id);
       } catch (err) {}
     }
+    // manually add title before creating TextareaResizer, for correct height in start
+    articleTitleEL.value = article.title;
+    textareaResizer = new TextareaResizer(articleTitleEL);
     initEditor(article.content);
   });
 
@@ -36,7 +38,7 @@
     textareaResizer.destroy();
   });
 
-  function initEditor(data?: any) {
+  function initEditor(data?: Content) {
     editor = new EditorJS({
       holder: "editor",
       tools: {
@@ -106,7 +108,7 @@
 <div class="create__container">
   <div class="create">
     <textarea
-      id="title"
+      class="title"
       placeholder="Actually..."
       rows="1"
       maxlength="124"
@@ -138,7 +140,7 @@
       margin: auto;
       background-color: white;
       color: black;
-      border-radius: 6px;
+      border-radius: var(--border-radius);
       padding-bottom: 24px;
       @media screen and (max-width: 1023px) {
         width: 95%;
@@ -151,7 +153,7 @@
     }
   }
 
-  #title {
+  .title {
     margin-top: 12px;
     min-height: 38px;
     text-indent: 0;

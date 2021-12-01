@@ -17,7 +17,7 @@ export default class Core {
     constructor(container: HTMLDivElement) {
         this.store = new Store()
         this.container = container
-        if (window.PointerEvent) {
+        if (!window.PointerEvent) {
             this.mode = 'new'
             this.startNew(true)
         } else {

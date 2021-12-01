@@ -3,8 +3,8 @@
     import type { File } from "@/types/file";
     import { Env } from "@/tools/Paths";
     import Dates from "@/tools/Dates";
-    import Sizes from "@/tools/Sizes";
-    import Extensions from "@/tools/Extensions";
+    import Size from "@/tools/Size";
+    import Extension from "@/tools/Extension";
 
     const dispatch = createEventDispatcher<{ selected: File }>();
 
@@ -28,10 +28,10 @@
             file.pathConverted = new URL(path);
         }
         if (!file.extensionType) {
-            file.extensionType = Extensions.getType(file.extension);
+            file.extensionType = Extension.getType(file.extension);
         }
         if (!file.sizeConverted) {
-            file.sizeConverted = Sizes.convert(file.size);
+            file.sizeConverted = Size.convert(file.size);
         }
         if (!file.createdAtConverted) {
             file.createdAtConverted = Dates.convert(file.created_at);

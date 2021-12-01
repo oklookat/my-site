@@ -22,7 +22,7 @@ function isAdmin() {
 
 const routes = {
     '/': Index,
-    //'*': Index, // other routes like 404
+    // '*' = // TODO: add 404 route.
     '/login': wrap({
         component: Login,
     }),
