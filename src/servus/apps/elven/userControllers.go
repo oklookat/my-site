@@ -19,7 +19,7 @@ type ResponseUser struct {
 // GET
 // controllerGetMe - send some user data by token.
 func (u *entityUser) controllerGetMe(response http.ResponseWriter, request *http.Request) {
-	auth := PipeAuth{}
+	auth := AuthPipe{}
 	auth.get(request)
 	var resp = ResponseUser{}
 	resp.IsAdmin = auth.IsAdmin
@@ -49,7 +49,7 @@ func (u *entityUser) controllerChange(response http.ResponseWriter, request *htt
 		u.Send(response, em.GetJSON(), 400)
 		return
 	}
-	auth := PipeAuth{}
+	auth := AuthPipe{}
 	auth.get(request)
 	match, err := instance.Encryption.Argon.Check(body.Password, auth.User.Password)
 	if err != nil || !match {

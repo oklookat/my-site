@@ -56,7 +56,7 @@ func (f *entityFile) controllerGetAll(response http.ResponseWriter, request *htt
 
 // POST url/
 func (f *entityFile) controllerCreateOne(response http.ResponseWriter, request *http.Request) {
-	auth := PipeAuth{}
+	auth := AuthPipe{}
 	auth.get(request)
 	em := errorMan.NewValidation()
 	var tempDir = instance.Config.Uploads.Temp

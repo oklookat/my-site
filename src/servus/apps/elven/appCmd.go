@@ -38,7 +38,7 @@ func (c *objectCmd) boot() {
 	}
 }
 
-// createUser - create user or superuser (ModelUser).
+// createUser - create user or superuser (UserModel).
 func (c *objectCmd) createUser(flag string) {
 	var err error
 	if flag != cmdFlagSuperuser && flag != cmdFlagUser {
@@ -67,7 +67,7 @@ chooseUsername:
 		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	var user = ModelUser{Username: username}
+	var user = UserModel{Username: username}
 	err = user.validateUsername()
 	if err != nil {
 		instance.Logger.Error(fmt.Sprintf("elven: validation failed. Error: %v", err.Error()))
@@ -113,7 +113,7 @@ choosePassword:
 		instance.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	user = ModelUser{Role: role, Username: username, Password: password}
+	user = UserModel{Role: role, Username: username, Password: password}
 	err = user.validatePassword()
 	if err != nil {
 		instance.Logger.Error(fmt.Sprintf("elven: validation failed. Error: %v", err.Error()))

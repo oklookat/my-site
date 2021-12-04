@@ -10,18 +10,18 @@ const (
 	accessTypeAuthorized = "ELVEN_ACCESS_AUTHORIZED"
 )
 
-// PipeAuth - represents auth status on secured routes.
-type PipeAuth struct {
+// AuthPipe - represents auth status on secured routes.
+type AuthPipe struct {
 	Access             bool
 	UserAndTokenExists bool
 	IsAdmin            bool
-	User               *ModelUser
-	Token              *ModelToken
+	User               *UserModel
+	Token              *TokenModel
 }
 
-// get - get PipeAuth from request context.
-func (a *PipeAuth) get(request *http.Request) {
-	auth, ok := request.Context().Value(CtxAuthData).(PipeAuth)
+// get - get AuthPipe from request context.
+func (a *AuthPipe) get(request *http.Request) {
+	auth, ok := request.Context().Value(CtxAuthData).(AuthPipe)
 	if !ok {
 		a.UserAndTokenExists = false
 		return
@@ -30,8 +30,8 @@ func (a *PipeAuth) get(request *http.Request) {
 	return
 }
 
-// create - get ModelUser, ModelToken, write permissions, agents etc. Used in middleware.
-func (a *PipeAuth) create(request *http.Request, accessType string) {
+// create - get UserModel, TokenModel, write permissions, agents etc. Used in middleware.
+func (a *AuthPipe) create(request *http.Request, accessType string) {
 	var err error
 	token, found := a.getEncryptedToken(request)
 	if found {
@@ -67,8 +67,8 @@ func (a *PipeAuth) create(request *http.Request, accessType string) {
 	return
 }
 
-// setUserAndToken - set ModelUser and ModelToken to PipeAuth.
-func (a *PipeAuth) setUserAndToken(encryptedToken string) (err error) {
+// setUserAndToken - set UserModel and TokenModel to AuthPipe.
+func (a *AuthPipe) setUserAndToken(encryptedToken string) (err error) {
 	// get token id from encrypted token.
 	a.User = nil
 	a.Token = nil
@@ -77,13 +77,13 @@ func (a *PipeAuth) setUserAndToken(encryptedToken string) (err error) {
 		return err
 	}
 	// find token by id.
-	var tempToken = ModelToken{ID: tokenID}
+	var tempToken = TokenModel{ID: tokenID}
 	found, err := tempToken.findByID()
 	if !found || err != nil {
 		return err
 	}
 	// find user by id in found token.
-	var tempUser = ModelUser{ID: tempToken.UserID}
+	var tempUser = UserModel{ID: tempToken.UserID}
 	found, err = tempUser.findByID()
 	if !found || err != nil {
 		return err
@@ -94,7 +94,7 @@ func (a *PipeAuth) setUserAndToken(encryptedToken string) (err error) {
 }
 
 // getEncryptedToken - get encryptedToken from cookie or authorization header.
-func (a *PipeAuth) getEncryptedToken(request *http.Request) (token string, found bool) {
+func (a *AuthPipe) getEncryptedToken(request *http.Request) (token string, found bool) {
 	// get from cookie.
 	found = false
 	token = ""
@@ -117,7 +117,7 @@ func (a *PipeAuth) getEncryptedToken(request *http.Request) (token string, found
 }
 
 // isMethodReadOnly - check is HTTP method readonly.
-func (a *PipeAuth) isMethodReadOnly(request *http.Request) bool {
+func (a *AuthPipe) isMethodReadOnly(request *http.Request) bool {
 	var method = request.Method
 	return method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions
 }

@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// ModelToken - represents token in database.
-type ModelToken struct {
+// TokenModel - represents token in database.
+type TokenModel struct {
 	ID        string    `json:"id" db:"id"`
 	UserID    string    `json:"user_id" db:"user_id"`
 	Token     string    `json:"token" db:"token"`
@@ -20,8 +20,8 @@ type ModelToken struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
-// create - create ModelToken in database.
-func (t *ModelToken) create() (err error) {
+// create - create TokenModel in database.
+func (t *TokenModel) create() (err error) {
 	var query = "INSERT INTO tokens (user_id, token, last_ip, last_agent, auth_ip, auth_agent) VALUES (:user_id, :token, :last_ip, :last_agent, :auth_ip, :auth_agent) RETURNING *"
 	stmt, err := instance.DB.Conn.PrepareNamed(query)
 	if err != nil {
@@ -35,8 +35,8 @@ func (t *ModelToken) create() (err error) {
 	return
 }
 
-// update - updates ModelToken in database. All fields except update and created dates must be filled.
-func (t *ModelToken) update() (err error) {
+// update - updates TokenModel in database. All fields except update and created dates must be filled.
+func (t *TokenModel) update() (err error) {
 	t.hookBeforeUpdate()
 	var query = "UPDATE tokens SET user_id=:user_id, token=:token, last_ip=:last_ip, last_agent=:last_agent, auth_ip=:auth_ip, auth_agent=:auth_agent WHERE id=:id RETURNING *"
 	stmt, err := instance.DB.Conn.PrepareNamed(query)
@@ -51,8 +51,8 @@ func (t *ModelToken) update() (err error) {
 	return
 }
 
-// databaseFind - find ModelToken in database by id field.
-func (t *ModelToken) findByID() (found bool, err error) {
+// databaseFind - find TokenModel in database by id field.
+func (t *TokenModel) findByID() (found bool, err error) {
 	var query = "SELECT * FROM tokens WHERE id=$1 LIMIT 1"
 	err = instance.DB.Conn.Get(t, query, t.ID)
 	err = instance.DB.CheckError(err)
@@ -67,8 +67,8 @@ func (t *ModelToken) findByID() (found bool, err error) {
 	return
 }
 
-// deleteByID - delete ModelToken from database by id field.
-func (t *ModelToken) deleteByID() (err error) {
+// deleteByID - delete TokenModel from database by id field.
+func (t *TokenModel) deleteByID() (err error) {
 	var query = "DELETE FROM tokens WHERE id=$1"
 	_, err = instance.DB.Conn.Exec(query, t.ID)
 	if err == sql.ErrNoRows {
@@ -78,7 +78,7 @@ func (t *ModelToken) deleteByID() (err error) {
 }
 
 // hookBeforeUpdate - executes before token update.
-func (t *ModelToken) hookBeforeUpdate() {
+func (t *TokenModel) hookBeforeUpdate() {
 	if t.AuthAgent != nil && len(*t.AuthAgent) > 323 {
 		var authAgent = *t.AuthAgent
 		var cut = 323 - len(authAgent)
@@ -102,7 +102,7 @@ func (t *ModelToken) hookBeforeUpdate() {
 }
 
 // setAuthAgents - writes last ip and user agent then updating model in database.
-func (t *ModelToken) setAuthAgents(request *http.Request) (err error) {
+func (t *TokenModel) setAuthAgents(request *http.Request) (err error) {
 	if request == nil {
 		return errors.New("setLastAgents: request nil pointer.")
 	}
@@ -118,7 +118,7 @@ func (t *ModelToken) setAuthAgents(request *http.Request) (err error) {
 }
 
 // setLastAgents - writes ip and user agent then updating model in database.
-func (t *ModelToken) setLastAgents(request *http.Request) (err error) {
+func (t *TokenModel) setLastAgents(request *http.Request) (err error) {
 	if request == nil {
 		return errors.New("setLastAgents: request nil pointer.")
 	}
@@ -136,8 +136,8 @@ func (t *ModelToken) setLastAgents(request *http.Request) (err error) {
 }
 
 // generate - generate token.
-// returns: token - token for user, hash - saved in db as ModelToken.Token.
-func (t *ModelToken) generate(userID string) (err error, token string, hash string) {
+// returns: token - token for user, hash - saved in db as TokenModel.Token.
+func (t *TokenModel) generate(userID string) (err error, token string, hash string) {
 	// token generating.
 	// first we generate fake token model to get created token ID.
 	t.UserID = userID

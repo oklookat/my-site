@@ -31,7 +31,7 @@ type entityArticle struct {
 func (a *entityArticle) getAll(response http.ResponseWriter, request *http.Request) {
 	var err error
 	var isAdmin = false
-	var auth = PipeAuth{}
+	var auth = AuthPipe{}
 	auth.get(request)
 	isAdmin = auth.UserAndTokenExists && auth.IsAdmin
 	// validate query params.
@@ -66,12 +66,12 @@ func (a *entityArticle) getAll(response http.ResponseWriter, request *http.Reque
 // getOne - GET url/id.
 func (a *entityArticle) getOne(response http.ResponseWriter, request *http.Request) {
 	var isAdmin = false
-	var auth = PipeAuth{}
+	var auth = AuthPipe{}
 	auth.get(request)
 	isAdmin = auth.UserAndTokenExists && auth.IsAdmin
 	var params = mux.Vars(request)
 	var id = params["id"]
-	var article = ModelArticle{ID: id}
+	var article = ArticleModel{ID: id}
 	found, err := article.findByID()
 	if err != nil {
 		a.err500(response, request, err)
@@ -95,14 +95,14 @@ func (a *entityArticle) getOne(response http.ResponseWriter, request *http.Reque
 
 // create - POST url/.
 func (a *entityArticle) create(response http.ResponseWriter, request *http.Request) {
-	var pAuth = PipeAuth{}
+	var pAuth = AuthPipe{}
 	pAuth.get(request)
 	val, em, _ := a.validatorBody(request)
 	if em.HasErrors() {
 		a.Send(response, em.GetJSON(), 400)
 		return
 	}
-	var article = ModelArticle{UserID: pAuth.User.ID, IsPublished: false, Title: *val.Title, Content: *val.Content}
+	var article = ArticleModel{UserID: pAuth.User.ID, IsPublished: false, Title: *val.Title, Content: *val.Content}
 	err := article.create()
 	if err != nil {
 		a.err500(response, request, err)
@@ -120,7 +120,7 @@ func (a *entityArticle) create(response http.ResponseWriter, request *http.Reque
 func (a *entityArticle) update(response http.ResponseWriter, request *http.Request) {
 	var params = mux.Vars(request)
 	var id = params["id"]
-	var article = ModelArticle{ID: id}
+	var article = ArticleModel{ID: id}
 	found, err := article.findByID()
 	if err != nil {
 		a.err500(response, request, err)
@@ -177,7 +177,7 @@ func (a *entityArticle) update(response http.ResponseWriter, request *http.Reque
 func (a *entityArticle) delete(response http.ResponseWriter, request *http.Request) {
 	var params = mux.Vars(request)
 	var id = params["id"]
-	var article = ModelArticle{ID: id}
+	var article = ArticleModel{ID: id}
 	found, err := article.findByID()
 	if err != nil {
 		a.err500(response, request, err)

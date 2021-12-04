@@ -19,7 +19,7 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 		a.Send(response, em.GetJSON(), 400)
 		return
 	}
-	var user = ModelUser{Username: val.Username}
+	var user = UserModel{Username: val.Username}
 	found, err := user.findByUsername()
 	if err != nil {
 		a.err500(response, request, err)
@@ -35,7 +35,7 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 		return
 	}
 	// token generating.
-	var tokenModel = ModelToken{}
+	var tokenModel = TokenModel{}
 	err, encryptedToken, _ := tokenModel.generate(user.ID)
 	if err != nil {
 		a.err500(response, request, err)
@@ -65,7 +65,7 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 // logout - get token from user and delete.
 func (a *entityAuth) controllerLogout(response http.ResponseWriter, request *http.Request) {
 	// get token from cookie or auth header.
-	var auth = PipeAuth{}
+	var auth = AuthPipe{}
 	auth.get(request)
 	if auth.UserAndTokenExists {
 		_ = auth.Token.deleteByID()

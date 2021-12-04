@@ -11,8 +11,8 @@ const (
 	userRoleUser  = "user"
 )
 
-// ModelUser - represents user in database.
-type ModelUser struct {
+// UserModel - represents user in database.
+type UserModel struct {
 	ID        string    `json:"id" db:"id"`
 	Role      string    `json:"role" db:"role"`
 	Username  string    `json:"username" db:"username"`
@@ -24,7 +24,7 @@ type ModelUser struct {
 }
 
 // create - create user in database.
-func (u *ModelUser) create() (err error) {
+func (u *UserModel) create() (err error) {
 	err = u.hookBeforeChange()
 	if err != nil {
 		instance.Logger.Error(err.Error())
@@ -36,7 +36,7 @@ func (u *ModelUser) create() (err error) {
 	return
 }
 
-func (u *ModelUser) update() (err error) {
+func (u *UserModel) update() (err error) {
 	err = u.hookBeforeChange()
 	if err != nil {
 		return
@@ -47,8 +47,8 @@ func (u *ModelUser) update() (err error) {
 	return
 }
 
-// findByID - find user in database by id in ModelUser.
-func (u *ModelUser) findByID() (found bool, err error) {
+// findByID - find user in database by id in UserModel.
+func (u *UserModel) findByID() (found bool, err error) {
 	var query = "SELECT * FROM users WHERE id=$1 LIMIT 1"
 	err = instance.DB.Conn.Get(u, query, u.ID)
 	err = instance.DB.CheckError(err)
@@ -63,8 +63,8 @@ func (u *ModelUser) findByID() (found bool, err error) {
 	return
 }
 
-// findByUsername - find user in database by username in ModelUser.
-func (u *ModelUser) findByUsername() (found bool, err error) {
+// findByUsername - find user in database by username in UserModel.
+func (u *UserModel) findByUsername() (found bool, err error) {
 	var query = "SELECT * FROM users WHERE username=$1 LIMIT 1"
 	err = instance.DB.Conn.Get(u, query, u.Username)
 	err = instance.DB.CheckError(err)
@@ -79,8 +79,8 @@ func (u *ModelUser) findByUsername() (found bool, err error) {
 	return
 }
 
-// deleteByID - delete user by id in ModelUser.
-func (u *ModelUser) deleteByID() (err error) {
+// deleteByID - delete user by id in UserModel.
+func (u *UserModel) deleteByID() (err error) {
 	var query = "DELETE FROM users WHERE id=$1"
 	_, err = instance.DB.Conn.Exec(query, u.ID)
 	err = instance.DB.CheckError(err)
@@ -91,7 +91,7 @@ func (u *ModelUser) deleteByID() (err error) {
 }
 
 // hookBeforeChange - change data before send it to DB.
-func (u *ModelUser) hookBeforeChange() (err error){
+func (u *UserModel) hookBeforeChange() (err error){
 	// convert to lower
 	u.Username = strings.ToLower(u.Username)
 	// check if password not hashed.

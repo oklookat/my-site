@@ -19,7 +19,7 @@ type entityBase struct {
 
 func (b *entityBase) middlewareAuthorizedOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		var auth = PipeAuth{}
+		var auth = AuthPipe{}
 		auth.create(request, accessTypeAuthorized)
 		if !auth.Access {
 			b.Send(response, errorMan.ThrowForbidden(), 403)
@@ -33,7 +33,7 @@ func (b *entityBase) middlewareAuthorizedOnly(next http.Handler) http.Handler {
 
 func (b *entityBase) middlewareReadOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		var auth = PipeAuth{}
+		var auth = AuthPipe{}
 		auth.create(request, accessTypeReadOnly)
 		if !auth.Access {
 			b.Send(response, errorMan.ThrowForbidden(), 403)
@@ -47,7 +47,7 @@ func (b *entityBase) middlewareReadOnly(next http.Handler) http.Handler {
 
 func (b *entityBase) middlewareAdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		var auth = PipeAuth{}
+		var auth = AuthPipe{}
 		auth.create(request, accessTypeAdminOnly)
 		if !auth.Access {
 			b.Send(response, errorMan.ThrowForbidden(), 403)

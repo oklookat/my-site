@@ -4,17 +4,15 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
 	"github.com/gosimple/slug"
 	"github.com/oklog/ulid/v2"
 	"github.com/pkg/errors"
-	"math"
 	"math/rand"
 	"time"
 )
 
-// ModelArticle - represents article in database.
-type ModelArticle struct {
+// ArticleModel - represents article in database.
+type ArticleModel struct {
 	ID          string         `json:"id" db:"id"`
 	UserID      string         `json:"user_id" db:"user_id"`
 	IsPublished bool           `json:"is_published" db:"is_published"`
@@ -30,23 +28,14 @@ type ModelArticle struct {
 type ArticleContent struct {
 	Time   int64 `json:"time"`
 	Blocks []struct {
-		ID    *string     `json:"id"`
-		Type  string      `json:"type"`
-		Data  interface{} `json:"data"`
+		ID   *string     `json:"id"`
+		Type string      `json:"type"`
+		Data interface{} `json:"data"`
 		//Tunes *[]struct {
 		//	Name interface{} `json:"name"`
 		//} `json:"tunes"`
 	} `json:"blocks"`
 	Version *string `json:"version"`
-}
-
-// queryArticleGetAll - validated query params in article GetAll.
-type queryArticleGetAll struct {
-	page    int
-	show    string
-	by      string
-	start   string
-	preview bool
 }
 
 func (a ArticleContent) Value() (driver.Value, error) {
@@ -64,58 +53,8 @@ func (a *ArticleContent) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, &a)
 }
 
-// getAll - get articles by queryArticleGetAll.
-func (q *queryArticleGetAll) getAll() (articles []ModelArticle, totalPages int, err error) {
-	var query string
-	var queryCount string
-	var by = q.by
-	var start = q.start
-	switch q.show {
-	case "published":
-		// use sprintf to format validated.by and start because with $ database throws syntax error (I don't know why)
-		// it not allows sql injection, because start and by checked in validator
-		query = fmt.Sprintf("SELECT * FROM articles WHERE is_published=true ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", by, start, start)
-		queryCount = "SELECT count(*) FROM articles WHERE is_published=true"
-		break
-	case "drafts":
-		query = fmt.Sprintf("SELECT * FROM articles WHERE is_published=false ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", by, start, start)
-		queryCount = "SELECT count(*) FROM articles WHERE is_published=false"
-		break
-	}
-	// get pages count.
-	totalPages = 1
-	err = instance.DB.Conn.Get(&totalPages, queryCount)
-	err = instance.DB.CheckError(err)
-	if err != nil && err != sql.ErrNoRows {
-		return nil, 0, nil
-	}
-	articles = make([]ModelArticle, 0)
-	totalPages = int(math.Round(float64(totalPages) / float64(articlesPageSize)))
-	if q.page > totalPages {
-		return
-	}
-	// get articles.
-	rows, err := instance.DB.Conn.Queryx(query, articlesPageSize, (q.page-1)*articlesPageSize)
-	err = instance.DB.CheckError(err)
-	for rows.Next() {
-		article := ModelArticle{}
-		err = rows.StructScan(&article)
-		if err != nil {
-			return
-		}
-		articles = append(articles, article)
-	}
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, 0, nil
-		}
-		return nil, 0, err
-	}
-	return
-}
-
 // create - create article in database.
-func (a *ModelArticle) create() (err error) {
+func (a *ArticleModel) create() (err error) {
 	a.hookBeforeChange()
 	var query = `INSERT INTO articles (user_id, is_published, title, content, slug) VALUES ($1, $2, $3, $4, $5) RETURNING *`
 	err = instance.DB.Conn.Get(a, query, a.UserID, a.IsPublished, a.Title, a.Content, a.Slug)
@@ -128,7 +67,7 @@ func (a *ModelArticle) create() (err error) {
 }
 
 // update - update article in database.
-func (a *ModelArticle) update() (err error) {
+func (a *ArticleModel) update() (err error) {
 	a.hookBeforeChange()
 	var query = "UPDATE articles SET user_id=$1, is_published=$2, title=$3, content=$4, slug=$5, published_at=$6 WHERE id=$7 RETURNING *"
 	err = instance.DB.Conn.Get(a, query, a.UserID, a.IsPublished, a.Title, a.Content, a.Slug, a.PublishedAt, a.ID)
@@ -141,7 +80,7 @@ func (a *ModelArticle) update() (err error) {
 }
 
 // findByID - find article in database by id field.
-func (a *ModelArticle) findByID() (found bool, err error) {
+func (a *ArticleModel) findByID() (found bool, err error) {
 	var query = "SELECT * FROM articles WHERE id=$1 LIMIT 1"
 	err = instance.DB.Conn.Get(a, query, a.ID)
 	err = instance.DB.CheckError(err)
@@ -157,7 +96,7 @@ func (a *ModelArticle) findByID() (found bool, err error) {
 }
 
 // deleteByID - delete article from database by id field.
-func (a *ModelArticle) deleteByID() (err error) {
+func (a *ArticleModel) deleteByID() (err error) {
 	var query = "DELETE FROM articles WHERE id=$1"
 	_, err = instance.DB.Conn.Exec(query, a.ID)
 	err = instance.DB.CheckError(err)
@@ -165,7 +104,7 @@ func (a *ModelArticle) deleteByID() (err error) {
 }
 
 // hookBeforeChange - executes before article create or update.
-func (a *ModelArticle) hookBeforeChange() {
+func (a *ArticleModel) hookBeforeChange() {
 	if len(a.Title) == 0 {
 		a.Title = "Untitled"
 	}
@@ -181,7 +120,7 @@ func (a *ModelArticle) hookBeforeChange() {
 }
 
 // hookAfterChange - executes after article create or update.
-func (a *ModelArticle) hookAfterChange() (err error) {
+func (a *ArticleModel) hookAfterChange() (err error) {
 	// create normal slug.
 	a.Slug = slug.Make(a.Title) + "-" + a.ID
 	var query = "UPDATE articles SET slug=$1 WHERE id=$2 RETURNING *"
