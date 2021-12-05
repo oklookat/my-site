@@ -99,17 +99,12 @@ func (r *Router) Use(middlewares ...Middleware) {
 
 // ServeHTTP - when a request comes in and goes out, it will be here.
 func (r *Router) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	// if favicon - don't handle request
-	//if request.RequestURI == "/favicon.ico" {
-	//	return
-	//}
 	// global middleware
 	resume := r.run(response, request)
 	if !resume {
 		return
 	}
-	var path = pathToSlice(request.URL.Path)
-	var matched = r.match(request.Method, path)
+	var matched = r.match(request.Method, request.URL.Path)
 	// 404
 	if matched.notFound {
 		r.notFound.ServeHTTP(response, request)

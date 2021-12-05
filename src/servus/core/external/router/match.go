@@ -5,23 +5,28 @@ import (
 )
 
 // matchGroup - get route group from request path. If success, returns routeGroup and requestURI without routeGroup prefix.
-func matchGroup(groups []Group, path []string) (matched *Group, params map[string]string) {
+func matchGroup(groups []Group, path string) (group *Group, params map[string]string) {
 	for index := range groups {
-		matched = &groups[index]
-		isMatched, params := matchPath(matched.prefix, path)
-		if !isMatched {
+		group = &groups[index]
+		// is not correct group?
+		if !strings.HasPrefix(path, group.prefix) {
 			continue
 		}
-		return matched, params
+		// correct group, get params
+		invalid, differ, params := verifyPaths(group.prefix, path, false)
+		if invalid || differ {
+			continue
+		}
+		return group, params
 	}
 	return nil, nil
 }
 
 // matchRoute - get route local from routes, request path and method.
-func matchRoute(routes routes, path []string) (matched *route, params map[string]string) {
+func matchRoute(routes routes, path string) (matched *route, params map[string]string) {
 	for defPath := range routes {
-		isMatched, params := matchPath(pathToSlice(defPath), path)
-		if !isMatched {
+		invalid, differ, params := verifyPaths(defPath, path, true)
+		if invalid || differ {
 			continue
 		}
 		matched = routes[defPath]
@@ -30,40 +35,81 @@ func matchRoute(routes routes, path []string) (matched *route, params map[string
 	return nil, nil
 }
 
-// matchPath - if path equals requestPath, returns true and map like [name: value] if {param}.
+// verifyPaths - compare two paths, get params.
 //
-// path with params like: [hello, {name}]
+// path: path in router like /hello/{username}.
 //
-// requestPath like: [hello, john]
-func matchPath(path []string, requestPath []string) (isMatch bool, params map[string]string) {
-	if isEmpty(path) || isEmpty(requestPath) || moreThan(path, requestPath) {
-		return false, nil
+// requestPath: request path like /hello/john.
+//
+// onlySameLength: verify only if two paths has same length.
+//
+// returns -
+//
+// invalid: validation error like one of paths are empty
+//
+// differ: different paths, makes not sense to verify it
+//
+// params: like [username: john]. Or nil.
+func verifyPaths(path string, requestPath string, onlySameLength bool) (invalid bool, differ bool, params map[string]string) {
+	invalid = false
+	differ = false
+	var cutSlashes = func(str string) string {
+		if len(str) < 1 {
+			return str
+		}
+ 		var inStart = str[0] == '/'
+		var inEnd = str[len(str) - 1] == '/'
+		if inStart {
+			str = trimFirstRune(str)
+		}
+		if inEnd {
+			str = strings.TrimSuffix(str, "/")
+		}
+		return str
 	}
-	// used for comparing.
-	var verified = 0
+	path = cutSlashes(path)
+	requestPath = cutSlashes(requestPath)
+	var pathS = strings.Split(path, "/")
+	var requestPathS = strings.Split(requestPath, "/")
+	if isEmpty(pathS) || isEmpty(requestPathS) {
+		invalid = true
+		return
+	}
 	params = make(map[string]string, 0)
-	for pathIndex := range path {
-		var pathPart = path[pathIndex]
-		var requestPathPart = requestPath[pathIndex]
-		var sameParts = strings.EqualFold(requestPathPart, pathPart)
-		if sameParts {
-			verified++
-			continue
+	// get correct length.
+	iterator := 0
+	pathLen := len(pathS) - 1
+	requestPathLen := len(requestPathS) - 1
+	if onlySameLength {
+		if pathLen != requestPathLen {
+			differ = true
+			return
 		}
-		// check {param}.
-		var hasParam = strings.HasPrefix(pathPart, paramOpen) && strings.HasSuffix(pathPart, paramClose)
-		if hasParam {
-			// get param name without { }. Ex: {user} = user.
-			pathPart = strings.ReplaceAll(pathPart, paramOpen, "")
-			pathPart = strings.ReplaceAll(pathPart, paramClose, "")
-			// paste param and value to map. Ex: params[user] = 1.
-			params[pathPart] = requestPathPart
-			verified++
-			continue
+		iterator = pathLen
+	} else {
+		// get lowest length.
+		if pathLen > requestPathLen {
+			iterator = requestPathLen
+		} else {
+			// pathLen < requestPathLen.
+			iterator = pathLen
 		}
-		// parts not same / not have param, we don't need to continue.
-		break
 	}
-	var pathLen = len(path) - 1
-	return verified != pathLen, params
+	// compare & get params.
+	for i := 0; i <= iterator; i++ {
+		var pathPart = pathS[i]
+		var requestPathPart = requestPathS[i]
+		var equals = pathPart == requestPathPart
+		if equals {
+			continue
+		}
+		exists, name := getParamName(pathPart)
+		if !exists || len(requestPathPart) < 1 {
+			// path part not same and no params - 404.
+			differ = true
+			return
+		}
+		params[name] = requestPathS[i]
+	}
+	return
 }

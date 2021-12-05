@@ -1,11 +1,11 @@
 package router
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 )
 
 // defaultNotFound - default endpoint for 404 page.
@@ -52,7 +52,7 @@ func middlewareChainer(middlewares []Middleware, next http.Handler) http.Handler
 
 // normalizePath - from path like /hello or ///hello// make /HELLO/.
 func normalizePath(path string) string {
-	path = fmt.Sprintf("/%v/", path)
+	// path = fmt.Sprintf("/%v/", path)
 	regex := regexp.MustCompile(`//+`)
 	path = string(regex.ReplaceAll([]byte(path), []byte("/")))
 	return path
@@ -81,11 +81,6 @@ func mapsToMap(maps ...map[string]string) map[string]string {
 	return concat
 }
 
-// moreThan - if len v1 > v2.
-func moreThan(v1 []string, v2 []string) bool {
-	return len(v1) > len(v2)
-}
-
 // isEmpty - v len < 1.
 func isEmpty(v []string) bool {
 	return len(v) < 1
@@ -104,4 +99,24 @@ func addRoute(routes routes, path string, method string, endpoint http.HandlerFu
 	_route.addMethod(method, routeMethod)
 	routes[path] = _route
 	return routeMethod
+}
+
+
+// getParamName - check is str is param, and get param name.
+func getParamName(str string) (hasParam bool, name string) {
+	hasParam = strings.HasPrefix(str, paramOpen) && strings.HasSuffix(str, paramClose)
+	if !hasParam {
+		return
+	}
+	name = str
+	// remove first {
+	name = trimFirstRune(name)
+	// remove last }
+	name = name[:len(name) - 1]
+	return
+}
+
+func trimFirstRune(s string) string {
+	_, i := utf8.DecodeRuneInString(s)
+	return s[i:]
 }

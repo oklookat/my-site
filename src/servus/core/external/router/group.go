@@ -3,13 +3,12 @@ package router
 import (
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 // Group - group of routes.
 type Group struct {
 	middleware groupMiddleware
-	prefix     []string
+	prefix     string
 	routes     routes
 }
 
@@ -21,8 +20,7 @@ type groupMiddleware struct {
 
 // new - create route group.
 func (g *Group) new(prefix string) {
-	prefixSlice := pathToSlice(prefix)
-	g.prefix = prefixSlice
+	g.prefix = prefix
 	g.routes = make(routes, 0)
 	g.middleware = groupMiddleware{}
 	g.middleware.chain = &g.middleware
@@ -30,8 +28,7 @@ func (g *Group) new(prefix string) {
 
 // addRoute - add route to route group.
 func (g *Group) addRoute(path string, method string, endpoint http.HandlerFunc) *RouteMethod {
-	var prefix = strings.Join(g.prefix, "/")
-	var pathFormatted = fmt.Sprintf("/%v/%v/", prefix, path)
+	var pathFormatted = fmt.Sprintf("/%v/%v/", g.prefix, path)
 	var rMethod = addRoute(g.routes, pathFormatted, method, endpoint)
 	return rMethod
 }

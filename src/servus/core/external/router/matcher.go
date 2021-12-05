@@ -10,7 +10,7 @@ type matchedRoute struct {
 }
 
 // match - match route by request.
-func (r *Router) match(requestMethod string, requestPath []string) (matched *matchedRoute) {
+func (r *Router) match(requestMethod string, requestPath string) (matched *matchedRoute) {
 	matched = &matchedRoute{}
 	// TODO: improve {params} matching. Use regex like {([a-zA-Z]*)} ?
 	routeGroup, params := matchGroup(r.groups, requestPath)

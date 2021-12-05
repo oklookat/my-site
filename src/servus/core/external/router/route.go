@@ -4,7 +4,7 @@ import "net/http"
 
 // route - one route.
 type route struct {
-	path []string
+	path string
 	allowedMethods []string
 	// methods - key = method.
 	methods routeMethods
@@ -23,7 +23,7 @@ type RouteMethod struct {
 
 // new - safely create new route instance.
 func (r *route) new() {
-	r.path = make([]string, 0)
+	r.path = ""
 	r.allowedMethods = make([]string, 0)
 	r.methods = make(routeMethods, 0)
 }
@@ -62,8 +62,7 @@ func (r *RouteMethod) run(response http.ResponseWriter, request *http.Request) {
 
 // newRouteLocal - create route local instance (internal).
 func (r *RouteMethod) new(route *route, path string, handler http.HandlerFunc) {
-	pathSlice := pathToSlice(path)
-	route.path = pathSlice
+	route.path = path
 	r.endpoint = handler
 }
 
