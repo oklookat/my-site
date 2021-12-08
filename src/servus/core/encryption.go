@@ -9,6 +9,13 @@ type Encryption struct {
 	Argon  *cryptor.Argon
 }
 
+// bootEncryption - boot encryption. Use this after booting the config.
+func (c *Core) bootEncryption() {
+	enc := &Encryption{config: c.Config}
+	enc.boot()
+	c.Encryption = enc
+}
+
 func (e *Encryption) boot() {
 	// aes.
 	var aes = cryptor.AES{}

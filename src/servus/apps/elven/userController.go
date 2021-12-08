@@ -6,19 +6,9 @@ import (
 	"servus/core/external/errorMan"
 )
 
-// entityUser - manage users.
-type entityUser struct {
-	*entityBase
-}
-
-type ResponseUser struct {
-	IsAdmin  bool   `json:"is_admin"`
-	Username string `json:"username"`
-}
-
 // GET
-// controllerGetMe - send some user data by token.
-func (u *entityUser) controllerGetMe(response http.ResponseWriter, request *http.Request) {
+// getMe - send some user data by token.
+func (u *userController) getMe(response http.ResponseWriter, request *http.Request) {
 	auth := AuthPipe{}
 	auth.get(request)
 	var resp = ResponseUser{}
@@ -34,9 +24,9 @@ func (u *entityUser) controllerGetMe(response http.ResponseWriter, request *http
 }
 
 // POST
-// controllerChange - change username or password.
+// change - change username or password.
 // body: what change (username or password); password to confirm; new value for change.
-func (u *entityUser) controllerChange(response http.ResponseWriter, request *http.Request) {
+func (u *userController) change(response http.ResponseWriter, request *http.Request) {
 	var body = struct {
 		What     string
 		Password string
@@ -51,7 +41,7 @@ func (u *entityUser) controllerChange(response http.ResponseWriter, request *htt
 	}
 	auth := AuthPipe{}
 	auth.get(request)
-	match, err := instance.Encryption.Argon.Check(body.Password, auth.User.Password)
+	match, err := call.Encryption.Argon.Check(body.Password, auth.User.Password)
 	if err != nil || !match {
 		u.Send(response, errorMan.ThrowNotAuthorized(), 401)
 		return

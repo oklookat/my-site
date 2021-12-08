@@ -13,11 +13,11 @@ const (
 	CtxAuthData CtxAuthDataPipe = "ELVEN_PIPE_AUTH_DATA"
 )
 
-type entityBase struct {
+type baseController struct {
 	*core.HTTP
 }
 
-func (b *entityBase) middlewareAuthorizedOnly(next http.Handler) http.Handler {
+func (b *baseController) middlewareAuthorizedOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var auth = AuthPipe{}
 		auth.create(request, accessTypeAuthorized)
@@ -31,7 +31,7 @@ func (b *entityBase) middlewareAuthorizedOnly(next http.Handler) http.Handler {
 	})
 }
 
-func (b *entityBase) middlewareReadOnly(next http.Handler) http.Handler {
+func (b *baseController) middlewareReadOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var auth = AuthPipe{}
 		auth.create(request, accessTypeReadOnly)
@@ -45,7 +45,7 @@ func (b *entityBase) middlewareReadOnly(next http.Handler) http.Handler {
 	})
 }
 
-func (b *entityBase) middlewareAdminOnly(next http.Handler) http.Handler {
+func (b *baseController) middlewareAdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var auth = AuthPipe{}
 		auth.create(request, accessTypeAdminOnly)

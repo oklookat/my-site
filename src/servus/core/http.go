@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"net/http"
 	"os"
+	"servus/core/internal/corsParse"
 	"strings"
 )
 
@@ -14,10 +15,27 @@ type HTTP struct {
 	Middleware *Middleware
 }
 
+
+// bootHTTP - boot http utilities. Use this after booting the config.
+func (c *Core) bootHTTP() {
+	var corsConfig = corsParse.Config{
+		AllowCredentials: c.Config.Security.CORS.AllowCredentials,
+		AllowOrigin:      c.Config.Security.CORS.AllowOrigin,
+		AllowMethods:     c.Config.Security.CORS.AllowMethods,
+		AllowHeaders:     c.Config.Security.CORS.AllowHeaders,
+		ExposeHeaders:    c.Config.Security.CORS.ExposeHeaders,
+		MaxAge:           c.Config.Security.CORS.MaxAge,
+	}
+	var corsInstance = corsParse.New(corsConfig)
+	middleware := Middleware{config: c.Config, cors: &corsInstance}
+	c.HTTP = &HTTP{config: c.Config, Middleware: &middleware}
+}
+
 // Send - wrapper for http.ResponseWriter. Sends response and clear errorMan errors.
 func (h *HTTP) Send(response http.ResponseWriter, body string, statusCode int) {
 	response.WriteHeader(statusCode)
 	// TODO: add 500 error handler here; notification about 500 error with useful information
+	// TODO: get stack, request path, write in txt and zip, send to telegram
 	_, err := response.Write([]byte(body))
 	if err != nil {
 		h.logger.Error("HTTP: failed to send response. Error:" + err.Error())
@@ -28,7 +46,7 @@ func (h *HTTP) Send(response http.ResponseWriter, body string, statusCode int) {
 func (h *HTTP) SetCookie(response *http.ResponseWriter, name string, value string) {
 	var maxAge, err = h.utils.ConvertTimeWord(h.config.Security.Cookie.MaxAge)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "core: SetCookie convert time failed. Error")
+		var errPretty = errors.Wrap(err, "HTTP: SetCookie convert time failed. Error")
 		h.logger.Panic(errPretty)
 		os.Exit(1)
 	}
@@ -39,7 +57,7 @@ func (h *HTTP) SetCookie(response *http.ResponseWriter, name string, value strin
 	var secure = h.config.Security.Cookie.Secure
 	sameSite, err := h.convertCookieSameSite(h.config.Security.Cookie.SameSite)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "core: SetCookie failed convert cookie sameSite. Error")
+		var errPretty = errors.Wrap(err, "HTTP: SetCookie failed convert cookie sameSite. Error")
 		h.logger.Panic(errPretty)
 		os.Exit(1)
 	}
@@ -60,68 +78,6 @@ func (h *HTTP) convertCookieSameSite(sameSite string) (http.SameSite, error) {
 	case "NONE":
 		return http.SameSiteNoneMode, nil
 	default:
-		return http.SameSiteDefaultMode, errors.New("Wrong sameSite string.")
+		return http.SameSiteDefaultMode, errors.New("HTTP: wrong sameSite string")
 	}
-}
-
-// Middleware - basic middleware.
-type Middleware struct {
-	config *ConfigFile
-	cors   cors
-}
-
-// AsJSON - this middleware set application/json header.
-func (m *Middleware) AsJSON(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Add("Content-Type", "application/json; charset=utf-8")
-		next.ServeHTTP(writer, request)
-	})
-}
-
-// CORS - CORS middleware depending on config file.
-func (m *Middleware) CORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if m.config.Security.CORS.Active {
-			var isPreflight = m.cors.SetHeaders(writer, request)
-			if isPreflight {
-				return
-			}
-		}
-		next.ServeHTTP(writer, request)
-	})
-}
-
-// Security - basic security.
-func (m *Middleware) Security(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		var method = request.Method
-		method = strings.ToUpper(method)
-		// request body size check
-		if m.config.Security.Limiter.Body.Active {
-			var isNotReadOnlyMethod = !(method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions)
-			if isNotReadOnlyMethod {
-				var requestURI = request.RequestURI
-				var exceptSlice = m.config.Security.Limiter.Body.Except
-				var isBypassed = false
-				for _, exceptOne := range exceptSlice {
-					if exceptOne == requestURI {
-						isBypassed = true
-					}
-				}
-				if !isBypassed {
-					// TODO: fix max body length
-					request.Body = http.MaxBytesReader(writer, request.Body, m.config.Security.Limiter.Body.MaxSize)
-					//payload, err := ioutil.ReadAll(request.Body)
-					//if err != nil {
-					//	if strings.Contains(err.Error(), "request body too large"){
-					//		http.Error(writer, "Request body too large.", 413)
-					//		return
-					//	}
-					//}
-				}
-			}
-
-		}
-		next.ServeHTTP(writer, request)
-	})
 }

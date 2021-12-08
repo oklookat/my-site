@@ -6,12 +6,24 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"os"
 )
 
 type Database struct {
 	config *ConfigFile
 	logger Logger
 	Conn   *sqlx.DB
+}
+
+// bootDatabase - boot database. Use this after booting the config.
+func (c *Core) bootDatabase() {
+	var database = Database{config: c.Config, logger: c.Logger}
+	err := database.boot()
+	if err != nil {
+		c.Logger.Panic(err)
+		os.Exit(1)
+	}
+	c.DB = &database
 }
 
 // TODO: convert database to interfaces like: get(dest, query, args) etc

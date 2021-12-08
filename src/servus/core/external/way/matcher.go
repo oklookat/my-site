@@ -1,43 +1,42 @@
-package router
+package way
 
-import (
-	"strings"
-)
+import "strings"
 
-// matchGroup - get route group from request path. If success, returns routeGroup and requestURI without routeGroup prefix.
-func matchGroup(groups []Group, path string) (group *Group, params map[string]string) {
-	for index := range groups {
-		group = &groups[index]
-		// is not correct group?
-		if !strings.HasPrefix(path, group.prefix) {
-			continue
+// match - match route by request.
+func (r *Router) match(requestPath string) (gr *Group, ro *route, params map[string]string) {
+	// find group
+	for index := range r.groups {
+		yes, _params := r.groups[index].match(requestPath)
+		if yes {
+			params = _params
+			gr = r.groups[index]
+			break
 		}
-		// correct group, get params
-		invalid, differ, params := verifyPaths(group.prefix, path, false)
-		if invalid || differ {
-			continue
-		}
-		return group, params
 	}
-	return nil, nil
-}
-
-// matchRoute - get route local from routes, request path and method.
-func matchRoute(routes routes, path string) (matched *route, params map[string]string) {
-	for defPath := range routes {
-		invalid, differ, params := verifyPaths(defPath, path, true)
-		if invalid || differ {
-			continue
-		}
-		matched = routes[defPath]
-		return matched, params
+	// choose points.
+	var _routes []*route
+	if gr != nil {
+		// have route group, use group points.
+		_routes = gr.routes
+	} else {
+		// don't have route group, use router points.
+		_routes = r.routes
 	}
-	return nil, nil
+	// find point
+	for index := range _routes {
+		yes, paramsTemp := _routes[index].match(requestPath)
+		if yes {
+			params = mapsToMap(params, paramsTemp)
+			ro = _routes[index]
+			break
+		}
+	}
+	return
 }
 
 // verifyPaths - compare two paths, get params.
 //
-// path: path in router like /hello/{username}.
+// path: path in way like /hello/{username}.
 //
 // requestPath: request path like /hello/john.
 //
@@ -57,8 +56,8 @@ func verifyPaths(path string, requestPath string, onlySameLength bool) (invalid 
 		if len(str) < 1 {
 			return str
 		}
- 		var inStart = str[0] == '/'
-		var inEnd = str[len(str) - 1] == '/'
+		var inStart = str[0] == '/'
+		var inEnd = str[len(str)-1] == '/'
 		if inStart {
 			str = trimFirstRune(str)
 		}

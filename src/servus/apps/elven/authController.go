@@ -6,15 +6,9 @@ import (
 	"servus/core/external/errorMan"
 )
 
-
-// entityAuth - manage authorization.
-type entityAuth struct {
-	*entityBase
-}
-
-// controllerLogin -  generate token if username and password are correct.
-func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http.Request) {
-	val, em, _ := a.validatorControllerLogin(request)
+// login -  generate token if username and password are correct.
+func (a *authController) login(response http.ResponseWriter, request *http.Request) {
+	val, em, _ := a.validate.controllerLogin(request)
 	if em.HasErrors() {
 		a.Send(response, em.GetJSON(), 400)
 		return
@@ -29,7 +23,7 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 		a.err401(response)
 		return
 	}
-	var isPassword, _ = instance.Encryption.Argon.Check(val.Password, user.Password)
+	var isPassword, _ = call.Encryption.Argon.Check(val.Password, user.Password)
 	if !isPassword {
 		a.err401(response)
 		return
@@ -63,7 +57,7 @@ func (a *entityAuth) controllerLogin(response http.ResponseWriter, request *http
 }
 
 // logout - get token from user and delete.
-func (a *entityAuth) controllerLogout(response http.ResponseWriter, request *http.Request) {
+func (a *authController) logout(response http.ResponseWriter, request *http.Request) {
 	// get token from cookie or auth header.
 	var auth = AuthPipe{}
 	auth.get(request)
@@ -74,14 +68,14 @@ func (a *entityAuth) controllerLogout(response http.ResponseWriter, request *htt
 }
 
 // err500 - like unknown error.
-func (a *entityAuth) err500(response http.ResponseWriter, request *http.Request, err error) {
-	instance.Logger.Warn(fmt.Sprintf("entityAuth code 500 at: %v. Error: %v", request.URL.Path, err.Error()))
+func (a *authController) err500(response http.ResponseWriter, request *http.Request, err error) {
+	call.Logger.Warn(fmt.Sprintf("entityAuth code 500 at: %v. Error: %v", request.URL.Path, err.Error()))
 	a.Send(response, errorMan.ThrowServer(), 500)
 	return
 }
 
 // err401 - like wrong username or password.
-func (a *entityAuth) err401(response http.ResponseWriter) {
+func (a *authController) err401(response http.ResponseWriter) {
 	a.Send(response, errorMan.ThrowNotAuthorized(), 401)
 	return
 }

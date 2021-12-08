@@ -22,7 +22,7 @@ type FileModel struct {
 // create - create file in database.
 func (f *FileModel) create() (err error){
 	var query = `INSERT INTO files (user_id, hash, path, name, original_name, extension, size) VALUES (:user_id, :hash, :path, :name, :original_name, :extension, :size) RETURNING *`
-	stmt, err := instance.DB.Conn.PrepareNamed(query)
+	stmt, err := call.DB.Conn.PrepareNamed(query)
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func (f *FileModel) create() (err error){
 		_ = stmt.Close()
 	}()
 	err = stmt.Get(f, f)
-	err = instance.DB.CheckError(err)
+	err = call.DB.CheckError(err)
 	if err != nil {
 		return err
 	}
@@ -40,8 +40,8 @@ func (f *FileModel) create() (err error){
 // findByID - find one file in database by id field.
 func (f *FileModel) findByID() (found bool, err error){
 	var query = "SELECT * FROM files WHERE id=$1 LIMIT 1"
-	err = instance.DB.Conn.Get(f, query, f.ID)
-	err = instance.DB.CheckError(err)
+	err = call.DB.Conn.Get(f, query, f.ID)
+	err = call.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -56,8 +56,8 @@ func (f *FileModel) findByID() (found bool, err error){
 // findByHash - find file in database by hash field.
 func (f *FileModel) findByHash() (found bool, err error){
 	var query = "SELECT * FROM files WHERE hash=$1 LIMIT 1"
-	err = instance.DB.Conn.Get(f, query, f.Hash)
-	err = instance.DB.CheckError(err)
+	err = call.DB.Conn.Get(f, query, f.Hash)
+	err = call.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -72,7 +72,7 @@ func (f *FileModel) findByHash() (found bool, err error){
 // deleteByID - delete file in database by id field.
 func (f *FileModel) deleteByID() (err error) {
 	var query = "DELETE FROM files WHERE id=$1"
-	_, err = instance.DB.Conn.Exec(query, f.ID)
-	err = instance.DB.CheckError(err)
+	_, err = call.DB.Conn.Exec(query, f.ID)
+	err = call.DB.CheckError(err)
 	return
 }

@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-// validatorControllerGetAll - validate query params when getting files list.
-func (f *entityFile) validatorControllerGetAll(request *http.Request, isAdmin bool) (val queryFileGetAll, em *errorMan.EValidation, err error) {
+// getAll - validate query params when getting files list.
+func (f *fileValidator) getAll(request *http.Request, isAdmin bool) (val fileQueryGetAll, em *errorMan.EValidation, err error) {
 	em = errorMan.NewValidation()
-	val = queryFileGetAll{}
+	val = fileQueryGetAll{}
 	var queryParams = request.URL.Query()
 	// validate start param.
 	var start = queryParams.Get("start")

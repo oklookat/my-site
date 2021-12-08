@@ -9,8 +9,8 @@ import (
 )
 
 // validatorControllerGetAll - validate query params when getting articles list.
-func (a *entityArticle) validatorControllerGetAll(request *http.Request, isAdmin bool) (val queryArticleGetAll, em *errorMan.EValidation, err error) {
-	val = queryArticleGetAll{}
+func (a *articleValidator) controllerGetAll(request *http.Request, isAdmin bool) (val articleQueryGetAll, em *errorMan.EValidation, err error) {
+	val = articleQueryGetAll{}
 	em = errorMan.NewValidation()
 	var queryParams = request.URL.Query()
 	// validate "show" param
@@ -99,9 +99,9 @@ func (a *entityArticle) validatorControllerGetAll(request *http.Request, isAdmin
 
 // TODO: when provided only one value, it make other values to null, and pass it do db.
 // validatorBody - validate request body when POST or PUT.
-func (a *entityArticle) validatorBody(request *http.Request) (val *BodyArticle, em *errorMan.EValidation, err error) {
+func (a *articleValidator) body(request *http.Request) (val *ArticleBody, em *errorMan.EValidation, err error) {
 	em = errorMan.NewValidation()
-	val = &BodyArticle{}
+	val = &ArticleBody{}
 	err = json.NewDecoder(request.Body).Decode(val)
 	if err != nil {
 		em.Add("body", "wrong value provided.")

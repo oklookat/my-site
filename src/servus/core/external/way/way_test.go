@@ -1,4 +1,4 @@
-package router
+package way
 
 import (
 	"fmt"
@@ -12,10 +12,11 @@ func TestManual(t *testing.T) {
 	router.Use(testingGlobalMiddleware, testingGlobalMiddleware2)
 	var userGroup = router.Group("/api/user")
 	userGroup.Use(testingGroupGlobalMiddleware)
-	userGroup.GET("{id}", testHandlerGET)
-	userGroup.POST("{id}", testHandlerPOST)
-	userGroup.PUT("{id}", testHandlerPUT).Use(testingMiddleware)
-	userGroup.DELETE("{id}", testHandlerDELETE)
+	userGroup.Endpoint("", testHandlerGETEmpty).Methods(http.MethodGet)
+	userGroup.Endpoint("{id}", testHandlerGET).Methods(http.MethodGet)
+	userGroup.Endpoint("{id}", testHandlerPOST).Methods(http.MethodPost)
+	userGroup.Endpoint("{id}", testHandlerPUT).Methods(http.MethodPut).Use(testingMiddleware)
+	userGroup.Endpoint("{id}", testHandlerDELETE).Methods(http.MethodDelete)
 	http.Handle("/", router)
 	// http://localhost:7777
 	err := http.ListenAndServe(":7777", nil)
@@ -57,6 +58,14 @@ func testHandlerGET(response http.ResponseWriter, request *http.Request) {
 	response.WriteHeader(200)
 	var params = GetParams(request)
 	var formatted = fmt.Sprintf("/user/id handler GET | id of user: %v", params["id"])
+	response.Write([]byte(formatted))
+	return
+}
+
+func testHandlerGETEmpty(response http.ResponseWriter, request *http.Request) {
+	println("/users handler")
+	response.WriteHeader(200)
+	var formatted = fmt.Sprintf("/user handler GET")
 	response.Write([]byte(formatted))
 	return
 }

@@ -23,7 +23,7 @@ type TokenModel struct {
 // create - create TokenModel in database.
 func (t *TokenModel) create() (err error) {
 	var query = "INSERT INTO tokens (user_id, token, last_ip, last_agent, auth_ip, auth_agent) VALUES (:user_id, :token, :last_ip, :last_agent, :auth_ip, :auth_agent) RETURNING *"
-	stmt, err := instance.DB.Conn.PrepareNamed(query)
+	stmt, err := call.DB.Conn.PrepareNamed(query)
 	if err != nil {
 		return
 	}
@@ -31,7 +31,7 @@ func (t *TokenModel) create() (err error) {
 		_ = stmt.Close()
 	}()
 	err = stmt.Get(t, t)
-	err = instance.DB.CheckError(err)
+	err = call.DB.CheckError(err)
 	return
 }
 
@@ -39,7 +39,7 @@ func (t *TokenModel) create() (err error) {
 func (t *TokenModel) update() (err error) {
 	t.hookBeforeUpdate()
 	var query = "UPDATE tokens SET user_id=:user_id, token=:token, last_ip=:last_ip, last_agent=:last_agent, auth_ip=:auth_ip, auth_agent=:auth_agent WHERE id=:id RETURNING *"
-	stmt, err := instance.DB.Conn.PrepareNamed(query)
+	stmt, err := call.DB.Conn.PrepareNamed(query)
 	if err != nil {
 		return
 	}
@@ -47,15 +47,15 @@ func (t *TokenModel) update() (err error) {
 		_ = stmt.Close()
 	}()
 	err = stmt.Get(t, t)
-	err = instance.DB.CheckError(err)
+	err = call.DB.CheckError(err)
 	return
 }
 
 // databaseFind - find TokenModel in database by id field.
 func (t *TokenModel) findByID() (found bool, err error) {
 	var query = "SELECT * FROM tokens WHERE id=$1 LIMIT 1"
-	err = instance.DB.Conn.Get(t, query, t.ID)
-	err = instance.DB.CheckError(err)
+	err = call.DB.Conn.Get(t, query, t.ID)
+	err = call.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -70,7 +70,7 @@ func (t *TokenModel) findByID() (found bool, err error) {
 // deleteByID - delete TokenModel from database by id field.
 func (t *TokenModel) deleteByID() (err error) {
 	var query = "DELETE FROM tokens WHERE id=$1"
-	_, err = instance.DB.Conn.Exec(query, t.ID)
+	_, err = call.DB.Conn.Exec(query, t.ID)
 	if err == sql.ErrNoRows {
 		return nil
 	}
@@ -112,7 +112,7 @@ func (t *TokenModel) setAuthAgents(request *http.Request) (err error) {
 	t.AuthAgent = new(string)
 	*t.AuthAgent = request.UserAgent()
 	t.AuthIP = new(string)
-	*t.AuthIP = oUtils.getIP(request)
+	*t.AuthIP = getIP(request)
 	err = t.update()
 	return
 }
@@ -126,7 +126,7 @@ func (t *TokenModel) setLastAgents(request *http.Request) (err error) {
 		return errors.New("setLastAgents: token nil pointer.")
 	}
 	var lastAgent = request.UserAgent()
-	var lastIP = oUtils.getIP(request)
+	var lastIP = getIP(request)
 	t.LastAgent = new(string)
 	*t.LastAgent = lastAgent
 	t.LastIP = new(string)
@@ -152,13 +152,13 @@ func (t *TokenModel) generate(userID string) (err error, token string, hash stri
 		}
 	}()
 	// then we get newly created token model id and encrypt it. That's we send to user as token.
-	token, err = instance.Encryption.AES.Encrypt(t.ID)
+	token, err = call.Encryption.AES.Encrypt(t.ID)
 	if err != nil {
 		return
 	}
 	// get hash from generated token.
 	// user gets encrypted token, but database gets hash. In general, we do the same as with the password.
-	hash, err = instance.Encryption.Argon.Hash(token)
+	hash, err = call.Encryption.Argon.Hash(token)
 	if err != nil {
 		return
 	}

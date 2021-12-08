@@ -15,6 +15,11 @@ type Utils struct {
 	logger Logger
 }
 
+// bootUtils - boot Utils.
+func (c *Core) bootUtils() {
+	c.Utils = &Utils{}
+}
+
 // RemoveSpaces - remove spaces from string.
 func (u *Utils) RemoveSpaces(str string) string {
 	return strings.Map(func(r rune) rune {

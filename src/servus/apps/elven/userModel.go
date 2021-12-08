@@ -27,12 +27,12 @@ type UserModel struct {
 func (u *UserModel) create() (err error) {
 	err = u.hookBeforeChange()
 	if err != nil {
-		instance.Logger.Error(err.Error())
+		call.Logger.Error(err.Error())
 		return
 	}
 	var query = `INSERT INTO users (role, username, password) VALUES ($1, $2, $3) RETURNING *`
-	err = instance.DB.Conn.Get(u, query, u.Role, u.Username, u.Password)
-	err = instance.DB.CheckError(err)
+	err = call.DB.Conn.Get(u, query, u.Role, u.Username, u.Password)
+	err = call.DB.CheckError(err)
 	return
 }
 
@@ -42,16 +42,16 @@ func (u *UserModel) update() (err error) {
 		return
 	}
 	var query = "UPDATE users SET role=$1, username=$2, password=$3 WHERE id=$4 RETURNING *"
-	err = instance.DB.Conn.Get(u, query, u.Role, u.Username, u.Password, u.ID)
-	err = instance.DB.CheckError(err)
+	err = call.DB.Conn.Get(u, query, u.Role, u.Username, u.Password, u.ID)
+	err = call.DB.CheckError(err)
 	return
 }
 
 // findByID - find user in database by id in UserModel.
 func (u *UserModel) findByID() (found bool, err error) {
 	var query = "SELECT * FROM users WHERE id=$1 LIMIT 1"
-	err = instance.DB.Conn.Get(u, query, u.ID)
-	err = instance.DB.CheckError(err)
+	err = call.DB.Conn.Get(u, query, u.ID)
+	err = call.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -66,8 +66,8 @@ func (u *UserModel) findByID() (found bool, err error) {
 // findByUsername - find user in database by username in UserModel.
 func (u *UserModel) findByUsername() (found bool, err error) {
 	var query = "SELECT * FROM users WHERE username=$1 LIMIT 1"
-	err = instance.DB.Conn.Get(u, query, u.Username)
-	err = instance.DB.CheckError(err)
+	err = call.DB.Conn.Get(u, query, u.Username)
+	err = call.DB.CheckError(err)
 	found = false
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -82,8 +82,8 @@ func (u *UserModel) findByUsername() (found bool, err error) {
 // deleteByID - delete user by id in UserModel.
 func (u *UserModel) deleteByID() (err error) {
 	var query = "DELETE FROM users WHERE id=$1"
-	_, err = instance.DB.Conn.Exec(query, u.ID)
-	err = instance.DB.CheckError(err)
+	_, err = call.DB.Conn.Exec(query, u.ID)
+	err = call.DB.CheckError(err)
 	if err == sql.ErrNoRows {
 		return nil
 	}
@@ -95,10 +95,10 @@ func (u *UserModel) hookBeforeChange() (err error){
 	// convert to lower
 	u.Username = strings.ToLower(u.Username)
 	// check if password not hashed.
-	conf, _, _, _ := instance.Encryption.Argon.ParseHash(u.Password)
+	conf, _, _, _ := call.Encryption.Argon.ParseHash(u.Password)
 	if conf == nil {
 		// not hashed
-		hash, err := instance.Encryption.Argon.Hash(u.Password)
+		hash, err := call.Encryption.Argon.Hash(u.Password)
 		if err != nil {
 			return err
 		}

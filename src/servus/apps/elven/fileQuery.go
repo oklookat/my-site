@@ -7,19 +7,19 @@ import (
 )
 
 // queryFileGetAll - validated query params in files GetAll.
-type queryFileGetAll struct {
+type fileQueryGetAll struct {
 	page  int
 	start string
 	by    string
 }
 
 // getAll - get files in database by queryFileGetAll.
-func (q *queryFileGetAll) getAll() (files []FileModel, totalPages int, err error) {
+func (q *fileQueryGetAll) getAll() (files []FileModel, totalPages int, err error) {
 	// get pages count.
 	var queryCount = "SELECT count(*) FROM files"
 	totalPages = 1
-	err = instance.DB.Conn.Get(&totalPages, queryCount)
-	err = instance.DB.CheckError(err)
+	err = call.DB.Conn.Get(&totalPages, queryCount)
+	err = call.DB.CheckError(err)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, 0, nil
 	}
@@ -30,8 +30,8 @@ func (q *queryFileGetAll) getAll() (files []FileModel, totalPages int, err error
 	}
 	// get files
 	var query = fmt.Sprintf("SELECT * FROM files ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", q.by, q.start, q.start)
-	rows, err := instance.DB.Conn.Queryx(query, filesPageSize, (q.page-1)*filesPageSize)
-	err = instance.DB.CheckError(err)
+	rows, err := call.DB.Conn.Queryx(query, filesPageSize, (q.page-1)*filesPageSize)
+	err = call.DB.CheckError(err)
 	for rows.Next() {
 		file := FileModel{}
 		err = rows.StructScan(&file)

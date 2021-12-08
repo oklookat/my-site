@@ -7,10 +7,10 @@ import (
 	"servus/core/external/validator"
 )
 
-// validatorControllerLogin - validate request body when user try to log in.
-func (a *entityAuth) validatorControllerLogin(request *http.Request) (val *bodyAuth, em *errorMan.EValidation, err error) {
+// controllerLogin - validate request body when user try to log in.
+func (a *authValidator) controllerLogin(request *http.Request) (val *authBody, em *errorMan.EValidation, err error) {
 	em = errorMan.NewValidation()
-	val = &bodyAuth{}
+	val = &authBody{}
 	err = json.NewDecoder(request.Body).Decode(&val)
 	if err != nil {
 		em.Add("body", "wrong value provided.")

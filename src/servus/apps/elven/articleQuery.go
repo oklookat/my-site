@@ -6,15 +6,15 @@ import (
 	"math"
 )
 
-// BodyArticle - represents the body of the request that the user should send. Used in create and update methods.
-type BodyArticle struct {
+// ArticleBody - represents the body of the request that the user should send. Used in create and update methods.
+type ArticleBody struct {
 	IsPublished *bool           `json:"is_published"`
 	Title       *string         `json:"title"`
 	Content     *ArticleContent `json:"content"`
 }
 
-// queryArticleGetAll - validated query params in article GetAll.
-type queryArticleGetAll struct {
+// articleQueryGetAll - validated query params in article GetAll.
+type articleQueryGetAll struct {
 	page    int
 	show    string
 	by      string
@@ -23,7 +23,7 @@ type queryArticleGetAll struct {
 }
 
 // getAll - get articles by queryArticleGetAll.
-func (q *queryArticleGetAll) getAll() (articles []ArticleModel, totalPages int, err error) {
+func (q *articleQueryGetAll) getAll() (articles []ArticleModel, totalPages int, err error) {
 	var query string
 	var queryCount string
 	var by = q.by
@@ -42,8 +42,8 @@ func (q *queryArticleGetAll) getAll() (articles []ArticleModel, totalPages int, 
 	}
 	// get pages count.
 	totalPages = 1
-	err = instance.DB.Conn.Get(&totalPages, queryCount)
-	err = instance.DB.CheckError(err)
+	err = call.DB.Conn.Get(&totalPages, queryCount)
+	err = call.DB.CheckError(err)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, 0, nil
 	}
@@ -53,8 +53,8 @@ func (q *queryArticleGetAll) getAll() (articles []ArticleModel, totalPages int, 
 		return
 	}
 	// get articles.
-	rows, err := instance.DB.Conn.Queryx(query, articlesPageSize, (q.page-1)*articlesPageSize)
-	err = instance.DB.CheckError(err)
+	rows, err := call.DB.Conn.Queryx(query, articlesPageSize, (q.page-1)*articlesPageSize)
+	err = call.DB.CheckError(err)
 	for rows.Next() {
 		article := ArticleModel{}
 		err = rows.StructScan(&article)

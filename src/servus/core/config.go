@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -79,6 +80,17 @@ type ConfigFile struct {
 		To   string `json:"to"`
 		Temp string `json:"temp"`
 	} `json:"uploads"`
+}
+
+// bootConfig - boot config file.
+func (c *Core) bootConfig() {
+	var config = ConfigFile{}
+	var path = fmt.Sprintf("%v/settings/config.json", c.Utils.GetExecutionDir())
+	err := config.boot(path)
+	if err != nil {
+		panic(err)
+	}
+	c.Config = &config
 }
 
 // boot - load config file from path.

@@ -10,11 +10,6 @@ import (
 
 const articlesPageSize = 2
 
-// entityArticle - manage articles.
-type entityArticle struct {
-	*entityBase
-}
-
 // getAll - GET url/
 //
 // request params:
@@ -28,14 +23,14 @@ type entityArticle struct {
 // start: newest (DESC); oldest (ASC)
 //
 // preview: true (content < 480 symbols); false (gives you full articles).
-func (a *entityArticle) getAll(response http.ResponseWriter, request *http.Request) {
+func (a *articleController) getAll(response http.ResponseWriter, request *http.Request) {
 	var err error
 	var isAdmin = false
 	var auth = AuthPipe{}
 	auth.get(request)
 	isAdmin = auth.UserAndTokenExists && auth.IsAdmin
 	// validate query params.
-	val, em, _ := a.validatorControllerGetAll(request, isAdmin)
+	val, em, _ := a.validate.controllerGetAll(request, isAdmin)
 	if em.HasErrors() {
 		a.Send(response, em.GetJSON(), 400)
 		return
@@ -43,7 +38,7 @@ func (a *entityArticle) getAll(response http.ResponseWriter, request *http.Reque
 	// get articles by query params.
 	articles, pages, err := val.getAll()
 	if err != nil {
-		instance.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
+		call.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
 		a.Send(response, errorMan.ThrowServer(), 500)
 		return
 	}
@@ -56,7 +51,7 @@ func (a *entityArticle) getAll(response http.ResponseWriter, request *http.Reque
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
-		instance.Logger.Error(fmt.Sprintf("articles response json marshal error: %v", err.Error()))
+		call.Logger.Error(fmt.Sprintf("articles response json marshal error: %v", err.Error()))
 		a.Send(response, errorMan.ThrowServer(), 500)
 		return
 	}
@@ -64,7 +59,7 @@ func (a *entityArticle) getAll(response http.ResponseWriter, request *http.Reque
 }
 
 // getOne - GET url/id.
-func (a *entityArticle) getOne(response http.ResponseWriter, request *http.Request) {
+func (a *articleController) getOne(response http.ResponseWriter, request *http.Request) {
 	var isAdmin = false
 	var auth = AuthPipe{}
 	auth.get(request)
@@ -94,10 +89,10 @@ func (a *entityArticle) getOne(response http.ResponseWriter, request *http.Reque
 }
 
 // create - POST url/.
-func (a *entityArticle) create(response http.ResponseWriter, request *http.Request) {
+func (a *articleController) create(response http.ResponseWriter, request *http.Request) {
 	var pAuth = AuthPipe{}
 	pAuth.get(request)
-	val, em, _ := a.validatorBody(request)
+	val, em, _ := a.validate.body(request)
 	if em.HasErrors() {
 		a.Send(response, em.GetJSON(), 400)
 		return
@@ -117,7 +112,7 @@ func (a *entityArticle) create(response http.ResponseWriter, request *http.Reque
 }
 
 // update - PUT (update all available fields) or PATCH (update specific field) url/id.
-func (a *entityArticle) update(response http.ResponseWriter, request *http.Request) {
+func (a *articleController) update(response http.ResponseWriter, request *http.Request) {
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article = ArticleModel{ID: id}
@@ -130,7 +125,7 @@ func (a *entityArticle) update(response http.ResponseWriter, request *http.Reque
 		a.Send(response, errorMan.ThrowNotFound(), 404)
 		return
 	}
-	body, em, err := a.validatorBody(request)
+	body, em, err := a.validate.body(request)
 	if em.HasErrors() {
 		a.Send(response, em.GetJSON(), 400)
 		return
@@ -174,7 +169,7 @@ func (a *entityArticle) update(response http.ResponseWriter, request *http.Reque
 }
 
 // delete - DELETE url/id.
-func (a *entityArticle) delete(response http.ResponseWriter, request *http.Request) {
+func (a *articleController) delete(response http.ResponseWriter, request *http.Request) {
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article = ArticleModel{ID: id}
@@ -197,14 +192,14 @@ func (a *entityArticle) delete(response http.ResponseWriter, request *http.Reque
 }
 
 // err500 - write error to logger and send 500 error to user.
-func (a *entityArticle) err500(response http.ResponseWriter, request *http.Request, err error) {
-	instance.Logger.Warn(fmt.Sprintf("entityArticle code 500 at: %v. Error: %v", request.URL.Path, err.Error()))
+func (a *articleController) err500(response http.ResponseWriter, request *http.Request, err error) {
+	call.Logger.Warn(fmt.Sprintf("entityArticle code 500 at: %v. Error: %v", request.URL.Path, err.Error()))
 	a.Send(response, errorMan.ThrowServer(), 500)
 	return
 }
 
 // err403 - send an error if the user is not allowed to do something.
-func (a *entityArticle) err403(response http.ResponseWriter) {
+func (a *articleController) err403(response http.ResponseWriter) {
 	a.Send(response, errorMan.ThrowForbidden(), 403)
 	return
 }

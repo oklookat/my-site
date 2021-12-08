@@ -8,12 +8,9 @@ import (
 	"time"
 )
 
-// objectUtils - useful utilities.
-type objectUtils struct {
-}
 
 // getIP - get IP by request.
-func (u *objectUtils) getIP(request *http.Request) (ip string) {
+func getIP(request *http.Request) (ip string) {
 	ip = ""
 	var ips = strings.Split(request.Header.Get("X-FORWARDED-FOR"), ", ")
 	for _, theIP := range ips {
@@ -29,7 +26,7 @@ func (u *objectUtils) getIP(request *http.Request) (ip string) {
 }
 
 // generateULID - returns unique string like 1GFGVSSRTHYWW52GVXZ.
-func (u *objectUtils) generateULID() (ul string, err error) {
+func generateULID() (ul string, err error) {
 	current := time.Now()
 	entropy := ulid.Monotonic(rand.New(rand.NewSource(current.UnixNano())), 0)
 	ulType, err := ulid.New(ulid.Timestamp(current), entropy)
