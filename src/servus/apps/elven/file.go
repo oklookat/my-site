@@ -11,28 +11,22 @@ type file struct {
 }
 
 type fileRoute struct {
-	controller fileController
-}
-
-type fileController struct {
-	*baseController
+	middleware *middleware
 	validate *fileValidator
 }
 
 type fileValidator struct {
-
 }
 
-func (f *file) boot(b *baseController) {
+func (f *file) boot(m *middleware) {
 	f.validator = fileValidator{}
-	var controller = fileController{b, &f.validator}
-	f.route = fileRoute{controller}
+	f.route = fileRoute{m, &f.validator}
 }
 
 func (f *fileRoute) boot(router *mux.Router) {
 	var fr = router.PathPrefix("/files").Subrouter()
-	fr.Use(f.controller.middlewareAdminOnly)
-	fr.HandleFunc("", f.controller.getAll).Methods(http.MethodGet)
-	fr.HandleFunc("", f.controller.createOne).Methods(http.MethodPost)
-	fr.HandleFunc("/{id}", f.controller.deleteOne).Methods(http.MethodDelete)
+	fr.Use(f.middleware.adminOnly)
+	fr.HandleFunc("", f.getAll).Methods(http.MethodGet)
+	fr.HandleFunc("", f.createOne).Methods(http.MethodPost)
+	fr.HandleFunc("/{id}", f.deleteOne).Methods(http.MethodDelete)
 }

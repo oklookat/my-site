@@ -8,25 +8,27 @@ import (
 
 // GET
 // getMe - send some user data by token.
-func (u *userController) getMe(response http.ResponseWriter, request *http.Request) {
-	auth := AuthPipe{}
-	auth.get(request)
+func (u *userRoute) getMe(response http.ResponseWriter, request *http.Request) {
+	var h = u.middleware.getHTTP(request)
+	pipe := AuthPipe{}
+	pipe.get(request)
 	var resp = ResponseUser{}
-	resp.IsAdmin = auth.IsAdmin
-	resp.Username = auth.User.Username
+	resp.IsAdmin = pipe.IsAdmin
+	resp.Username = pipe.User.Username
 	bytes, err := json.Marshal(resp)
 	if err != nil {
-		u.Send(response, errorMan.ThrowServer(), 500)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
-	u.Send(response, string(bytes), 200)
+	h.Send(string(bytes), 200, err)
 	return
 }
 
 // POST
 // change - change username or password.
 // body: what change (username or password); password to confirm; new value for change.
-func (u *userController) change(response http.ResponseWriter, request *http.Request) {
+func (u *userRoute) change(response http.ResponseWriter, request *http.Request) {
+	var h = u.middleware.getHTTP(request)
 	var body = struct {
 		What     string
 		Password string
@@ -36,50 +38,50 @@ func (u *userController) change(response http.ResponseWriter, request *http.Requ
 	err := json.NewDecoder(request.Body).Decode(&body)
 	if err != nil {
 		em.Add("body", "wrong value provided.")
-		u.Send(response, em.GetJSON(), 400)
+		h.Send(em.GetJSON(), 400, err)
 		return
 	}
-	auth := AuthPipe{}
-	auth.get(request)
-	match, err := call.Encryption.Argon.Check(body.Password, auth.User.Password)
+	pipe := AuthPipe{}
+	pipe.get(request)
+	match, err := call.Encryption.Argon.Check(body.Password, pipe.User.Password)
 	if err != nil || !match {
-		u.Send(response, errorMan.ThrowNotAuthorized(), 401)
+		h.Send(errorMan.ThrowNotAuthorized(), 401, err)
 		return
 	}
 	var changeUsername = false
 	switch body.What {
 	case "username":
 		changeUsername = true
-		auth.User.Username = body.NewValue
-		err = auth.User.validateUsername()
+		pipe.User.Username = body.NewValue
+		err = pipe.User.validateUsername()
 		break
 	case "password":
-		auth.User.Password = body.NewValue
-		err = auth.User.validatePassword()
+		pipe.User.Password = body.NewValue
+		err = pipe.User.validatePassword()
 		break
 	}
 	if err != nil {
 		em.Add(body.What, "wrong value provided.")
-		u.Send(response, em.GetJSON(), 400)
+		h.Send(em.GetJSON(), 400, err)
 		return
 	}
 	if changeUsername {
-		userExists, err := auth.User.findByUsername()
+		userExists, err := pipe.User.findByUsername()
 		if err != nil {
-			u.Send(response, errorMan.ThrowServer(), 500)
+			h.Send(errorMan.ThrowServer(), 500, err)
 			return
 		}
 		if userExists {
 			em.Add("username", "already exists")
-			u.Send(response, em.GetJSON(), 400)
+			h.Send(em.GetJSON(), 400, err)
 			return
 		}
 	}
-	err = auth.User.update()
+	err = pipe.User.update()
 	if err != nil {
-		u.Send(response, errorMan.ThrowServer(), 500)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
-	u.Send(response, "", 200)
+	h.Send("", 200, err)
 	return
 }

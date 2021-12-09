@@ -11,11 +11,7 @@ type article struct {
 }
 
 type articleRoute struct {
-	controller articleController
-}
-
-type articleController struct {
-	*baseController
+	middleware *middleware
 	validate *articleValidator
 }
 
@@ -23,20 +19,17 @@ type articleValidator struct {
 }
 
 
-func (a *article) boot(b *baseController) {
+func (a *article) boot(m *middleware) {
 	a.validator = articleValidator{}
-	var controller = articleController{b, &a.validator}
-	a.route = articleRoute{controller}
+	a.route = articleRoute{m, &a.validator}
 }
 
 func (a *articleRoute) boot(router *mux.Router) {
 	var readOnly = router.PathPrefix("/articles").Subrouter()
-	readOnly.Use(a.controller.middlewareReadOnly)
-	readOnly.HandleFunc("", a.controller.getAll).Methods(http.MethodGet)
-	readOnly.HandleFunc("/{id}", a.controller.getOne).Methods(http.MethodGet)
-	var adminOnly = router.PathPrefix("/articles").Subrouter()
-	adminOnly.Use(a.controller.middlewareAdminOnly)
-	adminOnly.HandleFunc("", a.controller.create).Methods(http.MethodPost)
-	adminOnly.HandleFunc("/{id}", a.controller.update).Methods(http.MethodPut, http.MethodPatch)
-	adminOnly.HandleFunc("/{id}", a.controller.delete).Methods(http.MethodDelete)
+	readOnly.Use(a.middleware.safeMethodsOnly)
+	readOnly.HandleFunc("", a.getAll).Methods(http.MethodGet)
+	readOnly.HandleFunc("/{id}", a.getOne).Methods(http.MethodGet)
+	readOnly.HandleFunc("", a.create).Methods(http.MethodPost)
+	readOnly.HandleFunc("/{id}", a.update).Methods(http.MethodPut, http.MethodPatch)
+	readOnly.HandleFunc("/{id}", a.delete).Methods(http.MethodDelete)
 }

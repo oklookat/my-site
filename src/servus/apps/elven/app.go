@@ -19,7 +19,7 @@ type ResponseContent struct {
 }
 
 type App struct {
-	baseController *baseController
+	middleware *middleware
 	auth           *auth
 	article        *article
 	file           *file
@@ -31,29 +31,30 @@ func (a *App) Boot(c *core.Core) {
 	c.Logger.Info("elven: booting")
 	var _cmd = &cmd{}
 	_cmd.boot()
-	a.baseController = &baseController{call.HTTP}
+	a.middleware = &middleware{}
 	//
 	a.auth = &auth{}
-	a.auth.boot(a.baseController)
+	a.auth.boot(a.middleware)
 	a.article = &article{}
-	a.article.boot(a.baseController)
+	a.article.boot(a.middleware)
 	a.file = &file{}
-	a.file.boot(a.baseController)
+	a.file.boot(a.middleware)
 	a.user = &user{}
-	a.user.boot(a.baseController)
+	a.user.boot(a.middleware)
 	//
 	a.bootRoutes()
 }
 
 func (a *App) bootRoutes() {
 	router := mux.NewRouter().PathPrefix("/elven").Subrouter()
-	router.Use(call.HTTP.Middleware.AsJSON)
+	router.Use(call.Middleware.ProvideHTTP)
+	router.Use(call.Middleware.AsJSON)
 	//
 	a.auth.route.boot(router)
 	a.article.route.boot(router)
 	a.file.route.boot(router)
 	a.user.route.boot(router)
 	//
-	var useBeforeRouter = call.HTTP.Middleware.CORS(call.HTTP.Middleware.Security(router))
+	var useBeforeRouter = call.Middleware.CORS(call.Middleware.Security(router))
 	http.Handle("/", useBeforeRouter)
 }

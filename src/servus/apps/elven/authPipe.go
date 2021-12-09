@@ -38,7 +38,7 @@ func (a *AuthPipe) create(request *http.Request, accessType string) {
 		err = a.setUserAndToken(token)
 	}
 	a.IsAdmin = false
-	a.UserAndTokenExists = a.User != nil && a.Token != nil && err == nil
+	a.UserAndTokenExists = err == nil && a.User != nil && a.Token != nil
 	if a.UserAndTokenExists {
 		_ = a.Token.setLastAgents(request)
 		switch a.User.Role {
@@ -61,7 +61,7 @@ func (a *AuthPipe) create(request *http.Request, accessType string) {
 		a.Access = false
 		break
 	case accessTypeAuthorized:
-		a.Access = a.UserAndTokenExists && a.User.Role == userRoleUser
+		a.Access = a.UserAndTokenExists
 		break
 	}
 	return

@@ -20,18 +20,19 @@ const filesPageSize = 2
 // cursor = ULID
 // by = created (uploaded)
 // start = newest (DESC), oldest (ASC)
-func (f *fileController) getAll(response http.ResponseWriter, request *http.Request) {
+func (f *fileRoute) getAll(response http.ResponseWriter, request *http.Request) {
+	var h = f.middleware.getHTTP(request)
 	// validate query params.
 	val, em, _ := f.validate.getAll(request, true)
 	if em.HasErrors() {
-		f.Send(response, em.GetJSON(), 400)
+		h.Send(em.GetJSON(), 400, nil)
 		return
 	}
 	// get files by query params.
 	files, totalPages, err := val.getAll()
 	if err != nil {
 		call.Logger.Error(fmt.Sprintf("files get error: %v", err.Error()))
-		f.Send(response, errorMan.ThrowServer(), 500)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	// generate response with pagination.
@@ -43,15 +44,15 @@ func (f *fileController) getAll(response http.ResponseWriter, request *http.Requ
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
-		call.Logger.Error(fmt.Sprintf("files response json marshal error: %v", err.Error()))
-		f.Send(response, errorMan.ThrowServer(), 500)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
-	f.Send(response, string(jsonResponse), 200)
+	h.Send(string(jsonResponse), 200, err)
 }
 
 // POST url/
-func (f *fileController) createOne(response http.ResponseWriter, request *http.Request) {
+func (f *fileRoute) createOne(response http.ResponseWriter, request *http.Request) {
+	var h = f.middleware.getHTTP(request)
 	auth := AuthPipe{}
 	auth.get(request)
 	em := errorMan.NewValidation()
@@ -61,10 +62,10 @@ func (f *fileController) createOne(response http.ResponseWriter, request *http.R
 	if err != nil {
 		if err == filer.ErrBadFileProvided {
 			em.Add("file", "bad file provided.")
-			f.Send(response, em.GetJSON(), 400)
+			h.Send(em.GetJSON(), 400, err)
 			return
 		}
-		f.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	// check is file exists.
@@ -72,17 +73,17 @@ func (f *fileController) createOne(response http.ResponseWriter, request *http.R
 	var fileInDB = FileModel{Hash: hash}
 	found, err := fileInDB.findByHash()
 	if err != nil {
-		f.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	if found {
 		_ = os.Remove(processed.Temp.Name())
 		fileJSON, err := json.Marshal(fileInDB)
 		if err != nil {
-			f.err500(response, request, err)
+			h.Send(errorMan.ThrowServer(), 500, err)
 			return
 		}
-		f.Send(response, string(fileJSON), 200)
+		h.Send(string(fileJSON), 200, err)
 		return
 	}
 	var filename = processed.Header.Filename
@@ -95,7 +96,7 @@ func (f *fileController) createOne(response http.ResponseWriter, request *http.R
 	// newFileName - ULIDSTRING.jpg
 	filenameULID, err := generateULID()
 	if err != nil {
-		f.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	var newFileName = filenameULID + extension
@@ -106,7 +107,7 @@ func (f *fileController) createOne(response http.ResponseWriter, request *http.R
 	// make dir and move temp file to it
 	err = os.MkdirAll(saveAt, os.ModePerm)
 	if err != nil {
-		f.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	defer func() {
@@ -116,7 +117,7 @@ func (f *fileController) createOne(response http.ResponseWriter, request *http.R
 	}()
 	err = os.Rename(processed.Temp.Name(), newFilePath)
 	if err != nil {
-		f.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	defer func() {
@@ -137,7 +138,7 @@ func (f *fileController) createOne(response http.ResponseWriter, request *http.R
 	}
 	err = fileInDB.create()
 	if err != nil {
-		f.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	defer func() {
@@ -148,25 +149,26 @@ func (f *fileController) createOne(response http.ResponseWriter, request *http.R
 	// send file to user
 	fileJSON, err := json.Marshal(&fileInDB)
 	if err != nil {
-		f.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
-	f.Send(response, string(fileJSON), 200)
+	h.Send(string(fileJSON), 200, err)
 	return
 }
 
 // DELETE url/id
-func (f *fileController) deleteOne(response http.ResponseWriter, request *http.Request) {
+func (f *fileRoute) deleteOne(response http.ResponseWriter, request *http.Request) {
+	var h = f.middleware.getHTTP(request)
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var file = FileModel{ID: id}
 	found, err := file.findByID()
 	if err != nil {
-		f.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	if !found {
-		f.Send(response, errorMan.ThrowNotFound(), 404)
+		h.Send(errorMan.ThrowNotFound(), 404, err)
 		return
 	}
 	// delete dirs if empty
@@ -177,13 +179,6 @@ func (f *fileController) deleteOne(response http.ResponseWriter, request *http.R
 		err = filer.DeleteEmptyDirsRecursive(fullPath)
 	}
 	err = file.deleteByID()
-	f.Send(response, "", 200)
-	return
-}
-
-// err403 - send an error if the user is not allowed to do something.
-func (f *fileController) err500(response http.ResponseWriter, request *http.Request, err error) {
-	call.Logger.Warn(fmt.Sprintf("entityFile code 500 at: %v. Error: %v", request.URL.Path, err.Error()))
-	f.Send(response, errorMan.ThrowServer(), 500)
+	h.Send("", 200, err)
 	return
 }

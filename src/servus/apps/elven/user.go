@@ -16,11 +16,7 @@ type user struct {
 }
 
 type userRoute struct {
-	controller userController
-}
-
-type userController struct {
-	*baseController
+	middleware *middleware
 	validate *userValidator
 }
 
@@ -28,16 +24,15 @@ type userValidator struct {
 }
 
 
-func (u *user) boot(b *baseController) {
+func (u *user) boot(m *middleware) {
 	u.validator = userValidator{}
-	var controller = userController{b, &u.validator}
-	u.route = userRoute{controller}
+	u.route = userRoute{m, &u.validator}
 }
 
 func (u *userRoute) boot(router *mux.Router) {
 	var authOnly = router.PathPrefix("/users").Subrouter()
-	authOnly.Use(u.controller.middlewareAuthorizedOnly)
-	authOnly.HandleFunc("/me", u.controller.getMe).Methods(http.MethodGet)
-	authOnly.HandleFunc("/me/change", u.controller.change).Methods(http.MethodPost)
+	authOnly.Use(u.middleware.authorizedOnly)
+	authOnly.HandleFunc("/me", u.getMe).Methods(http.MethodGet)
+	authOnly.HandleFunc("/me/change", u.change).Methods(http.MethodPost)
 }
 

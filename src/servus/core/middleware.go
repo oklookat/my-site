@@ -2,13 +2,30 @@ package core
 
 import (
 	"net/http"
+	"servus/core/internal/corsParse"
 	"strings"
 )
 
+type _ctxHTTP string
+const ctxHTTP _ctxHTTP = "CORE_HTTP_PIPE"
+
 // Middleware - basic middleware.
 type Middleware struct {
-	config *ConfigFile
-	cors   cors
+	core *Core
+	cors cors
+}
+
+func (c *Core) bootMiddleware() {
+	var corsConfig = corsParse.Config{
+		AllowCredentials: c.Config.Security.CORS.AllowCredentials,
+		AllowOrigin:      c.Config.Security.CORS.AllowOrigin,
+		AllowMethods:     c.Config.Security.CORS.AllowMethods,
+		AllowHeaders:     c.Config.Security.CORS.AllowHeaders,
+		ExposeHeaders:    c.Config.Security.CORS.ExposeHeaders,
+		MaxAge:           c.Config.Security.CORS.MaxAge,
+	}
+	var corsInstance = corsParse.New(corsConfig)
+	c.Middleware = &Middleware{core: c, cors: &corsInstance}
 }
 
 // AsJSON - set application/json header.
@@ -22,7 +39,7 @@ func (m *Middleware) AsJSON(next http.Handler) http.Handler {
 // CORS - CORS headers depending on config file.
 func (m *Middleware) CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if m.config.Security.CORS.Active {
+		if m.core.Config.Security.CORS.Active {
 			var isPreflight = m.cors.SetHeaders(writer, request)
 			if isPreflight {
 				return
@@ -38,11 +55,11 @@ func (m *Middleware) Security(next http.Handler) http.Handler {
 		var method = request.Method
 		method = strings.ToUpper(method)
 		// request body size check
-		if m.config.Security.Limiter.Body.Active {
+		if m.core.Config.Security.Limiter.Body.Active {
 			var isNotReadOnlyMethod = !(method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions)
 			if isNotReadOnlyMethod {
 				var requestURI = request.RequestURI
-				var exceptSlice = m.config.Security.Limiter.Body.Except
+				var exceptSlice = m.core.Config.Security.Limiter.Body.Except
 				var isBypassed = false
 				for _, exceptOne := range exceptSlice {
 					if exceptOne == requestURI {
@@ -51,7 +68,7 @@ func (m *Middleware) Security(next http.Handler) http.Handler {
 				}
 				if !isBypassed {
 					// TODO: fix max body length
-					request.Body = http.MaxBytesReader(writer, request.Body, m.config.Security.Limiter.Body.MaxSize)
+					request.Body = http.MaxBytesReader(writer, request.Body, m.core.Config.Security.Limiter.Body.MaxSize)
 					//payload, err := ioutil.ReadAll(request.Body)
 					//if err != nil {
 					//	if strings.Contains(err.Error(), "request body too large"){

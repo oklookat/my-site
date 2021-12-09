@@ -70,5 +70,12 @@
   "uploads": {
     "to": "D:/uploads",
     "temp": "D:/uploads/temp"
+  },
+  "control": {
+    "telegram": {
+      "enabled": true,
+      "token": "123",
+      "httpLevel": 1
+    }
   }
 }

@@ -1,68 +1,95 @@
 package core
 
 import (
+	"context"
 	"github.com/pkg/errors"
 	"net/http"
 	"os"
-	"servus/core/internal/corsParse"
+	"servus/core/internal/zipify"
 	"strings"
 )
 
+// HTTP - cool things for request/response.
 type HTTP struct {
-	config     *ConfigFile
-	utils      *Utils
-	logger     Logger
-	Middleware *Middleware
+	core     *Core
+	request  *http.Request
+	response http.ResponseWriter
 }
 
+// ProvideHTTP - gives access to core.HTTP in request context.
+func (m *Middleware) ProvideHTTP(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		var h = &HTTP{core: m.core, request: request, response: response}
+		var ctx = context.WithValue(request.Context(), ctxHTTP, h)
+		*request = *request.WithContext(ctx)
+		next.ServeHTTP(response, request)
+	})
+}
 
-// bootHTTP - boot http utilities. Use this after booting the config.
-func (c *Core) bootHTTP() {
-	var corsConfig = corsParse.Config{
-		AllowCredentials: c.Config.Security.CORS.AllowCredentials,
-		AllowOrigin:      c.Config.Security.CORS.AllowOrigin,
-		AllowMethods:     c.Config.Security.CORS.AllowMethods,
-		AllowHeaders:     c.Config.Security.CORS.AllowHeaders,
-		ExposeHeaders:    c.Config.Security.CORS.ExposeHeaders,
-		MaxAge:           c.Config.Security.CORS.MaxAge,
+// GetHTTP - get HTTP from request context.
+func (m *Middleware) GetHTTP(request *http.Request) *HTTP {
+	var ctx = request.Context()
+	var h, ok = ctx.Value(ctxHTTP).(*HTTP)
+	if !ok {
+		m.core.Logger.Warn("middleware: error while get HTTP struct from request context. Are you provided ProvideHTTP middleware?")
+		return nil
 	}
-	var corsInstance = corsParse.New(corsConfig)
-	middleware := Middleware{config: c.Config, cors: &corsInstance}
-	c.HTTP = &HTTP{config: c.Config, Middleware: &middleware}
+	return h
 }
 
-// Send - wrapper for http.ResponseWriter. Sends response and clear errorMan errors.
-func (h *HTTP) Send(response http.ResponseWriter, body string, statusCode int) {
-	response.WriteHeader(statusCode)
+func (h *HTTP) new(core *Core, req *http.Request, res http.ResponseWriter) {
+	h.core = core
+	h.request = req
+	h.response = res
+}
+
+// Send - sends response and log it if error.
+func (h *HTTP) Send(body string, statusCode int, err error) {
+	h.response.WriteHeader(statusCode)
+
+
 	// TODO: add 500 error handler here; notification about 500 error with useful information
 	// TODO: get stack, request path, write in txt and zip, send to telegram
-	_, err := response.Write([]byte(body))
+	if statusCode == 500 {
+		var stack = h.core.Utils.GetStackTrace(err)
+		stack.trace = "ERROR 500. TRACE:\n" + stack.trace
+		var arc = zipify.ZipFile{}
+		err = arc.AddFile("dump-" + stack.timestamp, &stack)
+		if err == nil {
+			var caption = "500 error"
+			h.core.Control.tg.sendFile(&caption, stack.timestamp, arc.GetFile())
+		}
+	}
+
+
+	_, err = h.response.Write([]byte(body))
 	if err != nil {
-		h.logger.Error("HTTP: failed to send response. Error:" + err.Error())
+		h.core.Logger.Error("HTTP: failed to send response. Error:" + err.Error())
 	}
 }
 
-// SetCookie - cool wrapper for setting cookies.
-func (h *HTTP) SetCookie(response *http.ResponseWriter, name string, value string) {
-	var maxAge, err = h.utils.ConvertTimeWord(h.config.Security.Cookie.MaxAge)
+// SetCookie - set cookie.
+func (h *HTTP) SetCookie(name string, value string) {
+	var cfg = h.core.Config
+	var maxAge, err = h.core.Utils.ConvertTimeWord(cfg.Security.Cookie.MaxAge)
 	if err != nil {
 		var errPretty = errors.Wrap(err, "HTTP: SetCookie convert time failed. Error")
-		h.logger.Panic(errPretty)
+		h.core.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
 	maxAgeSeconds := int(maxAge.Seconds())
-	var domain = h.config.Security.Cookie.Domain
-	var path = h.config.Security.Cookie.Path
-	var httpOnly = h.config.Security.Cookie.HttpOnly
-	var secure = h.config.Security.Cookie.Secure
-	sameSite, err := h.convertCookieSameSite(h.config.Security.Cookie.SameSite)
+	var domain = cfg.Security.Cookie.Domain
+	var path = cfg.Security.Cookie.Path
+	var httpOnly = cfg.Security.Cookie.HttpOnly
+	var secure = cfg.Security.Cookie.Secure
+	sameSite, err := h.convertCookieSameSite(cfg.Security.Cookie.SameSite)
 	if err != nil {
 		var errPretty = errors.Wrap(err, "HTTP: SetCookie failed convert cookie sameSite. Error")
-		h.logger.Panic(errPretty)
+		h.core.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
 	var cookie = &http.Cookie{Name: name, Value: value, Path: path, Domain: domain, MaxAge: maxAgeSeconds, HttpOnly: httpOnly, Secure: secure, SameSite: sameSite}
-	http.SetCookie(*response, cookie)
+	http.SetCookie(h.response, cookie)
 }
 
 // convertCookieSameSite - convert cookie sameSite string to http.SameSite.

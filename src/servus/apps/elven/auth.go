@@ -11,27 +11,22 @@ type auth struct {
 }
 
 type authRoute struct {
-	controller authController
-}
-
-type authController struct {
-	*baseController
+	middleware *middleware
 	validate *authValidator
 }
 
 type authValidator struct {
 }
 
-func (a *auth) boot(b *baseController) {
+func (a *auth) boot(m *middleware) {
 	a.validator = authValidator{}
-	var controller = authController{b, &a.validator}
-	a.route = authRoute{controller}
+	a.route = authRoute{m, &a.validator}
 }
 
 func (a *authRoute) boot(router *mux.Router) {
 	var all = router.PathPrefix("/auth").Subrouter()
-	all.HandleFunc("/login", a.controller.login).Methods(http.MethodPost)
+	all.HandleFunc("/login", a.login).Methods(http.MethodPost)
 	var authOnly = router.PathPrefix("/auth").Subrouter()
-	authOnly.Use(a.controller.middlewareAuthorizedOnly)
-	authOnly.HandleFunc("/logout", a.controller.logout).Methods(http.MethodPost)
+	authOnly.Use(a.middleware.authorizedOnly)
+	authOnly.HandleFunc("/logout", a.logout).Methods(http.MethodPost)
 }

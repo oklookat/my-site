@@ -10,7 +10,7 @@ import (
 
 const articlesPageSize = 2
 
-// getAll - GET url/
+// getAll - GET url/. Get paginated articles.
 //
 // request params:
 //
@@ -23,23 +23,24 @@ const articlesPageSize = 2
 // start: newest (DESC); oldest (ASC)
 //
 // preview: true (content < 480 symbols); false (gives you full articles).
-func (a *articleController) getAll(response http.ResponseWriter, request *http.Request) {
+func (a *articleRoute) getAll(response http.ResponseWriter, request *http.Request) {
+	var h = a.middleware.getHTTP(request)
 	var err error
 	var isAdmin = false
-	var auth = AuthPipe{}
-	auth.get(request)
-	isAdmin = auth.UserAndTokenExists && auth.IsAdmin
+	var pipe = AuthPipe{}
+	pipe.get(request)
+	isAdmin = pipe.UserAndTokenExists && pipe.IsAdmin
 	// validate query params.
 	val, em, _ := a.validate.controllerGetAll(request, isAdmin)
 	if em.HasErrors() {
-		a.Send(response, em.GetJSON(), 400)
+		h.Send(em.GetJSON(), 400, err)
 		return
 	}
 	// get articles by query params.
 	articles, pages, err := val.getAll()
 	if err != nil {
 		call.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
-		a.Send(response, errorMan.ThrowServer(), 500)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	// generate response with pagination
@@ -52,82 +53,85 @@ func (a *articleController) getAll(response http.ResponseWriter, request *http.R
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
 		call.Logger.Error(fmt.Sprintf("articles response json marshal error: %v", err.Error()))
-		a.Send(response, errorMan.ThrowServer(), 500)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
-	a.Send(response, string(jsonResponse), 200)
+	h.Send(string(jsonResponse), 200, err)
 }
 
-// getOne - GET url/id.
-func (a *articleController) getOne(response http.ResponseWriter, request *http.Request) {
+// getOne - GET url/id. Get one article.
+func (a *articleRoute) getOne(response http.ResponseWriter, request *http.Request) {
+	var h = a.middleware.getHTTP(request)
 	var isAdmin = false
-	var auth = AuthPipe{}
-	auth.get(request)
-	isAdmin = auth.UserAndTokenExists && auth.IsAdmin
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article = ArticleModel{ID: id}
 	found, err := article.findByID()
 	if err != nil {
-		a.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	if !found {
-		a.Send(response, errorMan.ThrowNotFound(), 404)
+		h.Send(errorMan.ThrowNotFound(), 404, err)
 		return
 	}
+	var pAuth = AuthPipe{}
+	pAuth.get(request)
+	isAdmin = pAuth.IsAdmin
 	if !article.IsPublished && !isAdmin {
-		a.err403(response)
+		h.Send(errorMan.ThrowForbidden(), 403, err)
 		return
 	}
 	articleJson, err := json.Marshal(article)
 	if err != nil {
-		a.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
-	a.Send(response, string(articleJson), 200)
+	h.Send(string(articleJson), 200, err)
 }
 
-// create - POST url/.
-func (a *articleController) create(response http.ResponseWriter, request *http.Request) {
-	var pAuth = AuthPipe{}
-	pAuth.get(request)
+// create - POST url/. Creates new article.
+func (a *articleRoute) create(response http.ResponseWriter, request *http.Request) {
+	var h = a.middleware.getHTTP(request)
 	val, em, _ := a.validate.body(request)
 	if em.HasErrors() {
-		a.Send(response, em.GetJSON(), 400)
+		h.Send(em.GetJSON(), 400, nil)
 		return
 	}
+	var pAuth = AuthPipe{}
+	pAuth.get(request)
 	var article = ArticleModel{UserID: pAuth.User.ID, IsPublished: false, Title: *val.Title, Content: *val.Content}
 	err := article.create()
 	if err != nil {
-		a.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	articleJson, err := json.Marshal(&article)
 	if err != nil {
-		a.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
-	a.Send(response, string(articleJson), 200)
+	h.Send(string(articleJson), 200, err)
 }
 
 // update - PUT (update all available fields) or PATCH (update specific field) url/id.
-func (a *articleController) update(response http.ResponseWriter, request *http.Request) {
+func (a *articleRoute) update(response http.ResponseWriter, request *http.Request) {
+	var h = a.middleware.getHTTP(request)
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article = ArticleModel{ID: id}
 	found, err := article.findByID()
 	if err != nil {
-		a.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	if !found {
-		a.Send(response, errorMan.ThrowNotFound(), 404)
+		h.Send(errorMan.ThrowNotFound(), 404, err)
 		return
 	}
 	body, em, err := a.validate.body(request)
 	if em.HasErrors() {
-		a.Send(response, em.GetJSON(), 400)
+		h.Send(em.GetJSON(), 400, err)
 		return
 	}
 	var isTitle = body.Title != nil
@@ -137,7 +141,7 @@ func (a *articleController) update(response http.ResponseWriter, request *http.R
 	if request.Method == http.MethodPut {
 		if !isTitle || !isContent || !isPublished {
 			em.Add("body", "provide all values.")
-			a.Send(response, em.GetJSON(), 400)
+			h.Send(em.GetJSON(), 400, err)
 			return
 		} else {
 			article.Title = *body.Title
@@ -157,49 +161,37 @@ func (a *articleController) update(response http.ResponseWriter, request *http.R
 	}
 	err = article.update()
 	if err != nil {
-		a.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	jsonArticle, err := json.Marshal(article)
 	if err != nil {
-		a.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
-	a.Send(response, string(jsonArticle), 200)
+	h.Send(string(jsonArticle), 200, err)
 }
 
-// delete - DELETE url/id.
-func (a *articleController) delete(response http.ResponseWriter, request *http.Request) {
+// delete - DELETE url/id. Deletes one article.
+func (a *articleRoute) delete(response http.ResponseWriter, request *http.Request) {
+	var h = a.middleware.getHTTP(request)
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article = ArticleModel{ID: id}
 	found, err := article.findByID()
 	if err != nil {
-		a.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
 	if !found {
-		a.Send(response, errorMan.ThrowNotFound(), 404)
+		h.Send(errorMan.ThrowNotFound(), 404, err)
 		return
 	}
 	err = article.deleteByID()
 	if err != nil {
-		a.err500(response, request, err)
+		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
-	a.Send(response, "", 200)
-	return
-}
-
-// err500 - write error to logger and send 500 error to user.
-func (a *articleController) err500(response http.ResponseWriter, request *http.Request, err error) {
-	call.Logger.Warn(fmt.Sprintf("entityArticle code 500 at: %v. Error: %v", request.URL.Path, err.Error()))
-	a.Send(response, errorMan.ThrowServer(), 500)
-	return
-}
-
-// err403 - send an error if the user is not allowed to do something.
-func (a *articleController) err403(response http.ResponseWriter) {
-	a.Send(response, errorMan.ThrowForbidden(), 403)
+	h.Send("", 200, err)
 	return
 }

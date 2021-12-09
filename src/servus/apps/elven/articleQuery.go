@@ -45,7 +45,7 @@ func (q *articleQueryGetAll) getAll() (articles []ArticleModel, totalPages int, 
 	err = call.DB.Conn.Get(&totalPages, queryCount)
 	err = call.DB.CheckError(err)
 	if err != nil && err != sql.ErrNoRows {
-		return nil, 0, nil
+		return nil, 0, err
 	}
 	articles = make([]ArticleModel, 0)
 	totalPages = int(math.Round(float64(totalPages) / float64(articlesPageSize)))
