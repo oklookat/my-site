@@ -1,46 +1,46 @@
-package controlify
+package controlifyTelegram
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io"
 )
 
-// ControlTelegram - controls Telegram bot.
-type ControlTelegram struct {
-	outside controlTelegrammer
-	api  *Telegram
+// Controller - controls Telegram bot.
+type Controller struct {
+	outside Telegramer
+	bot     *Bot
 }
 
-type controlTelegrammer interface {
-	// getEnabled - is bot enabled.
-	getEnabled() bool
-	// getToken - get bot token.
-	getToken() string
-	// logError - error logging.
-	logError(message string)
-	// getAllowedChats - get chats ids where bot can send messages.
-	getAllowedChats() []int64
-	// getAllowedChats - get users ids where bot can receive messages.
-	getAllowedUsers() []int64
+type Telegramer interface {
+	// GetEnabled - is bot enabled.
+	GetEnabled() bool
+	// GetToken - get bot token.
+	GetToken() string
+	// LogError - error logging.
+	LogError(message string)
+	// GetAllowedChats - get chats ids where bot can send messages.
+	GetAllowedChats() []int64
+	// GetAllowedUsers - get users ids where bot can receive messages.
+	GetAllowedUsers() []int64
 }
 
 // New - create new ControlTelegram instance.
-func (c *ControlTelegram) New(t controlTelegrammer) {
+func (c *Controller) New(t Telegramer) {
 	c.outside = t
-	var isEnabled = t.getEnabled()
+	var isEnabled = t.GetEnabled()
 	if isEnabled {
-		c.api = &Telegram{}
-		c.api.OnUpdate(c.onUpdate)
-		token := c.outside.getToken()
-		err := c.api.New(token)
+		c.bot = &Bot{}
+		c.bot.OnUpdate(c.onUpdate)
+		token := c.outside.GetToken()
+		err := c.bot.New(token)
 		if err != nil {
-			c.outside.logError("[control/telegram] error while booting: " + err.Error())
+			c.outside.LogError("[control/telegram] error while booting: " + err.Error())
 		}
 	}
 }
 
 // onUpdate - when message coming from user.
-func (c *ControlTelegram) onUpdate(update tgbotapi.Update) {
+func (c *Controller) onUpdate(update tgbotapi.Update) {
 	c.allowedUsersCallback(func(userID int64) bool {
 		if userID != update.Message.From.ID {
 			// not allowed user
@@ -51,41 +51,9 @@ func (c *ControlTelegram) onUpdate(update tgbotapi.Update) {
 	})
 }
 
-// sendMessage - send file to allowed chats.
-func (c *ControlTelegram) sendFile(caption *string, filename string, reader io.Reader) {
-	if c.api == nil {
-		return
-	}
-	var file = TelegramFile{}
-	file.New(caption, filename, reader)
-	c.allowedChatsCallback(func(chatID int64) bool {
-		_, err := c.api.SendFile(chatID, &file)
-		if err != nil {
-			c.outside.logError("[control/telegram] error while sending file: " + err.Error())
-			return true
-		}
-		return false
-	})
-}
-
-// sendMessage - send message to allowed chats.
-func (c *ControlTelegram) sendMessage(message string) {
-	if c.api == nil {
-		return
-	}
-	c.allowedChatsCallback(func(chatID int64) bool {
-		_, err := c.api.SendMessage(chatID, message)
-		if err != nil {
-			c.outside.logError("[control/telegram] error while sending message: " + err.Error())
-			return true
-		}
-		return false
-	})
-}
-
 // allowedChatsCallback - executes callback on every allowedChats ID. Callback must return bool where true = stop.
-func (c *ControlTelegram) allowedChatsCallback(callback func(chatID int64) bool) {
-	var allowedChats = c.outside.getAllowedChats()
+func (c *Controller) allowedChatsCallback(callback func(chatID int64) bool) {
+	var allowedChats = c.outside.GetAllowedChats()
 	for index := range allowedChats {
 		stop := callback(allowedChats[index])
 		if stop {
@@ -95,12 +63,44 @@ func (c *ControlTelegram) allowedChatsCallback(callback func(chatID int64) bool)
 }
 
 // allowedChatsCallback - executes callback on every allowedChats ID. Callback must return bool where true = stop.
-func (c *ControlTelegram) allowedUsersCallback(callback func(userID int64) bool) {
-	var allowedUsers = c.outside.getAllowedUsers()
+func (c *Controller) allowedUsersCallback(callback func(userID int64) bool) {
+	var allowedUsers = c.outside.GetAllowedUsers()
 	for index := range allowedUsers {
 		stop := callback(allowedUsers[index])
 		if stop {
 			break
 		}
 	}
+}
+
+// SendFile - send file to allowed chats.
+func (c *Controller) SendFile(caption *string, filename string, reader io.Reader) {
+	if c.bot == nil {
+		return
+	}
+	var file = File{}
+	file.New(caption, filename, reader)
+	c.allowedChatsCallback(func(chatID int64) bool {
+		_, err := c.bot.SendFile(chatID, &file)
+		if err != nil {
+			c.outside.LogError("[control/telegram] error while sending file: " + err.Error())
+			return true
+		}
+		return false
+	})
+}
+
+// SendMessage - send message to allowed chats.
+func (c *Controller) SendMessage(message string) {
+	if c.bot == nil {
+		return
+	}
+	c.allowedChatsCallback(func(chatID int64) bool {
+		_, err := c.bot.SendMessage(chatID, message)
+		if err != nil {
+			c.outside.LogError("[control/telegram] error while sending message: " + err.Error())
+			return true
+		}
+		return false
+	})
 }

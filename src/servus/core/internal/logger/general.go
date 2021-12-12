@@ -12,9 +12,9 @@ import (
 )
 
 // New create new Logger instance.
-func New(config Config) Logger {
+func New(config Config) *Logger {
 	var logger = Logger{Config: config}
-	return logger
+	return &logger
 }
 
 // bus - calls when new log added. Writes log depending on settings.

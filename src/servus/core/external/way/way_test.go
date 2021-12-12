@@ -27,28 +27,28 @@ func TestManual(t *testing.T) {
 
 func testingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		println("local middleware 1")
+		println("local limiter 1")
 		next.ServeHTTP(writer, request)
 	})
 }
 
 func testingGlobalMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		println("global middleware 1")
+		println("global limiter 1")
 		next.ServeHTTP(writer, request)
 	})
 }
 
 func testingGlobalMiddleware2(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		println("global middleware 2")
+		println("global limiter 2")
 		next.ServeHTTP(writer, request)
 	})
 }
 
 func testingGroupGlobalMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		println("group middleware 1")
+		println("group limiter 1")
 		next.ServeHTTP(writer, request)
 	})
 }

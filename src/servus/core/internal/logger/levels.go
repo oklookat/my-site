@@ -23,7 +23,7 @@ func (l *level) getMessage() string {
 	return l.message
 }
 
-// getAt - get place where logger was called. Returns string like main.go:11.
+// getAt - get place where logger was called. Returns string like limitBody.go:11.
 func (l *Logger) getAt() string {
 	at := "unknown"
 	if _, file, line, ok := runtime.Caller(4); ok {

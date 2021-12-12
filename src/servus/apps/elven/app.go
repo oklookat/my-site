@@ -48,13 +48,13 @@ func (a *App) Boot(c *core.Core) {
 func (a *App) bootRoutes() {
 	router := mux.NewRouter().PathPrefix("/elven").Subrouter()
 	router.Use(call.Middleware.ProvideHTTP)
-	router.Use(call.Middleware.AsJSON)
+	router.Use(call.Middleware.AsJson)
 	//
 	a.auth.route.boot(router)
 	a.article.route.boot(router)
 	a.file.route.boot(router)
 	a.user.route.boot(router)
 	//
-	var useBeforeRouter = call.Middleware.CORS(call.Middleware.Security(router))
+	var useBeforeRouter = call.Middleware.CORS(call.Middleware.LimitBody(router))
 	http.Handle("/", useBeforeRouter)
 }

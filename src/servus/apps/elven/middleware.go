@@ -16,8 +16,9 @@ const (
 type middleware struct {
 }
 
-func (m *middleware) getHTTP(r *http.Request) *core.HTTP {
-	return call.Middleware.GetHTTP(r)
+func (m *middleware) getHTTP(r *http.Request) core.HTTP {
+	var h, _ = call.Middleware.GetHTTP(r)
+	return h
 }
 
 // authorizedOnly - only authorized user can access.

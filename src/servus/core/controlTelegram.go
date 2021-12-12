@@ -30,11 +30,11 @@ func (c *ControlTelegram) new(config *ControlTelegramConfig, logger Logger) {
 }
 
 func (c *ControlTelegram) SendFile(caption *string, filename string, reader io.Reader) {
-	c.Bot.SendFile(caption, filename, reader)
+	go c.Bot.SendFile(caption, filename, reader)
 }
 
 func (c *ControlTelegram) SendMessage(message string) {
-	c.Bot.SendMessage(message)
+	go c.Bot.SendMessage(message)
 }
 
 func (c *ControlTelegram) GetEnabled() bool {
@@ -46,7 +46,7 @@ func (c *ControlTelegram) GetToken() string {
 }
 
 func (c *ControlTelegram) LogError(message string) {
-	c.logger.Error(message)
+	go c.logger.Error(message)
 }
 
 func (c *ControlTelegram) GetAllowedChats() []int64 {

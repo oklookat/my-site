@@ -7,9 +7,7 @@ import (
 )
 
 type Instance struct {
-	config  Config
-	writer  http.ResponseWriter
-	request *http.Request
+	config *Config
 }
 
 type Config struct {
@@ -27,9 +25,8 @@ type Config struct {
 	MaxAge int64
 }
 
-// New - create new instance of CorsParse.
-func New(config Config) Instance {
-	return Instance{config: config}
+func New(config *Config) *Instance {
+	return &Instance{config: config}
 }
 
 func (i *Instance) Middleware(next http.Handler) http.Handler {
@@ -45,83 +42,79 @@ func (i *Instance) Middleware(next http.Handler) http.Handler {
 
 // setHeaders - add CORS headers to response. Returns CorsResult with information about method (is preflight).
 func (i *Instance) setHeaders(writer http.ResponseWriter, request *http.Request) (isPreflight bool) {
-	i.writer = writer
-	i.request = request
-	preflight := i.isPreflight()
+	preflight := i.isPreflight(request.Method)
 	if preflight {
-		i.allowMethodsParse()
-		i.allowHeadersParse()
-		i.maxAgeParse()
+		i.allowMethodsParse(writer)
+		i.allowHeadersParse(writer, request)
+		i.maxAgeParse(writer)
 	}
-	i.allowOriginParse()
-	i.exposeHeadersParse()
-	i.allowCredentialsParse()
+	i.allowOriginParse(writer, request)
+	i.exposeHeadersParse(writer)
+	i.allowCredentialsParse(writer)
 	return preflight
 }
 
-func (i *Instance) isPreflight() bool {
-	var method = i.request.Method
-	method = strings.ToUpper(method)
+func (i *Instance) isPreflight(method string) bool {
 	return method == http.MethodOptions
 }
 
-func (i *Instance) allowOriginParse() {
+func (i *Instance) allowOriginParse(writer http.ResponseWriter, request *http.Request) {
 	var allowOrigin = i.config.AllowOrigin
 	// bypass.
 	if allowOrigin[0] == "*" {
-		i.writer.Header().Add("Access-Control-Allow-Origin", "*")
+		writer.Header().Add("Access-Control-Allow-Origin", "*")
 		return
 	}
 	// https://stackoverflow.com/a/1850482
-	var clientOrigin = i.request.Header.Get("Origin")
+	var clientOrigin = request.Header.Get("Origin")
 	for index := range allowOrigin {
 		if allowOrigin[index] != clientOrigin {
 			continue
 		}
-		i.writer.Header().Add("Access-Control-Allow-Origin", allowOrigin[index])
+		writer.Header().Add("Access-Control-Allow-Origin", allowOrigin[index])
 		break
 	}
 	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin#cors_and_caching
-	i.writer.Header().Add("Vary", "Origin")
+	writer.Header().Add("Vary", "Origin")
 }
 
-func (i *Instance) allowMethodsParse() {
+func (i *Instance) allowMethodsParse(writer http.ResponseWriter) {
 	var allowMethods = i.config.AllowMethods
 	if allowMethods[0] == "*" {
-		i.writer.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, HEAD")
+		writer.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, HEAD")
 		return
 	}
-	i.writer.Header().Add("Access-Control-Allow-Methods", strings.Join(allowMethods, ", "))
+	writer.Header().Add("Access-Control-Allow-Methods", strings.Join(allowMethods, ", "))
 }
 
-func (i *Instance) allowHeadersParse() {
+func (i *Instance) allowHeadersParse(writer http.ResponseWriter, request *http.Request) {
 	var allowHeaders = i.config.AllowHeaders
 	var allowed string
 	// allow all?
 	if allowHeaders[0] == "*" {
-		allowed = i.request.Header.Get("Access-Control-Request-Headers")
+		allowed = request.Header.Get("Access-Control-Request-Headers")
 	} else {
 		// make allowed headers string like 'header-1, header-2, header-3'
 		allowed = strings.Join(allowHeaders, ", ")
 	}
-	i.writer.Header().Add("Access-Control-Allow-Headers", allowed)
+	writer.Header().Add("Access-Control-Allow-Headers", allowed)
 }
 
-func (i *Instance) exposeHeadersParse() {
+func (i *Instance) exposeHeadersParse(writer http.ResponseWriter) {
 	var conf = i.config.ExposeHeaders
 	var exposeHeaders = strings.Join(conf, ", ")
-	i.writer.Header().Add("Access-Control-Expose-Headers", exposeHeaders)
+	writer.Header().Add("Access-Control-Expose-Headers", exposeHeaders)
 }
 
-func (i *Instance) allowCredentialsParse() {
+func (i *Instance) allowCredentialsParse(writer http.ResponseWriter) {
 	var allowCredentials = i.config.AllowCredentials
 	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials#directives
 	if allowCredentials {
-		i.writer.Header().Add("Access-Control-Allow-Credentials", "true")
+		writer.Header().Add("Access-Control-Allow-Credentials", "true")
 	}
 }
 
-func (i *Instance) maxAgeParse() {
+func (i *Instance) maxAgeParse(writer http.ResponseWriter) {
 	var maxAge = i.config.MaxAge
-	i.writer.Header().Add("Access-Control-Max-Age", strconv.FormatInt(maxAge, 10))
+	writer.Header().Add("Access-Control-Max-Age", strconv.FormatInt(maxAge, 10))
 }

@@ -1,23 +1,14 @@
 package core
 
 import (
-	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 	"unicode"
 )
 
 // Utils - useful utilities.
 type Utils struct {
-	config *ConfigFile
-	logger Logger
-}
-
-// bootUtils - boot Utils.
-func (c *Core) bootUtils() {
-	c.Utils = &Utils{}
 }
 
 // RemoveSpaces - remove spaces from string.
@@ -44,16 +35,4 @@ func (u *Utils) FormatPath(path string) string {
 	path = filepath.FromSlash(path)
 	path = filepath.ToSlash(path)
 	return path
-}
-
-// ConvertTimeWord - convert time like "2h"; "2min"; "2sec" to duration (uses time.ParseDuration).
-func (u *Utils) ConvertTimeWord(timeShortcut string) (time.Duration, error) {
-	timeShortcut = strings.ToLower(timeShortcut)
-	timeDuration, err := time.ParseDuration(timeShortcut)
-	if err != nil {
-		var errPretty = errors.Wrap(err, "core: convertTimeWord time converting failed. Error")
-		u.logger.Panic(errPretty)
-		os.Exit(1)
-	}
-	return timeDuration, nil
 }

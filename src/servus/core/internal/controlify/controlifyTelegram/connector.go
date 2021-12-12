@@ -7,7 +7,7 @@ import (
 
 // Bot - bot.
 type Bot struct {
-	bot      *tgbotapi.BotAPI
+	api      *tgbotapi.BotAPI
 	onUpdate func(update tgbotapi.Update)
 }
 
@@ -17,7 +17,7 @@ func (t *Bot) New(token string) error {
 	if err != nil {
 		return err
 	}
-	t.bot = bot
+	t.api = bot
 	go t.watchUpdates()
 	return err
 }
@@ -31,7 +31,7 @@ func (t *Bot) OnUpdate(callback func(update tgbotapi.Update)) {
 func (t *Bot) watchUpdates() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
-	updates := t.bot.GetUpdatesChan(u)
+	updates := t.api.GetUpdatesChan(u)
 	for update := range updates {
 		if update.Message == nil {
 			continue
@@ -44,7 +44,7 @@ func (t *Bot) watchUpdates() {
 
 func (t *Bot) SendMessage(chatID int64, message string) (tgbotapi.Message, error) {
 	var req = tgbotapi.NewMessage(chatID, message)
-	return t.bot.Send(req)
+	return t.api.Send(req)
 }
 
 func (t *Bot) SendFile(chatID int64, file *File) (tgbotapi.Message, error) {
@@ -52,7 +52,7 @@ func (t *Bot) SendFile(chatID int64, file *File) (tgbotapi.Message, error) {
 	if file.caption != nil {
 		req.Caption = *file.caption
 	}
-	return t.bot.Send(req)
+	return t.api.Send(req)
 }
 
 type File struct {

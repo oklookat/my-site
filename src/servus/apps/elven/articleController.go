@@ -2,7 +2,6 @@ package elven
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 	"servus/core/external/errorMan"
@@ -39,7 +38,6 @@ func (a *articleRoute) getAll(response http.ResponseWriter, request *http.Reques
 	// get articles by query params.
 	articles, pages, err := val.getAll()
 	if err != nil {
-		call.Logger.Error(fmt.Sprintf("articles get error: %v", err.Error()))
 		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}
@@ -52,7 +50,6 @@ func (a *articleRoute) getAll(response http.ResponseWriter, request *http.Reques
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
-		call.Logger.Error(fmt.Sprintf("articles response json marshal error: %v", err.Error()))
 		h.Send(errorMan.ThrowServer(), 500, err)
 		return
 	}

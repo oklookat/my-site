@@ -51,7 +51,7 @@ func (r *Router) runMiddleware(response http.ResponseWriter, request *http.Reque
 
 // ServeHTTP - when a request comes in and goes out, it will be here.
 func (r *Router) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	// global middleware
+	// global limiter
 	executed := r.runMiddleware(response, request)
 	if !executed {
 		return
@@ -71,6 +71,6 @@ func (r *Router) ServeHTTP(response http.ResponseWriter, request *http.Request) 
 			return
 		}
 	}
-	// find route and execute middleware, endpoint.
+	// find route and execute limiter, endpoint.
 	_route.findAndExecute(response, request, r.methodNotAllowed)
 }

@@ -6,7 +6,6 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-	"os"
 )
 
 type Database struct {
@@ -15,25 +14,14 @@ type Database struct {
 	Conn   *sqlx.DB
 }
 
-// bootDatabase - boot database. Use this after booting the config.
-func (c *Core) bootDatabase() {
-	var database = Database{config: c.Config, logger: c.Logger}
-	err := database.boot()
-	if err != nil {
-		c.Logger.Panic(err)
-		os.Exit(1)
+func (d *Database) new(config *ConfigFile, logger Logger) (err error) {
+	if config == nil {
+		return errors.New("[core/database]: config nil pointer")
 	}
-	c.DB = &database
-}
-
-// TODO: convert database to interfaces like: get(dest, query, args) etc
-func (d *Database) boot() (err error) {
-	if d.config == nil {
-		return errors.New("boot database: config nil pointer")
+	if logger == nil {
+		return errors.New("[core/database]: logger nil pointer")
 	}
-	if d.logger == nil {
-		return errors.New("boot database: logger nil pointer")
-	}
+	d.config = config
 	var pgUser = d.config.DB.Postgres.User
 	var pgPassword = d.config.DB.Postgres.Password
 	var pgPort = d.config.DB.Postgres.Port
@@ -42,9 +30,10 @@ func (d *Database) boot() (err error) {
 	var connectionStr = fmt.Sprintf("user=%v password=%v port=%v dbname=%v sslmode=disable TimeZone=%v", pgUser, pgPassword, pgPort, pgDb, timeZone)
 	connection, err := sqlx.Connect("pgx", connectionStr)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "boot database: connection failed. Error:")
+		var errPretty = errors.Wrap(err, "[core/database]: connection failed. Error:")
 		return errPretty
 	}
+	d.logger = logger
 	d.Conn = connection
 	return
 }

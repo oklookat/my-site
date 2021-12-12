@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// Point - handler with path, methods, and middleware.
+// Point - handler with path, methods, and limiter.
 type Point struct {
 	methods    []string
 	middleware *middleware
@@ -79,10 +79,10 @@ func (p *Point) runMiddlewareAndEndpoint(response http.ResponseWriter, request *
 		incorrectMethod = true
 		return
 	}
-	// run middleware.
+	// run limiter.
 	if p.middleware.chain != nil {
 		p.middleware.chain.ServeHTTP(response, request)
-		// if middleware not called next().
+		// if limiter not called next().
 		if !p.middleware.executed {
 			return
 		}
