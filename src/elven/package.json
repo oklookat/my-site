@@ -15,7 +15,7 @@
     "@types/byte-size": "^8.1.0",
     "@types/node": "^16.11.12",
     "sass": "^1.45.0",
-    "svelte": "^3.44.2",
+    "svelte": "^3.44.3",
     "svelte-check": "^2.2.10",
     "svelte-preprocess": "^4.7.2",
     "tslib": "^2.2.0",
