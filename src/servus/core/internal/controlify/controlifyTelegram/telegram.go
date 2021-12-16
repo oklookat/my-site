@@ -1,8 +1,9 @@
 package controlifyTelegram
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 // Controller - controls Telegram bot.
@@ -42,12 +43,7 @@ func (c *Controller) New(t Telegramer) {
 // onUpdate - when message coming from user.
 func (c *Controller) onUpdate(update tgbotapi.Update) {
 	c.allowedUsersCallback(func(userID int64) bool {
-		if userID != update.Message.From.ID {
-			// not allowed user
-			return false
-		}
-		// allowed user
-		return true
+		return userID == update.Message.From.ID
 	})
 }
 
@@ -75,7 +71,7 @@ func (c *Controller) allowedUsersCallback(callback func(userID int64) bool) {
 
 // SendFile - send file to allowed chats.
 func (c *Controller) SendFile(caption *string, filename string, reader io.Reader) {
-	if c.bot == nil {
+	if c.bot == nil || reader == nil {
 		return
 	}
 	var file = File{}

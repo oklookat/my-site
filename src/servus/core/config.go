@@ -77,8 +77,8 @@ type ConfigFile struct {
 	} `json:"control"`
 }
 
-// new - load config file from path.
-func (c *ConfigFile) new(path string) (err error) {
+// get - load config file from path.
+func (c *ConfigFile) get(path string) (err error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return

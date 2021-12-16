@@ -3,6 +3,7 @@ package core
 import (
 	"database/sql"
 	"fmt"
+
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -30,7 +31,7 @@ func (d *Database) new(config *ConfigFile, logger Logger) (err error) {
 	var connectionStr = fmt.Sprintf("user=%v password=%v port=%v dbname=%v sslmode=disable TimeZone=%v", pgUser, pgPassword, pgPort, pgDb, timeZone)
 	connection, err := sqlx.Connect("pgx", connectionStr)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "[core/database]: connection failed. Error:")
+		var errPretty = errors.Wrap(err, "[core/database]")
 		return errPretty
 	}
 	d.logger = logger

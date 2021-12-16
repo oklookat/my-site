@@ -21,6 +21,9 @@ type CorsConfig struct {
 }
 
 func (c *Cors) new(config *CorsConfig) {
+	if config == nil {
+		panic("[core/cors]: config nil pointer")
+	}
 	c.config = config
 	var corsConfig = cors.Config{
 		AllowCredentials: c.config.AllowCredentials,

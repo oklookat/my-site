@@ -12,6 +12,9 @@ func (c *control) GetEnabled() bool {
 
 // addController - add controller.
 func (c *control) addController(co Controller) {
+	if co == nil {
+		panic("[core/control]: controller nil pointer")
+	}
 	if c.controllers == nil {
 		c.controllers = make([]Controller, 0)
 	}

@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"os"
 	"testing"
 )
@@ -16,18 +15,7 @@ func GetExecuteDir() string {
 }
 
 func create() *Logger {
-	loggerConfig := Config{
-		LogLevel:       LevelDebug,
-		WriteToConsole: true,
-	}
-	loggerConfig.WriteToFile.Activated = true
-	var wtfDir = fmt.Sprintf("%v/logs/", GetExecuteDir())
-	var wtfMaxLogFiles = 1
-	var wtfMaxLogSize = 10000
-	loggerConfig.WriteToFile.Dir = wtfDir
-	loggerConfig.WriteToFile.MaxLogFiles = wtfMaxLogFiles
-	loggerConfig.WriteToFile.MaxLogSize = int64(wtfMaxLogSize)
-	return New(loggerConfig)
+	return New(LevelDebug)
 }
 
 func TestNew(t *testing.T) {

@@ -2,10 +2,11 @@ package elven
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
 	"servus/core/external/ancientUI"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -132,7 +133,8 @@ choosePassword:
 
 // migrate - create tables in database from SQL file.
 func (c *cmd) migrate() {
-	var sqlPath = fmt.Sprintf("%v/settings/sql/elven.sql", call.Utils.GetExecutionDir())
+	var executionDir, _ = call.Utils.GetExecutionDir()
+	var sqlPath = fmt.Sprintf("%v/settings/sql/elven.sql", executionDir)
 	sqlPath = call.Utils.FormatPath(sqlPath)
 	script, err := ioutil.ReadFile(sqlPath)
 	if err != nil {

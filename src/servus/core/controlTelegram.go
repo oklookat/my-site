@@ -5,11 +5,10 @@ import (
 	"servus/core/internal/controlify/controlifyTelegram"
 )
 
-
 type ControlTelegram struct {
 	config *ControlTelegramConfig
 	logger Logger
-	Bot controlifyTelegram.Controller
+	Bot    controlifyTelegram.Controller
 }
 
 type ControlTelegramConfig struct {
@@ -23,6 +22,12 @@ type ControlTelegramConfig struct {
 }
 
 func (c *ControlTelegram) new(config *ControlTelegramConfig, logger Logger) {
+	if config == nil {
+		panic("[control/telegram]: config nil pointer.")
+	}
+	if logger == nil {
+		panic("[control/telegram]: logger nil pointer.")
+	}
 	c.config = config
 	c.logger = logger
 	c.Bot = controlifyTelegram.Controller{}
@@ -56,4 +61,3 @@ func (c *ControlTelegram) GetAllowedChats() []int64 {
 func (c *ControlTelegram) GetAllowedUsers() []int64 {
 	return c.config.AllowedUsers
 }
-

@@ -1,9 +1,10 @@
 package elven
 
 import (
-	"github.com/gorilla/mux"
 	"net/http"
 	"servus/core"
+
+	"github.com/gorilla/mux"
 )
 
 var call *core.Core
@@ -20,10 +21,10 @@ type ResponseContent struct {
 
 type App struct {
 	middleware *middleware
-	auth           *auth
-	article        *article
-	file           *file
-	user           *user
+	auth       *auth
+	article    *article
+	file       *file
+	user       *user
 }
 
 func (a *App) Boot(c *core.Core) {
@@ -47,14 +48,14 @@ func (a *App) Boot(c *core.Core) {
 
 func (a *App) bootRoutes() {
 	router := mux.NewRouter().PathPrefix("/elven").Subrouter()
-	router.Use(call.Middleware.ProvideHTTP)
-	router.Use(call.Middleware.AsJson)
+	router.Use(call.Middleware.ProvideHTTP())
+	router.Use(call.Middleware.AsJson())
 	//
 	a.auth.route.boot(router)
 	a.article.route.boot(router)
 	a.file.route.boot(router)
 	a.user.route.boot(router)
 	//
-	var useBeforeRouter = call.Middleware.CORS(call.Middleware.LimitBody(router))
+	var useBeforeRouter = call.Middleware.CORS()(call.Middleware.LimitBody()(router))
 	http.Handle("/", useBeforeRouter)
 }
