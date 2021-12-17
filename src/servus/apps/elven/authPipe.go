@@ -72,7 +72,7 @@ func (a *AuthPipe) setUserAndToken(encryptedToken string) (err error) {
 	// get token id from encrypted token.
 	a.User = nil
 	a.Token = nil
-	tokenID, err := call.Encryption.AES.Decrypt(encryptedToken)
+	tokenID, err := call.Encryptor.AES.Decrypt(encryptedToken)
 	if err != nil {
 		return err
 	}

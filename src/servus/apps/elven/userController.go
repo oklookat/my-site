@@ -9,7 +9,7 @@ import (
 // GET
 // getMe - send some user data by token.
 func (u *userRoute) getMe(response http.ResponseWriter, request *http.Request) {
-	var h = u.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	pipe := AuthPipe{}
 	pipe.get(request)
 	var resp = ResponseUser{}
@@ -28,7 +28,7 @@ func (u *userRoute) getMe(response http.ResponseWriter, request *http.Request) {
 // change - change username or password.
 // body: what change (username or password); password to confirm; new value for change.
 func (u *userRoute) change(response http.ResponseWriter, request *http.Request) {
-	var h = u.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	var body = struct {
 		What     string
 		Password string
@@ -43,7 +43,7 @@ func (u *userRoute) change(response http.ResponseWriter, request *http.Request) 
 	}
 	pipe := AuthPipe{}
 	pipe.get(request)
-	match, err := call.Encryption.Argon.Check(body.Password, pipe.User.Password)
+	match, err := call.Encryptor.Argon.Compare(body.Password, pipe.User.Password)
 	if err != nil || !match {
 		h.Send(errorMan.ThrowNotAuthorized(), 401, err)
 		return

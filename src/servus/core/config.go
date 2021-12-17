@@ -19,21 +19,7 @@ type ConfigFile struct {
 	// Port - app port. Ex: 3333.
 	Port string `json:"port"`
 	// DB - database settings.
-	DB struct {
-		// PostgreSQL settings.
-		Postgres struct {
-			// Host - like: localhost.
-			Host string `json:"host"`
-			// Port - like: 5432.
-			Port string `json:"port"`
-			// User - like: postgres.
-			User string `json:"user"`
-			// Password - like: qwerty.
-			Password string `json:"password"`
-			// DbName - name of database.
-			DbName string `json:"database"`
-		} `json:"postgres"`
-	} `json:"db"`
+	DB *DatabaseConfig `json:"db"`
 	// Logger - writes messages to console and file.
 	Logger *LoggerConfig `json:"logger"`
 	// Security - protect your ass from hackers.
@@ -62,7 +48,7 @@ type ConfigFile struct {
 			} `json:"body"`
 		} `json:"limiter"`
 		// Encryption - data encryption.
-		Encryption *EncryptionConfig `json:"encryption"`
+		Encryption *EncryptorConfig `json:"encryption"`
 	}
 	// Uploads - files uploading.
 	Uploads struct {

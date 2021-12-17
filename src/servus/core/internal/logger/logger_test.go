@@ -14,7 +14,7 @@ func GetExecuteDir() string {
 	return path
 }
 
-func create() *Logger {
+func create() *Instance {
 	return New(LevelDebug)
 }
 

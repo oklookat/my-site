@@ -7,6 +7,21 @@ import (
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
+type _ctxHTTP string
+
+const ctxHTTP _ctxHTTP = "CORE_HTTP_PIPE"
+
+// Instance - servus kernel. Provides cool things.
+type Instance struct {
+	Utils      Utils
+	Config     *ConfigFile
+	Logger     Logger
+	Middleware Middlewarer
+	Encryptor  *Encryptor
+	DB         *Database
+	Control    Controller
+}
+
 // HTTP - helper for request/response manipulations.
 type HTTP interface {
 	Send(body string, statusCode int, err error)
@@ -37,6 +52,8 @@ type Utils interface {
 	GetExecutionDir() (string, error)
 	// FormatPath - format path to system specific slashes.
 	FormatPath(path string) string
+	// GetHTTP - get HTTP from request context.
+	GetHTTP(request *http.Request) HTTP
 }
 
 // Middlewarer - basic middlewares.
@@ -49,6 +66,29 @@ type Middlewarer interface {
 	LimitBody() func(http.Handler) http.Handler
 	// ProvideHTTP - get HTTP helper.
 	ProvideHTTP() func(http.Handler) http.Handler
-	// GetHTTP - get HTTP from request context.
-	GetHTTP(request *http.Request) (HTTP, error)
+}
+
+// Encryptor - encrypt/hash values.
+type Encryptor struct {
+	AES    EncryptorCryptor
+	BCrypt EncryptorHasher
+	Argon  EncryptorHasher
+}
+
+// EncryptorHasher - hash/compare value.
+type EncryptorHasher interface {
+	// Hash - make hash.
+	Hash(data string) (hash string, err error)
+	// Compare - compare value with hash.
+	Compare(what, with string) (match bool, err error)
+	// IsHash - check is value a hash.
+	IsHash(data string) bool
+}
+
+// EncryptorCryptor - encrypt/decrypt value.
+type EncryptorCryptor interface {
+	// Encrypt - encrypt value.
+	Encrypt(data string) (encrypted string, err error)
+	// Decrypt - decrypt value.
+	Decrypt(encrypted string) (data string, err error)
 }

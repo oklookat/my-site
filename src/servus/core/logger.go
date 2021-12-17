@@ -11,7 +11,7 @@ type LoggerConfig struct {
 
 type Log struct {
 	config *LoggerConfig
-	ins    *logger.Logger
+	ins    *logger.Instance
 }
 
 // TODO: fix func position in logger

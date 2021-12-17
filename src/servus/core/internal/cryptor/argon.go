@@ -8,8 +8,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/argon2"
 	"strings"
+
+	"golang.org/x/crypto/argon2"
 )
 
 var (
@@ -55,17 +56,23 @@ func (a *Argon) Hash(data string) (hash string, err error) {
 	return hash, nil
 }
 
-// Check - check argon2id hash.
-func (a *Argon) Check(data, hash string) (match bool, err error) {
-	match, _, err = a.matchHash(data, hash)
+// Compare - check argon2id hash.
+func (a *Argon) Compare(what, with string) (match bool, err error) {
+	match, _, err = a.matchHash(what, with)
 	return match, err
+}
+
+// IsHash - is data a hash.
+func (a *Argon) IsHash(data string) bool {
+	var conf, _, _, err = a.parseHash(data)
+	return conf != nil && err == nil
 }
 
 // matchHash - is like ComparePasswordAndHash, except it also returns the params that the hash was
 // created with. This can be useful if you want to update your hash params over time (which you
 // should).
 func (a *Argon) matchHash(data, hash string) (match bool, config *Argon, err error) {
-	params, salt, key, err := a.ParseHash(hash)
+	params, salt, key, err := a.parseHash(hash)
 	if err != nil {
 		return false, nil, err
 	}
@@ -83,7 +90,7 @@ func (a *Argon) matchHash(data, hash string) (match bool, config *Argon, err err
 
 // ParseHash - expects a hash created from this package, and parses it to return the params used to
 // create it, as well as the salt and key (password hash).
-func (a *Argon) ParseHash(hash string) (config *Argon, salt, key []byte, err error) {
+func (a *Argon) parseHash(hash string) (config *Argon, salt, key []byte, err error) {
 	values := strings.Split(hash, "$")
 	if len(values) != 6 {
 		return nil, nil, nil, ErrArgonInvalidHash

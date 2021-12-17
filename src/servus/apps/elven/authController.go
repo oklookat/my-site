@@ -8,7 +8,7 @@ import (
 
 // login - generate token if username and password are correct.
 func (a *authRoute) login(response http.ResponseWriter, request *http.Request) {
-	var h = a.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	val, em, _ := a.validate.controllerLogin(request)
 	if em.HasErrors() {
 		h.Send(em.GetJSON(), 400, nil)
@@ -24,7 +24,7 @@ func (a *authRoute) login(response http.ResponseWriter, request *http.Request) {
 		h.Send(errorMan.ThrowNotAuthorized(), 401, err)
 		return
 	}
-	var isPassword, _ = call.Encryption.Argon.Check(val.Password, user.Password)
+	var isPassword, _ = call.Encryptor.Argon.Compare(val.Password, user.Password)
 	if !isPassword {
 		h.Send(errorMan.ThrowNotAuthorized(), 401, err)
 		return
@@ -59,7 +59,7 @@ func (a *authRoute) login(response http.ResponseWriter, request *http.Request) {
 
 // logout - get token from user and delete.
 func (a *authRoute) logout(response http.ResponseWriter, request *http.Request) {
-	var h = a.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	// get token from cookie or auth header.
 	var pipe = AuthPipe{}
 	pipe.get(request)

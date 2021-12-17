@@ -2,13 +2,7 @@ package core
 
 import (
 	"net/http"
-
-	"github.com/pkg/errors"
 )
-
-type _ctxHTTP string
-
-const ctxHTTP _ctxHTTP = "CORE_HTTP_PIPE"
 
 type middleware struct {
 	cors        func(http.Handler) http.Handler
@@ -43,14 +37,4 @@ func (m *middleware) LimitBody() func(http.Handler) http.Handler {
 
 func (m *middleware) ProvideHTTP() func(http.Handler) http.Handler {
 	return m.provideHTTP
-}
-
-func (m *middleware) GetHTTP(request *http.Request) (HTTP, error) {
-	var ctx = request.Context()
-	var h, ok = ctx.Value(ctxHTTP).(HTTP)
-	if !ok {
-		var err = errors.New("[core/middleware]: error while get HTTP struct from request context. Are you provided ProvideHTTP limiter?")
-		return nil, err
-	}
-	return h, nil
 }

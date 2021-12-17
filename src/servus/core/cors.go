@@ -2,12 +2,12 @@ package core
 
 import (
 	"net/http"
-	"servus/core/internal/cors"
+	icors "servus/core/internal/cors"
 )
 
-type Cors struct {
+type cors struct {
 	config   *CorsConfig
-	instance *cors.Instance
+	instance *icors.Instance
 }
 
 type CorsConfig struct {
@@ -20,12 +20,12 @@ type CorsConfig struct {
 	MaxAge           int64    `json:"maxAge"`
 }
 
-func (c *Cors) new(config *CorsConfig) {
+func (c *cors) new(config *CorsConfig) {
 	if config == nil {
 		panic("[core/cors]: config nil pointer")
 	}
 	c.config = config
-	var corsConfig = cors.Config{
+	var corsConfig = icors.Config{
 		AllowCredentials: c.config.AllowCredentials,
 		AllowOrigin:      c.config.AllowOrigin,
 		AllowMethods:     c.config.AllowMethods,
@@ -33,14 +33,14 @@ func (c *Cors) new(config *CorsConfig) {
 		ExposeHeaders:    c.config.ExposeHeaders,
 		MaxAge:           c.config.MaxAge,
 	}
-	var corsInstance = cors.New(&corsConfig)
+	var corsInstance = icors.New(&corsConfig)
 	c.instance = corsInstance
 }
 
-func (c *Cors) Enabled() bool {
+func (c *cors) Enabled() bool {
 	return c.config.Active
 }
 
-func (c *Cors) middleware() func(next http.Handler) http.Handler {
+func (c *cors) middleware() func(next http.Handler) http.Handler {
 	return c.instance.Middleware
 }

@@ -3,17 +3,17 @@ package elven
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"net/http"
 	"os"
 	"path/filepath"
 	"servus/core/external/errorMan"
 	"servus/core/external/filer"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 const filesPageSize = 2
-
 
 // GET url/
 // params:
@@ -21,7 +21,7 @@ const filesPageSize = 2
 // by = created (uploaded)
 // start = newest (DESC), oldest (ASC)
 func (f *fileRoute) getAll(response http.ResponseWriter, request *http.Request) {
-	var h = f.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	// validate query params.
 	val, em, _ := f.validate.getAll(request, true)
 	if em.HasErrors() {
@@ -52,7 +52,7 @@ func (f *fileRoute) getAll(response http.ResponseWriter, request *http.Request) 
 
 // POST url/
 func (f *fileRoute) createOne(response http.ResponseWriter, request *http.Request) {
-	var h = f.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	auth := AuthPipe{}
 	auth.get(request)
 	em := errorMan.NewValidation()
@@ -158,7 +158,7 @@ func (f *fileRoute) createOne(response http.ResponseWriter, request *http.Reques
 
 // DELETE url/id
 func (f *fileRoute) deleteOne(response http.ResponseWriter, request *http.Request) {
-	var h = f.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var file = FileModel{ID: id}

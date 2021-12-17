@@ -3,7 +3,6 @@ package elven
 import (
 	"context"
 	"net/http"
-	"servus/core"
 	"servus/core/external/errorMan"
 )
 
@@ -16,15 +15,10 @@ const (
 type middleware struct {
 }
 
-func (m *middleware) getHTTP(r *http.Request) core.HTTP {
-	var h, _ = call.Middleware.GetHTTP(r)
-	return h
-}
-
 // authorizedOnly - only authorized user can access.
 func (m *middleware) authorizedOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		var h = m.getHTTP(request)
+		var h = call.Utils.GetHTTP(request)
 		var pipe = AuthPipe{}
 		pipe.create(request, accessTypeAuthorized)
 		if !pipe.Access {
@@ -42,7 +36,7 @@ func (m *middleware) authorizedOnly(next http.Handler) http.Handler {
 // https://developer.mozilla.org/en-US/docs/Glossary/Safe/HTTP
 func (m *middleware) safeMethodsOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		var h = m.getHTTP(request)
+		var h = call.Utils.GetHTTP(request)
 		var pipe = AuthPipe{}
 		pipe.create(request, accessTypeReadOnly)
 		if !pipe.Access {
@@ -58,7 +52,7 @@ func (m *middleware) safeMethodsOnly(next http.Handler) http.Handler {
 // adminOnly - only admin can access.
 func (m *middleware) adminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		var h = m.getHTTP(request)
+		var h = call.Utils.GetHTTP(request)
 		var pipe = AuthPipe{}
 		pipe.create(request, accessTypeAdminOnly)
 		if !pipe.Access {

@@ -8,11 +8,10 @@ import (
 	"servus/core/internal/zipify"
 )
 
-
 type httpHelper struct {
-	logger Logger
+	logger  Logger
 	control Controller
-	cookie *iHTTP.ConfigCookie
+	cookie  *iHTTP.ConfigCookie
 }
 
 func (h *httpHelper) new(l Logger, c Controller, cookie *iHTTP.ConfigCookie) {
@@ -21,7 +20,7 @@ func (h *httpHelper) new(l Logger, c Controller, cookie *iHTTP.ConfigCookie) {
 	h.cookie = cookie
 }
 
-func (h *httpHelper) getInstance(req *http.Request, res http.ResponseWriter)  *iHTTP.Instance {
+func (h *httpHelper) getInstance(req *http.Request, res http.ResponseWriter) *iHTTP.Instance {
 	var _http *iHTTP.Instance
 	var notifyAboutError = func(code int, err error) {
 		// log.

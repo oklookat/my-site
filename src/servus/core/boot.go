@@ -5,35 +5,24 @@ import (
 	"fmt"
 	"os"
 	"servus/core/internal/limiter"
-	coreutils "servus/core/internal/utils"
 )
 
-type Core struct {
-	Utils      Utils
-	Config     *ConfigFile
-	Logger     Logger
-	Middleware Middlewarer
-	Encryption *Encryption
-	DB         *Database
-	Control    Controller
+// Boot - boot Instance.
+func (i *Instance) Boot() {
+	i.bootUtils()
+	i.bootConfig()
+	i.bootLogger()
+	i.bootMiddleware()
+	i.bootEncryptor()
+	i.bootDatabase()
+	i.bootControl()
 }
 
-// Boot - boot Core.
-func (c *Core) Boot() {
-	c.bootUtils()
-	c.bootConfig()
-	c.bootLogger()
-	c.bootMiddleware()
-	c.bootEncryption()
-	c.bootDatabase()
-	c.bootControl()
+func (i *Instance) bootUtils() {
+	i.Utils = &utils{}
 }
 
-func (c *Core) bootUtils() {
-	c.Utils = &coreutils.Instance{}
-}
-
-func (c *Core) bootConfig() {
+func (i *Instance) bootConfig() {
 	var config = ConfigFile{}
 	var get = func(path string) {
 		err := config.get(path)
@@ -42,7 +31,7 @@ func (c *Core) bootConfig() {
 		}
 	}
 	var getFromDir = func() {
-		var executionDir, err = c.Utils.GetExecutionDir()
+		var executionDir, err = i.Utils.GetExecutionDir()
 		if err != nil {
 			panic(err)
 		}
@@ -57,52 +46,56 @@ func (c *Core) bootConfig() {
 	} else {
 		get(*pathArg)
 	}
-	c.Config = &config
+	i.Config = &config
 }
 
-func (c *Core) bootLogger() {
+func (i *Instance) bootLogger() {
 	var log = &Log{}
-	var executionDir, err = c.Utils.GetExecutionDir()
+	var executionDir, err = i.Utils.GetExecutionDir()
 	if err != nil {
 		panic(err)
 	}
-	log.new(c.Config.Logger, executionDir)
-	c.Logger = log
+	log.new(i.Config.Logger, executionDir)
+	i.Logger = log
 }
 
-func (c *Core) bootControl() {
+func (i *Instance) bootControl() {
 	var controlTG = ControlTelegram{}
-	controlTG.new(c.Config.Control.Telegram, c.Logger)
+	controlTG.new(i.Config.Control.Telegram, i.Logger)
 	var ctrl = &control{}
 	ctrl.addController(&controlTG)
-	c.Control = ctrl
+	i.Control = ctrl
 }
 
-func (c *Core) bootMiddleware() {
+func (i *Instance) bootMiddleware() {
 	// cors.
-	var cors = &Cors{}
-	cors.new(c.Config.Security.CORS)
+	var cors = &cors{}
+	cors.new(i.Config.Security.CORS)
 	// limiter.
-	_limiter := limiter.New(c.Config.Security.Limiter.Body.Active, c.Config.Security.Limiter.Body.MaxSize, c.Config.Security.Limiter.Body.Except)
+	_limiter := limiter.New(i.Config.Security.Limiter.Body.Active, i.Config.Security.Limiter.Body.MaxSize, i.Config.Security.Limiter.Body.Except)
 	// http
 	var http = &httpHelper{}
-	http.new(c.Logger, c.Control, c.Config.Security.Cookie)
+	http.new(i.Logger, i.Control, i.Config.Security.Cookie)
 	// middleware.
 	var md = &middleware{}
 	md.new(cors.middleware(), _limiter.Middleware, http.middleware)
-	c.Middleware = md
+	i.Middleware = md
 }
 
-func (c *Core) bootEncryption() {
-	c.Encryption = &Encryption{}
-	c.Encryption.new(c.Config.Security.Encryption)
+func (i *Instance) bootEncryptor() {
+	var encryptor = &encryptor{}
+	encryptor.new(i.Config.Security.Encryption)
+	i.Encryptor = &Encryptor{}
+	i.Encryptor.AES = encryptor.AES
+	i.Encryptor.Argon = encryptor.Argon
+	i.Encryptor.BCrypt = encryptor.BCrypt
 }
 
-func (c *Core) bootDatabase() {
-	c.DB = &Database{}
-	err := c.DB.new(c.Config, c.Logger)
+func (i *Instance) bootDatabase() {
+	i.DB = &Database{}
+	err := i.DB.new(i.Config, i.Logger)
 	if err != nil {
-		c.Logger.Panic(err)
+		i.Logger.Panic(err)
 		os.Exit(1)
 	}
 }

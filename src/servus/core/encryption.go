@@ -2,14 +2,14 @@ package core
 
 import "servus/core/internal/cryptor"
 
-type Encryption struct {
-	config *EncryptionConfig
+type encryptor struct {
+	config *EncryptorConfig
 	AES    *cryptor.AES
-	Bcrypt *cryptor.Bcrypt
+	BCrypt *cryptor.BCrypt
 	Argon  *cryptor.Argon
 }
 
-type EncryptionConfig struct {
+type EncryptorConfig struct {
 	AES struct {
 		// Secret - 32 bytes length.
 		Secret string `json:"secret"`
@@ -27,7 +27,7 @@ type EncryptionConfig struct {
 	} `json:"argon"`
 }
 
-func (e *Encryption) new(config *EncryptionConfig) {
+func (e *encryptor) new(config *EncryptorConfig) {
 	e.config = config
 	// aes.
 	var aes = cryptor.AES{}
@@ -44,8 +44,8 @@ func (e *Encryption) new(config *EncryptionConfig) {
 	argon.KeyLength = argonCfg.KeyLength
 	e.Argon = &argon
 	// bcrypt.
-	var bcrypt = cryptor.Bcrypt{}
+	var bcrypt = cryptor.BCrypt{}
 	var bcryptCfg = e.config.Bcrypt
-	bcrypt.Cost = bcryptCfg.Cost
-	e.Bcrypt = &bcrypt
+	bcrypt.New(bcryptCfg.Cost)
+	e.BCrypt = &bcrypt
 }

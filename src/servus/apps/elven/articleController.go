@@ -2,9 +2,10 @@ package elven
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"net/http"
 	"servus/core/external/errorMan"
+
+	"github.com/gorilla/mux"
 )
 
 const articlesPageSize = 2
@@ -23,7 +24,7 @@ const articlesPageSize = 2
 //
 // preview: true (content < 480 symbols); false (gives you full articles).
 func (a *articleRoute) getAll(response http.ResponseWriter, request *http.Request) {
-	var h = a.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	var err error
 	var isAdmin = false
 	var pipe = AuthPipe{}
@@ -58,7 +59,7 @@ func (a *articleRoute) getAll(response http.ResponseWriter, request *http.Reques
 
 // getOne - GET url/id. Get one article.
 func (a *articleRoute) getOne(response http.ResponseWriter, request *http.Request) {
-	var h = a.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	var isAdmin = false
 	var params = mux.Vars(request)
 	var id = params["id"]
@@ -89,7 +90,7 @@ func (a *articleRoute) getOne(response http.ResponseWriter, request *http.Reques
 
 // create - POST url/. Creates new article.
 func (a *articleRoute) create(response http.ResponseWriter, request *http.Request) {
-	var h = a.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	val, em, _ := a.validate.body(request)
 	if em.HasErrors() {
 		h.Send(em.GetJSON(), 400, nil)
@@ -113,7 +114,7 @@ func (a *articleRoute) create(response http.ResponseWriter, request *http.Reques
 
 // update - PUT (update all available fields) or PATCH (update specific field) url/id.
 func (a *articleRoute) update(response http.ResponseWriter, request *http.Request) {
-	var h = a.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article = ArticleModel{ID: id}
@@ -171,7 +172,7 @@ func (a *articleRoute) update(response http.ResponseWriter, request *http.Reques
 
 // delete - DELETE url/id. Deletes one article.
 func (a *articleRoute) delete(response http.ResponseWriter, request *http.Request) {
-	var h = a.middleware.getHTTP(request)
+	var h = call.Utils.GetHTTP(request)
 	var params = mux.Vars(request)
 	var id = params["id"]
 	var article = ArticleModel{ID: id}

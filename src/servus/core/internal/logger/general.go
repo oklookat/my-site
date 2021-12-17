@@ -18,27 +18,27 @@ const (
 	//colorWhite  = "\033[97m"
 )
 
-type Logger struct {
+type Instance struct {
 	Level int
 }
 
 // New create new Logger instance.
-func New(level int) *Logger {
-	var logger = Logger{Level: level}
+func New(level int) *Instance {
+	var logger = Instance{Level: level}
 	return &logger
 }
 
 // bus - calls when new log added. Writes log depending on settings.
-func (l *Logger) bus(lev leveler) {
+func (i *Instance) bus(lev leveler) {
 	// if silent level - logger not call anything.
-	if l.Level > lev.getLevel() || l.Level == LevelSilent {
+	if i.Level > lev.getLevel() || i.Level == LevelSilent {
 		return
 	}
-	l.writeToConsole(lev)
+	i.writeToConsole(lev)
 }
 
 // writeToConsole - prints information to console pretty.
-func (l *Logger) writeToConsole(lev leveler) {
+func (i *Instance) writeToConsole(lev leveler) {
 	var currentTimePretty = colorGray + time.Now().Format("15:04:05") + colorReset
 	var levelPretty = lev.getColor() + lev.getLevelWord() + colorReset
 	var messagePretty = colorCyan + lev.getMessage() + colorReset
@@ -47,32 +47,32 @@ func (l *Logger) writeToConsole(lev leveler) {
 }
 
 // Debug - print debug message.
-func (l *Logger) Debug(message string) {
+func (i *Instance) Debug(message string) {
 	var lev = level{number: LevelDebug, word: "debug", color: colorGray, message: message}
-	l.bus(&lev)
+	i.bus(&lev)
 }
 
 // Info - print info message.
-func (l *Logger) Info(message string) {
+func (i *Instance) Info(message string) {
 	var lev = level{number: LevelInfo, word: "info", color: colorGray, message: message}
-	l.bus(&lev)
+	i.bus(&lev)
 }
 
 // Warn - print warn message.
-func (l *Logger) Warn(message string) {
+func (i *Instance) Warn(message string) {
 	var lev = level{number: LevelWarn, word: "warn", color: colorYellow, message: message}
-	l.bus(&lev)
+	i.bus(&lev)
 }
 
 // Error - throw error.
-func (l *Logger) Error(message string) {
+func (i *Instance) Error(message string) {
 	var lev = level{number: LevelError, word: "error", color: colorRed, message: message}
-	l.bus(&lev)
+	i.bus(&lev)
 }
 
 // Panic - throw panic. This func not throw panic(). It is like other levels, but executes os.Exit.
-func (l *Logger) Panic(err error) {
+func (i *Instance) Panic(err error) {
 	var lev = level{number: LevelPanic, word: "panic", color: colorRed, message: err.Error()}
-	l.bus(&lev)
+	i.bus(&lev)
 	os.Exit(1)
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var call *core.Core
+var call *core.Instance
 
 // ResponseContent - template for response.
 type ResponseContent struct {
@@ -27,7 +27,7 @@ type App struct {
 	user       *user
 }
 
-func (a *App) Boot(c *core.Core) {
+func (a *App) Boot(c *core.Instance) {
 	call = c
 	c.Logger.Info("elven: booting")
 	var _cmd = &cmd{}

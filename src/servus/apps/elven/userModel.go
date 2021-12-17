@@ -91,14 +91,13 @@ func (u *UserModel) deleteByID() (err error) {
 }
 
 // hookBeforeChange - change data before send it to DB.
-func (u *UserModel) hookBeforeChange() (err error){
+func (u *UserModel) hookBeforeChange() (err error) {
 	// convert to lower
 	u.Username = strings.ToLower(u.Username)
 	// check if password not hashed.
-	conf, _, _, _ := call.Encryption.Argon.ParseHash(u.Password)
-	if conf == nil {
-		// not hashed
-		hash, err := call.Encryption.Argon.Hash(u.Password)
+	var isHashed = call.Encryptor.Argon.IsHash(u.Password)
+	if !isHashed {
+		hash, err := call.Encryptor.Argon.Hash(u.Password)
 		if err != nil {
 			return err
 		}

@@ -15,6 +15,22 @@ type Database struct {
 	Conn   *sqlx.DB
 }
 
+type DatabaseConfig struct {
+	// PostgreSQL settings.
+	Postgres struct {
+		// Host - like: localhost.
+		Host string `json:"host"`
+		// Port - like: 5432.
+		Port string `json:"port"`
+		// User - like: postgres.
+		User string `json:"user"`
+		// Password - like: qwerty.
+		Password string `json:"password"`
+		// DbName - name of database.
+		DbName string `json:"database"`
+	} `json:"postgres"`
+}
+
 func (d *Database) new(config *ConfigFile, logger Logger) (err error) {
 	if config == nil {
 		return errors.New("[core/database]: config nil pointer")

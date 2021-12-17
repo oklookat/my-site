@@ -2,9 +2,10 @@ package elven
 
 import (
 	"database/sql"
-	"github.com/pkg/errors"
 	"net/http"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 // TokenModel - represents token in database.
@@ -152,13 +153,13 @@ func (t *TokenModel) generate(userID string) (err error, token string, hash stri
 		}
 	}()
 	// then we get newly created token model id and encrypt it. That's we send to user as token.
-	token, err = call.Encryption.AES.Encrypt(t.ID)
+	token, err = call.Encryptor.AES.Encrypt(t.ID)
 	if err != nil {
 		return
 	}
 	// get hash from generated token.
 	// user gets encrypted token, but database gets hash. In general, we do the same as with the password.
-	hash, err = call.Encryption.Argon.Hash(token)
+	hash, err = call.Encryptor.Argon.Hash(token)
 	if err != nil {
 		return
 	}
