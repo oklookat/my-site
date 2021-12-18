@@ -5,7 +5,22 @@ import (
 	"fmt"
 	"os"
 	"servus/core/internal/limiter"
+	"servus/core/internal/logger"
+	"servus/core/internal/middleware"
 )
+
+// TODO: test body limiter, continue refactoring / fixes.
+
+// Instance - servus kernel. Provides cool things.
+type Instance struct {
+	Utils      Utils
+	Config     *ConfigFile
+	Logger     Logger
+	Middleware Middlewarer
+	Encryptor  *Encryptor
+	DB         *Database
+	Control    Controller
+}
 
 // Boot - boot Instance.
 func (i *Instance) Boot() {
@@ -25,7 +40,7 @@ func (i *Instance) bootUtils() {
 func (i *Instance) bootConfig() {
 	var config = ConfigFile{}
 	var get = func(path string) {
-		err := config.get(path)
+		err := config.load(path)
 		if err != nil {
 			panic(err)
 		}
@@ -50,20 +65,18 @@ func (i *Instance) bootConfig() {
 }
 
 func (i *Instance) bootLogger() {
-	var log = &Log{}
-	var executionDir, err = i.Utils.GetExecutionDir()
-	if err != nil {
-		panic(err)
-	}
-	log.new(i.Config.Logger, executionDir)
+	var log = logger.New(i.Config.Logger.Level)
 	i.Logger = log
 }
 
 func (i *Instance) bootControl() {
-	var controlTG = ControlTelegram{}
-	controlTG.new(i.Config.Control.Telegram, i.Logger)
 	var ctrl = &control{}
-	ctrl.addController(&controlTG)
+	// telegram.
+	if i.Config.Control.Telegram.Enabled {
+		var controlTG = controlTelegram{}
+		controlTG.new(i.Config.Control.Telegram, i.Logger)
+		ctrl.add(&controlTG)
+	}
 	i.Control = ctrl
 }
 
@@ -77,8 +90,8 @@ func (i *Instance) bootMiddleware() {
 	var http = &httpHelper{}
 	http.new(i.Logger, i.Control, i.Config.Security.Cookie)
 	// middleware.
-	var md = &middleware{}
-	md.new(cors.middleware(), _limiter.Middleware, http.middleware)
+	var md = &middleware.Instance{}
+	md.New(cors.middleware(), _limiter.Middleware, http.middleware)
 	i.Middleware = md
 }
 

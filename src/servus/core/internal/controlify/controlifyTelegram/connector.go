@@ -1,80 +1,88 @@
 package controlifyTelegram
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"errors"
 	"io"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-// Bot - bot.
-type Bot struct {
-	api      *tgbotapi.BotAPI
-	onUpdate func(update tgbotapi.Update)
+// Controller - controls Telegram bot.
+type Controller struct {
+	outside Telegramer
+	bot     *Bot
 }
 
-// New - create new instance.
-func (t *Bot) New(token string) error {
-	bot, err := tgbotapi.NewBotAPI(token)
-	if err != nil {
-		return err
-	}
-	t.api = bot
-	go t.watchUpdates()
-	return err
+type Telegramer interface {
+	// GetToken - get bot token.
+	GetToken() string
+	// GetAllowedChats - get chats ids where bot can send messages.
+	GetAllowedChats() []int64
+	// GetAllowedUsers - get users ids where bot can receive messages.
+	GetAllowedUsers() []int64
 }
 
-// OnUpdate - when message coming from user.
-func (t *Bot) OnUpdate(callback func(update tgbotapi.Update)) {
-	t.onUpdate = callback
+// New - create new ControlTelegram instance.
+func (c *Controller) New(t Telegramer) (err error) {
+	c.outside = t
+	c.bot = &Bot{}
+	c.bot.OnUpdate(c.onUpdate)
+	token := c.outside.GetToken()
+	err = c.bot.New(token)
+	return
 }
 
-// watchUpdates - watch chat changes.
-func (t *Bot) watchUpdates() {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-	updates := t.api.GetUpdatesChan(u)
-	for update := range updates {
-		if update.Message == nil {
-			continue
+// onUpdate - when message coming from user.
+func (c *Controller) onUpdate(update tgbotapi.Update) {
+	c.allowedUsersCallback(func(userID int64) bool {
+		return userID == update.Message.From.ID
+	})
+}
+
+// allowedChatsCallback - executes callback on every allowedChats ID. Callback must return bool where true = stop.
+func (c *Controller) allowedChatsCallback(callback func(chatID int64) bool) {
+	var allowedChats = c.outside.GetAllowedChats()
+	for index := range allowedChats {
+		stop := callback(allowedChats[index])
+		if stop {
+			break
 		}
-		if t.onUpdate != nil {
-			t.onUpdate(update)
+	}
+}
+
+// allowedChatsCallback - executes callback on every allowedChats ID. Callback must return bool where true = stop.
+func (c *Controller) allowedUsersCallback(callback func(userID int64) bool) {
+	var allowedUsers = c.outside.GetAllowedUsers()
+	for index := range allowedUsers {
+		stop := callback(allowedUsers[index])
+		if stop {
+			break
 		}
 	}
 }
 
-func (t *Bot) SendMessage(chatID int64, message string) (tgbotapi.Message, error) {
-	var req = tgbotapi.NewMessage(chatID, message)
-	return t.api.Send(req)
-}
-
-func (t *Bot) SendFile(chatID int64, file *File) (tgbotapi.Message, error) {
-	var req = tgbotapi.NewDocument(chatID, file)
-	if file.caption != nil {
-		req.Caption = *file.caption
+// SendFile - send file to allowed chats.
+func (c *Controller) SendFile(caption *string, filename string, reader io.Reader) (err error) {
+	if c.bot == nil || reader == nil {
+		return errors.New("[telegram/sendfile]: nil bot or reader")
 	}
-	return t.api.Send(req)
+	var file = File{}
+	file.New(caption, filename, reader)
+	c.allowedChatsCallback(func(chatID int64) bool {
+		_, err = c.bot.SendFile(chatID, &file)
+		return err != nil
+	})
+	return
 }
 
-type File struct {
-	caption  *string
-	filename string
-	reader   io.Reader
-}
-
-func (t *File) New(caption *string, filename string, reader io.Reader) {
-	t.caption = caption
-	t.filename = filename
-	t.reader = reader
-}
-
-func (t *File) NeedsUpload() bool {
-	return true
-}
-
-func (t *File) UploadData() (string, io.Reader, error) {
-	return t.filename, t.reader, nil
-}
-
-func (t *File) SendData() string {
-	return t.filename
+// SendMessage - send message to allowed chats.
+func (c *Controller) SendMessage(message string) (err error) {
+	if c.bot == nil {
+		return
+	}
+	c.allowedChatsCallback(func(chatID int64) bool {
+		_, err = c.bot.SendMessage(chatID, message)
+		return err != nil
+	})
+	return
 }

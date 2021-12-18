@@ -9,7 +9,7 @@ import (
 type Group struct {
 	prefix     string
 	middleware *middleware
-	routes []*route
+	routes     []*route
 }
 
 // Group - create group of routes.

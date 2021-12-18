@@ -5,22 +5,9 @@ import (
 	"net/http"
 )
 
-type MiddlewareFunc func(http.Handler) http.Handler
-
 type _ctxHTTP string
 
 const ctxHTTP _ctxHTTP = "CORE_HTTP_PIPE"
-
-// Instance - servus kernel. Provides cool things.
-type Instance struct {
-	Utils      Utils
-	Config     *ConfigFile
-	Logger     Logger
-	Middleware Middlewarer
-	Encryptor  *Encryptor
-	DB         *Database
-	Control    Controller
-}
 
 // HTTP - helper for request/response manipulations.
 type HTTP interface {
@@ -30,7 +17,6 @@ type HTTP interface {
 
 // Controller - sends information/controls server via 3rd party services, like Telegram bot.
 type Controller interface {
-	GetEnabled() bool
 	SendMessage(message string)
 	SendFile(caption *string, filename string, reader io.Reader)
 }

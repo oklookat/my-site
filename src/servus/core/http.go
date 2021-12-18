@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"servus/core/internal/iHTTP"
+	"servus/core/internal/stacktracer"
 	"servus/core/internal/zipify"
 )
 
@@ -26,7 +27,7 @@ func (h *httpHelper) getInstance(req *http.Request, res http.ResponseWriter) *iH
 		// log.
 		h.logger.Error("[core/http] error: " + err.Error())
 		// set trace.
-		var trace = StackTrace{}
+		var trace = stacktracer.Instance{}
 		trace.Set(err)
 		// create zip.
 		var zip = zipify.New()

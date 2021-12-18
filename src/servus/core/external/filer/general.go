@@ -4,11 +4,12 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/pkg/errors"
 )
 
 // DeleteEmptyDirsRecursive - delete empty dirs
@@ -74,7 +75,7 @@ func GenerateDirsByHash(hash string) (result string, err error) {
 // if error - deletes temp file
 //
 // returns closed temp file, file header from request, and hash.
-func ProcessFromForm(request *http.Request, formKey string, tempDir string) (data *processedFromForm, err error){
+func ProcessFromForm(request *http.Request, formKey string, tempDir string) (data *processedFromForm, err error) {
 	tempDir = filepath.ToSlash(tempDir)
 	// get and validate
 	fileFromForm, header, err := request.FormFile(formKey)

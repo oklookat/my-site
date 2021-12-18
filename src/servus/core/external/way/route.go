@@ -44,7 +44,7 @@ func (r *route) match(requestPath string) (matched bool, params map[string]strin
 }
 
 func (r *route) findAndExecute(response http.ResponseWriter, request *http.Request, handler405 http.HandlerFunc) {
- 	var rMethod = request.Method
+	var rMethod = request.Method
 	for index := range r.points {
 		for _, method := range r.points[index].methods {
 			if method != rMethod {

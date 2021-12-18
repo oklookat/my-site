@@ -77,7 +77,7 @@ func Test_BCrypt_Parse(t *testing.T) {
 	t.Log("parsing (wrong)...")
 	for _, wrongCase := range mockWrongCases {
 		parsed, err = b.parse(wrongCase)
-		t.Log(err.Error())
+		//t.Log(err.Error())
 		if parsed != nil || err == nil {
 			t.Errorf("parsed: %v", parsed)
 			t.Fatalf("wrong parsing failed")

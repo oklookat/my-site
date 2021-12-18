@@ -10,16 +10,6 @@ type cors struct {
 	instance *icors.Instance
 }
 
-type CorsConfig struct {
-	Active           bool     `json:"active"`
-	AllowCredentials bool     `json:"allowCredentials"`
-	AllowOrigin      []string `json:"allowOrigin"`
-	AllowMethods     []string `json:"allowMethods"`
-	AllowHeaders     []string `json:"allowHeaders"`
-	ExposeHeaders    []string `json:"exposeHeaders"`
-	MaxAge           int64    `json:"maxAge"`
-}
-
 func (c *cors) new(config *CorsConfig) {
 	if config == nil {
 		panic("[core/cors]: config nil pointer")
