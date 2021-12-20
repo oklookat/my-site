@@ -15,7 +15,8 @@ func GetExecuteDir() string {
 }
 
 func create() *Instance {
-	return New(LevelDebug)
+	var cnf = &Config{Level: 1}
+	return New(cnf)
 }
 
 func TestNew(t *testing.T) {

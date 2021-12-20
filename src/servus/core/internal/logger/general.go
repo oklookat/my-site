@@ -19,19 +19,24 @@ const (
 )
 
 type Instance struct {
+	config *Config
+}
+
+type Config struct {
+	// Level - log level.
 	Level int
 }
 
 // New create new Logger instance.
-func New(level int) *Instance {
-	var logger = Instance{Level: level}
+func New(config *Config) *Instance {
+	var logger = Instance{config: config}
 	return &logger
 }
 
 // bus - calls when new log added. Writes log depending on settings.
 func (i *Instance) bus(lev leveler) {
 	// if silent level - logger not call anything.
-	if i.Level > lev.getLevel() || i.Level == LevelSilent {
+	if i.config.Level > lev.getLevel() || i.config.Level == LevelSilent {
 		return
 	}
 	i.writeToConsole(lev)

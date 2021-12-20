@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"servus/apps/elven/model"
 	"servus/core/external/ancientUI"
 
 	"github.com/pkg/errors"
@@ -68,13 +69,13 @@ chooseUsername:
 		call.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	var user = UserModel{Username: username}
-	err = user.validateUsername()
+	var user = model.User{Username: username}
+	err = user.ValidateUsername()
 	if err != nil {
 		call.Logger.Error(fmt.Sprintf("elven: validation failed. Error: %v", err.Error()))
 		goto chooseUsername
 	}
-	found, err := user.findByUsername()
+	found, err := user.FindByUsername()
 	if err != nil {
 		var errPretty = errors.Wrap(err, "elven: failed to find user. Error")
 		call.Logger.Panic(errPretty)
@@ -91,7 +92,7 @@ chooseUsername:
 		if !deleteHim {
 			os.Exit(1)
 		}
-		err = user.deleteByID()
+		err = user.DeleteByID()
 		if err != nil {
 			var errPretty = errors.Wrap(err, "elven: delete user failed. Error")
 			call.Logger.Panic(errPretty)
@@ -114,14 +115,14 @@ choosePassword:
 		call.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	user = UserModel{Role: role, Username: username, Password: password}
-	err = user.validatePassword()
+	user = model.User{Role: role, Username: username, Password: password}
+	err = user.ValidatePassword()
 	if err != nil {
 		call.Logger.Error(fmt.Sprintf("elven: validation failed. Error: %v", err.Error()))
 		goto choosePassword
 	}
 	// create
-	err = user.create()
+	err = user.Create()
 	if err != nil {
 		var errPretty = errors.Wrap(err, fmt.Sprintf("elven: error while creating %v. Error", sign))
 		call.Logger.Panic(errPretty)

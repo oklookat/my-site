@@ -1,12 +1,15 @@
 package core
 
 import (
+	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 	"unicode"
 
+	"github.com/oklog/ulid/v2"
 	"github.com/pkg/errors"
 )
 
@@ -46,4 +49,15 @@ func (u *utils) GetHTTP(request *http.Request) HTTP {
 	var ctx = request.Context()
 	var h, _ = ctx.Value(ctxHTTP).(HTTP)
 	return h
+}
+
+func (u *utils) GenerateULID() (ul string, err error) {
+	current := time.Now()
+	entropy := ulid.Monotonic(rand.New(rand.NewSource(current.UnixNano())), 0)
+	ulType, err := ulid.New(ulid.Timestamp(current), entropy)
+	if err != nil {
+		return "", err
+	}
+	ul = ulType.String()
+	return
 }

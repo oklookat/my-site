@@ -40,6 +40,8 @@ type Utils interface {
 	FormatPath(path string) string
 	// GetHTTP - get HTTP from request context.
 	GetHTTP(request *http.Request) HTTP
+	// GenerateULID - returns unique string like 1GFGVSSRTHYWW52GVXZ.
+	GenerateULID() (ul string, err error)
 }
 
 // Middlewarer - basic middlewares.
