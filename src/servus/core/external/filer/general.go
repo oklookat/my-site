@@ -90,7 +90,7 @@ func ProcessFromForm(request *http.Request, formKey string, tempDir string) (dat
 		err = ErrBadFileProvided
 		return
 	}
-	// create temp dir
+	// create temp dir.
 	err = os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
 		return
@@ -101,8 +101,10 @@ func ProcessFromForm(request *http.Request, formKey string, tempDir string) (dat
 		return
 	}
 	defer func() {
+		// always close.
 		_ = tempFile.Close()
 		if err != nil {
+			// delete if something goes wrong.
 			_ = os.Remove(tempFile.Name())
 		}
 	}()

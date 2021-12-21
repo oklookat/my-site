@@ -9,11 +9,14 @@ import (
 	"servus/apps/elven/pipe"
 	"servus/apps/elven/user"
 	"servus/core"
+	"servus/core/external/errorMan"
 
 	"github.com/gorilla/mux"
 )
 
 var call *core.Instance
+var requestErrors = errorMan.RequestError{}
+var validate = &Validate{}
 
 type App struct {
 	middleware *middleware
@@ -37,16 +40,16 @@ func (a *App) Boot(c *core.Instance) {
 	var pipeUser = &pipe.User{}
 	// auth.
 	a.auth = &auth.Instance{}
-	a.auth.Boot(call, a.middleware, pipeToken)
+	a.auth.Boot(call, a.middleware, pipeToken, requestErrors, validate)
 	// article.
 	a.article = &article.Instance{}
-	a.article.Boot(call, a.middleware, pipeUser)
+	a.article.Boot(call, a.middleware, pipeUser, requestErrors, validate)
 	// file.
 	a.file = &file.Instance{}
-	a.file.Boot(call, a.middleware, pipeUser)
+	a.file.Boot(call, a.middleware, pipeUser, requestErrors, validate)
 	// user.
 	a.user = &user.Instance{}
-	a.user.Boot(call, a.middleware, pipeUser)
+	a.user.Boot(call, a.middleware, pipeUser, requestErrors, validate)
 	//
 	a.bootRoutes()
 }
@@ -58,10 +61,10 @@ func (a *App) bootRoutes() {
 	router.Use(a.middleware.ProvideTokenPipe)
 	router.Use(a.middleware.ProvideUserPipe)
 	//
-	a.auth.Route.Boot(router)
-	a.article.Route.Boot(router)
-	a.file.Route.Boot(router)
-	a.user.Route.Boot(router)
+	a.auth.BootRoutes(router)
+	a.article.BootRoutes(router)
+	a.file.BootRoutes(router)
+	a.user.BootRoutes(router)
 	//
 	var useBeforeRouter = call.Middleware.CORS()(
 		call.Middleware.LimitBody()(router))

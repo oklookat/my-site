@@ -2,7 +2,7 @@ package pipe
 
 import (
 	"net/http"
-	"servus/apps/elven/foundation"
+	"servus/apps/elven/base"
 	"servus/apps/elven/model"
 )
 
@@ -22,7 +22,7 @@ type UserPipe struct {
 }
 
 // GetByContext - get pipe by request context. Use only if you provided to request context.
-func (u *User) GetByContext(request *http.Request) foundation.UserPipe {
+func (u *User) GetByContext(request *http.Request) base.UserPipe {
 	pipe, ok := request.Context().Value(CtxUser).(UserPipe)
 	if !ok {
 		return nil

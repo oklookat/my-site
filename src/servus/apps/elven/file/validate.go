@@ -1,19 +1,23 @@
 package file
 
 import (
-	"net/http"
-	"servus/core/external/errorMan"
+	"net/url"
+	"servus/apps/elven/base"
 	"strconv"
 	"strings"
 )
 
-// getAll - validate query params when getting files list.
-func (f *validator) getAll(request *http.Request, isAdmin bool) (val queryGetAll, em *errorMan.EValidation, err error) {
-	em = errorMan.NewValidation()
-	val = queryGetAll{}
-	var queryParams = request.URL.Query()
-	// validate start param.
-	var start = queryParams.Get("start")
+// Paginate - get paginated files by params.
+type Paginate struct {
+	Page  int
+	Start string
+	By    string
+}
+
+func (f *Paginate) Validate(params url.Values, isAdmin bool) base.Validator {
+	val := validate.Create()
+	// "start" param.
+	var start = params.Get("start")
 	if len(start) == 0 {
 		start = "newest"
 	}
@@ -21,7 +25,7 @@ func (f *validator) getAll(request *http.Request, isAdmin bool) (val queryGetAll
 	var isOldest = strings.EqualFold(start, "oldest")
 	var isStartInvalid = !isNewest && !isOldest
 	if isStartInvalid {
-		em.Add("start", "wrong value provided.")
+		val.Add("start")
 	} else {
 		if isNewest {
 			start = "DESC"
@@ -29,9 +33,9 @@ func (f *validator) getAll(request *http.Request, isAdmin bool) (val queryGetAll
 			start = "ASC"
 		}
 	}
-	val.start = start
-	// validate by param.
-	var by = queryParams.Get("by")
+	f.Start = start
+	// "by" param.
+	var by = params.Get("by")
 	if len(by) == 0 {
 		by = "created"
 	}
@@ -39,23 +43,23 @@ func (f *validator) getAll(request *http.Request, isAdmin bool) (val queryGetAll
 	var isByInvalid = !isByCreated
 	var isByForbidden = (isByCreated) && !isAdmin
 	if isByInvalid || isByForbidden {
-		em.Add("by", "wrong value provided.")
+		val.Add("created")
 	}
 	switch by {
 	case "created":
 		by = "created_at"
 	}
-	val.by = by
-	// validate page param.
-	var pageStr = queryParams.Get("page")
+	f.By = by
+	// "page" param.
+	var pageStr = params.Get("page")
 	if len(pageStr) == 0 {
 		pageStr = "0"
 	}
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page <= 0 {
-		em.Add("page", "wrong value provided.")
+		val.Add("page")
 	} else {
-		val.page = page
+		f.Page = page
 	}
-	return
+	return nil
 }

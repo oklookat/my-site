@@ -2,7 +2,7 @@ package pipe
 
 import (
 	"net/http"
-	"servus/apps/elven/foundation"
+	"servus/apps/elven/base"
 	"servus/apps/elven/model"
 )
 
@@ -20,8 +20,8 @@ type TokenPipe struct {
 }
 
 // GetByContext - get pipe by request context. Use only if you provided to request context.
-func (t *Token) GetByContext(request *http.Request) foundation.TokenPipe {
-	pipe, ok := request.Context().Value(CtxToken).(foundation.TokenPipe)
+func (t *Token) GetByContext(request *http.Request) base.TokenPipe {
+	pipe, ok := request.Context().Value(CtxToken).(base.TokenPipe)
 	if !ok {
 		return nil
 	}
@@ -29,7 +29,7 @@ func (t *Token) GetByContext(request *http.Request) foundation.TokenPipe {
 }
 
 // GetByRequest - used for ex. providing pipe to request context.
-func (t *Token) GetByRequest(request *http.Request) (foundation.TokenPipe, error) {
+func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
 	// get encrypted.
 	encrypted, found := t.getEncryptedByRequest(request)
 	if !found {

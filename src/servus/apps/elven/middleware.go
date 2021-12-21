@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"servus/apps/elven/pipe"
-	"servus/core/external/errorMan"
 )
 
 type middleware struct {
@@ -18,7 +17,7 @@ func (m *middleware) AuthorizedOnly(next http.Handler) http.Handler {
 		var user = pipe.User{}
 		userPipe := user.GetByContext(request)
 		if userPipe == nil {
-			h.Send(errorMan.ThrowForbidden(), 403, nil)
+			h.Send(requestErrors.Forbidden(), 403, nil)
 			return
 		}
 		next.ServeHTTP(response, request)
@@ -39,7 +38,7 @@ func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 		userPipe := user.GetByContext(request)
 		if !safeMethod {
 			if userPipe == nil || !userPipe.IsAdmin() {
-				h.Send(errorMan.ThrowForbidden(), 403, nil)
+				h.Send(requestErrors.Forbidden(), 403, nil)
 				return
 			}
 		}
@@ -55,7 +54,7 @@ func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 		var user = pipe.User{}
 		userPipe := user.GetByContext(request)
 		if userPipe == nil || !userPipe.IsAdmin() {
-			h.Send(errorMan.ThrowForbidden(), 403, nil)
+			h.Send(requestErrors.Forbidden(), 403, nil)
 			return
 		}
 		next.ServeHTTP(response, request)

@@ -6,6 +6,7 @@ import (
 	"os"
 	"servus/apps/elven/model"
 	"servus/core/external/ancientUI"
+	"servus/core/external/argument"
 
 	"github.com/pkg/errors"
 )
@@ -22,20 +23,21 @@ type cmd struct {
 }
 
 // boot - call methods depending on startup arguments.
+// TODO: add to inline support. Like elven:superuser -username=123 -password=1234 -deleteIfExists
 func (c *cmd) boot() {
 	// create superuser.
-	if ancientUI.ArgumentExists(cmdFlagSuperuser) {
+	if argument.Get(cmdFlagSuperuser) != nil {
 		c.createUser(cmdFlagSuperuser)
 	}
-	if ancientUI.ArgumentExists(cmdFlagUser) {
+	if argument.Get(cmdFlagUser) != nil {
 		c.createUser(cmdFlagUser)
 	}
 	// delete all from db.
-	if ancientUI.ArgumentExists(cmdFlagRollback) {
+	if argument.Get(cmdFlagRollback) != nil {
 		c.rollback()
 	}
 	// create tables in db.
-	if ancientUI.ArgumentExists(cmdFlagMigrate) {
+	if argument.Get(cmdFlagMigrate) != nil {
 		c.migrate()
 	}
 }

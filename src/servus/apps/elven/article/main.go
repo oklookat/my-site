@@ -2,39 +2,39 @@ package article
 
 import (
 	"net/http"
-	"servus/apps/elven/foundation"
+	"servus/apps/elven/base"
 	"servus/core"
 
 	"github.com/gorilla/mux"
 )
 
 var call *core.Instance
+var validate base.Validate
 
 type Instance struct {
-	validator validator
-	Route     Route
+	middleware base.MiddlewareSafeMethodsOnly
+	pipe       base.UserPiper
+	throw      base.RequestError
 }
 
-type Route struct {
-	validate   *validator
-	middleware foundation.MiddlewareSafeMethodsOnly
-	pipe       foundation.UserPiper
-}
-
-type validator struct {
-}
-
+// Boot - initial setup.
 func (a *Instance) Boot(
 	_core *core.Instance,
-	_middleware foundation.MiddlewareSafeMethodsOnly,
-	pipe foundation.UserPiper,
+	_middleware base.MiddlewareSafeMethodsOnly,
+	_pipe base.UserPiper,
+	_throw base.RequestError,
+	_validate base.Validate,
+
 ) {
 	call = _core
-	a.validator = validator{}
-	a.Route = Route{&a.validator, _middleware, pipe}
+	a.middleware = _middleware
+	a.pipe = _pipe
+	a.throw = _throw
+	validate = _validate
 }
 
-func (a *Route) Boot(router *mux.Router) {
+// BootRoutes - add routes to router.
+func (a *Instance) BootRoutes(router *mux.Router) {
 	var readOnly = router.PathPrefix("/articles").Subrouter()
 	readOnly.Use(a.middleware.SafeMethodsOnly)
 	readOnly.HandleFunc("", a.getAll).Methods(http.MethodGet)

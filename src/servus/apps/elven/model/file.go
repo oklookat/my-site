@@ -2,8 +2,12 @@ package model
 
 import (
 	"database/sql"
+	"fmt"
+	"math"
 	"time"
 )
+
+const FilesPageSize = 2
 
 type File struct {
 	ID           string    `json:"id" db:"id"`
@@ -16,6 +20,41 @@ type File struct {
 	Size         int64     `json:"size" db:"size"`
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
+}
+
+func (f *File) GetPaginated(by string, start string, page int) (files []File, totalPages int, err error) {
+	// get pages count.
+	var queryCount = "SELECT count(*) FROM files"
+	totalPages = 1
+	err = call.DB.Conn.Get(&totalPages, queryCount)
+	err = call.DB.CheckError(err)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, 0, nil
+	}
+	files = make([]File, 0)
+	totalPages = int(math.Round(float64(totalPages) / float64(FilesPageSize)))
+	if page > totalPages {
+		return
+	}
+	// get.
+	var query = fmt.Sprintf("SELECT * FROM files ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", by, start, start)
+	rows, err := call.DB.Conn.Queryx(query, FilesPageSize, (page-1)*FilesPageSize)
+	err = call.DB.CheckError(err)
+	for rows.Next() {
+		file := File{}
+		err = rows.StructScan(&file)
+		if err != nil {
+			return
+		}
+		files = append(files, file)
+	}
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, 0, nil
+		}
+		return nil, 0, err
+	}
+	return
 }
 
 // Create - create file in database.

@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
+	"math"
 	"math/rand"
 	"time"
 
@@ -11,6 +13,8 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/pkg/errors"
 )
+
+const ArticlePageSize = 2
 
 // Article - represents article in database.
 type Article struct {
@@ -52,6 +56,51 @@ func (a *ArticleContent) Scan(value interface{}) error {
 		return nil
 	}
 	return json.Unmarshal(bytes, &a)
+}
+
+func (a *Article) GetPaginated(by string, start string, show string, page int) (articles []Article, totalPages int, err error) {
+	var query string
+	var queryCount string
+	switch show {
+	case "published":
+		// use sprintf to format validated.by and start because with $ database throws syntax error (I don't know why)
+		// it not allows sql injection, because start and by checked in validator
+		query = fmt.Sprintf("SELECT * FROM articles WHERE is_published=true ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", by, start, start)
+		queryCount = "SELECT count(*) FROM articles WHERE is_published=true"
+	case "drafts":
+		query = fmt.Sprintf("SELECT * FROM articles WHERE is_published=false ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", by, start, start)
+		queryCount = "SELECT count(*) FROM articles WHERE is_published=false"
+	}
+	// get pages count.
+	totalPages = 1
+	err = call.DB.Conn.Get(&totalPages, queryCount)
+	err = call.DB.CheckError(err)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, 0, err
+	}
+	articles = make([]Article, 0)
+	totalPages = int(math.Round(float64(totalPages) / float64(ArticlePageSize)))
+	if page > totalPages {
+		return
+	}
+	// get.
+	rows, err := call.DB.Conn.Queryx(query, ArticlePageSize, (page-1)*ArticlePageSize)
+	err = call.DB.CheckError(err)
+	for rows.Next() {
+		article := Article{}
+		err = rows.StructScan(&article)
+		if err != nil {
+			return
+		}
+		articles = append(articles, article)
+	}
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, 0, nil
+		}
+		return nil, 0, err
+	}
+	return
 }
 
 // create - create article in database.

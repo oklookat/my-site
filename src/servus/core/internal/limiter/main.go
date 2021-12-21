@@ -7,22 +7,24 @@ import (
 )
 
 type Instance struct {
-	active bool
-	maxSize int64
-	except []string
+	active       bool
+	maxSizeBytes int64
+	except       []string
 }
 
 func New(active bool, maxSizeMB int64, except []string) *Instance {
 	for index := range except {
 		except[index] = normalizePath(except[index])
 	}
-	return &Instance{active: active, maxSize: maxSizeMB, except: except}
+	var mbToByte = maxSizeMB << 4
+	return &Instance{active: active, maxSizeBytes: mbToByte, except: except}
 }
 
 func (i *Instance) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if !i.active || i.checkExcept(request.URL.Path) {
 			next.ServeHTTP(writer, request)
+			return
 		}
 		var passed = i.Check(writer, request.Body)
 		if !passed {
@@ -34,10 +36,9 @@ func (i *Instance) Middleware(next http.Handler) http.Handler {
 }
 
 func (i *Instance) Check(w http.ResponseWriter, r io.ReadCloser) (passed bool) {
-	var mbToByte = i.maxSize << 4
-	limitedReader := http.MaxBytesReader(w, r, mbToByte)
+	limitedReader := http.MaxBytesReader(w, r, i.maxSizeBytes)
 	_, err := io.ReadAll(limitedReader)
-	return err.Error() != "http: request body too large"
+	return err == nil || err.Error() != "http: request body too large"
 }
 
 func (i *Instance) checkExcept(path string) (skip bool) {

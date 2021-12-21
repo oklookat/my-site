@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"servus/apps/elven/model"
-	"servus/core/external/errorMan"
 )
 
 // GET
 // getMe - send some user data by token.
-func (u *route) getMe(response http.ResponseWriter, request *http.Request) {
+func (u *Instance) getMe(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	pipe := u.pipe.GetByContext(request)
 	var resp = Response{}
@@ -17,7 +16,7 @@ func (u *route) getMe(response http.ResponseWriter, request *http.Request) {
 	resp.Username = pipe.GetUsername()
 	bytes, err := json.Marshal(resp)
 	if err != nil {
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(u.throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(bytes), 200, err)
@@ -26,26 +25,20 @@ func (u *route) getMe(response http.ResponseWriter, request *http.Request) {
 // POST
 // change - change username or password.
 // body: what change (username or password); password to confirm; new value for change.
-func (u *route) change(response http.ResponseWriter, request *http.Request) {
+func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// validate body.
-	var body = struct {
-		What     string
-		Password string
-		NewValue string
-	}{}
-	em := errorMan.NewValidation()
-	err := json.NewDecoder(request.Body).Decode(&body)
-	if err != nil {
-		em.Add("body", "wrong value provided.")
-		h.Send(em.GetJSON(), 400, err)
+	var body = Body{}
+	validator := body.Validate(request.Body)
+	if validator.HasErrors() {
+		h.Send(validator.GetJSON(), 400, nil)
 		return
 	}
 	// get pipe.
 	pipe := u.pipe.GetByContext(request)
 	match, err := call.Encryptor.Argon.Compare(body.Password, pipe.GetPassword())
 	if err != nil || !match {
-		h.Send(errorMan.ThrowNotAuthorized(), 401, err)
+		h.Send(u.throw.NotAuthorized(), 401, err)
 		return
 	}
 	// creating model and copy id from pipe.
@@ -56,12 +49,12 @@ func (u *route) change(response http.ResponseWriter, request *http.Request) {
 		// check if exists.
 		userExists, err := user.FindByUsername()
 		if err != nil {
-			h.Send(errorMan.ThrowServer(), 500, err)
+			h.Send(u.throw.Server(), 500, err)
 			return
 		}
 		if userExists {
-			em.Add("username", "already exists")
-			h.Send(em.GetJSON(), 400, err)
+			validator.Add("username")
+			h.Send(validator.GetJSON(), 409, err)
 			return
 		}
 	} else if body.What == "password" {
@@ -72,11 +65,11 @@ func (u *route) change(response http.ResponseWriter, request *http.Request) {
 		// check if validation error.
 		validationErr := err == model.ErrUserUsernameValidation || err == model.ErrUserPasswordValidation
 		if validationErr {
-			em.Add(body.What, "wrong value provided.")
-			h.Send(em.GetJSON(), 400, err)
+			validator.Add(body.What)
+			h.Send(validator.GetJSON(), 400, err)
 			return
 		}
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(u.throw.Server(), 500, err)
 		return
 	}
 	h.Send("", 200, err)

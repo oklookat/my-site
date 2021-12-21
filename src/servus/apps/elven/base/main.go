@@ -1,4 +1,4 @@
-package foundation
+package base
 
 // ResponseContent - template for response.
 type ResponseContent struct {

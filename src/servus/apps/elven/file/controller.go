@@ -6,127 +6,137 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"servus/apps/elven/foundation"
+	"servus/apps/elven/base"
 	"servus/apps/elven/model"
-	"servus/core/external/errorMan"
 	"servus/core/external/filer"
 	"strings"
 
 	"github.com/gorilla/mux"
 )
 
-const filesPageSize = 2
-
 // GET url/
 // params:
 // cursor = ULID
 // by = created (uploaded)
 // start = newest (DESC), oldest (ASC)
-func (f *route) getAll(response http.ResponseWriter, request *http.Request) {
+func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
-	// validate query params.
-	val, em, _ := f.validate.getAll(request, true)
-	if em.HasErrors() {
-		h.Send(em.GetJSON(), 400, nil)
+	// get pipe.
+	pipe := f.pipe.GetByContext(request)
+	isAdmin := pipe != nil && pipe.IsAdmin()
+	// validate.
+	body := &Paginate{}
+	validator := body.Validate(request.URL.Query(), isAdmin)
+	if validator.HasErrors() {
+		h.Send(validator.GetJSON(), 400, nil)
 		return
 	}
-	// get files by query params.
-	files, totalPages, err := val.getAll()
+	// get paginated.
+	pag := model.File{}
+	files, totalPages, err := pag.GetPaginated(body.By, body.Start, body.Page)
 	if err != nil {
-		call.Logger.Error(fmt.Sprintf("files get error: %v", err.Error()))
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(f.throw.Server(), 500, err)
 		return
 	}
 	// generate response with pagination.
-	var responseContent = foundation.ResponseContent{}
-	responseContent.Meta.CurrentPage = val.page
+	var responseContent = base.ResponseContent{}
+	responseContent.Meta.CurrentPage = body.Page
 	responseContent.Meta.TotalPages = totalPages
-	responseContent.Meta.PerPage = filesPageSize
+	responseContent.Meta.PerPage = model.FilesPageSize
 	responseContent.Data = files
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(f.throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(jsonResponse), 200, err)
 }
 
 // POST url/
-func (f *route) createOne(response http.ResponseWriter, request *http.Request) {
+func (f *Instance) createOne(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	auth := f.pipe.GetByContext(request)
-	em := errorMan.NewValidation()
+	validator := validate.Create()
+	// get from form.
 	var tempDir = call.Config.Uploads.Temp
-	// get file from form.
 	processed, err := filer.ProcessFromForm(request, "file", tempDir)
 	if err != nil {
 		if err == filer.ErrBadFileProvided {
-			em.Add("file", "bad file provided.")
-			h.Send(em.GetJSON(), 400, err)
+			validator.Add("file")
+			h.Send(validator.GetJSON(), 400, err)
 			return
 		}
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(f.throw.Server(), 500, err)
 		return
 	}
-	// check is file exists.
+	// find in db by hash.
 	var hash = processed.Hash
 	var fileInDB = model.File{Hash: hash}
 	found, err := fileInDB.FindByHash()
 	if err != nil {
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(f.throw.Server(), 500, err)
 		return
 	}
+	// exists?
 	if found {
+		// send found info.
 		_ = os.Remove(processed.Temp.Name())
 		fileJSON, err := json.Marshal(fileInDB)
 		if err != nil {
-			h.Send(errorMan.ThrowServer(), 500, err)
+			h.Send(f.throw.Server(), 500, err)
 			return
 		}
 		h.Send(string(fileJSON), 200, err)
 		return
 	}
+	// not exists, create new.
+	// generate directories struct by hash.
+	var dirsHash, _ = filer.GenerateDirsByHash(hash)
+	var uploadTo = call.Config.Uploads.To
+	// generate random filename.
+	filenameULID, err := call.Utils.GenerateULID()
+	if err != nil {
+		h.Send(f.throw.Server(), 500, err)
+		return
+	}
+	// get extension.
 	var filename = processed.Header.Filename
 	var extension = filepath.Ext(filename)
 	var extensionWithoutDot = strings.Replace(extension, ".", "", -1)
-	var dirsHash, _ = filer.GenerateDirsByHash(hash)
-	var uploadTo = call.Config.Uploads.To
-	// saveAt - full path where temp file will be moved.
-	var saveAt = fmt.Sprintf("%v/%v/", uploadTo, dirsHash)
-	// newFileName - ULIDSTRING.jpg
-	filenameULID, err := call.Utils.GenerateULID()
-	if err != nil {
-		h.Send(errorMan.ThrowServer(), 500, err)
-		return
-	}
+	// concat random name and extension.
 	var newFileName = filenameULID + extension
-	// newFilePathLocal - 1c/2d/1513cd2345e.jpg
+	// concat dirs struct and filename. Output like: 1c/2d/1513cd2345e.jpg.
 	var newFilePathLocal = dirsHash + "/" + newFileName
-	// newFilePath - full path to file like D:/images/files/1c/2d/1513cd2345e.jpg
+	// saveAt - full path where temp file will be moved. Like: D:/images/files/1c/2d/.
+	var saveAt = fmt.Sprintf("%v/%v/", uploadTo, dirsHash)
+	// newFilePath - full path to file. Like: D:/images/files/1c/2d/1513cd2345e.jpg.
 	var newFilePath = saveAt + "/" + newFileName
-	// make dir and move temp file to it
+	// make dirs.
 	err = os.MkdirAll(saveAt, os.ModePerm)
 	if err != nil {
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(f.throw.Server(), 500, err)
 		return
 	}
 	defer func() {
+		// if something goes wrong, delete created dirs.
 		if err != nil {
 			_ = filer.DeleteEmptyDirsRecursive(saveAt)
 		}
 	}()
+	// move file from temp dir to created dir.
 	err = os.Rename(processed.Temp.Name(), newFilePath)
 	if err != nil {
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(f.throw.Server(), 500, err)
 		return
 	}
 	defer func() {
+		// if something goes wrong, delete file.
 		if err != nil {
 			_ = os.Remove(newFilePath)
 		}
 	}()
-	// create file model
+	// create model.
 	var size = processed.Header.Size
 	fileInDB = model.File{
 		UserID:       auth.GetID(),
@@ -137,47 +147,53 @@ func (f *route) createOne(response http.ResponseWriter, request *http.Request) {
 		Extension:    extensionWithoutDot,
 		Size:         size,
 	}
+	// save to db.
 	err = fileInDB.Create()
 	if err != nil {
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(f.throw.Server(), 500, err)
 		return
 	}
 	defer func() {
+		// if something goes wrong, delete from db.
 		if err != nil {
 			_ = fileInDB.DeleteByID()
 		}
 	}()
-	// send file to user
+	// send to user.
 	fileJSON, err := json.Marshal(&fileInDB)
 	if err != nil {
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(f.throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(fileJSON), 200, err)
 }
 
 // DELETE url/id
-func (f *route) deleteOne(response http.ResponseWriter, request *http.Request) {
+func (f *Instance) deleteOne(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
+	// get id from params.
 	var params = mux.Vars(request)
 	var id = params["id"]
+	// find.
 	var file = model.File{ID: id}
 	found, err := file.FindByID()
 	if err != nil {
-		h.Send(errorMan.ThrowServer(), 500, err)
+		h.Send(f.throw.Server(), 500, err)
 		return
 	}
 	if !found {
-		h.Send(errorMan.ThrowNotFound(), 404, err)
+		h.Send(f.throw.NotFound(), 404, err)
 		return
 	}
-	// delete dirs if empty
+	// delete file from dir.
 	var fullPath = call.Config.Uploads.To + "/" + file.Path
 	err = os.Remove(fullPath)
 	if err == nil {
+		// delete dirs if empty.
 		fullPath, _ = filepath.Split(fullPath)
 		_ = filer.DeleteEmptyDirsRecursive(fullPath)
 	}
+	// delete file from db.
 	err = file.DeleteByID()
 	h.Send("", 200, err)
 }

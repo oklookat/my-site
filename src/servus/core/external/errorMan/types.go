@@ -11,9 +11,3 @@ type ePrimitive struct {
 	eError
 	Message string `json:"message"`
 }
-
-// EValidation - contains invalid fields while validation.
-type EValidation struct {
-	eError
-	InvalidFields map[string]string `json:"invalid_fields"`
-}

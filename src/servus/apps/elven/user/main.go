@@ -2,41 +2,36 @@ package user
 
 import (
 	"net/http"
-	"servus/apps/elven/foundation"
+	"servus/apps/elven/base"
 	"servus/core"
 
 	"github.com/gorilla/mux"
 )
 
 var call *core.Instance
+var validate base.Validate
 
 type Instance struct {
-	validator validator
-	Route     route
-}
-
-type route struct {
-	middleware foundation.MiddlewareAuthorizedOnly
-	pipe       foundation.UserPiper
-}
-
-type validator struct {
+	middleware base.MiddlewareAuthorizedOnly
+	pipe       base.UserPiper
+	throw      base.RequestError
 }
 
 func (u *Instance) Boot(
 	_core *core.Instance,
-	_authOnly foundation.MiddlewareAuthorizedOnly,
-	_userPipe foundation.UserPiper,
+	_middleware base.MiddlewareAuthorizedOnly,
+	_pipe base.UserPiper,
+	_throw base.RequestError,
+	_validate base.Validate,
 ) {
 	call = _core
-	u.validator = validator{}
-	u.Route = route{
-		middleware: _authOnly,
-		pipe:       _userPipe,
-	}
+	u.middleware = _middleware
+	u.pipe = _pipe
+	u.throw = _throw
+	validate = _validate
 }
 
-func (u *route) Boot(router *mux.Router) {
+func (u *Instance) BootRoutes(router *mux.Router) {
 	var authOnly = router.PathPrefix("/users").Subrouter()
 	authOnly.Use(u.middleware.AuthorizedOnly)
 	authOnly.HandleFunc("/me", u.getMe).Methods(http.MethodGet)

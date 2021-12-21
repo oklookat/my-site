@@ -2,39 +2,36 @@ package auth
 
 import (
 	"net/http"
-	"servus/apps/elven/foundation"
+	"servus/apps/elven/base"
 	"servus/core"
 
 	"github.com/gorilla/mux"
 )
 
 var call *core.Instance
+var validate base.Validate
 
 type Instance struct {
-	validator authValidator
-	Route     route
-}
-
-type route struct {
-	validate   *authValidator
-	middleware foundation.MiddlewareAuthorizedOnly
-	pipe       foundation.TokenPiper
-}
-
-type authValidator struct {
+	middleware base.MiddlewareAuthorizedOnly
+	pipe       base.TokenPiper
+	throw      base.RequestError
 }
 
 func (a *Instance) Boot(
 	_core *core.Instance,
-	_middleware foundation.MiddlewareAuthorizedOnly,
-	_pipe foundation.TokenPiper,
+	_middleware base.MiddlewareAuthorizedOnly,
+	_pipe base.TokenPiper,
+	_throw base.RequestError,
+	_validate base.Validate,
 ) {
 	call = _core
-	a.validator = authValidator{}
-	a.Route = route{&a.validator, _middleware, _pipe}
+	a.middleware = _middleware
+	a.pipe = _pipe
+	a.throw = _throw
+	validate = _validate
 }
 
-func (a *route) Boot(router *mux.Router) {
+func (a *Instance) BootRoutes(router *mux.Router) {
 	var all = router.PathPrefix("/auth").Subrouter()
 	all.HandleFunc("/login", a.login).Methods(http.MethodPost)
 	var authOnly = router.PathPrefix("/auth").Subrouter()

@@ -1,9 +1,9 @@
 package core
 
 import (
-	"flag"
 	"fmt"
 	"os"
+	"servus/core/external/argument"
 	"servus/core/internal/controlTelegram"
 	"servus/core/internal/cors"
 	"servus/core/internal/cryptor"
@@ -56,13 +56,17 @@ func (i *Instance) bootConfig() {
 		var path = fmt.Sprintf("%v/settings/config.json", executionDir)
 		get(path)
 	}
-	pathArg := flag.String("config", "nil", "path to config file.")
-	flag.Parse()
 	// check is path provided in args.
-	if pathArg == nil || *pathArg == "nil" {
+	var configFlag = "-config"
+	var arg = argument.Get(configFlag)
+	if arg == nil {
 		getFromDir()
 	} else {
-		get(*pathArg)
+		var value = argument.GetValue(arg)
+		if value == nil {
+			panic("config flag cannot be empty")
+		}
+		get(*value)
 	}
 	i.Config = &config
 }

@@ -2,39 +2,36 @@ package file
 
 import (
 	"net/http"
-	"servus/apps/elven/foundation"
+	"servus/apps/elven/base"
 	"servus/core"
 
 	"github.com/gorilla/mux"
 )
 
 var call *core.Instance
+var validate base.Validate
 
 type Instance struct {
-	validator validator
-	Route     route
-}
-
-type route struct {
-	validate   *validator
-	middleware foundation.MiddlewareAdminOnly
-	pipe       foundation.UserPiper
-}
-
-type validator struct {
+	middleware base.MiddlewareAdminOnly
+	pipe       base.UserPiper
+	throw      base.RequestError
 }
 
 func (f *Instance) Boot(
 	_core *core.Instance,
-	_middleware foundation.MiddlewareAdminOnly,
-	_pipe foundation.UserPiper,
+	_middleware base.MiddlewareAdminOnly,
+	_pipe base.UserPiper,
+	_throw base.RequestError,
+	_validate base.Validate,
 ) {
 	call = _core
-	f.validator = validator{}
-	f.Route = route{&f.validator, _middleware, _pipe}
+	f.middleware = _middleware
+	f.pipe = _pipe
+	f.throw = _throw
+	validate = _validate
 }
 
-func (f *route) Boot(router *mux.Router) {
+func (f *Instance) BootRoutes(router *mux.Router) {
 	var fr = router.PathPrefix("/files").Subrouter()
 	fr.Use(f.middleware.AdminOnly)
 	fr.HandleFunc("", f.getAll).Methods(http.MethodGet)
