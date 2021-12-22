@@ -14,8 +14,8 @@ type Paginate struct {
 	By    string
 }
 
-func (f *Paginate) Validate(params url.Values, isAdmin bool) base.Validator {
-	val := validate.Create()
+func (f *Paginate) Validate(params url.Values, isAdmin bool) (val base.Validator) {
+	val = validate.Create()
 	// "start" param.
 	var start = params.Get("start")
 	if len(start) == 0 {
@@ -61,5 +61,5 @@ func (f *Paginate) Validate(params url.Values, isAdmin bool) base.Validator {
 	} else {
 		f.Page = page
 	}
-	return nil
+	return
 }

@@ -63,7 +63,7 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 	err = user.Update()
 	if err != nil {
 		// check if validation error.
-		validationErr := err == model.ErrUserUsernameValidation || err == model.ErrUserPasswordValidation
+		validationErr := err == model.ErrUserUsernameMinMax || err == model.ErrUserUsernameAlphanumeric || err == model.ErrUserPasswordMinMax || err == model.ErrUserPasswordWrongSymbols
 		if validationErr {
 			validator.Add(body.What)
 			h.Send(validator.GetJSON(), 400, err)

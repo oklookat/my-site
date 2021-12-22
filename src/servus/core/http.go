@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"servus/core/internal/iHTTP"
@@ -24,11 +25,15 @@ func (h *httpHelper) new(l Logger, c Controller, cookie *iHTTP.ConfigCookie) {
 func (h *httpHelper) getInstance(req *http.Request, res http.ResponseWriter) *iHTTP.Instance {
 	var _http *iHTTP.Instance
 	var notifyAboutError = func(code int, err error) {
+		if err == nil {
+			err = errors.New("*empty error*")
+		}
 		// log.
 		h.logger.Error("[core/http] error: " + err.Error())
 		// set trace.
 		var trace = stacktracer.Instance{}
 		trace.Set(err)
+
 		// create zip.
 		var zip = zipify.New()
 		err1 := zip.AddFile("stacktrace.txt", trace.GetReader())

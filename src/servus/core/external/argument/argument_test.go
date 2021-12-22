@@ -22,17 +22,21 @@ func Test_Get(t *testing.T) {
 		notPresented,
 		presented,
 	}
-	os.Args = []string{one, zeroValue + "=", two, withValue + "=1", twoDots, presented}
+	os.Args = []string{one, zeroValue + "=", two, withValue + "=1=2=3=4=5=6", twoDots, presented}
 	// get.
 	for _, flag := range flags {
 		var val = Get(flag)
 		//t.Logf("flag: %v", flag)
-		if val == nil && flag != notPresented {
+		if val == nil && flag == notPresented {
+			continue
+		} else if val == nil {
 			t.Fatalf("flag %v failed", flag)
 		}
+		if val.Value != nil {
+			t.Logf("value: %v", *val.Value)
+		}
 		// get values.
-		var flagValue = GetValue(val)
-		if flagValue == nil && (flag == withValue || flag == zeroValue) {
+		if val.Value == nil && (flag == withValue || flag == zeroValue) {
 			t.Fatalf("flag %v failed", withValue)
 		}
 	}

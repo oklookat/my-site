@@ -2,11 +2,12 @@ package iHTTP
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 // Instance - cool things for request/response.
@@ -30,6 +31,12 @@ type ConfigCookie struct {
 
 // New - creates new HTTP instance.
 func New(req *http.Request, res http.ResponseWriter, cookie *ConfigCookie) *Instance {
+	if req == nil {
+		panic("[iHTTP]: request nil pointer")
+	}
+	if cookie == nil {
+		panic("[iHTTP]: cookie config nil pointer")
+	}
 	var i = &Instance{}
 	i.request = req
 	i.response = res
@@ -55,8 +62,8 @@ func (i *Instance) Send(body string, statusCode int, err error) {
 	var is1xx = (statusCode-100) >= 0 && (statusCode-100) <= 99
 	var is2xx = (statusCode-200) >= 0 && (statusCode-200) <= 99
 	var is3xx = (statusCode-300) >= 0 && (statusCode-300) <= 99
-	// http error code and callback not empty?
-	if !is1xx && !is2xx && !is3xx && i.onHTTPError != nil {
+	// is http error and http error callback not empty?
+	if (!is1xx && !is2xx && !is3xx) && i.onHTTPError != nil {
 		go i.onHTTPError(statusCode, err)
 	}
 	i.response.WriteHeader(statusCode)
@@ -70,7 +77,7 @@ func (i *Instance) Send(body string, statusCode int, err error) {
 func (i *Instance) SetCookie(name string, value string) error {
 	var maxAge, err = i.convertTimeWord(i.cookie.MaxAge)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "[http/SetCookie]: convert time failed. Error: ")
+		var errPretty = errors.Wrap(err, "[iHTTP]: convert time failed. Error: ")
 		return errPretty
 	}
 	maxAgeSeconds := int(maxAge.Seconds())
@@ -80,7 +87,7 @@ func (i *Instance) SetCookie(name string, value string) error {
 	var secure = i.cookie.Secure
 	sameSite, err := i.convertCookieSameSite(i.cookie.SameSite)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "[http/SetCookie]: failed convert sameSite. Error: ")
+		var errPretty = errors.Wrap(err, "[iHTTP]: failed convert sameSite. Error: ")
 		return errPretty
 	}
 	var cookie = &http.Cookie{Name: name, Value: value, Path: path, Domain: domain, MaxAge: maxAgeSeconds, HttpOnly: httpOnly, Secure: secure, SameSite: sameSite}
@@ -101,7 +108,7 @@ func (i *Instance) convertCookieSameSite(sameSite string) (http.SameSite, error)
 	case "NONE":
 		return http.SameSiteNoneMode, nil
 	default:
-		return http.SameSiteDefaultMode, errors.New("HTTP: wrong sameSite string")
+		return http.SameSiteDefaultMode, errors.New("[iHTTP]: wrong sameSite string")
 	}
 }
 

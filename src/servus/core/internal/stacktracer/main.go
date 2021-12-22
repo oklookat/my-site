@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// TODO: improve stacktrace.
 type Instance struct {
 	timestamp string
 	trace     string

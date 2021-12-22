@@ -3,14 +3,15 @@ package zipify
 import (
 	"archive/zip"
 	"bytes"
-	"github.com/pkg/errors"
 	"io"
+
+	"github.com/pkg/errors"
 )
 
 type ZipFile struct {
 	initialized bool
-	buffer *bytes.Buffer
-	writer *zip.Writer
+	buffer      *bytes.Buffer
+	writer      *zip.Writer
 }
 
 // New - creates new zip file.
@@ -27,7 +28,10 @@ func New() *ZipFile {
 // AddFile - add file to archive. After you added all files you MUST call GetRAW() for closing archive.
 func (z *ZipFile) AddFile(filename string, data io.Reader) error {
 	if !z.initialized || z.writer == nil {
-		return errors.New("[zipify/AddFile]: not initialized. Maybe before you called GetRAW() or not called New()?")
+		return errors.New("[zipify]: not initialized. Maybe before you called GetRAW() or not called New()?")
+	}
+	if data == nil {
+		return errors.New("[zipify]: data nil pointer")
 	}
 	// add file.
 	f, err := z.writer.Create(filename)

@@ -32,8 +32,8 @@ type Body struct {
 }
 
 // Validate - validate params to get paginated articles.
-func (a *Paginate) Validate(params url.Values, isAdmin bool) base.Validator {
-	var val = validate.Create()
+func (a *Paginate) Validate(params url.Values, isAdmin bool) (val base.Validator) {
+	val = validate.Create()
 	// "show" param
 	var show = params.Get("show")
 	if len(show) == 0 {
@@ -110,7 +110,7 @@ func (a *Paginate) Validate(params url.Values, isAdmin bool) base.Validator {
 	} else {
 		a.Page = page
 	}
-	return nil
+	return
 }
 
 // Validate - validate request body when POST or PUT.

@@ -26,6 +26,9 @@ type Instance struct {
 }
 
 func (e *Instance) New(config *Config) {
+	if config == nil {
+		panic("[cryptor]: config nil pointer")
+	}
 	e.config = config
 	// aes.
 	var aes = AES{}

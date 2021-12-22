@@ -9,14 +9,19 @@ import (
 	"github.com/pkg/errors"
 )
 
-var call = core.Instance{}
+var call = &core.Instance{}
 
 func main() {
 	// boot.
 	call.Boot()
+	// elven.
 	var _elven = elven.App{}
-	_elven.Boot(&call)
+	_elven.Boot(call)
 	// serve.
+	serve()
+}
+
+func serve() {
 	var host = call.Config.Host
 	var port = call.Config.Port
 	var hostAndPort = fmt.Sprintf("%v:%v", host, port)

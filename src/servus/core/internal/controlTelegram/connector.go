@@ -41,6 +41,9 @@ func (c *connector) onUpdate(update tgbotapi.Update) {
 
 // allowedChatsCallback - executes callback on every allowedChats ID. Callback must return bool where true = stop.
 func (c *connector) allowedChatsCallback(callback func(chatID int64) bool) {
+	if callback == nil {
+		return
+	}
 	var allowedChats = c.outside.GetAllowedChats()
 	for index := range allowedChats {
 		stop := callback(allowedChats[index])
@@ -52,6 +55,9 @@ func (c *connector) allowedChatsCallback(callback func(chatID int64) bool) {
 
 // allowedChatsCallback - executes callback on every allowedChats ID. Callback must return bool where true = stop.
 func (c *connector) allowedUsersCallback(callback func(userID int64) bool) {
+	if callback == nil {
+		return
+	}
 	var allowedUsers = c.outside.GetAllowedUsers()
 	for index := range allowedUsers {
 		stop := callback(allowedUsers[index])

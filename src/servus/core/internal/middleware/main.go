@@ -16,6 +16,9 @@ func (m *Instance) New(
 	limitBody mFunc,
 	_http mFunc,
 ) {
+	if cors == nil || limitBody == nil || _http == nil {
+		panic("[middleware]: one of args has nil pointer")
+	}
 	m.cors = cors
 	m.limitBody = limitBody
 	m.provideHTTP = _http

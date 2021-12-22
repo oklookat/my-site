@@ -29,6 +29,9 @@ type Config struct {
 
 // New create new Logger instance.
 func New(config *Config) *Instance {
+	if config == nil {
+		panic("[logger]: config nil pointer")
+	}
 	var logger = Instance{config: config}
 	return &logger
 }

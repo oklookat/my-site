@@ -29,11 +29,12 @@ type App struct {
 func (a *App) Boot(c *core.Instance) {
 	call = c
 	c.Logger.Info("elven: booting")
+	// models.
+	model.Boot(c)
+	// cmd.
 	var _cmd = &cmd{}
 	_cmd.boot()
 	a.middleware = &middleware{}
-	// models.
-	model.Boot(c)
 	// pipe.
 	pipe.Boot(c)
 	var pipeToken = &pipe.Token{}

@@ -9,13 +9,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	userRoleAdmin = "admin"
-	userRoleUser  = "user"
-)
-
-var ErrUserUsernameValidation = errors.New("username validation failed")
-var ErrUserPasswordValidation = errors.New("password validation failed")
+var ErrUserUsernameMinMax = errors.New("validation: username min length 4, max 24")
+var ErrUserUsernameAlphanumeric = errors.New("validation: username must be alphanumeric")
+var ErrUserPasswordMinMax = errors.New("validation: password min length 8, max 64")
+var ErrUserPasswordWrongSymbols = errors.New("validation: wrong symbols used in password")
 
 // User - represents user in database.
 type User struct {
@@ -99,21 +96,21 @@ func (u *User) DeleteByID() (err error) {
 // validateUsername - validate username from UserModel. Used in cmd create user.
 func (u *User) ValidateUsername() error {
 	if validator.MinMax(&u.Username, 4, 24) {
-		return ErrUserUsernameValidation
+		return ErrUserUsernameMinMax
 	}
 	if !validator.IsAlphanumeric(&u.Username) {
-		return ErrUserUsernameValidation
+		return ErrUserUsernameAlphanumeric
 	}
 	return nil
 }
 
 // validatePassword - validate UserModel password. Used in cmd create user.
 func (u *User) ValidatePassword() error {
-	if len(u.Password) < 8 || len(u.Password) > 64 {
-		return ErrUserPasswordValidation
+	if validator.MinMax(&u.Password, 8, 64) {
+		return ErrUserPasswordMinMax
 	}
 	if !validator.IsAlphanumericWithSymbols(&u.Password) {
-		return ErrUserPasswordValidation
+		return ErrUserPasswordWrongSymbols
 	}
 	return nil
 }

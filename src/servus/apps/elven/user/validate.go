@@ -12,11 +12,11 @@ type Body struct {
 	NewValue string
 }
 
-func (u *Body) Validate(body io.ReadCloser) base.Validator {
-	val := validate.Create()
+func (u *Body) Validate(body io.ReadCloser) (val base.Validator) {
+	val = validate.Create()
 	err := json.NewDecoder(body).Decode(u)
 	if err != nil {
 		val.Add("body")
 	}
-	return val
+	return
 }

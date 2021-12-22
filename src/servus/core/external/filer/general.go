@@ -76,6 +76,9 @@ func GenerateDirsByHash(hash string) (result string, err error) {
 //
 // returns closed temp file, file header from request, and hash.
 func ProcessFromForm(request *http.Request, formKey string, tempDir string) (data *processedFromForm, err error) {
+	if request == nil {
+		return nil, errors.New("[filer]: request nil pointer")
+	}
 	tempDir = filepath.ToSlash(tempDir)
 	// get and validate
 	fileFromForm, header, err := request.FormFile(formKey)

@@ -14,13 +14,13 @@ type Body struct {
 	Type     string
 }
 
-func (a *Body) Validate(body io.ReadCloser) base.Validator {
-	var val = validate.Create()
+func (a *Body) Validate(body io.ReadCloser) (val base.Validator) {
+	val = validate.Create()
 	// body.
 	err := json.NewDecoder(body).Decode(a)
 	if err != nil {
 		val.Add("body")
-		return val
+		return
 	}
 	// username.
 	var username = a.Username
@@ -42,5 +42,5 @@ func (a *Body) Validate(body io.ReadCloser) base.Validator {
 			val.Add("type")
 		}
 	}
-	return val
+	return
 }

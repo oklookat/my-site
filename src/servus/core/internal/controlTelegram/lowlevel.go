@@ -1,6 +1,7 @@
 package controlTelegram
 
 import (
+	"errors"
 	"io"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -49,6 +50,9 @@ func (t *bot) SendMessage(chatID int64, message string) (tgbotapi.Message, error
 }
 
 func (t *bot) SendFile(chatID int64, file *File) (tgbotapi.Message, error) {
+	if file == nil {
+		return tgbotapi.Message{}, errors.New("[control/telegram]: empty file")
+	}
 	var req = tgbotapi.NewDocument(chatID, file)
 	if file.caption != nil {
 		req.Caption = *file.caption

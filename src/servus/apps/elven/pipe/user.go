@@ -8,10 +8,10 @@ import (
 
 type _ctx_user string
 
+const CtxUser _ctx_user = "ELVEN_USER_PIPE"
 const (
-	CtxUser       _ctx_user = "ELVEN_USER_PIPE"
-	userRoleAdmin           = "admin"
-	userRoleUser            = "user"
+	userRoleAdmin = "admin"
+	userRoleUser  = "user"
 )
 
 type User struct {
@@ -23,11 +23,11 @@ type UserPipe struct {
 
 // GetByContext - get pipe by request context. Use only if you provided to request context.
 func (u *User) GetByContext(request *http.Request) base.UserPipe {
-	pipe, ok := request.Context().Value(CtxUser).(UserPipe)
+	pipe, ok := request.Context().Value(CtxUser).(base.UserPipe)
 	if !ok {
 		return nil
 	}
-	return &pipe
+	return pipe
 }
 
 // GetByID - used for ex. providing pipe to request context. Get id from Model.Token.

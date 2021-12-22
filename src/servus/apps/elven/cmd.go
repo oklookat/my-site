@@ -5,17 +5,19 @@ import (
 	"io/ioutil"
 	"os"
 	"servus/apps/elven/model"
-	"servus/core/external/ancientUI"
 	"servus/core/external/argument"
 
 	"github.com/pkg/errors"
 )
 
 const (
-	cmdFlagSuperuser = "elven:superuser"
-	cmdFlagUser      = "elven:user"
-	cmdFlagRollback  = "elven:rollback"
-	cmdFlagMigrate   = "elven:migrate"
+	cmdFlagUsername       = "-username"
+	cmdFlagPassword       = "-password"
+	cmdFlagDeleteIfExists = "-die"
+	cmdFlagSuperuser      = "el:su"
+	cmdFlagUser           = "el:tu"
+	cmdFlagRollback       = "el:rb"
+	cmdFlagMigrate        = "el:mg"
 )
 
 // cmd - commandline methods.
@@ -26,112 +28,98 @@ type cmd struct {
 // TODO: add to inline support. Like elven:superuser -username=123 -password=1234 -deleteIfExists
 func (c *cmd) boot() {
 	// create superuser.
-	if argument.Get(cmdFlagSuperuser) != nil {
+	var createSU = argument.Get(cmdFlagSuperuser)
+	if createSU != nil {
+		call.Logger.Info("cmd: create superuser")
 		c.createUser(cmdFlagSuperuser)
+		os.Exit(0)
 	}
-	if argument.Get(cmdFlagUser) != nil {
+	// create user.
+	var createTU = argument.Get(cmdFlagUser)
+	if createTU != nil {
+		call.Logger.Info("cmd: create user")
 		c.createUser(cmdFlagUser)
+		os.Exit(0)
 	}
 	// delete all from db.
 	if argument.Get(cmdFlagRollback) != nil {
+		call.Logger.Info("cmd: rollback")
 		c.rollback()
+		os.Exit(0)
 	}
 	// create tables in db.
 	if argument.Get(cmdFlagMigrate) != nil {
+		call.Logger.Info("cmd: migrate")
 		c.migrate()
+		os.Exit(0)
 	}
 }
 
 // createUser - create user or superuser (UserModel).
 func (c *cmd) createUser(flag string) {
+	// validate args.
+	var usernameArg = argument.Get(cmdFlagUsername)
+	var passwordArg = argument.Get(cmdFlagPassword)
+	if usernameArg == nil || passwordArg == nil {
+		call.Logger.Error("if you need to create superuser or user, set username and password")
+		return
+	}
+	if usernameArg.Value == nil || passwordArg.Value == nil {
+		call.Logger.Error("username or password cannot be empty")
+		return
+	}
+	// main.
 	var err error
-	if flag != cmdFlagSuperuser && flag != cmdFlagUser {
-		call.Logger.Error("elven: wrong flag at cmd createUser")
-		os.Exit(1)
-	}
-	if flag == cmdFlagSuperuser {
-		call.Logger.Info("elven: create superuser (CTRL + D to exit)")
-	} else if flag == cmdFlagUser {
-		call.Logger.Info("elven: create user (CTRL + D to exit)")
-	}
-	var isSuperuser = flag == cmdFlagSuperuser
+	defer func() {
+		if err != nil {
+			call.Logger.Error(err.Error())
+		}
+	}()
+	var username = *usernameArg.Value
+	var password = *passwordArg.Value
+	var deleteIfExists = argument.Get(cmdFlagDeleteIfExists) != nil
 	var role string
-	var sign string
-	if isSuperuser {
+	switch flag {
+	default:
+		call.Logger.Error("wrong flag provided to createUser")
+	case cmdFlagSuperuser:
 		role = "admin"
-		sign = "superuser"
-	} else {
+	case cmdFlagUser:
 		role = "user"
-		sign = "user"
 	}
-chooseUsername:
-	username, err := ancientUI.AddInput("Username")
-	if err != nil {
-		var errPretty = errors.Wrap(err, "elven: failed to read username. Error")
-		call.Logger.Panic(errPretty)
-		os.Exit(1)
-	}
-	var user = model.User{Username: username}
+	var user = model.User{}
+	user.Username = username
 	err = user.ValidateUsername()
 	if err != nil {
-		call.Logger.Error(fmt.Sprintf("elven: validation failed. Error: %v", err.Error()))
-		goto chooseUsername
+		return
 	}
 	found, err := user.FindByUsername()
 	if err != nil {
-		var errPretty = errors.Wrap(err, "elven: failed to find user. Error")
-		call.Logger.Panic(errPretty)
-		os.Exit(1)
+		return
 	}
 	// if user exists
 	if found {
-		deleteHim, err := ancientUI.AddQuestion("Username exists. Delete?")
-		if err != nil {
-			var errPretty = errors.Wrap(err, "elven: failed to scan answer. Error")
-			call.Logger.Panic(errPretty)
-			os.Exit(1)
-		}
-		if !deleteHim {
-			os.Exit(1)
+		if !deleteIfExists {
+			call.Logger.Info("user already exists")
+			return
 		}
 		err = user.DeleteByID()
 		if err != nil {
-			var errPretty = errors.Wrap(err, "elven: delete user failed. Error")
-			call.Logger.Panic(errPretty)
-			os.Exit(1)
-		}
-		createNew, err := ancientUI.AddQuestion(fmt.Sprintf("%v successfully deleted. Create new?", sign))
-		if err != nil {
-			var errPretty = errors.Wrap(err, "elven: scan answer failed. Error")
-			call.Logger.Panic(errPretty)
-			os.Exit(1)
-		}
-		if !createNew {
-			os.Exit(1)
+			return
 		}
 	}
-choosePassword:
-	password, err := ancientUI.AddInput("Password")
-	if err != nil {
-		var errPretty = errors.Wrap(err, "elven: failed to scan password. Error")
-		call.Logger.Panic(errPretty)
-		os.Exit(1)
-	}
-	user = model.User{Role: role, Username: username, Password: password}
+	user.Password = password
 	err = user.ValidatePassword()
 	if err != nil {
-		call.Logger.Error(fmt.Sprintf("elven: validation failed. Error: %v", err.Error()))
-		goto choosePassword
+		return
 	}
 	// create
+	user.Role = role
 	err = user.Create()
 	if err != nil {
-		var errPretty = errors.Wrap(err, fmt.Sprintf("elven: error while creating %v. Error", sign))
-		call.Logger.Panic(errPretty)
-		os.Exit(1)
+		return
 	}
-	call.Logger.Info(fmt.Sprintf("elven: %v successfully created", sign))
-	os.Exit(1)
+	call.Logger.Info("done")
 }
 
 // migrate - create tables in database from SQL file.

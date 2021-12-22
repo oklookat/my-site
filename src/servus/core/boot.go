@@ -30,10 +30,10 @@ func (i *Instance) Boot() {
 	i.bootUtils()
 	i.bootConfig()
 	i.bootLogger()
+	i.bootControl()
 	i.bootMiddleware()
 	i.bootEncryptor()
 	i.bootDatabase()
-	i.bootControl()
 }
 
 func (i *Instance) bootUtils() {
@@ -62,11 +62,10 @@ func (i *Instance) bootConfig() {
 	if arg == nil {
 		getFromDir()
 	} else {
-		var value = argument.GetValue(arg)
-		if value == nil {
+		if arg.Value == nil {
 			panic("config flag cannot be empty")
 		}
-		get(*value)
+		get(*arg.Value)
 	}
 	i.Config = &config
 }
