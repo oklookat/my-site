@@ -14,6 +14,7 @@ const (
 	cmdFlagUsername       = "-username"
 	cmdFlagPassword       = "-password"
 	cmdFlagDeleteIfExists = "-die"
+	cmdFlagSQLPath        = "-sql"
 	cmdFlagSuperuser      = "el:su"
 	cmdFlagUser           = "el:tu"
 	cmdFlagRollback       = "el:rb"
@@ -124,8 +125,14 @@ func (c *cmd) createUser(flag string) {
 
 // migrate - create tables in database from SQL file.
 func (c *cmd) migrate() {
-	var executionDir, _ = call.Utils.GetExecutionDir()
-	var sqlPath = fmt.Sprintf("%v/settings/sql/elven.sql", executionDir)
+	var sqlPath string
+	var sqlPathVal = argument.Get(cmdFlagSQLPath)
+	if sqlPathVal.Value == nil {
+		var executionDir, _ = call.Utils.GetExecutionDir()
+		sqlPath = fmt.Sprintf("%v/settings/sql/elven.sql", executionDir)
+	} else {
+		sqlPath = *sqlPathVal.Value
+	}
 	sqlPath = call.Utils.FormatPath(sqlPath)
 	script, err := ioutil.ReadFile(sqlPath)
 	if err != nil {

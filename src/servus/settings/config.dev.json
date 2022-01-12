@@ -1,0 +1,97 @@
+{
+  "debug": true,
+  "timezone": "Europe/Moscow",
+  "host": "localhost",
+  "port": "3333",
+  "db": {
+    "postgres": {
+      "host": "localhost",
+      "port": "5432",
+      "user": "postgres",
+      "password": "root",
+      "database": "elven"
+    }
+  },
+  "logger": {
+    "level": 1
+  },
+  "security": {
+    "https": {
+      "active": true,
+      "certPath": "D:/YandexDisk/MainFiles/WIP/PROGRAMMING/web/oklookat-site/src/devCerts/cert.pem",
+      "keyPath": "D:/YandexDisk/MainFiles/WIP/PROGRAMMING/web/oklookat-site/src/devCerts/key.pem"
+    },
+    "cookie": {
+      "domain": "oklookat.ru",
+      "path": "/",
+      "maxAge": "9999h",
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    "cors": {
+      "allowOrigin": [
+        "https://elven.oklookat.ru",
+        "https://oklookat.ru"
+      ],
+      "allowMethods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH"
+      ],
+      "allowHeaders": [
+        "*"
+      ],
+      "exposeHeaders": [
+        "cache-control",
+        "content-language",
+        "content-type",
+        "expires",
+        "last-modified",
+        "pragma"
+      ],
+      "allowCredentials": true,
+      "maxAge": 90
+    },
+    "limiter": {
+      "body": {
+        "active": true,
+        "maxSize": 100,
+        "except": []
+      }
+    },
+    "encryption": {
+      "aes": {
+        "secret": "@McQfTjWnZr4u7x!A%D*G-KaNdRgUkXp"
+      },
+      "bcrypt": {
+        "cost": 14
+      },
+      "argon": {
+        "memory": 32,
+        "iterations": 1,
+        "parallelism": 2,
+        "saltLength": 16,
+        "keyLength": 32
+      }
+    }
+  },
+  "uploads": {
+    "to": "D:/YandexDisk/MainFiles/WIP/PROGRAMMING/web/oklookat-site/src/servus/uploads",
+    "temp": "D:/YandexDisk/MainFiles/WIP/PROGRAMMING/web/oklookat-site/src/servus/uploads/temp"
+  },
+  "control": {
+    "telegram": {
+      "enabled": true,
+      "token": "5041374626:AAFpnGaS9xJiUgt8FZScrgREKwFcdT8bNTw",
+      "allowedUsers": [
+        389227057
+      ],
+      "allowedChats": [
+        389227057
+      ]
+    }
+  }
+}

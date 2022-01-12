@@ -6,7 +6,6 @@
 }
 
 ::placeholder {
-  color: var(--color-text);
   opacity: 45%;
 }
 
@@ -155,4 +154,9 @@ img, video {
     width: 40%;
     height: 40%;
   }
+}
+
+
+.jmarkd__toolbar {
+  font-size: 0.8rem;
 }

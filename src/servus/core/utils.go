@@ -31,6 +31,11 @@ func (u *utils) GetExecutionDir() (path string, err error) {
 		err = errors.Wrap(err, "[core/utils]: failed to get execution directory. Error")
 		return
 	}
+	path, err = filepath.Abs(path)
+	if err != nil {
+		err = errors.Wrap(err, "[core/utils]: failed to get execution directory / absolute path. Error")
+		return
+	}
 	path, err = filepath.EvalSymlinks(path)
 	if err != nil {
 		err = errors.Wrap(err, "[core/utils]: failed to get execution directory / symlink follow. Error")

@@ -9,7 +9,6 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
-    "@editorjs/image": "^2.6.2",
     "@sveltejs/vite-plugin-svelte": "^1.0.0-next.32",
     "@tsconfig/svelte": "^3.0.0",
     "@types/byte-size": "^8.1.0",
@@ -23,8 +22,8 @@
     "vite": "^2.7.4"
   },
   "dependencies": {
-    "@editorjs/editorjs": "^2.22.2",
-    "@editorjs/header": "^2.6.2",
+    "@oklookat/duck": "^1.0.2",
+    "@oklookat/jmarkd": "^1.0.5",
     "byte-size": "^8.1.0",
     "svelte-spa-router": "^3.2.0"
   }

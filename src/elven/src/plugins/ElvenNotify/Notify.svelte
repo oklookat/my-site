@@ -4,6 +4,7 @@
 
     let container: HTMLDivElement;
     let plugin: ElvenNotify;
+
     onMount(() => {
         plugin = new ElvenNotify(container);
     });

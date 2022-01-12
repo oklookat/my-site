@@ -111,12 +111,12 @@
     grid-template-columns: 2fr 1fr 2fr;
     grid-template-rows: 54px 1fr;
     align-items: center;
-    column-gap: 12px;
     &__go {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100%;
+      width: 100%;
       input {
         font-size: 1.1rem;
         height: 75%;

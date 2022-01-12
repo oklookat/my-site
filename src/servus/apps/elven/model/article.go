@@ -2,8 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"database/sql/driver"
-	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
@@ -11,54 +9,24 @@ import (
 
 	"github.com/gosimple/slug"
 	"github.com/oklog/ulid/v2"
-	"github.com/pkg/errors"
 )
 
 const ArticlePageSize = 2
 
 // Article - represents article in database.
 type Article struct {
-	ID          string         `json:"id" db:"id"`
-	UserID      string         `json:"user_id" db:"user_id"`
-	IsPublished bool           `json:"is_published" db:"is_published"`
-	Title       string         `json:"title" db:"title"`
-	Content     ArticleContent `json:"content" db:"content"`
-	Slug        string         `json:"slug" db:"slug"`
-	PublishedAt *time.Time     `json:"published_at" db:"published_at"`
-	CreatedAt   time.Time      `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at" db:"updated_at"`
+	ID          string     `json:"id" db:"id"`
+	UserID      string     `json:"user_id" db:"user_id"`
+	IsPublished bool       `json:"is_published" db:"is_published"`
+	Title       string     `json:"title" db:"title"`
+	Content     string     `json:"content" db:"content"`
+	Slug        string     `json:"slug" db:"slug"`
+	PublishedAt *time.Time `json:"published_at" db:"published_at"`
+	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
 }
 
-// Content - represents ModelArticle content in database.
-type ArticleContent struct {
-	Time   int64 `json:"time"`
-	Blocks []struct {
-		ID   *string     `json:"id"`
-		Type string      `json:"type"`
-		Data interface{} `json:"data"`
-		//Tunes *[]struct {
-		//	Name interface{} `json:"name"`
-		//} `json:"tunes"`
-	} `json:"blocks"`
-	Version *string `json:"version"`
-}
-
-func (a ArticleContent) Value() (driver.Value, error) {
-	return json.Marshal(a)
-}
-
-func (a *ArticleContent) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return errors.New("ArticleContent: failed convert value to []byte")
-	}
-	if len(bytes) == 0 {
-		return nil
-	}
-	return json.Unmarshal(bytes, &a)
-}
-
-func (a *Article) GetPaginated(by string, start string, show string, page int) (articles []Article, totalPages int, err error) {
+func (a *Article) GetPaginated(by string, start string, show string, page int, preview bool) (articles []Article, totalPages int, err error) {
 	var query string
 	var queryCount string
 	switch show {
@@ -91,6 +59,15 @@ func (a *Article) GetPaginated(by string, start string, show string, page int) (
 		err = rows.StructScan(&article)
 		if err != nil {
 			return
+		}
+		if preview {
+			var contentLen = len(article.Content)
+			var maxSize = 128
+			if contentLen >= maxSize {
+				article.Content = article.Content[:maxSize] + "..."
+			} else {
+				article.Content = article.Content[:contentLen]
+			}
 		}
 		articles = append(articles, article)
 	}

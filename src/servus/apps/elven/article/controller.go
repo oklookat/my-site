@@ -25,7 +25,7 @@ func (a *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	}
 	// get.
 	pag := model.Article{}
-	articles, totalPages, err := pag.GetPaginated(validatedBody.By, validatedBody.Start, validatedBody.Show, validatedBody.Page)
+	articles, totalPages, err := pag.GetPaginated(validatedBody.By, validatedBody.Start, validatedBody.Show, validatedBody.Page, validatedBody.Preview)
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
