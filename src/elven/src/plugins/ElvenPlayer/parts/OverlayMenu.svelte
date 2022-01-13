@@ -1,9 +1,9 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
-    import Overlay from "../modules/Overlay.svelte";
-    import Progress from "../modules/Progress.svelte";
-    import Slider from "../modules/slider/Slider.svelte";
-    import TimeSlider from "./TimeSlider.svelte";
+    import Overlay from "../modules/overlay.svelte";
+    import Progress from "../modules/progress.svelte";
+    import Slider from "../modules/slider/index.svelte";
+    import TimeSlider from "./timeSlider.svelte";
     import type { ComponentState } from "../types";
 
     export let active: boolean;

@@ -1,6 +1,7 @@
 package limiter
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"regexp"
@@ -16,7 +17,7 @@ func New(active bool, maxSizeMB int64, except []string) *Instance {
 	for index := range except {
 		except[index] = normalizePath(except[index])
 	}
-	var mbToByte = maxSizeMB << 4
+	var mbToByte = maxSizeMB * 1000 * 1000
 	return &Instance{active: active, maxSizeBytes: mbToByte, except: except}
 }
 
@@ -26,18 +27,27 @@ func (i *Instance) Middleware(next http.Handler) http.Handler {
 			next.ServeHTTP(writer, request)
 			return
 		}
-		var passed = i.Check(writer, request.Body)
+		var passed = i.Check(writer, request)
 		if !passed {
 			writer.WriteHeader(413)
 			return
 		}
+		// bytes, _ := io.ReadAll(request.Body)
+		// log.Println(request.Method)
+		// log.Println(bytes)
 		next.ServeHTTP(writer, request)
 	})
 }
 
-func (i *Instance) Check(w http.ResponseWriter, r io.ReadCloser) (passed bool) {
-	limitedReader := http.MaxBytesReader(w, r, i.maxSizeBytes)
-	_, err := io.ReadAll(limitedReader)
+func (i *Instance) Check(w http.ResponseWriter, r *http.Request) (passed bool) {
+	limitedReader := http.MaxBytesReader(w, r.Body, i.maxSizeBytes)
+	defer func() {
+		_ = limitedReader.Close()
+	}()
+	body, err := io.ReadAll(limitedReader)
+	if err == nil {
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
+	}
 	return err == nil || err.Error() != "http: request body too large"
 }
 

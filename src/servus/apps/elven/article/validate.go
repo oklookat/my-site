@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/url"
 	"servus/apps/elven/base"
-	"servus/apps/elven/model"
 	"strconv"
 	"strings"
 )
@@ -26,9 +25,9 @@ type Paginate struct {
 
 // Body - represents the body of the request that the user should send. Used in create and update methods.
 type Body struct {
-	IsPublished *bool                 `json:"is_published"`
-	Title       *string               `json:"title"`
-	Content     *model.ArticleContent `json:"content"`
+	IsPublished *bool   `json:"is_published"`
+	Title       *string `json:"title"`
+	Content     *string `json:"content"`
 }
 
 // Validate - validate params to get paginated articles.
@@ -131,7 +130,7 @@ func (a *Body) Validate(body io.ReadCloser) base.Validator {
 	}
 	// content.
 	if isContent {
-		var contentInvalid = len(a.Content.Blocks) < 1
+		var contentInvalid = len(*a.Content) < 1 || len(*a.Content) > 256000
 		if contentInvalid {
 			val.Add("content")
 		}

@@ -3,6 +3,7 @@ import type { ElvenProgress as IElvenProgress } from "./types"
 
 export default class ElvenProgress implements IElvenProgress {
 
+    private basicActive = false
     private line: HTMLDivElement
     private _percents: number
     // settings
@@ -16,7 +17,7 @@ export default class ElvenProgress implements IElvenProgress {
     }
 
     constructor(line: HTMLDivElement, settings?: Settings) {
-        if(settings) {
+        if (settings) {
             this.settings = settings
         }
         this.line = line
@@ -39,6 +40,10 @@ export default class ElvenProgress implements IElvenProgress {
     }
 
     public startBasic() {
+        if (this.basicActive) {
+            return
+        }
+        this.basicActive = true
         const intervalID = setInterval(() => {
             if (this.percents < this.settings.basicLoading.startTo) {
                 this.percents++
@@ -49,6 +54,9 @@ export default class ElvenProgress implements IElvenProgress {
     }
 
     public finishBasic() {
+        if (!this.basicActive) {
+            return
+        }
         this.percents = this.settings.basicLoading.startTo
         const intervalID = setInterval(() => {
             if (this.percents < 100) {
@@ -57,6 +65,7 @@ export default class ElvenProgress implements IElvenProgress {
             }
             clearInterval(intervalID)
             this.resetPercents()
+            this.basicActive = false
         }, this.settings.basicLoading.finishSpeed)
     }
 

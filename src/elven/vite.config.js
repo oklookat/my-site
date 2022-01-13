@@ -3,6 +3,11 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 import path from 'path'
 import fs from 'fs'
 
+// prevent auto browser opening, because node throws error in container
+const openBrowser = false
+const expose = '0.0.0.0'
+const port = 3000
+
 const baseConf = {
   plugins: [svelte()],
   optimizeDeps: { exclude: ["svelte-router-spa"] },
@@ -12,13 +17,21 @@ const baseConf = {
         find: '@', replacement: path.resolve('./src')
       },
     ],
+  },
+  server: {
+    // prevent auto browser opening, because node throws error in container
+    open: openBrowser,
+    host: expose,
+    port: port
   }
 }
 
 const withHTTPS = (certPath, keyPath) => {
   return {
     server: {
-      open: true,
+      open: openBrowser,
+      host: expose,
+      port: port,
       https: {
         cert: fs.readFileSync(certPath, 'utf8'),
         key: fs.readFileSync(keyPath, 'utf8'),

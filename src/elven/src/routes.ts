@@ -1,14 +1,18 @@
 import { push } from 'svelte-spa-router'
 import { wrap } from 'svelte-spa-router/wrap'
-import { AuthStorage } from "@/tools/LocalStorage"
-// views
-import Index from '@/views/Index.svelte'
-import Login from '@/views/Login.svelte'
-import Logout from '@/views/Logout.svelte'
-import Articles from '@/views/Articles.svelte'
-import ArticleCreate from '@/views/ArticleCreate.svelte'
-import Files from '@/views/Files.svelte'
-import Settings from '@/views/Settings.svelte'
+import { AuthStorage } from "@/tools/localStorage"
+// main
+import Index from '@/entities/general/index.svelte'
+// auth
+import Login from '@/entities/auth/comps/login.svelte'
+import Logout from '@/entities/auth/comps/logout.svelte'
+// articles
+import Articles from '@/entities/articles/comps/index.svelte'
+import ArticleCreate from '@/entities/articles/comps/create.svelte'
+// files
+import Files from '@/entities/files/comps/index.svelte'
+// settings
+import Settings from '@/entities/settings/index.svelte'
 
 
 function isAdmin() {

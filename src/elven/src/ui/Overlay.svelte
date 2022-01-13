@@ -3,19 +3,19 @@
 
   export let active: boolean;
 
-  const dispatch = createEventDispatcher<{ deactivated: any }>();
+  const dispatch = createEventDispatcher<{ deactivated: boolean }>();
 
   onDestroy(() => {
     document.body.classList.remove("no-scroll");
   });
 
   $: watchActive(active);
-  function watchActive(value) {
+  function watchActive(value: boolean) {
     if (value) {
       document.body.classList.add("no-scroll");
-    } else {
-      document.body.classList.remove("no-scroll");
+      return
     }
+    document.body.classList.remove("no-scroll");
   }
 
   function deactivate() {

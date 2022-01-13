@@ -230,7 +230,7 @@ CREATE TABLE public.articles
     user_id      ulid  NOT NULL,
     is_published boolean                                   DEFAULT false,
     title        varchar(124) COLLATE pg_catalog."default" DEFAULT 'Untitled':: varchar,
-    content      jsonb NOT NULL,
+    content      varchar(256000) NOT NULL,
     slug         varchar(256) COLLATE pg_catalog."default" UNIQUE,
     published_at timestamp with time zone,
     created_at   timestamp with time zone                  DEFAULT current_timestamp,

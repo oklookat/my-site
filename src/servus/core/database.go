@@ -23,12 +23,13 @@ func (d *Database) new(config *ConfigFile, logger Logger) (err error) {
 		return errors.New("[core/database]: logger nil pointer")
 	}
 	d.config = config
+	var pgHost = d.config.DB.Postgres.Host
 	var pgUser = d.config.DB.Postgres.User
 	var pgPassword = d.config.DB.Postgres.Password
 	var pgPort = d.config.DB.Postgres.Port
 	var pgDb = d.config.DB.Postgres.DbName
 	var timeZone = d.config.Timezone
-	var connectionStr = fmt.Sprintf("user=%v password=%v port=%v dbname=%v sslmode=disable TimeZone=%v", pgUser, pgPassword, pgPort, pgDb, timeZone)
+	var connectionStr = fmt.Sprintf("host=%v user=%v password=%v port=%v dbname=%v sslmode=disable TimeZone=%v", pgHost, pgUser, pgPassword, pgPort, pgDb, timeZone)
 	connection, err := sqlx.Connect("pgx", connectionStr)
 	if err != nil {
 		var errPretty = errors.Wrap(err, "[core/database]")
