@@ -24,4 +24,5 @@
 
 logs
 settings/config.json
+settings/config.dev.json
 uploads
