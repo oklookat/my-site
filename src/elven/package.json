@@ -19,7 +19,7 @@
     "svelte-preprocess": "^4.10.1",
     "tslib": "^2.2.0",
     "typescript": "^4.5.4",
-    "vite": "^2.7.10"
+    "vite": "^2.7.12"
   },
   "dependencies": {
     "@oklookat/duck": "^1.0.2",
