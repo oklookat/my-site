@@ -15,11 +15,11 @@
     "@types/node": "^17.0.8",
     "sass": "^1.48.0",
     "svelte": "^3.46.1",
-    "svelte-check": "^2.2.12",
+    "svelte-check": "^2.3.0",
     "svelte-preprocess": "^4.10.1",
     "tslib": "^2.2.0",
     "typescript": "^4.5.4",
-    "vite": "^2.7.10"
+    "vite": "^2.7.12"
   },
   "dependencies": {
     "@oklookat/duck": "^1.0.2",
