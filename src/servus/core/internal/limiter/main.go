@@ -61,7 +61,7 @@ func (i *Instance) checkExcept(path string) (skip bool) {
 	return false
 }
 
-// normalizePath - from path like /hello or ///hello// make /hello/.
+// from path like /hello or ///hello// make /hello/.
 func normalizePath(path string) string {
 	regex := regexp.MustCompile(`//+`)
 	path = regex.ReplaceAllString(path, "/")

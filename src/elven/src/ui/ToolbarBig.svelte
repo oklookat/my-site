@@ -18,7 +18,7 @@
             padding-right: $padding;
             display: flex;
             flex-flow: row wrap;
-            gap: 8px;
+            gap: 14px;
             height: 100%;
             align-items: center;
         }

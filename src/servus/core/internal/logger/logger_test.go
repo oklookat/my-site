@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// GetExecuteDir - get server execution directory.
+// get server execution directory.
 func GetExecuteDir() string {
 	path, err := os.Getwd()
 	if err != nil {

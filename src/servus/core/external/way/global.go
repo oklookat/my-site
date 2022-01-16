@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// Router - simple router.
+// simple router.
 type Router struct {
 	notFound         http.HandlerFunc
 	methodNotAllowed http.HandlerFunc
@@ -14,7 +14,7 @@ type Router struct {
 	routes           []*route
 }
 
-// New - create new Router instance.
+// create new Router instance.
 func New() *Router {
 	var router = &Router{}
 	router.groups = make([]*Group, 0)
@@ -25,22 +25,22 @@ func New() *Router {
 	return router
 }
 
-// NotFound - add 404 page. When no suitable route is found, the endpoint is called.
+// add 404 page. When no suitable route is found, the endpoint is called.
 func (r *Router) NotFound(handler http.HandlerFunc) {
 	r.notFound = handler
 }
 
-// MethodNotAllowed - add 405 page. When no method for route, the endpoint is called.
+// add 405 page. When no method for route, the endpoint is called.
 func (r *Router) MethodNotAllowed(handler http.HandlerFunc) {
 	r.methodNotAllowed = handler
 }
 
-// Use - add global middlewares. Any request will call these middlewares.
+// add global middlewares. Any request will call these middlewares.
 func (r *Router) Use(middlewares ...Middleware) {
 	r.middleware.add(middlewares)
 }
 
-// runMiddleware - run middleware if exists. Returns true if middleware called next().
+// run middleware if exists. Returns true if middleware called next().
 func (r *Router) runMiddleware(response http.ResponseWriter, request *http.Request) (executed bool) {
 	if r.middleware.chain != nil {
 		r.middleware.chain.ServeHTTP(response, request)
@@ -49,7 +49,7 @@ func (r *Router) runMiddleware(response http.ResponseWriter, request *http.Reque
 	return true
 }
 
-// ServeHTTP - when a request comes in and goes out, it will be here.
+// when a request comes in and goes out, it will be here.
 func (r *Router) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	// global limiter
 	executed := r.runMiddleware(response, request)

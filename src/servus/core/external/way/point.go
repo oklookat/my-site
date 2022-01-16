@@ -5,14 +5,14 @@ import (
 	"net/http"
 )
 
-// Point - handler with path, methods, and limiter.
+// handler with path, methods, and limiter.
 type Point struct {
 	methods    []string
 	middleware *middleware
 	handler    http.HandlerFunc
 }
 
-// Endpoint - add endpoint.
+// add endpoint.
 func (r *Router) Endpoint(path string, handler http.HandlerFunc) *Point {
 	var _route = route{}
 	var notExists, point = _route.new(path, handler, r.routes)
@@ -22,7 +22,7 @@ func (r *Router) Endpoint(path string, handler http.HandlerFunc) *Point {
 	return point
 }
 
-// Endpoint - add endpoint.
+// add endpoint.
 func (g *Group) Endpoint(path string, handler http.HandlerFunc) *Point {
 	var pathFormatted = fmt.Sprintf("/%v/%v/", g.prefix, path)
 	var _route = route{}
@@ -33,13 +33,13 @@ func (g *Group) Endpoint(path string, handler http.HandlerFunc) *Point {
 	return point
 }
 
-// new - create new Point.
+// create new Point.
 func (p *Point) new(handler http.HandlerFunc) {
 	p.middleware = &middleware{}
 	p.handler = handler
 }
 
-// Methods - add methods to route.
+// add methods to route.
 func (p *Point) Methods(methods ...string) *Point {
 	var add = func(method string) {
 		for index := range p.methods {
@@ -58,12 +58,12 @@ func (p *Point) Methods(methods ...string) *Point {
 	return p
 }
 
-// Use - add route middlewares. Request on this route will call these middlewares.
+// add route middlewares. Request on this route will call these middlewares.
 func (p *Point) Use(middlewares ...Middleware) {
 	p.middleware.add(middlewares)
 }
 
-// runMiddlewareAndEndpoint - run middleware if exists and run endpoint.
+// run middleware if exists and run endpoint.
 func (p *Point) runMiddlewareAndEndpoint(response http.ResponseWriter, request *http.Request) (incorrectMethod bool) {
 	// check is method exists in point.
 	var method = request.Method

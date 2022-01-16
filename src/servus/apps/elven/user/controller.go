@@ -7,7 +7,7 @@ import (
 )
 
 // GET
-// getMe - send some user data by token.
+// send some user data by token.
 func (u *Instance) getMe(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	pipe := u.pipe.GetByContext(request)
@@ -23,7 +23,7 @@ func (u *Instance) getMe(response http.ResponseWriter, request *http.Request) {
 }
 
 // POST
-// change - change username or password.
+// change username or password.
 // body: what change (username or password); password to confirm; new value for change.
 func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)

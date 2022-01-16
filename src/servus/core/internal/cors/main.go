@@ -40,7 +40,7 @@ func (i *Instance) Middleware(next http.Handler) http.Handler {
 	})
 }
 
-// setHeaders - add CORS headers to response. Returns CorsResult with information about method (is preflight).
+// add CORS headers to response. Returns CorsResult with information about method (is preflight).
 func (i *Instance) setHeaders(writer http.ResponseWriter, request *http.Request) (isPreflight bool) {
 	preflight := i.isPreflight(request.Method)
 	if preflight {

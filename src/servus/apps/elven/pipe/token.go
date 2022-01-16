@@ -19,7 +19,7 @@ type TokenPipe struct {
 	model *model.Token
 }
 
-// GetByContext - get pipe by request context. Use only if you provided to request context.
+// get pipe by request context. Use only if you provided to request context.
 func (t *Token) GetByContext(request *http.Request) base.TokenPipe {
 	pipe, ok := request.Context().Value(CtxToken).(base.TokenPipe)
 	if !ok {
@@ -28,7 +28,7 @@ func (t *Token) GetByContext(request *http.Request) base.TokenPipe {
 	return pipe
 }
 
-// GetByRequest - used for ex. providing pipe to request context.
+// used for ex. providing pipe to request context.
 func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
 	// get encrypted.
 	encrypted, found := t.getEncryptedByRequest(request)
@@ -54,7 +54,7 @@ func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
 	return pipe, err
 }
 
-// getEncryptedByRequest - get encrypted token from request cookie or headers.
+// get encrypted token from request cookie or headers.
 func (t *Token) getEncryptedByRequest(request *http.Request) (encrypted string, found bool) {
 	// get from cookie.
 	found = false

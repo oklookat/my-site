@@ -6,8 +6,9 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -24,7 +25,7 @@ type AES struct {
 	Secret string
 }
 
-// Encrypt - get text and return encrypted text (AES).
+// get text and return encrypted text (AES).
 func (a *AES) Encrypt(text string) (encrypted string, err error) {
 	key := []byte(a.Secret)
 	plaintext := []byte(text)
@@ -45,7 +46,7 @@ func (a *AES) Encrypt(text string) (encrypted string, err error) {
 	return encrypted, err
 }
 
-// Decrypt - get encrypted and return decrypted text (AES).
+// get encrypted and return decrypted text (AES).
 func (a *AES) Decrypt(encrypted string) (text string, err error) {
 	if len(encrypted) < 4 {
 		return "", ErrAESEncryptedValidation

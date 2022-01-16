@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// IsEmpty - string with spaces only anyway will be empty.
+// string with spaces only anyway will be empty.
 func IsEmpty(text *string) bool {
 	if text == nil {
 		return true
@@ -13,7 +13,7 @@ func IsEmpty(text *string) bool {
 	return len(strings.TrimSpace(*text)) == 0
 }
 
-// IsAlphanumeric - a-z A-Z 0-9.
+// a-z A-Z 0-9
 func IsAlphanumeric(text *string) bool {
 	if text == nil {
 		return false
@@ -22,7 +22,7 @@ func IsAlphanumeric(text *string) bool {
 	return alphanumeric.MatchString(*text)
 }
 
-// IsAlphanumericWithSymbols - alphanumeric and keyboard symbols.
+// alphanumeric and keyboard symbols?
 func IsAlphanumericWithSymbols(text *string) bool {
 	if text == nil {
 		return false
@@ -31,7 +31,7 @@ func IsAlphanumericWithSymbols(text *string) bool {
 	return alphaWithSymbols.MatchString(*text)
 }
 
-// IsIP - is IPv4 or IPv6 address.
+// IPv4 or IPv6 address?
 func IsIP(text *string) bool {
 	if text == nil {
 		return false
@@ -40,7 +40,7 @@ func IsIP(text *string) bool {
 	return regex.MatchString(*text)
 }
 
-// MinMax - check if string violates min and max length constraints.
+// string violates min and max length constraints?
 func MinMax(text *string, min int, max int) bool {
 	if text == nil {
 		return false

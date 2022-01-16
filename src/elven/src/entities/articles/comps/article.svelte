@@ -7,7 +7,7 @@
 
     const dispatch = createEventDispatcher<{ selected: Article }>();
 
-    function convertDate(date) {
+    function convertDate(date: string | number | Date) {
         return Dates.convert(date);
     }
 
@@ -35,17 +35,12 @@
         <div class="article__item article__title">
             {article.title}
         </div>
-        {#if article.content}
-            <div class="article__item article__preview">
-                <div>{@html article.content}</div>
-            </div>
-        {/if}
     </div>
 </article>
 
 <style lang="scss">
     .article {
-        min-height: 164px;
+        min-height: 94px;
         border-radius: var(--border-radius);
         background-color: var(--color-level-1);
         cursor: pointer;
@@ -75,10 +70,6 @@
             font-size: 1.5rem;
             line-height: 2rem;
             letter-spacing: 0.0099rem;
-        }
-        &__preview {
-            white-space: pre-wrap;
-            height: 100%;
         }
         &__updated,
         &__published,

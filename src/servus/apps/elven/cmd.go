@@ -21,12 +21,11 @@ const (
 	cmdFlagMigrate        = "el:mg"
 )
 
-// cmd - commandline methods.
+// commandline methods.
 type cmd struct {
 }
 
-// boot - call methods depending on startup arguments.
-// TODO: add to inline support. Like elven:superuser -username=123 -password=1234 -deleteIfExists
+// call methods depending on arguments.
 func (c *cmd) boot() {
 	// create superuser.
 	var createSU = argument.Get(cmdFlagSuperuser)
@@ -56,7 +55,7 @@ func (c *cmd) boot() {
 	}
 }
 
-// createUser - create user or superuser (UserModel).
+// create user or superuser (UserModel).
 func (c *cmd) createUser(flag string) {
 	// validate args.
 	var usernameArg = argument.Get(cmdFlagUsername)
@@ -123,7 +122,7 @@ func (c *cmd) createUser(flag string) {
 	call.Logger.Info("done")
 }
 
-// migrate - create tables in database from SQL file.
+// create tables in database from SQL file.
 func (c *cmd) migrate() {
 	var sqlPath string
 	var sqlPathVal = argument.Get(cmdFlagSQLPath)
@@ -150,7 +149,7 @@ func (c *cmd) migrate() {
 	os.Exit(1)
 }
 
-// rollback - delete tables from database.
+// delete tables from database.
 func (c *cmd) rollback() {
 	_, err := call.DB.Conn.Exec(`
 	DROP SCHEMA public CASCADE;

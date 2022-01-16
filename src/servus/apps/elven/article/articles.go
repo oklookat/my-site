@@ -9,8 +9,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// getAll - GET url/. Get paginated articles.
-func (a *Instance) getAll(response http.ResponseWriter, request *http.Request) {
+// GET url/. Get paginated articles.
+func (a *Instance) getArticles(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	var err error
 	var isAdmin = false
@@ -45,8 +45,8 @@ func (a *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	h.Send(string(jsonResponse), 200, err)
 }
 
-// getOne - GET url/id. Get one article.
-func (a *Instance) getOne(response http.ResponseWriter, request *http.Request) {
+// GET url/id. Get one article.
+func (a *Instance) getArticle(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	var isAdmin = false
 	// get id from params.
@@ -79,11 +79,11 @@ func (a *Instance) getOne(response http.ResponseWriter, request *http.Request) {
 	h.Send(string(articleJson), 200, err)
 }
 
-// create - POST url/. Creates new article.
-func (a *Instance) create(response http.ResponseWriter, request *http.Request) {
+// POST url/. Creates new article.
+func (a *Instance) createArticle(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// validate.
-	body := Body{}
+	body := ArticleBody{}
 	validator := body.Validate(request.Body)
 	if validator.HasErrors() {
 		h.Send(validator.GetJSON(), 400, nil)
@@ -107,8 +107,8 @@ func (a *Instance) create(response http.ResponseWriter, request *http.Request) {
 	h.Send(string(articleJson), 200, err)
 }
 
-// update - PUT (update all available fields) or PATCH (update specific field) url/id.
-func (a *Instance) update(response http.ResponseWriter, request *http.Request) {
+// PUT (update all available fields) or PATCH (update specific field) url/id.
+func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// get id from params.
 	var params = mux.Vars(request)
@@ -125,7 +125,7 @@ func (a *Instance) update(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	// validate body.
-	var body = Body{}
+	var body = ArticleBody{}
 	validator := body.Validate(request.Body)
 	if err != nil {
 		h.Send(validator.GetJSON(), 400, err)
@@ -175,8 +175,8 @@ func (a *Instance) update(response http.ResponseWriter, request *http.Request) {
 	h.Send(string(jsonArticle), 200, err)
 }
 
-// delete - DELETE url/id. Deletes one article.
-func (a *Instance) delete(response http.ResponseWriter, request *http.Request) {
+// DELETE url/id. Deletes one article.
+func (a *Instance) deleteArticle(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// get id from params.
 	var params = mux.Vars(request)

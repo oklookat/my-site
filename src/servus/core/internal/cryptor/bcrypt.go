@@ -9,7 +9,7 @@ import (
 )
 
 type BCrypt struct {
-	// Cost - see bcrypt.GenerateFromPassword.
+	// see bcrypt.GenerateFromPassword.
 	Cost int
 }
 

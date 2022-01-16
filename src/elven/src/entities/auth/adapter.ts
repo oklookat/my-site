@@ -1,10 +1,11 @@
 import Duck from '@/duck'
+import type { body } from '@/entities/auth/types';
 import { AuthStorage } from "@/tools/localStorage";
 
 export default class AuthAdapter {
 
     public static async login(username: string, password: string) {
-        const data = {
+        const data: body = {
             username: username,
             password: password,
             type: 'cookie',

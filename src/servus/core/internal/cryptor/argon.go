@@ -1,6 +1,27 @@
 package cryptor
 
 // https://github.com/alexedwards/argon2id
+// MIT License
+
+// Copyright (c) 2018 Alex Edwards
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 import (
 	"crypto/rand"
@@ -14,35 +35,31 @@ import (
 )
 
 var (
-	// ErrArgonInvalidHash in returned by ComparePasswordAndHash if the provided
+	// returned by ComparePasswordAndHash if the provided
 	// hash isn't in the expected format.
 	ErrArgonInvalidHash = errors.New("cryptor (argon): hash is not in the correct format")
 
-	// ErrArgonIncompatibleVersion in returned by ComparePasswordAndHash if the
+	// returned by ComparePasswordAndHash if the
 	// provided hash was created using a different version of Argon2.
 	ErrArgonIncompatibleVersion = errors.New("cryptor (argon): incompatible version of argon2")
 )
 
-// Argon - describes the input parameters used by the Argon2id algorithm.
+// describes the input parameters used by the Argon2id algorithm.
 type Argon struct {
-	// Memory - the amount of memory used by the algorithm (in kibibytes).
+	// the amount of memory used by the algorithm (in kibibytes).
 	Memory uint32
-
-	// Iterations - the number of iterations over the memory.
+	// the number of iterations over the memory.
 	Iterations uint32
-
-	// Parallelism - the number of threads (or lanes) used by the algorithm.
+	// the number of threads (or lanes) used by the algorithm.
 	// Recommended value is between 1 and runtime.NumCPU().
 	Parallelism uint8
-
-	// SaltLength - length of the random salt. 16 bytes is recommended for password hashing.
+	// length of the random salt. 16 bytes is recommended for password hashing.
 	SaltLength uint32
-
-	// KeyLength - length of the generated key. 16 bytes or more is recommended.
+	// length of the generated key. 16 bytes or more is recommended.
 	KeyLength uint32
 }
 
-// Hash - returns an Argon2id hash of a plain-text password using the
+// returns an Argon2id hash of a plain-text password using the
 // provided algorithm parameters.
 func (a *Argon) Hash(data string) (hash string, err error) {
 	salt, err := a.generateRandomBytes(a.SaltLength)
@@ -56,19 +73,19 @@ func (a *Argon) Hash(data string) (hash string, err error) {
 	return hash, nil
 }
 
-// Compare - check argon2id hash.
+// check argon2id hash.
 func (a *Argon) Compare(what, with string) (match bool, err error) {
 	match, _, err = a.matchHash(what, with)
 	return match, err
 }
 
-// IsHash - is data a hash.
+// is data a hash.
 func (a *Argon) IsHash(data string) bool {
 	var conf, _, _, err = a.parseHash(data)
 	return conf != nil && err == nil
 }
 
-// matchHash - is like ComparePasswordAndHash, except it also returns the params that the hash was
+// is like ComparePasswordAndHash, except it also returns the params that the hash was
 // created with. This can be useful if you want to update your hash params over time (which you
 // should).
 func (a *Argon) matchHash(data, hash string) (match bool, config *Argon, err error) {
@@ -88,7 +105,7 @@ func (a *Argon) matchHash(data, hash string) (match bool, config *Argon, err err
 	return false, params, nil
 }
 
-// ParseHash - expects a hash created from this package, and parses it to return the params used to
+// expects a hash created from this package, and parses it to return the params used to
 // create it, as well as the salt and key (password hash).
 func (a *Argon) parseHash(hash string) (config *Argon, salt, key []byte, err error) {
 	values := strings.Split(hash, "$")
@@ -122,7 +139,7 @@ func (a *Argon) parseHash(hash string) (config *Argon, salt, key []byte, err err
 	return config, salt, key, nil
 }
 
-// generateRandomBytes - generate cryptographically random bytes.
+// generate cryptographically random bytes.
 func (a *Argon) generateRandomBytes(n uint32) ([]byte, error) {
 	b := make([]byte, n)
 	_, err := rand.Read(b)

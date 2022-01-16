@@ -14,7 +14,7 @@ var ErrUserUsernameAlphanumeric = errors.New("validation: username must be alpha
 var ErrUserPasswordMinMax = errors.New("validation: password min length 8, max 64")
 var ErrUserPasswordWrongSymbols = errors.New("validation: wrong symbols used in password")
 
-// User - represents user in database.
+// represents user in database.
 type User struct {
 	ID        string    `json:"id" db:"id"`
 	Role      string    `json:"role" db:"role"`
@@ -26,7 +26,7 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
-// Create - create user in database.
+// create user in database.
 func (u *User) Create() (err error) {
 	err = u.hookBeforeChange()
 	if err != nil {
@@ -50,7 +50,7 @@ func (u *User) Update() (err error) {
 	return
 }
 
-// FindByID - find user in database by id in UserModel.
+// find user in database by id in UserModel.
 func (u *User) FindByID() (found bool, err error) {
 	var query = "SELECT * FROM users WHERE id=$1 LIMIT 1"
 	err = call.DB.Conn.Get(u, query, u.ID)
@@ -66,7 +66,7 @@ func (u *User) FindByID() (found bool, err error) {
 	return
 }
 
-// FindByUsername - find user in database by username in UserModel.
+// find user in database by username in UserModel.
 func (u *User) FindByUsername() (found bool, err error) {
 	var query = "SELECT * FROM users WHERE username=$1 LIMIT 1"
 	err = call.DB.Conn.Get(u, query, u.Username)
@@ -82,7 +82,7 @@ func (u *User) FindByUsername() (found bool, err error) {
 	return
 }
 
-// DeleteByID - delete user by id in UserModel.
+// delete user by id in UserModel.
 func (u *User) DeleteByID() (err error) {
 	var query = "DELETE FROM users WHERE id=$1"
 	_, err = call.DB.Conn.Exec(query, u.ID)
@@ -93,7 +93,7 @@ func (u *User) DeleteByID() (err error) {
 	return
 }
 
-// validateUsername - validate username from UserModel. Used in cmd create user.
+// validate username from UserModel. Used in cmd create user.
 func (u *User) ValidateUsername() error {
 	if validator.MinMax(&u.Username, 4, 24) {
 		return ErrUserUsernameMinMax
@@ -104,7 +104,7 @@ func (u *User) ValidateUsername() error {
 	return nil
 }
 
-// validatePassword - validate UserModel password. Used in cmd create user.
+// validate UserModel password. Used in cmd create user.
 func (u *User) ValidatePassword() error {
 	if validator.MinMax(&u.Password, 8, 64) {
 		return ErrUserPasswordMinMax
@@ -115,7 +115,7 @@ func (u *User) ValidatePassword() error {
 	return nil
 }
 
-// hookBeforeChange - change data before send it to DB.
+// change data before send it to DB.
 func (u *User) hookBeforeChange() (err error) {
 	// convert to lower
 	u.Username = strings.ToLower(u.Username)

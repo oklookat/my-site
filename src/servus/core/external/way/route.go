@@ -7,9 +7,6 @@ type route struct {
 	points []*Point
 }
 
-// 	response.Header().Add("Allow", strings.Join(p.methods, ", "))
-//	handler405.ServeHTTP(response, request)
-
 func (r *route) new(path string, handler http.HandlerFunc, routes []*route) (notExists bool, p *Point) {
 	path = normalizePath(path)
 	var point = &Point{}
@@ -32,7 +29,7 @@ func (r *route) new(path string, handler http.HandlerFunc, routes []*route) (not
 	return false, point
 }
 
-// match - this route? If it is, get params.
+// this route? If it is, get params.
 func (r *route) match(requestPath string) (matched bool, params map[string]string) {
 	matched = false
 	invalid, differ, params := verifyPaths(r.path, requestPath, true)

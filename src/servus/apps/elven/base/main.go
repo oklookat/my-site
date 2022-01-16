@@ -1,6 +1,6 @@
 package base
 
-// ResponseContent - template for response.
+// template for response.
 type ResponseContent struct {
 	Meta struct {
 		PerPage     int `json:"per_page"`

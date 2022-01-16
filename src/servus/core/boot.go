@@ -12,8 +12,6 @@ import (
 	"servus/core/internal/middleware"
 )
 
-// TODO: test body limiter, continue refactoring / fixes.
-
 // Instance - servus kernel. Provides cool things.
 type Instance struct {
 	Utils      Utils
@@ -25,7 +23,7 @@ type Instance struct {
 	Control    Controller
 }
 
-// Boot - boot Instance.
+// boot Instance.
 func (i *Instance) Boot() {
 	i.bootUtils()
 	i.bootConfig()
@@ -42,12 +40,14 @@ func (i *Instance) bootUtils() {
 
 func (i *Instance) bootConfig() {
 	var config = ConfigFile{}
+	// get from path.
 	var get = func(path string) {
 		err := config.load(path)
 		if err != nil {
 			panic(err)
 		}
 	}
+	// get from current dir.
 	var getFromDir = func() {
 		var executionDir, err = i.Utils.GetExecutionDir()
 		if err != nil {
@@ -56,15 +56,15 @@ func (i *Instance) bootConfig() {
 		var path = fmt.Sprintf("%v/settings/config.json", executionDir)
 		get(path)
 	}
-	// check is path provided in args.
+	// is config path in args?
 	var configFlag = "-config"
 	var arg = argument.Get(configFlag)
-	if arg == nil {
+	var notInArgs = arg == nil || arg.Value == nil
+	if notInArgs {
+		// get from current dir.
 		getFromDir()
 	} else {
-		if arg.Value == nil {
-			panic("config flag cannot be empty")
-		}
+		// get by path in args.
 		get(*arg.Value)
 	}
 	i.Config = &config

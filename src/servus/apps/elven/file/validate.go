@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Paginate - get paginated files by params.
+// get paginated files by params.
 type Paginate struct {
 	Page  int
 	Start string

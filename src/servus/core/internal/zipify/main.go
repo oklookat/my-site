@@ -14,7 +14,7 @@ type ZipFile struct {
 	writer      *zip.Writer
 }
 
-// New - creates new zip file.
+// creates new zip file.
 func New() *ZipFile {
 	var archive = &ZipFile{}
 	// create a buffer to write our archive to.
@@ -25,7 +25,7 @@ func New() *ZipFile {
 	return archive
 }
 
-// AddFile - add file to archive. After you added all files you MUST call GetRAW() for closing archive.
+// add file to archive. After you added all files you MUST call GetRAW() for closing archive.
 func (z *ZipFile) AddFile(filename string, data io.Reader) error {
 	if !z.initialized || z.writer == nil {
 		return errors.New("[zipify]: not initialized. Maybe before you called GetRAW() or not called New()?")
@@ -59,7 +59,7 @@ func (z *ZipFile) AddFile(filename string, data io.Reader) error {
 	return err
 }
 
-// GetRAW - get archive in bytes.Buffer. Also closes archive.
+// get archive in bytes.Buffer. Also closes archive.
 func (z *ZipFile) GetRAW() *bytes.Buffer {
 	z.initialized = false
 	if z.writer == nil {

@@ -14,13 +14,23 @@
   import CArticle from "./article.svelte";
   import { Route } from "@/tools/paths";
   import Validate from "@/entities/articles/validate";
+  import Utils from "@/tools/utils";
 
+  /** articles loaded? */
   let loaded = false;
+  /** article selected / overlay opened? */
   let toolsOverlay = false;
-  let selected: Article;
-  let articles: Array<Article> = [];
+  /** selected article */
+  let selected: {
+    counter: number | null;
+    article: Article | null;
+  } = { counter: null, article: null };
+  /** response articles */
+  let articles: Record<number, Article> = {};
+  /** response information */
   let meta: Meta;
-  let baseParams: Params = {
+  /** request params */
+  let requestParams: Params = {
     page: 1,
     show: Show.published,
     by: By.updated,
@@ -28,109 +38,145 @@
     preview: true,
   };
 
-  // main
-  onMount(async () => {
-    window.onpopstate = () => {
-      const searchParams = Route.getSearchParams();
-      Validate.params(baseParams, searchParams);
-      getAll(undefined, false);
-    };
-    const searchParams = Route.getSearchParams();
-    Validate.params(baseParams, searchParams);
-    Route.setHistoryParams(baseParams);
-    getAll();
+  Route.initPopState((searchParams) => {
+    Validate.params(requestParams, searchParams);
+    getAll(undefined, false);
   });
 
-  async function getAll(p: Params = baseParams, withHistory: boolean = true) {
+  onMount(() => {
+    const searchParams = Route.getSearchParams();
+    Validate.params(requestParams, searchParams);
+    Route.setHistoryParams(requestParams);
+    getAll(undefined, true);
+  });
+
+  /** get all articles.
+   * @param p request params
+   *
+   * @param withHistory set history params **by p parameter** after articles loaded
+   */
+  async function getAll(p: Params = requestParams, withHistory = true) {
+    // trigger reactivity because baseParams may have been changed by history
+    requestParams = requestParams;
     if (p.page < 1) {
       p.page = 1;
+      requestParams.page = 1
     }
     loaded = false;
     try {
-      const result = await ArticleAdapter.getAll(baseParams);
+      const result = await ArticleAdapter.getAll(p);
       articles = result.data;
       meta = result.meta;
-      loaded = true;
       if (withHistory) {
-        Route.setHistoryParams(baseParams);
+        Route.setHistoryParams(p);
       }
-    } catch (err) {}
+      loaded = true;
+    } catch (err) {
+      throw err
+    }
   }
 
-  function edit(id: string) {
-    push(`/articles/create/${id}`);
+  /** edit article */
+  function edit(counter: number) {
+    const articleID = getIDByCounter(counter);
+    push(`/articles/create/${articleID}`);
   }
 
-  function select(a: Article) {
+  /** select article */
+  function select(counter: number) {
     toolsOverlay = true;
-    selected = a;
+    selected.counter = counter;
+    selected.article = articles[counter];
   }
 
-  async function publish(id: string) {
+  /** publish article */
+  async function publish(counter: number) {
+    const converted = getIDByCounter(counter);
+    toolsOverlay = false;
     try {
-      await ArticleAdapter.publish(id);
-      deleteFromArray(id);
-      toolsOverlay = false;
-      await refresh();
+      await ArticleAdapter.publish(converted);
+      await deleteFromArray(counter);
     } catch (err) {}
   }
 
-  async function toDrafts(id: string) {
+  /** unpublish article */
+  async function unpublish(counter: number) {
+    const converted = getIDByCounter(counter);
+    toolsOverlay = false;
     try {
-      await ArticleAdapter.makeDraft(id);
-      deleteFromArray(id);
-      toolsOverlay = false;
-      await refresh();
+      await ArticleAdapter.unpublish(converted);
+      await deleteFromArray(counter);
     } catch (err) {}
   }
 
-  async function deleteArticle(id: string) {
-    const isDelete = confirm("Delete article?");
+  /** delete article */
+  async function deleteArticle(counter: number) {
+    const isDelete = confirm("Are you sure?");
     if (!isDelete) {
       return;
     }
+    toolsOverlay = false;
     try {
-      await ArticleAdapter.delete(id);
-      deleteFromArray(id);
-      toolsOverlay = false;
+      const converted = getIDByCounter(counter);
+      await ArticleAdapter.delete(converted);
+      await deleteFromArray(counter);
     } catch (err) {}
   }
 
-  function deleteFromArray(id: string) {
-    articles = articles.filter((a) => a.id !== id);
-    refresh();
+  /** delete article from articles array and refresh articles */
+  async function deleteFromArray(counter: number) {
+    delete articles[counter];
+    articles = articles;
+    await refresh();
   }
 
+  /** set 'by' param and get articles */
   function setBy(by: By = By.published) {
-    baseParams.by = by;
-    baseParams.page = 1;
+    requestParams.by = by;
+    requestParams.page = 1;
     getAll();
   }
 
+  /** set 'start' param and get articles */
   function setStart(start: Start = Start.newest) {
-    baseParams.start = start;
-    baseParams.page = 1;
+    requestParams.start = start;
+    requestParams.page = 1;
     getAll();
   }
 
+  /** set 'show' param and get articles */
   function setShow(show: Show) {
-    baseParams.show = show;
-    baseParams.page = 1;
+    requestParams.show = show;
+    requestParams.page = 1;
     getAll();
   }
 
+  /** when page changed */
   function onPageChanged(page: number) {
-    baseParams.page = page;
+    requestParams.page = page;
     getAll();
   }
 
+  /** get article id by articles counter id */
+  function getIDByCounter(counter: number): string {
+    return articles[counter].id;
+  }
+
+  /** refresh articles */
   async function refresh() {
-    let noArticles =
-      loaded && (articles.length < 1 || articles.length < meta.per_page);
-    while (noArticles) {
-      baseParams.page--;
-      await getAll();
-      if (baseParams.page <= 1) {
+    while (true) {
+      const articlesLength = Utils.getObjectLength(articles);
+      const noArticles = loaded && articlesLength < 1;
+      if (!noArticles) {
+        break;
+      }
+      requestParams.page--;
+      try {
+        await getAll();
+      } catch (err) {
+        break;
+      }
+      if (requestParams.page < 2) {
         break;
       }
     }
@@ -140,51 +186,46 @@
 <div class="articles">
   <ToolbarBig>
     <a href="#/articles/create">new</a>
+    <a href="#/articles/cats">categories</a>
   </ToolbarBig>
 
   <Toolbar>
     <div class="articles__show">
-      {#if baseParams.show === Show.published}
-        <div
-          class="articles__item articles__show-published"
-          on:click={() => setShow(Show.drafts)}
-        >
+      {#if requestParams.show === Show.published}
+        <div class="articles__item" on:click={() => setShow(Show.drafts)}>
           published
         </div>
       {/if}
-      {#if baseParams.show === Show.drafts}
-        <div
-          class="articles__item articles__show-drafts"
-          on:click={() => setShow(Show.published)}
-        >
+      {#if requestParams.show === Show.drafts}
+        <div class="articles__item" on:click={() => setShow(Show.published)}>
           drafts
         </div>
       {/if}
     </div>
-    <div class="articles__sort-by-date">
-      {#if baseParams.start === Start.newest}
+    <div class="articles__sort-start">
+      {#if requestParams.start === Start.newest}
         <div class="articles__item" on:click={() => setStart(Start.oldest)}>
           newest
         </div>
       {/if}
-      {#if baseParams.start === Start.oldest}
+      {#if requestParams.start === Start.oldest}
         <div class="articles__item" on:click={() => setStart(Start.newest)}>
           oldest
         </div>
       {/if}
     </div>
     <div class="articles__sort-by">
-      {#if baseParams.by === By.updated}
+      {#if requestParams.by === By.updated}
         <div class="articles__item" on:click={() => setBy(By.published)}>
           by updated date
         </div>
       {/if}
-      {#if baseParams.by === By.published}
+      {#if requestParams.by === By.published}
         <div class="articles__item" on:click={() => setBy(By.created)}>
           by published date
         </div>
       {/if}
-      {#if baseParams.by === By.created}
+      {#if requestParams.by === By.created}
         <div class="articles__item" on:click={() => setBy(By.updated)}>
           by created date
         </div>
@@ -192,15 +233,15 @@
     </div>
   </Toolbar>
 
-  {#if articles && articles.length > 0}
+  {#if articles && Utils.getObjectLength(articles) > 0}
     <div class="articles__list">
-      {#each articles as article (article.id)}
-        <CArticle {article} on:selected={(e) => select(e.detail)} />
+      {#each Object.entries(articles) as [id, article]}
+        <CArticle {article} on:selected={(e) => select(parseInt(id, 10))} />
       {/each}
     </div>
   {/if}
 
-  {#if loaded && articles.length < 1}
+  {#if loaded && Utils.getObjectLength(articles) < 1}
     <div class="articles__404">
       <div>no articles :(</div>
     </div>
@@ -219,17 +260,22 @@
     on:deactivated={() => (toolsOverlay = false)}
   >
     <div class="overlay">
-      {#if selected && selected.is_published}
-        <div class="overlay__item" on:click={() => toDrafts(selected.id)}>
-          make a draft
+      {#if selected && selected.article.is_published}
+        <div class="overlay__item" on:click={() => unpublish(selected.counter)}>
+          unpublish
         </div>
       {:else}
-        <div class="overlay__item" on:click={() => publish(selected.id)}>
+        <div class="overlay__item" on:click={() => publish(selected.counter)}>
           publish
         </div>
       {/if}
-      <div class="overlay__item" on:click={() => edit(selected.id)}>edit</div>
-      <div class="overlay__item" on:click={() => deleteArticle(selected.id)}>
+      <div class="overlay__item" on:click={() => edit(selected.counter)}>
+        edit
+      </div>
+      <div
+        class="overlay__item"
+        on:click={() => deleteArticle(selected.counter)}
+      >
         delete
       </div>
     </div>

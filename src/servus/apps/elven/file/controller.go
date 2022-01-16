@@ -54,7 +54,7 @@ func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 }
 
 // POST url/
-func (f *Instance) createOne(response http.ResponseWriter, request *http.Request) {
+func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	auth := f.pipe.GetByContext(request)
 	validator := validate.Create()
@@ -195,5 +195,9 @@ func (f *Instance) deleteOne(response http.ResponseWriter, request *http.Request
 	}
 	// delete file from db.
 	err = file.DeleteByID()
+	if err != nil {
+		h.Send(f.throw.Server(), 500, err)
+		return
+	}
 	h.Send("", 200, err)
 }

@@ -9,28 +9,33 @@ import (
 	"strings"
 )
 
-// Paginate - params to get paginated articles.
+// params to get paginated articles.
 type Paginate struct {
-	// Page: number of page.
+	// number of page.
 	Page int
-	// Show: published; drafts.
+	// published; drafts.
 	Show string
-	// By: created; updated; published.
+	// created; updated; published.
 	By string
-	// Start: newest (DESC); oldest (ASC).
+	// newest (DESC); oldest (ASC).
 	Start string
-	// Preview: true (content < 480 symbols); false (gives you full articles).
+	// true (with content); false (gives you empty content).
 	Preview bool
 }
 
-// Body - represents the body of the request that the user should send. Used in create and update methods.
-type Body struct {
+// represents article body of the request that the user should send. Used in create and update methods.
+type ArticleBody struct {
 	IsPublished *bool   `json:"is_published"`
 	Title       *string `json:"title"`
 	Content     *string `json:"content"`
 }
 
-// Validate - validate params to get paginated articles.
+// user should send this body to create/update category.
+type CategoryBody struct {
+	Name string `json:"name"`
+}
+
+// validate params to get paginated articles.
 func (a *Paginate) Validate(params url.Values, isAdmin bool) (val base.Validator) {
 	val = validate.Create()
 	// "show" param
@@ -112,13 +117,14 @@ func (a *Paginate) Validate(params url.Values, isAdmin bool) (val base.Validator
 	return
 }
 
-// Validate - validate request body when POST or PUT.
-func (a *Body) Validate(body io.ReadCloser) base.Validator {
-	var val = validate.Create()
+// validate request body when POST or PUT.
+func (a *ArticleBody) Validate(body io.ReadCloser) (val base.Validator) {
+	val = validate.Create()
 	// body.
 	err := json.NewDecoder(body).Decode(a)
 	if err != nil {
 		val.Add("body")
+		return
 	}
 	// if all fields empty.
 	var isContent = a.Content != nil
@@ -126,7 +132,7 @@ func (a *Body) Validate(body io.ReadCloser) base.Validator {
 	var isPublished = a.IsPublished != nil
 	if !isContent && !isTitle && !isPublished {
 		val.Add("body")
-		return val
+		return
 	}
 	// content.
 	if isContent {
@@ -144,5 +150,21 @@ func (a *Body) Validate(body io.ReadCloser) base.Validator {
 		}
 	}
 	// isPublished.
-	return val
+	return
+}
+
+func (c *CategoryBody) Validate(body io.ReadCloser) (val base.Validator) {
+	val = validate.Create()
+	// body.
+	err := json.NewDecoder(body).Decode(c)
+	if err != nil {
+		val.Add("body")
+		return
+	}
+	// check is valid
+	var notValid = len(c.Name) < 1 || len(c.Name) > 24
+	if notValid {
+		val.Add("name")
+	}
+	return
 }

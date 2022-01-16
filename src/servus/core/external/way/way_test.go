@@ -59,15 +59,13 @@ func testHandlerGET(response http.ResponseWriter, request *http.Request) {
 	var params = GetParams(request)
 	var formatted = fmt.Sprintf("/user/id handler GET | id of user: %v", params["id"])
 	response.Write([]byte(formatted))
-	return
 }
 
 func testHandlerGETEmpty(response http.ResponseWriter, request *http.Request) {
 	println("/users handler")
 	response.WriteHeader(200)
-	var formatted = fmt.Sprintf("/user handler GET")
+	var formatted = "/user handler GET"
 	response.Write([]byte(formatted))
-	return
 }
 
 func testHandlerPOST(response http.ResponseWriter, request *http.Request) {
@@ -76,7 +74,6 @@ func testHandlerPOST(response http.ResponseWriter, request *http.Request) {
 	var params = GetParams(request)
 	var formatted = fmt.Sprintf("/user/id handler POST | id of user: %v", params["id"])
 	response.Write([]byte(formatted))
-	return
 }
 
 func testHandlerPUT(response http.ResponseWriter, request *http.Request) {
@@ -85,7 +82,6 @@ func testHandlerPUT(response http.ResponseWriter, request *http.Request) {
 	var params = GetParams(request)
 	var formatted = fmt.Sprintf("/user/id handler PUT | id of user: %v", params["id"])
 	response.Write([]byte(formatted))
-	return
 }
 
 func testHandlerDELETE(response http.ResponseWriter, request *http.Request) {
@@ -94,5 +90,4 @@ func testHandlerDELETE(response http.ResponseWriter, request *http.Request) {
 	var params = GetParams(request)
 	var formatted = fmt.Sprintf("/user/id handler DELETE | id of user: %v", params["id"])
 	response.Write([]byte(formatted))
-	return
 }

@@ -1,12 +1,13 @@
 import Duck from '@/duck'
-import type { Article, Data, Params } from '@/entities/articles/types'
+import type { Data } from '@/types'
+import type { Article, Params } from '@/entities/articles/types'
 
 export default class ArticleAdapter {
 
-    public static async getAll(params: Params): Promise<Data> {
+    public static async getAll(params: Params): Promise<Data<Article>> {
         try {
             const response = await Duck.GET({ url: 'articles', params: params })
-            return Promise.resolve(response.body as Data)
+            return Promise.resolve(response.body as Data<Article>)
         } catch (err) {
             return Promise.reject(err)
         }
@@ -58,7 +59,7 @@ export default class ArticleAdapter {
         }
     }
 
-    public static async makeDraft(id: string): Promise<Article> {
+    public static async unpublish(id: string): Promise<Article> {
         try {
             const response = await Duck.PATCH({ url: `articles/${id}`, body: { is_published: false } })
             return Promise.resolve(response.body as Article)
@@ -66,5 +67,5 @@ export default class ArticleAdapter {
             return Promise.reject(err)
         }
     }
-    
+
 }

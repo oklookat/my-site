@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// scanner - get user input and write to string. Throw panic if scan failed.
+// get user input and write to string.
 func scanner(writeTo *string) error {
 	_, err := fmt.Fscan(os.Stdin, writeTo)
 	return err

@@ -1,11 +1,24 @@
 import type { FileType } from '@/tools/extension'
-import type { Meta } from '@/types'
 
-export type Data = {
-    meta: Meta
-    data: Array<File>
+/** request param */
+export enum Start {
+    newest = 'newest',
+    oldest = 'oldest'
 }
 
+/** request param */
+export enum By {
+    created = 'created'
+}
+
+/** request params */
+export type Params = {
+    page: number
+    start: Start
+    by: By
+}
+
+/** file */
 export type File = {
     id: string
     user_id: string

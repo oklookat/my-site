@@ -1,8 +1,8 @@
 package logger
 
-// logging levels.
+// logging level.
 const (
-	// LevelSilent - no messages.
+	// no messages.
 	LevelSilent = iota
 	LevelDebug
 	LevelInfo
@@ -11,19 +11,18 @@ const (
 	LevelPanic
 )
 
-// leveler - represents methods for level.
 type leveler interface {
-	// getLevel - get error level number. Used for internal comparison.
+	// get error level number. Used for internal comparison.
 	getLevel() int
-	// getLevelWord - example: debug level must return "debug". Or debug level can return whatever. But better, level must return self name. Used for write to file and to console.
+	// example: debug level must return "debug". Or debug level can return whatever. But better, level must return self name. Used for write to file and to console.
 	getLevelWord() string
-	// getColor - get console color for level.
+	// get console color for level.
 	getColor() string
-	// getMessage - get user message for level.
+	// get user message for level.
 	getMessage() string
 }
 
-// level - represents level of log.
+// log level.
 type level struct {
 	number  int
 	word    string

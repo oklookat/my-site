@@ -2,7 +2,7 @@ package way
 
 import "strings"
 
-// match - match route by request.
+// match route by request.
 func (r *Router) match(requestPath string) (gr *Group, ro *route, params map[string]string) {
 	// find group
 	for index := range r.groups {
@@ -34,7 +34,7 @@ func (r *Router) match(requestPath string) (gr *Group, ro *route, params map[str
 	return
 }
 
-// verifyPaths - compare two paths, get params.
+// compare two paths, get params.
 //
 // path: path in way like /hello/{username}.
 //

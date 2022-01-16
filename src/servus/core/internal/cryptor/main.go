@@ -2,7 +2,7 @@ package cryptor
 
 type Config struct {
 	AES struct {
-		// Secret - 32 bytes length.
+		// 32 bytes length.
 		Secret string `json:"secret"`
 	} `json:"aes"`
 	Bcrypt struct {

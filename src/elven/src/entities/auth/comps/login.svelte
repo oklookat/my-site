@@ -28,7 +28,8 @@
     if (event.target === loginButton) {
       return;
     }
-    if (event.code === "Enter" && username.length > 0 && password.length > 0) {
+    const byEnterAndValid = event.code === "Enter" && username.length > 0 && password.length > 0
+    if (byEnterAndValid) {
       makeLogin();
     }
   }

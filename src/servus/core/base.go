@@ -34,7 +34,7 @@ type Logger interface {
 type Utils interface {
 	// RemoveSpaces - remove spaces from string.
 	RemoveSpaces(str string) string
-	// GetExecutionDir - get server execution directory.
+	// GetExecutionDir - get dir where binary started.
 	GetExecutionDir() (string, error)
 	// FormatPath - format path to system specific slashes.
 	FormatPath(path string) string

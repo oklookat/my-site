@@ -2,12 +2,12 @@ package core
 
 import "io"
 
-// controller - controls controllers.
+// controls controllers.
 type controller struct {
 	controllers []Controller
 }
 
-// add - add controller.
+// add controller.
 func (c *controller) add(co Controller) {
 	if co == nil {
 		panic("[core/control]: controller nil pointer")
@@ -18,7 +18,7 @@ func (c *controller) add(co Controller) {
 	c.controllers = append(c.controllers, co)
 }
 
-//SendMessage - send message to all controllers.
+// send message to all controllers.
 func (c *controller) SendMessage(message string) {
 	if c.controllers == nil {
 		return
@@ -30,7 +30,7 @@ func (c *controller) SendMessage(message string) {
 	}()
 }
 
-// SendFile - send file to all controllers.
+// send file to all controllers.
 func (c *controller) SendFile(caption *string, filename string, reader io.Reader) {
 	if c.controllers == nil {
 		return

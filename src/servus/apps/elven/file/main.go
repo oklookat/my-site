@@ -35,6 +35,6 @@ func (f *Instance) BootRoutes(router *mux.Router) {
 	var fr = router.PathPrefix("/files").Subrouter()
 	fr.Use(f.middleware.AdminOnly)
 	fr.HandleFunc("", f.getAll).Methods(http.MethodGet)
-	fr.HandleFunc("", f.createOne).Methods(http.MethodPost)
+	fr.HandleFunc("", f.upload).Methods(http.MethodPost)
 	fr.HandleFunc("/{id}", f.deleteOne).Methods(http.MethodDelete)
 }

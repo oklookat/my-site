@@ -3,9 +3,8 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 import path from 'path'
 import fs from 'fs'
 
-// prevent auto browser opening, because node throws error in container
 const openBrowser = false
-const expose = '0.0.0.0'
+const expose = false
 const port = 3000
 
 const baseConf = {

@@ -12,11 +12,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-// DeleteEmptyDirsRecursive - delete empty dirs
+// delete empty dirs
 //
 // starts from path, and goes up deleting dirs (if empty) along the way.
-//
-// params:
 //
 // path: path like 'D:\Test\123\456\789\' or 'D:\Test\123\456\789\file.txt'
 func DeleteEmptyDirsRecursive(path string) (err error) {
@@ -53,10 +51,10 @@ func DeleteEmptyDirsRecursive(path string) (err error) {
 	return
 }
 
-// GenerateDirsByHash - generate folders struct from hash like. Returns string like 1d/2c and error, if hash length less than 6 bytes.
+// generate folders struct from hash. Returns string like 1d/2c and error, if hash length less than 6 bytes.
 func GenerateDirsByHash(hash string) (result string, err error) {
 	if len(hash) < 6 {
-		return "", errors.New("generateDirByHash: hash min length is 6 bytes")
+		return "", errors.New("generateDirByHash: hash min length 6 bytes")
 	}
 	var hashFirstTwo1 = hash[0:2]
 	var hashFirstTwo2 = hash[2:4]
@@ -64,8 +62,6 @@ func GenerateDirsByHash(hash string) (result string, err error) {
 	return
 }
 
-// ProcessFromForm -
-//
 // 1. get file from request by key
 //
 // 2. move to temp folder

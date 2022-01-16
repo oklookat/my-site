@@ -53,13 +53,13 @@
 <style lang="scss">
   .header {
     font-weight: bold;
+    background-color: var(--color-level-1);
     color: var(--color-header-text);
     height: var(--header-height);
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: transparent;
     gap: 42px;
     &__item {
       display: flex;

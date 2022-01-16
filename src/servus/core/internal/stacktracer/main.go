@@ -24,7 +24,7 @@ func (i *Instance) Set(err error) {
 	i.trace = i.trace + fmt.Sprintf("%+v", err)
 }
 
-// GetReader - returns trace string/io.Reader.
+// returns trace string/io.Reader.
 func (i *Instance) GetReader() io.Reader {
 	return strings.NewReader(i.trace)
 }

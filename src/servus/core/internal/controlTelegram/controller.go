@@ -2,7 +2,7 @@ package controlTelegram
 
 import "io"
 
-// Logger - writes information.
+// writes information.
 type Logger interface {
 	Debug(message string)
 	Info(message string)
@@ -13,11 +13,11 @@ type Logger interface {
 
 type Config struct {
 	Enabled bool `json:"enabled"`
-	// Token - bot token.
+	// bot token.
 	Token string `json:"token"`
-	// AllowedUsers - bot accepts messages only from these users (id).
+	// bot accepts messages only from these users (id).
 	AllowedUsers []int64 `json:"allowedUsers"`
-	// AllowedChats - bot sends messages only to these chats (id).
+	// bot sends messages only to these chats (id).
 	AllowedChats []int64 `json:"allowedChats"`
 }
 

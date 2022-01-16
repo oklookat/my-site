@@ -40,15 +40,18 @@ func (d *Database) new(config *ConfigFile, logger Logger) (err error) {
 	return
 }
 
-// CheckError - database error checking. If error - send err to logger and return err. If no rows - error will not send to logger.
+// database error checking. If error - send err to logger and return err. If no rows - error will not send to logger.
 func (d *Database) CheckError(err error) error {
 	switch err {
-	case nil:
+	case nil, sql.ErrNoRows:
 		return nil
-	case sql.ErrNoRows:
-		return err
 	default:
 		d.logger.Error(err.Error())
 		return err
 	}
+}
+
+// err == sql.ErrNoRows.
+func (d *Database) IsNotFound(err error) bool {
+	return err != nil && err == sql.ErrNoRows
 }

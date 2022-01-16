@@ -19,7 +19,7 @@ type Instance struct {
 	response    http.ResponseWriter
 }
 
-// ConfigCookie - config for setting cookies.
+// config for setting cookies.
 type ConfigCookie struct {
 	Domain   string `json:"domain"`
 	Path     string `json:"path"`
@@ -29,7 +29,7 @@ type ConfigCookie struct {
 	SameSite string `json:"sameSite"`
 }
 
-// New - creates new HTTP instance.
+// creates new HTTP instance.
 func New(req *http.Request, res http.ResponseWriter, cookie *ConfigCookie) *Instance {
 	if req == nil {
 		panic("[iHTTP]: request nil pointer")
@@ -44,17 +44,17 @@ func New(req *http.Request, res http.ResponseWriter, cookie *ConfigCookie) *Inst
 	return i
 }
 
-// OnHTTPError - when 299+ error.
+// when 399+ error.
 func (i *Instance) OnHTTPError(callback func(code int, err error)) {
 	i.onHTTPError = callback
 }
 
-// OnSendError - response sending error.
+// response sending error.
 func (i *Instance) OnSendError(callback func(code int, err error)) {
 	i.onSendError = callback
 }
 
-// Send - sends response and log it if error.
+// sends response and log if error.
 func (i *Instance) Send(body string, statusCode int, err error) {
 	if err != nil {
 		err = errors.Wrap(err, "")
@@ -73,7 +73,7 @@ func (i *Instance) Send(body string, statusCode int, err error) {
 	}
 }
 
-// SetCookie - set cookie.
+// set cookie.
 func (i *Instance) SetCookie(name string, value string) error {
 	var maxAge, err = i.convertTimeWord(i.cookie.MaxAge)
 	if err != nil {
@@ -95,7 +95,7 @@ func (i *Instance) SetCookie(name string, value string) error {
 	return err
 }
 
-// convertCookieSameSite - convert cookie sameSite string to http.SameSite.
+// convert cookie sameSite string to http.SameSite.
 func (i *Instance) convertCookieSameSite(sameSite string) (http.SameSite, error) {
 	sameSite = strings.ToUpper(sameSite)
 	switch sameSite {
@@ -112,7 +112,7 @@ func (i *Instance) convertCookieSameSite(sameSite string) (http.SameSite, error)
 	}
 }
 
-// GetDump - get pretty HTTP request info in string/io.Reader.
+// get pretty HTTP request info in string/io.Reader.
 func (i *Instance) GetDump() io.Reader {
 	// cookies.
 	var cookies = i.request.Cookies()
@@ -148,7 +148,7 @@ rawQuery: %v
 	return strings.NewReader(dump)
 }
 
-// convertTimeWord - convert time like "2h"; "2min"; "2sec" to duration.
+// convert time like "2h"; "2min"; "2sec" to duration.
 func (i *Instance) convertTimeWord(timeShortcut string) (time.Duration, error) {
 	timeShortcut = strings.ToLower(timeShortcut)
 	timeDuration, err := time.ParseDuration(timeShortcut)

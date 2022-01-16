@@ -1,23 +1,23 @@
-import type { Meta } from "@/types"
-
-export type Data = {
-    meta: Meta
-    data: Array<Article>
-}
-
+/** request param */
 export enum Show {
     published = 'published',
     drafts = 'drafts'
 }
+
+/** request param */
 export enum By {
     created = 'created',
     published = 'published', 
     updated = 'updated'
 }
+
+/** request param */
 export enum Start {
     newest = 'newest',
     oldest = 'oldest'
 }
+
+/** request params */
 export type Params = {
     page: number
     show: Show
@@ -26,6 +26,7 @@ export type Params = {
     preview: boolean
 }
 
+/** article */
 export type Article = {
     id?: string
     user_id?: string

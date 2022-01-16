@@ -7,7 +7,7 @@ import (
 	coreValidator "servus/core/external/validator"
 )
 
-// Body - represents the body of the request that the user should send to login.
+// represents the body of the request that the user should send to login.
 type Body struct {
 	Username string
 	Password string

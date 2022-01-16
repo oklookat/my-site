@@ -32,8 +32,9 @@ func (u *Instance) Boot(
 }
 
 func (u *Instance) BootRoutes(router *mux.Router) {
-	var authOnly = router.PathPrefix("/users").Subrouter()
-	authOnly.Use(u.middleware.AuthorizedOnly)
-	authOnly.HandleFunc("/me", u.getMe).Methods(http.MethodGet)
-	authOnly.HandleFunc("/me/change", u.change).Methods(http.MethodPost)
+	// current user
+	var currentUser = router.PathPrefix("/users/me").Subrouter()
+	currentUser.Use(u.middleware.AuthorizedOnly)
+	currentUser.HandleFunc("", u.getMe).Methods(http.MethodGet)
+	currentUser.HandleFunc("/change", u.change).Methods(http.MethodPost)
 }

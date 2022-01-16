@@ -6,7 +6,7 @@ import (
 	"servus/apps/elven/model"
 )
 
-// login - generate token if username and password are correct.
+// generate token if username and password are correct.
 func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// validate credentials.
@@ -61,7 +61,7 @@ func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
-// logout - get token from user and delete.
+// get token from user and delete.
 func (a *Instance) logout(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// get token from cookie or auth header.

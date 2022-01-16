@@ -1,91 +1,130 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import FileAdapter from "../adapter"
+  import { onDestroy, onMount } from "svelte";
+  // tools
   import type { Meta } from "@/types";
-  import type { File } from "../types"
-  import CFile from "./file.svelte";
+  import { Env, Route } from "@/tools/paths";
+  import Utils from "@/tools/utils";
+  // ui
   import Pagination from "@/ui/pagination.svelte";
   import Overlay from "@/ui/overlay.svelte";
   import ToolbarBig from "@/ui/toolbarBig.svelte";
-  import { Env } from "@/tools/paths";
+  import Toolbar from "@/ui/toolbar.svelte";
+  // file
+  import FileAdapter from "../adapter";
+  import { By, Start, type File, type Params } from "../types";
+  import CFile from "./file.svelte";
+  import Validate from "@/entities/files/validate";
 
-
-  let isLoaded: boolean = false;
-  // service
-  let isSortOverlayActive: boolean = false;
-  let sortBy: string = "created";
-  let sortFirst: string = "newest";
-  let selected: File | null = null;
-  let selectionOverlay = false;
-  // files
-  let files: Array<File> = [];
-  let meta: Meta;
-  let show: "newest";
-  let perPage: number = 0;
-  let currentPage: number = 1;
-  let totalPages: number = 1;
-  // file input for upload
+  /** file input for upload */
   let inputEL: HTMLInputElement;
+  /** files loaded? */
+  let loaded: boolean = false;
+  /** file selected / overlay opened? */
+  let toolsOverlay = false;
+  /** selected file */
+  let selected: {
+    counter: number | null;
+    file: File | null;
+  } = { counter: null, file: null };
+  /** response files */
+  let files: Record<number, File> = {};
+  /** response information */
+  let meta: Meta;
+  /** request params */
+  let requestParams: Params = {
+    page: 1,
+    start: Start.newest,
+    by: By.created,
+  };
 
-  onMount(() => {
-    getFiles();
+  Route.initPopState((searchParams) => {
+    Validate.params(requestParams, searchParams);
+    getAll(undefined, false);
   });
 
-  async function getFiles(pageA = currentPage, showA = show) {
-    if (pageA < 1) {
-      pageA = 1;
+  onMount(() => {
+    const searchParams = Route.getSearchParams();
+    Validate.params(requestParams, searchParams);
+    Route.setHistoryParams(requestParams);
+    getAll(undefined, true);
+  });
+
+  /** get all files.
+   * @param p request params
+   *
+   * @param withHistory set history params **by p parameter** after files loaded
+   */
+  async function getAll(p: Params = requestParams, withHistory = true) {
+    requestParams = requestParams;
+    if (p.page < 1) {
+      p.page = 1;
     }
-    currentPage = pageA;
-    show = showA;
-    isLoaded = false;
+    loaded = false;
     try {
-      const result = await FileAdapter.getAll(pageA, showA);
+      const result = await FileAdapter.getAll(p);
       files = result.data;
       meta = result.meta;
-      currentPage = meta.current_page;
-      totalPages = meta.total_pages;
-      perPage = meta.per_page;
-      isLoaded = true;
+      loaded = true;
+      if (withHistory) {
+        Route.setHistoryParams(p);
+      }
     } catch (err) {}
   }
 
-  async function deleteFile(file: File) {
-    const isDelete = confirm("Delete file?");
+  /** select file */
+  function select(counter: number) {
+    toolsOverlay = true;
+    selected.counter = counter;
+    selected.file = files[counter];
+  }
+
+  /** delete file */
+  async function deleteFile(counter: number) {
+    const isDelete = confirm("Are you sure?");
     if (!isDelete) {
       return;
     }
+    toolsOverlay = false;
     try {
-      await FileAdapter.delete(file.id);
-      await deleteFromArray(file);
+      const converted = getIDByCounter(counter);
+      await FileAdapter.delete(converted);
+      await deleteFromArray(counter);
     } catch (err) {}
   }
 
-  async function deleteFromArray(file: File) {
-    files = files.filter((f) => f !== file);
-    await refresh();
-  }
-
+  /** refresh files */
   async function refresh() {
-    let noFiles = isLoaded && (files.length < 1 || files.length < perPage);
-    // no files in current page
-    while (noFiles && currentPage > 1) {
-      // moving back until the pages ends or data appears
-      currentPage--;
-      await getFiles();
-      noFiles = isLoaded && files.length < 1;
+    while (true) {
+      const filesLength = Utils.getObjectLength(files);
+      const noFiles = loaded && filesLength < 1;
+      if (!noFiles) {
+        break;
+      }
+      requestParams.page--;
+      try {
+        await getAll();
+      } catch (err) {
+        break;
+      }
+      if (requestParams.page < 2) {
+        break;
+      }
     }
   }
 
-  async function onInputChange(e) {
-    const files = <FileList>e.target.files;
-    if (files.length < 1) {
+  /** when file changed on file input */
+  function onInputChange(e) {
+    const target = e.target as HTMLInputElement;
+    if (target.files.length < 1) {
       return 0;
     }
-    FileAdapter.upload(files).then(() => {
-      getFiles();
+    const file = target.files[0];
+    FileAdapter.upload(file).then(() => {
+      getAll();
     });
   }
 
+  /** when file upload button clicked */
   function onUploadClick() {
     if (!inputEL) {
       return;
@@ -94,19 +133,17 @@
     inputEL.click();
   }
 
-  function onSelected(file: File) {
-    selectionOverlay = true;
-    selected = file;
+  /** when page changed */
+  function onPageChanged(page: number) {
+    requestParams.page = page;
+    getAll();
   }
 
-  function onDelete(file: File) {
-    selectionOverlay = false;
-    deleteFile(file);
-  }
-
-  async function copyLink(file: File) {
+  /** copy link to clipboard */
+  async function copyLink(counter: number) {
     let message = "";
-    const formattedPath = Env.getUploads() + "/" + file.path;
+    const path = files[counter].path;
+    const formattedPath = Env.getUploads() + "/" + path;
     try {
       await navigator.clipboard.writeText(formattedPath);
       message = "Link copied to clipboard.";
@@ -114,69 +151,95 @@
       message = "Copy to clipboard: not have permission.";
     }
     window.$elvenNotify.add({ message });
-    selectionOverlay = false;
+    toolsOverlay = false;
   }
 
+  /** play audio by url */
   function playAudio(url: URL) {
     window.$elvenPlayer.playlist = { position: 0, sources: [url.href] };
     window.$elvenPlayer.play();
   }
+
+  /** delete file from files array */
+  async function deleteFromArray(counter: number) {
+    delete files[counter];
+    files = files;
+    await refresh();
+  }
+
+  /** set 'start' param and get files */
+  function setStart(start: Start = Start.newest) {
+    requestParams.start = start;
+    requestParams.page = 1;
+    getAll();
+  }
+
+  /** get file id by files counter id */
+  function getIDByCounter(counter: number): string {
+    return files[counter].id;
+  }
 </script>
 
 <div class="files">
-  <div class="files__toolbar">
-    <ToolbarBig>
-      <div class="files__upload" on:click={() => onUploadClick()}>
-        upload
-        <input
-          id="file__input"
-          type="file"
-          multiple
-          style="display: none"
-          bind:this={inputEL}
-          on:input={onInputChange}
-        />
-      </div>
-    </ToolbarBig>
-  </div>
+  <ToolbarBig>
+    <div class="files__upload" on:click={() => onUploadClick()}>
+      upload
+      <input
+        type="file"
+        style="display: none"
+        bind:this={inputEL}
+        on:input={onInputChange}
+      />
+    </div>
+  </ToolbarBig>
 
-  {#if isLoaded && files.length < 1}
+  <Toolbar>
+    <div class="files__sort-by-date">
+      {#if requestParams.start === Start.newest}
+        <div class="item" on:click={() => setStart(Start.oldest)}>newest</div>
+      {/if}
+      {#if requestParams.start === Start.oldest}
+        <div class="item" on:click={() => setStart(Start.newest)}>oldest</div>
+      {/if}
+    </div>
+  </Toolbar>
+
+  {#if loaded && Utils.getObjectLength(files) < 1}
     <div class="files__404">
-      <div>No files :(</div>
+      <div>no files :(</div>
     </div>
   {/if}
 
-  {#if isLoaded && files.length > 0}
+  {#if loaded && Utils.getObjectLength(files) > 0}
     <div class="files__list">
-      {#each files as file (file.id)}
-        <CFile {file} on:selected={(e) => onSelected(e.detail)} />
+      {#each Object.entries(files) as [id, file]}
+        <CFile {file} on:selected={(e) => select(parseInt(id, 10))} />
       {/each}
 
       <Overlay
-        bind:active={selectionOverlay}
+        bind:active={toolsOverlay}
         on:deactivated={() => {
-          selectionOverlay = false;
-          selected = null;
+          toolsOverlay = false;
         }}
       >
         <div class="overlay">
-          {#if selected.extensionType === "audio"}
+          {#if selected.file.extensionType === "audio"}
             <div
               class="overlay__item file__play"
-              on:click={() => playAudio(selected.pathConverted)}
+              on:click={() => playAudio(selected.file.pathConverted)}
             >
               play
             </div>
           {/if}
           <div
             class="overlay__item file__copy-link"
-            on:click={() => copyLink(selected)}
+            on:click={() => copyLink(selected.counter)}
           >
             copy link
           </div>
           <div
             class="overlay__item file__delete"
-            on:click={() => onDelete(selected)}
+            on:click={() => deleteFile(selected.counter)}
           >
             delete
           </div>
@@ -185,9 +248,9 @@
     </div>
 
     <Pagination
-      total={totalPages}
-      current={currentPage}
-      on:changed={(e) => getFiles(e.detail)}
+      total={meta.total_pages}
+      current={meta.current_page}
+      on:changed={(e) => onPageChanged(e.detail)}
     />
   {/if}
 </div>

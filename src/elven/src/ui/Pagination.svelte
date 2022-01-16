@@ -83,7 +83,9 @@
     </div>
     <div class="pagination__next">
       {#if currentPageData < totalPagesData}
-        <div class="pagination__next_ pointer center" on:click={onNextButton}>next</div>
+        <div class="pagination__next_ pointer center" on:click={onNextButton}>
+          next
+        </div>
       {/if}
     </div>
     <div class="pagination__total center">{totalPagesData} pages</div>
@@ -123,14 +125,15 @@
         width: 100%;
       }
     }
-    &__prev, &__next, &__total {
+    &__prev,
+    &__next,
+    &__total {
       width: 100%;
       height: 100%;
     }
-    &__prev > div:hover,
-    &__next > div:hover {
+    &__prev,
+    &__next {
       border-radius: var(--border-radius);
-      background-color: var(--color-hover);
     }
     &__total {
       grid-column: 1 / 4;

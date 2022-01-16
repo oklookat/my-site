@@ -7,13 +7,13 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-// bot - bot.
+// bot.
 type bot struct {
 	api      *tgbotapi.BotAPI
 	onUpdate func(update tgbotapi.Update)
 }
 
-// New - create new instance.
+// create new instance.
 func (t *bot) New(token string) error {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
@@ -24,12 +24,12 @@ func (t *bot) New(token string) error {
 	return err
 }
 
-// OnUpdate - when message coming from user.
+// when message coming from user.
 func (t *bot) OnUpdate(callback func(update tgbotapi.Update)) {
 	t.onUpdate = callback
 }
 
-// watchUpdates - watch chat changes.
+// watch chat changes.
 func (t *bot) watchUpdates() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60

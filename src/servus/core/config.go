@@ -10,64 +10,64 @@ import (
 	"servus/core/internal/logger"
 )
 
-// ConfigFile - main configuration (config.json).
+// main configuration (config.json).
 type ConfigFile struct {
-	// Debug - is debug mode active. Writes to logger debug information etc.
+	// debug mode active? Writes to logger debug information etc.
 	Debug bool `json:"debug"`
 	// Timezone - timezone for database.
 	//
 	// see TZ Database Name in https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
 	Timezone string `json:"timezone"`
-	// Host - app host. Ex: localhost.
+	// app host. Ex: localhost.
 	Host string `json:"host"`
-	// Port - app port. Ex: 3333.
+	// app port. Ex: 3333.
 	Port string `json:"port"`
-	// DB - database settings.
+	// database settings.
 	DB *DatabaseConfig `json:"db"`
-	// Logger - writes messages to console and file.
+	// writes messages to console and file.
 	Logger *logger.Config `json:"logger"`
-	// Security - protect your ass from hackers.
+	// protect your ass from hackers.
 	Security struct {
-		// HTTPS - HTTPS connection.
+		// HTTPS connection.
 		HTTPS struct {
 			Active bool `json:"active"`
-			// CertPath - absolute path of certificate file.
+			// absolute path to certificate file.
 			CertPath string `json:"certPath"`
-			// CertPath - absolute path of key file.
+			// absolute path to key file.
 			KeyPath string `json:"keyPath"`
 		} `json:"https"`
-		// Cookie - settings for HTTP.SetCookie.
+		// cookie.
 		//
 		// see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
 		Cookie *iHTTP.ConfigCookie `json:"cookie"`
-		// CORS - see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+		// see: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
 		CORS *cors.Config `json:"cors"`
-		// Limiter - limit request things.
+		// limit request things.
 		Limiter struct {
-			// Body - limit body.
+			// limit body.
 			Body struct {
 				Active  bool     `json:"active"`
 				MaxSize int64    `json:"maxSize"`
 				Except  []string `json:"except"`
 			} `json:"body"`
 		} `json:"limiter"`
-		// Encryption - data encryption.
+		// data encryption.
 		Encryption *cryptor.Config `json:"encryption"`
 	}
-	// Uploads - files uploading.
+	// files uploading.
 	Uploads struct {
-		// To - files will be saved here.
+		// files will be saved here.
 		To string `json:"to"`
-		// Temp - temp folder before file saved.
+		// temp folder before file saved.
 		Temp string `json:"temp"`
 	} `json:"uploads"`
-	// Control - control server / get notifications via third-party services.
+	// control server / get notifications via third-party services.
 	Control struct {
 		Telegram *controlTelegram.Config `json:"telegram"`
 	} `json:"control"`
 }
 
-// load - load config file from path.
+// load config file from path.
 func (c *ConfigFile) load(path string) (err error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -84,15 +84,15 @@ func (c *ConfigFile) load(path string) (err error) {
 type DatabaseConfig struct {
 	// PostgreSQL settings.
 	Postgres struct {
-		// Host - like: localhost.
+		// like: localhost.
 		Host string `json:"host"`
-		// Port - like: 5432.
+		// like: 5432.
 		Port string `json:"port"`
-		// User - like: postgres.
+		// like: postgres.
 		User string `json:"user"`
-		// Password - like: qwerty.
+		// like: qwerty.
 		Password string `json:"password"`
-		// DbName - name of database.
+		// name of database.
 		DbName string `json:"database"`
 	} `json:"postgres"`
 }

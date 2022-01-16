@@ -5,17 +5,17 @@ import (
 	"strings"
 )
 
-// Info - contains argument info.
+// contains argument info.
 type Info struct {
-	// Clean - argument without value. Like: -username.
+	// argument without value. Like: -username.
 	Clean string
-	// Dirty - argument with value. Like: -username=1234.
+	// argument with value. Like: -username=1234.
 	Dirty string
-	// Value - argument value. Like: 1234.
+	// argument value. Like: 1234.
 	Value *string
 }
 
-// Get - get argument.
+// get argument.
 func Get(arg string) *Info {
 	// > 1 because first arg is program name.
 	var noArguments = !(len(os.Args) > 1)
@@ -49,7 +49,7 @@ func Get(arg string) *Info {
 	return nil
 }
 
-// getValue - get value from argument. Argument must contains equals (=) sign.
+// get value from argument. Argument must contains equals (=) sign.
 func getValue(arg *string) *string {
 	if arg == nil {
 		// no arg.

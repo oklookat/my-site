@@ -3,6 +3,7 @@ import type { User, UserChange } from './types'
 
 export default class UserAdapter {
 
+    /** get information about current authorized user */
     public static async getMe(): Promise<User> {
         try {
             const response = await Duck.GET({ url: '/users/me' })
@@ -12,7 +13,7 @@ export default class UserAdapter {
         }
     }
 
-
+    /** change username or password */
     public static async change(body: UserChange) {
         try {
             await Duck.POST({ url: '/users/me/change', body })

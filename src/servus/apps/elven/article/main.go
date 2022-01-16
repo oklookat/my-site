@@ -17,7 +17,6 @@ type Instance struct {
 	throw      base.RequestError
 }
 
-// Boot - initial setup.
 func (a *Instance) Boot(
 	_core *core.Instance,
 	_middleware base.MiddlewareSafeMethodsOnly,
@@ -33,13 +32,23 @@ func (a *Instance) Boot(
 	validate = _validate
 }
 
-// BootRoutes - add routes to router.
+// add routes to router.
 func (a *Instance) BootRoutes(router *mux.Router) {
-	var readOnly = router.PathPrefix("/articles").Subrouter()
-	readOnly.Use(a.middleware.SafeMethodsOnly)
-	readOnly.HandleFunc("", a.getAll).Methods(http.MethodGet)
-	readOnly.HandleFunc("/{id}", a.getOne).Methods(http.MethodGet)
-	readOnly.HandleFunc("", a.create).Methods(http.MethodPost)
-	readOnly.HandleFunc("/{id}", a.update).Methods(http.MethodPut, http.MethodPatch)
-	readOnly.HandleFunc("/{id}", a.delete).Methods(http.MethodDelete)
+	var root = router.PathPrefix("/article").Subrouter()
+	// articles
+	var articles = root.PathPrefix("/articles").Subrouter()
+	articles.Use(a.middleware.SafeMethodsOnly)
+	articles.HandleFunc("", a.getArticles).Methods(http.MethodGet)
+	articles.HandleFunc("", a.createArticle).Methods(http.MethodPost)
+	articles.HandleFunc("/{id}", a.getArticle).Methods(http.MethodGet)
+	articles.HandleFunc("/{id}", a.updateArticle).Methods(http.MethodPut, http.MethodPatch)
+	articles.HandleFunc("/{id}", a.deleteArticle).Methods(http.MethodDelete)
+	// categories
+	var categories = root.PathPrefix("/categories").Subrouter()
+	categories.Use(a.middleware.SafeMethodsOnly)
+	categories.HandleFunc("", a.getCategories).Methods(http.MethodGet)
+	categories.HandleFunc("", a.addCategory).Methods(http.MethodPost)
+	categories.HandleFunc("/{name}", a.getCategory).Methods(http.MethodGet)
+	categories.HandleFunc("/{name}", a.renameCategory).Methods(http.MethodPut, http.MethodPatch)
+	categories.HandleFunc("/{name}", a.deleteCategory).Methods(http.MethodDelete)
 }

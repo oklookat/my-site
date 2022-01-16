@@ -1,4 +1,5 @@
----------------------- SERVICE FUNCTIONS START
+---------------------- SERVICE FUNCTIONS START ----------------------
+
 -- pgulid is based on OK Log's Go implementation of the ULID spec
 --
 -- https://github.com/oklog/ulid
@@ -24,7 +25,7 @@ CREATE FUNCTION generate_ulid()
 AS
 $$
 DECLARE
--- Crockford's Base32
+    -- Crockford's Base32
     encoding  BYTEA = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
     timestamp BYTEA = E'\\000\\000\\000\\000\\000\\000';
     output    TEXT  = '';
@@ -76,237 +77,177 @@ BEGIN
     RETURN output;
 END
 $$
-    LANGUAGE plpgsql
-    VOLATILE;
+LANGUAGE plpgsql
+VOLATILE;
 
 -- create ulid type from https://github.com/geckoboard/pgulid/issues/4
 DROP DOMAIN IF EXISTS uild CASCADE;
-create domain ulid as varchar(26)
-    default generate_ulid()
-    not null
-    constraint ulid_length_check check (char_length(value) = 26)
-    constraint ulid_upper_bound check (value <= '7ZZZZZZZZZZZZZZZZZZZZZZZZZ');
----------------------- SERVICE FUNCTIONS END
+CREATE DOMAIN ulid AS varchar(26) DEFAULT generate_ulid() NOT NULL
+CONSTRAINT ulid_length_check CHECK (char_length(value) = 26)
+CONSTRAINT ulid_upper_bound CHECK (value <= '7ZZZZZZZZZZZZZZZZZZZZZZZZZ');
+---------------------- SERVICE FUNCTIONS END ----------------------
 
-
----------------------- TABLES START
--- users
-CREATE
-    EXTENSION IF NOT EXISTS pgcrypto;
-ALTER TABLE IF EXISTS users
-    DROP CONSTRAINT IF EXISTS user_length CASCADE;
-DROP TYPE IF EXISTS user_roles CASCADE;
-CREATE TYPE user_roles AS ENUM ('user', 'admin');
-
-CREATE TABLE public.users
-(
-    id         ulid PRIMARY KEY,
-    role       user_roles                                DEFAULT 'user'::user_roles NOT NULL,
-    username   varchar(24) COLLATE pg_catalog."default" UNIQUE                      NOT NULL,
-    password   varchar(256) COLLATE pg_catalog."default"                            NOT NULL,
-    reg_ip     varchar(64) COLLATE pg_catalog."default"  DEFAULT NULL,
-    reg_agent  varchar(324) COLLATE pg_catalog."default" DEFAULT NULL,
-    created_at timestamp with time zone                  DEFAULT current_timestamp  NOT NULL,
-    updated_at timestamp with time zone,
-    CONSTRAINT users_username_key UNIQUE (username),
-    CONSTRAINT users_length CHECK (length(username) >= 4 AND (length(password) >= 8))
-) TABLESPACE pg_default;
-ALTER TABLE public.users
-    OWNER to postgres;
-
-DROP INDEX IF EXISTS i_users;
-CREATE UNIQUE INDEX IF NOT EXISTS i_users
-    ON users (id, username);
-
--- basic functions. Actual for all models.
-CREATE
-    OR REPLACE FUNCTION before_insert_or_update()
-    RETURNS TRIGGER AS
+---------------------- BASIC FUNCTIONS. ACTUAL FOR ALL MODELS. ----------------------
+-------- before insert or update --------
+CREATE OR REPLACE FUNCTION before_insert_or_update() RETURNS TRIGGER AS
 $$
 BEGIN
+    -- set updated date
     NEW.updated_at
         = now();
     RETURN NEW;
 END;
 $$
-    language 'plpgsql';
+language 'plpgsql';
 
-
+-------- before insert --------
 CREATE
     OR REPLACE FUNCTION before_insert()
     RETURNS TRIGGER AS
 $$
 BEGIN
+    -- set created date
     NEW.created_at
         = now();
     RETURN NEW;
 END;
 $$
-    language 'plpgsql';
+language 'plpgsql';
 
 
-CREATE
-    OR REPLACE FUNCTION before_update()
-    RETURNS TRIGGER AS
+-------- before update --------
+CREATE OR REPLACE FUNCTION before_update()
+RETURNS TRIGGER AS
 $$
 BEGIN
     IF
+        -- prevent id changing
         NEW.id != OLD.id THEN
         NEW.id = OLD.id;
     END IF;
     IF
+        -- prevent created date changing
         NEW.created_at != OLD.created_at THEN
         NEW.created_at = OLD.created_at;
     END IF;
     RETURN NEW;
 END;
 $$
-    language 'plpgsql';
-
-CREATE TRIGGER user_before_insert_or_update
-    BEFORE INSERT OR
-        UPDATE
-    ON users
-    FOR EACH ROW
-EXECUTE PROCEDURE before_insert_or_update();
-CREATE TRIGGER user_before_insert
-    BEFORE INSERT
-    ON users
-    FOR EACH ROW
-EXECUTE PROCEDURE before_insert();
-CREATE TRIGGER user_before_update
-    BEFORE UPDATE
-    ON users
-    FOR EACH ROW
-EXECUTE PROCEDURE before_update();
+language 'plpgsql';
+---------------------- BASIC FUNCTIONS END ----------------------
 
 
--- tokens
-CREATE TABLE public.tokens
+---------------------- TABLES START ----------------------
+---- USERS ----
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+ALTER TABLE IF EXISTS users DROP CONSTRAINT IF EXISTS user_length CASCADE;
+DROP TYPE IF EXISTS user_roles CASCADE;
+CREATE TYPE user_roles AS ENUM ('user', 'admin');
+CREATE TABLE users
 (
     id         ulid PRIMARY KEY,
-    user_id    ulid                                       NOT NULL,
-    token      varchar(2048) COLLATE pg_catalog."default" NOT NULL UNIQUE,
-    last_ip    varchar(64) COLLATE pg_catalog."default"  DEFAULT NULL,
-    last_agent varchar(324) COLLATE pg_catalog."default" DEFAULT NULL,
-    auth_ip    varchar(64) COLLATE pg_catalog."default"  DEFAULT NULL,
-    auth_agent varchar(324) COLLATE pg_catalog."default" DEFAULT NULL,
-    created_at timestamp with time zone                  DEFAULT current_timestamp,
+    role       user_roles DEFAULT 'user'::user_roles NOT NULL,
+    username   varchar(24) UNIQUE NOT NULL,
+    password   varchar(256) NOT NULL,
+    reg_ip     varchar(64) DEFAULT NULL,
+    reg_agent  varchar(324) DEFAULT NULL,
+    created_at timestamp with time zone DEFAULT current_timestamp NOT NULL,
     updated_at timestamp with time zone,
-    CONSTRAINT fk_users_tokens FOREIGN KEY (user_id)
-        REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE CASCADE
+    CONSTRAINT users_length CHECK (length(username) >= 4 AND (length(password) >= 8)),
 ) TABLESPACE pg_default;
-ALTER TABLE public.tokens
-    OWNER to postgres;
-
-DROP INDEX IF EXISTS i_tokens;
-CREATE UNIQUE INDEX IF NOT EXISTS i_tokens
-    ON tokens (id);
-
-CREATE TRIGGER token_before_insert_or_update
-    BEFORE INSERT OR
-        UPDATE
-    ON tokens
-    FOR EACH ROW
+ALTER TABLE users OWNER to postgres;
+CREATE TRIGGER user_before_insert_or_update BEFORE INSERT OR UPDATE ON users FOR EACH ROW
 EXECUTE PROCEDURE before_insert_or_update();
-CREATE TRIGGER token_before_insert
-    BEFORE INSERT
-    ON tokens
-    FOR EACH ROW
+CREATE TRIGGER user_before_insert BEFORE INSERT ON users FOR EACH ROW
 EXECUTE PROCEDURE before_insert();
-CREATE TRIGGER token_before_update
-    BEFORE UPDATE
-    ON tokens
-    FOR EACH ROW
+CREATE TRIGGER user_before_update BEFORE UPDATE ON users FOR EACH ROW
 EXECUTE PROCEDURE before_update();
 
 
--- articles
-CREATE TABLE public.articles
+---- TOKENS ----
+CREATE TABLE tokens
 (
-    id           ulid PRIMARY KEY,
-    user_id      ulid  NOT NULL,
-    is_published boolean                                   DEFAULT false,
-    title        varchar(124) COLLATE pg_catalog."default" DEFAULT 'Untitled':: varchar,
-    content      varchar(256000) NOT NULL,
-    slug         varchar(256) COLLATE pg_catalog."default" UNIQUE,
+    id ulid PRIMARY KEY,
+    user_id ulid NOT NULL
+    REFERENCES users(id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+    token varchar(2048) NOT NULL UNIQUE,
+    last_ip varchar(64) DEFAULT NULL,
+    last_agent varchar(324) DEFAULT NULL,
+    auth_ip varchar(64) DEFAULT NULL,
+    auth_agent varchar(324) DEFAULT NULL,
+    created_at timestamp with time zone DEFAULT current_timestamp,
+    updated_at timestamp with time zone,
+) TABLESPACE pg_default;
+ALTER TABLE tokens OWNER to postgres;
+CREATE TRIGGER token_before_insert_or_update BEFORE INSERT OR UPDATE ON tokens FOR EACH ROW
+EXECUTE PROCEDURE before_insert_or_update();
+CREATE TRIGGER token_before_insert BEFORE INSERT ON tokens FOR EACH ROW
+EXECUTE PROCEDURE before_insert();
+CREATE TRIGGER token_before_update BEFORE UPDATE ON tokens FOR EACH ROW
+EXECUTE PROCEDURE before_update();
+
+---- ARTICLE CATEGORIES ----
+CREATE TABLE article_categories
+(
+    id ulid PRIMARY KEY,
+    name varchar(24) UNIQUE,
+    created_at timestamp with time zone DEFAULT current_timestamp,
+    updated_at timestamp with time zone,
+) TABLESPACE pg_default;
+ALTER TABLE article_categories OWNER to postgres;
+CREATE TRIGGER article_cats_before_insert_or_update BEFORE INSERT OR UPDATE ON article_categories FOR EACH ROW
+EXECUTE PROCEDURE before_insert_or_update();
+CREATE TRIGGER article_cats_before_insert BEFORE INSERT ON article_categories FOR EACH ROW
+EXECUTE PROCEDURE before_insert();
+CREATE TRIGGER article_cats_before_update BEFORE UPDATE ON article_categories FOR EACH ROW
+EXECUTE PROCEDURE before_update();
+
+---- ARTICLES ----
+CREATE TABLE articles
+(
+    id ulid  PRIMARY KEY,
+    user_id ulid NOT NULL 
+    REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    category_name varchar(24) DEFAULT NULL
+    REFERENCES article_categories(name) ON UPDATE CASCADE ON DELETE SET NULL,
+    is_published boolean DEFAULT false,
+    title varchar(124) DEFAULT 'Untitled'::varchar,
+    content varchar(256000) NOT NULL,
+    slug varchar(256) UNIQUE,
     published_at timestamp with time zone,
-    created_at   timestamp with time zone                  DEFAULT current_timestamp,
-    updated_at   timestamp with time zone,
-    CONSTRAINT articles_slug_key UNIQUE (slug),
-    CONSTRAINT fk_users_articles FOREIGN KEY (user_id)
-        REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE CASCADE
+    created_at timestamp with time zone DEFAULT current_timestamp,
+    updated_at timestamp with time zone,
 ) TABLESPACE pg_default;
-
-ALTER TABLE public.articles
-    OWNER to postgres;
-
-DROP INDEX IF EXISTS i_articles;
-CREATE UNIQUE INDEX IF NOT EXISTS i_articles
-    ON articles (id, is_published, published_at, created_at, updated_at);
-
-
-CREATE TRIGGER article_before_insert_or_update
-    BEFORE INSERT OR
-        UPDATE
-    ON articles
-    FOR EACH ROW
+ALTER TABLE articles OWNER to postgres;
+CREATE TRIGGER article_before_insert_or_update BEFORE INSERT OR UPDATE ON articles FOR EACH ROW
 EXECUTE PROCEDURE before_insert_or_update();
-CREATE TRIGGER article_before_insert
-    BEFORE INSERT
-    ON articles
-    FOR EACH ROW
+CREATE TRIGGER article_before_insert BEFORE INSERT ON articles FOR EACH ROW
 EXECUTE PROCEDURE before_insert();
-CREATE TRIGGER article_before_update
-    BEFORE UPDATE
-    ON articles
-    FOR EACH ROW
+CREATE TRIGGER article_before_update BEFORE UPDATE ON articles FOR EACH ROW
 EXECUTE PROCEDURE before_update();
 
-
--- files
-CREATE TABLE public.files
+---- FILES ----
+CREATE TABLE files
 (
-    id            ulid PRIMARY KEY,
-    user_id       ulid                                      NOT NULL,
-    hash          varchar(32) COLLATE pg_catalog."default"  NOT NULL UNIQUE,
-    path          varchar(512) COLLATE pg_catalog."default" NOT NULL UNIQUE,
-    name          varchar(512) COLLATE pg_catalog."default" NOT NULL UNIQUE,
-    original_name varchar(512) COLLATE pg_catalog."default" DEFAULT NULL,
-    extension     varchar(64) COLLATE pg_catalog."default"  DEFAULT NULL,
-    size          bigint                                    NOT NULL,
-    created_at    timestamp with time zone                  DEFAULT current_timestamp,
-    updated_at    timestamp with time zone,
-    CONSTRAINT fk_users_files FOREIGN KEY (user_id)
-        REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE CASCADE
+    id ulid PRIMARY KEY,
+    user_id ulid NOT NULL
+    REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    hash varchar(32) NOT NULL UNIQUE,
+    path varchar(512) NOT NULL UNIQUE,
+    name varchar(512) NOT NULL UNIQUE,
+    original_name varchar(512) DEFAULT NULL,
+    extension varchar(64) DEFAULT NULL,
+    size bigint NOT NULL,
+    created_at timestamp with time zone DEFAULT current_timestamp,
+    updated_at timestamp with time zone,
 ) TABLESPACE pg_default;
-ALTER TABLE public.files
-    OWNER to postgres;
-
-DROP INDEX IF EXISTS i_files;
-CREATE UNIQUE INDEX IF NOT EXISTS i_files
-    ON files (id, original_name, extension, size);
-
-CREATE TRIGGER file_before_insert_or_update
-    BEFORE INSERT OR
-        UPDATE
-    ON files
-    FOR EACH ROW
+ALTER TABLE files OWNER to postgres;
+CREATE TRIGGER file_before_insert_or_update BEFORE INSERT OR UPDATE ON files FOR EACH ROW
 EXECUTE PROCEDURE before_insert_or_update();
-CREATE TRIGGER file_before_insert
-    BEFORE INSERT
-    ON files
-    FOR EACH ROW
+CREATE TRIGGER file_before_insert BEFORE INSERT ON files FOR EACH ROW
 EXECUTE PROCEDURE before_insert();
-CREATE TRIGGER file_before_update
-    BEFORE UPDATE
-    ON files
-    FOR EACH ROW
+CREATE TRIGGER file_before_update BEFORE UPDATE ON files FOR EACH ROW
 EXECUTE PROCEDURE before_update();
----------------------- TABLES END
+---------------------- TABLES END ----------------------

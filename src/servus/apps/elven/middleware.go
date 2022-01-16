@@ -9,7 +9,7 @@ import (
 type middleware struct {
 }
 
-// AuthorizedOnly - only authorized user can access.
+// only authorized user can access.
 func (m *middleware) AuthorizedOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var h = call.Utils.GetHTTP(request)
@@ -24,7 +24,7 @@ func (m *middleware) AuthorizedOnly(next http.Handler) http.Handler {
 	})
 }
 
-// SafeMethodsOnly - allow only safe methods for non-privileged users.
+// allow only safe methods for non-privileged users.
 //
 // https://developer.mozilla.org/en-US/docs/Glossary/Safe/HTTP
 func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
@@ -46,7 +46,7 @@ func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 	})
 }
 
-// AdminOnly - only admin can access.
+// only admin can access.
 func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var h = call.Utils.GetHTTP(request)
@@ -61,7 +61,7 @@ func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 	})
 }
 
-// ProvideTokenPipe - gets token if exists and provides token pipe to request context.
+// gets token if exists and provides token pipe to request context.
 func (m *middleware) ProvideTokenPipe(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var ctx = request.Context()
@@ -76,7 +76,7 @@ func (m *middleware) ProvideTokenPipe(next http.Handler) http.Handler {
 	})
 }
 
-// ProvideUserPipe - gets user by token pipe and provides user pipe to request context. Use only after ProvideTokenPipe.
+// gets user by token pipe and provides user pipe to request context. Use only after ProvideTokenPipe.
 func (m *middleware) ProvideUserPipe(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var ctx = request.Context()

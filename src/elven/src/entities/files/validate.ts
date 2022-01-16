@@ -1,5 +1,5 @@
 import type { Params } from "./types";
-import { Show, By, Start } from "./types";
+import { By, Start } from "./types";
 
 export default class Validate {
 
@@ -16,13 +16,6 @@ export default class Validate {
                 params.page = parsed;
             }
         }
-        const hasShow = urlParams.has("show");
-        if (hasShow) {
-            const show = urlParams.get("show");
-            if (show in Show) {
-                params.show = Show[show];
-            }
-        }
         const hasBy = urlParams.has("by");
         if (hasBy) {
             const by = urlParams.get("by");
@@ -35,19 +28,6 @@ export default class Validate {
             const start = urlParams.get("start");
             if (start in Start) {
                 params.start = Start[start];
-            }
-        }
-        const hasPreview = urlParams.has("preview");
-        if (hasPreview) {
-            const preview = urlParams.get("preview").toLowerCase();
-            let parsed: boolean | undefined = undefined;
-            if (preview === "true") {
-                parsed = true;
-            } else if (preview === "false") {
-                parsed = false;
-            }
-            if (parsed !== undefined) {
-                params.preview = parsed;
             }
         }
     }
