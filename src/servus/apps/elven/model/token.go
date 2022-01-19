@@ -1,12 +1,10 @@
 package model
 
 import (
-	"database/sql"
 	"net/http"
+	"servus/core/external/database"
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 // represents token in database.
@@ -22,60 +20,45 @@ type Token struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
+var tokenAdapter = database.Adapter[Token]{}
+
 // create Model in database.
 func (t *Token) Create() (err error) {
-	var query = "INSERT INTO tokens (user_id, token, last_ip, last_agent, auth_ip, auth_agent) VALUES (:user_id, :token, :last_ip, :last_agent, :auth_ip, :auth_agent) RETURNING *"
-	stmt, err := call.DB.Conn.PrepareNamed(query)
-	if err != nil {
-		return
-	}
-	defer func() {
-		_ = stmt.Close()
-	}()
-	err = stmt.Get(t, t)
-	err = call.DB.CheckError(err)
+	var query = `INSERT INTO tokens (user_id, token, last_ip, 
+		last_agent, auth_ip, auth_agent) VALUES ($1, $2, $3, 
+			$4, $5, $6) RETURNING *`
+	err = tokenAdapter.Get(t, query, t.UserID, t.Token, t.LastIP, t.LastAgent, t.AuthIP, t.AuthAgent)
 	return
 }
 
 // updates TokenModel in database. All fields except update and created dates must be filled.
 func (t *Token) Update() (err error) {
 	t.hookBeforeUpdate()
-	var query = "UPDATE tokens SET user_id=:user_id, token=:token, last_ip=:last_ip, last_agent=:last_agent, auth_ip=:auth_ip, auth_agent=:auth_agent WHERE id=:id RETURNING *"
-	stmt, err := call.DB.Conn.PrepareNamed(query)
-	if err != nil {
-		return
-	}
-	defer func() {
-		_ = stmt.Close()
-	}()
-	err = stmt.Get(t, t)
-	err = call.DB.CheckError(err)
+	var query = `UPDATE tokens SET user_id=$1, token=$2, last_ip=$3, 
+	last_agent=$4, auth_ip=$5, auth_agent=$6 WHERE id=$7 RETURNING *`
+	err = tokenAdapter.Get(t, query, t.UserID, t.Token, t.LastIP, t.LastAgent, t.AuthIP, t.AuthAgent, t.ID)
 	return
 }
 
 // find TokenModel in database by id field.
 func (t *Token) FindByID() (found bool, err error) {
-	var query = "SELECT * FROM tokens WHERE id=$1 LIMIT 1"
-	err = call.DB.Conn.Get(t, query, t.ID)
-	err = call.DB.CheckError(err)
 	found = false
+	var query = "SELECT * FROM tokens WHERE id=$1 LIMIT 1"
+	founded, err := tokenAdapter.Find(query, t.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return found, nil
-		}
 		return
 	}
-	found = true
+	if founded != nil {
+		found = true
+		*t = *founded
+	}
 	return
 }
 
 // delete TokenModel from database by id field.
 func (t *Token) DeleteByID() (err error) {
 	var query = "DELETE FROM tokens WHERE id=$1"
-	_, err = call.DB.Conn.Exec(query, t.ID)
-	if err == sql.ErrNoRows {
-		return nil
-	}
+	_, err = tokenAdapter.Exec(query, t.ID)
 	return
 }
 
@@ -105,12 +88,6 @@ func (t *Token) hookBeforeUpdate() {
 
 // writes last ip and user agent then updating model in database.
 func (t *Token) SetAuthAgents(request *http.Request) (err error) {
-	if request == nil {
-		return errors.New("setLastAgents: request nil pointer.")
-	}
-	if t == nil {
-		return errors.New("setLastAgents: token nil pointer.")
-	}
 	t.AuthAgent = new(string)
 	*t.AuthAgent = request.UserAgent()
 	t.AuthIP = new(string)
@@ -121,12 +98,6 @@ func (t *Token) SetAuthAgents(request *http.Request) (err error) {
 
 // writes ip and user agent then updating model in database.
 func (t *Token) SetLastAgents(request *http.Request) (err error) {
-	if request == nil {
-		return errors.New("setLastAgents: request nil pointer.")
-	}
-	if t == nil {
-		return errors.New("setLastAgents: token nil pointer.")
-	}
 	var lastAgent = request.UserAgent()
 	var lastIP = t.getIP(request)
 	t.LastAgent = new(string)

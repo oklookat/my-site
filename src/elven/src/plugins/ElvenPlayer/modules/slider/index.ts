@@ -32,7 +32,6 @@ export default class Core {
         const beginSliding = (e: PointerEvent) => {
             // disallow dragging slider with any mouse buttons except LMB
             if (e.pointerType === 'mouse' && e.button !== 0) {
-                console.log('mouse button not zero')
                 return
             }
             this.store.isMouseDown = true

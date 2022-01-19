@@ -68,7 +68,6 @@
     autoSaveThrottle = setTimeout(() => {
       let empty = false;
       const outputData = editor.save();
-      console.log(outputData);
       empty = outputData.length < 1;
       article.content = outputData;
       // not save if empty

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"servus/core/external/database"
 	"time"
 )
 
@@ -12,44 +13,26 @@ type ArticleCategory struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
+var articleCatAdapter = database.Adapter[ArticleCategory]{}
+
 // get all categories.
-func (a *ArticleCategory) GetAll() (cats map[int]ArticleCategory, err error) {
+func (a *ArticleCategory) GetAll() (cats map[int]*ArticleCategory, err error) {
 	var query = "SELECT * FROM article_categories ORDER BY created_at DESC"
-	rows, err := call.DB.Conn.Queryx(query)
-	defer func() {
-		_ = rows.Close()
-	}()
-	err = call.DB.CheckError(err)
-	if err != nil {
-		return
-	}
-	var mapCounter = 0
-	cats = make(map[int]ArticleCategory, 0)
-	for rows.Next() {
-		category := ArticleCategory{}
-		err = rows.StructScan(&category)
-		if err != nil {
-			return
-		}
-		cats[mapCounter] = category
-		mapCounter++
-	}
+	cats, err = articleCatAdapter.GetRows(query)
 	return
 }
 
 // create category.
 func (a *ArticleCategory) Create() (err error) {
 	var query = "INSERT INTO article_categories (name) VALUES ($1) RETURNING *"
-	err = call.DB.Conn.Get(a, query, a.Name)
-	err = call.DB.CheckError(err)
+	err = articleCatAdapter.Get(a, query, a.Name)
 	return
 }
 
 // change name.
 func (a *ArticleCategory) ChangeNameByID() (err error) {
 	var query = "UPDATE article_categories SET name=$1 WHERE id=$2 RETURNING *"
-	err = call.DB.Conn.Get(a, query, a.Name, a.ID)
-	err = call.DB.CheckError(err)
+	err = articleCatAdapter.Get(a, query, a.Name, a.ID)
 	return
 }
 
@@ -57,16 +40,14 @@ func (a *ArticleCategory) ChangeNameByID() (err error) {
 func (a *ArticleCategory) FindByID() (found bool, err error) {
 	found = false
 	var query = "SELECT * FROM article_categories WHERE id=$1 LIMIT 1"
-	err = call.DB.Conn.Get(a, query, a.ID)
-	if call.DB.IsNotFound(err) {
-		err = nil
-		return
-	}
-	err = call.DB.CheckError(err)
+	founded, err := articleCatAdapter.Find(query, a.ID)
 	if err != nil {
 		return
 	}
-	found = true
+	if founded != nil {
+		found = true
+		*a = *founded
+	}
 	return
 }
 
@@ -74,31 +55,27 @@ func (a *ArticleCategory) FindByID() (found bool, err error) {
 func (a *ArticleCategory) FindByName() (found bool, err error) {
 	found = false
 	var query = "SELECT * FROM article_categories WHERE name=$1 LIMIT 1"
-	err = call.DB.Conn.Get(a, query, a.Name)
-	if call.DB.IsNotFound(err) {
-		err = nil
-		return
-	}
-	err = call.DB.CheckError(err)
+	founded, err := articleCatAdapter.Find(query, a.Name)
 	if err != nil {
 		return
 	}
-	found = true
+	if founded != nil {
+		found = true
+		*a = *founded
+	}
 	return
 }
 
 // delete by id.
 func (a *ArticleCategory) DeleteByID() (err error) {
 	var query = "DELETE FROM article_categories WHERE id=$1"
-	_, err = call.DB.Conn.Exec(query, a.ID)
-	err = call.DB.CheckError(err)
+	_, err = articleCatAdapter.Exec(query, a.ID)
 	return
 }
 
 // delete by name.
 func (a *ArticleCategory) DeleteByName() (err error) {
 	var query = "DELETE FROM article_categories WHERE name=$1"
-	_, err = call.DB.Conn.Exec(query, a.Name)
-	err = call.DB.CheckError(err)
+	_, err = articleCatAdapter.Exec(query, a.Name)
 	return
 }

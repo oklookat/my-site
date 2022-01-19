@@ -1,9 +1,9 @@
 {
   "debug": true,
-  "timezone": "Europe/Moscow",
   "host": "localhost",
   "port": "3333",
   "db": {
+    "timezone": "Europe/Moscow",
     "postgres": {
       "host": "localhost",
       "port": "5432",

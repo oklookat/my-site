@@ -1,7 +1,7 @@
 package model
 
 import (
-	"database/sql"
+	"servus/core/external/database"
 	"servus/core/external/validator"
 	"strings"
 	"time"
@@ -26,6 +26,8 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
+var userAdapter = database.Adapter[User]{}
+
 // create user in database.
 func (u *User) Create() (err error) {
 	err = u.hookBeforeChange()
@@ -34,8 +36,7 @@ func (u *User) Create() (err error) {
 		return
 	}
 	var query = `INSERT INTO users (role, username, password) VALUES ($1, $2, $3) RETURNING *`
-	err = call.DB.Conn.Get(u, query, u.Role, u.Username, u.Password)
-	err = call.DB.CheckError(err)
+	err = userAdapter.Get(u, query, u.Role, u.Username, u.Password)
 	return
 }
 
@@ -45,51 +46,44 @@ func (u *User) Update() (err error) {
 		return
 	}
 	var query = "UPDATE users SET role=$1, username=$2, password=$3 WHERE id=$4 RETURNING *"
-	err = call.DB.Conn.Get(u, query, u.Role, u.Username, u.Password, u.ID)
-	err = call.DB.CheckError(err)
+	err = userAdapter.Get(u, query, u.Role, u.Username, u.Password, u.ID)
 	return
 }
 
 // find user in database by id in UserModel.
 func (u *User) FindByID() (found bool, err error) {
-	var query = "SELECT * FROM users WHERE id=$1 LIMIT 1"
-	err = call.DB.Conn.Get(u, query, u.ID)
-	err = call.DB.CheckError(err)
 	found = false
+	var query = "SELECT * FROM users WHERE id=$1 LIMIT 1"
+	founded, err := userAdapter.Find(query, u.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return found, nil
-		}
 		return
 	}
-	found = true
+	if founded != nil {
+		found = true
+		*u = *founded
+	}
 	return
 }
 
 // find user in database by username in UserModel.
 func (u *User) FindByUsername() (found bool, err error) {
-	var query = "SELECT * FROM users WHERE username=$1 LIMIT 1"
-	err = call.DB.Conn.Get(u, query, u.Username)
-	err = call.DB.CheckError(err)
 	found = false
+	var query = "SELECT * FROM users WHERE username=$1 LIMIT 1"
+	founded, err := userAdapter.Find(query, u.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return found, nil
-		}
 		return
 	}
-	found = true
+	if founded != nil {
+		found = true
+		*u = *founded
+	}
 	return
 }
 
 // delete user by id in UserModel.
 func (u *User) DeleteByID() (err error) {
 	var query = "DELETE FROM users WHERE id=$1"
-	_, err = call.DB.Conn.Exec(query, u.ID)
-	err = call.DB.CheckError(err)
-	if err == sql.ErrNoRows {
-		return nil
-	}
+	_, err = userAdapter.Exec(query, u.ID)
 	return
 }
 

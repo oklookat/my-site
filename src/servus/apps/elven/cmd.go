@@ -139,7 +139,7 @@ func (c *cmd) migrate() {
 		call.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	_, err = call.DB.Conn.Exec(string(script))
+	_, err = model.StringAdapter.Exec(string(script))
 	if err != nil {
 		var errPretty = errors.Wrap(err, "elven: migration failed. Failed to execute SQL file)")
 		call.Logger.Panic(errPretty)
@@ -151,7 +151,7 @@ func (c *cmd) migrate() {
 
 // delete tables from database.
 func (c *cmd) rollback() {
-	_, err := call.DB.Conn.Exec(`
+	_, err := model.StringAdapter.Exec(`
 	DROP SCHEMA public CASCADE;
 	CREATE SCHEMA public;
 	GRANT ALL ON SCHEMA public TO postgres;

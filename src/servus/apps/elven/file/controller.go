@@ -42,7 +42,7 @@ func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	var responseContent = base.ResponseContent{}
 	responseContent.Meta.CurrentPage = body.Page
 	responseContent.Meta.TotalPages = totalPages
-	responseContent.Meta.PerPage = model.FilesPageSize
+	responseContent.Meta.PerPage = model.FilePageSize
 	responseContent.Data = files
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)

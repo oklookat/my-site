@@ -3,10 +3,11 @@ package model
 import (
 	"fmt"
 	"math"
+	"servus/core/external/database"
 	"time"
 )
 
-const FilesPageSize = 2
+const FilePageSize = 2
 
 type File struct {
 	ID           string    `json:"id" db:"id"`
@@ -21,59 +22,33 @@ type File struct {
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }
 
-func (f *File) GetPaginated(by string, start string, page int) (files map[int]File, totalPages int, err error) {
+var fileAdapter = database.Adapter[File]{}
+
+func (f *File) GetPaginated(by string, start string, page int) (files map[int]*File, totalPages int, err error) {
 	// get pages count.
 	var queryCount = "SELECT count(*) FROM files"
 	totalPages = 1
-	err = call.DB.Conn.Get(&totalPages, queryCount)
-	err = call.DB.CheckError(err)
+	err = IntAdapter.Get(&totalPages, queryCount)
 	if err != nil {
 		return
 	}
-	files = make(map[int]File, 0)
-	totalPages = int(math.Round(float64(totalPages) / float64(FilesPageSize)))
+	totalPages = int(math.Round(float64(totalPages) / float64(FilePageSize)))
 	if page > totalPages {
 		return
 	}
 	// get.
-	var query = fmt.Sprintf("SELECT * FROM files ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", by, start, start)
-	rows, err := call.DB.Conn.Queryx(query, FilesPageSize, (page-1)*FilesPageSize)
-	defer func() {
-		_ = rows.Close()
-	}()
-	if call.DB.IsNotFound(err) {
-		err = nil
-		return
-	}
-	err = call.DB.CheckError(err)
-	if err != nil {
-		return
-	}
-	var mapCounter = 0
-	for rows.Next() {
-		file := File{}
-		err = rows.StructScan(&file)
-		if err != nil {
-			return
-		}
-		files[mapCounter] = file
-		mapCounter++
-	}
+	var query = fmt.Sprintf("SELECT * FROM files ORDER BY %s %s, id %s LIMIT $1 OFFSET $2", by, start, start)
+	files, err = fileAdapter.GetRows(query, FilePageSize, (page-1)*FilePageSize)
 	return
 }
 
 // create file in database.
 func (f *File) Create() (err error) {
-	var query = `INSERT INTO files (user_id, hash, path, name, original_name, extension, size) VALUES (:user_id, :hash, :path, :name, :original_name, :extension, :size) RETURNING *`
-	stmt, err := call.DB.Conn.PrepareNamed(query)
-	defer func() {
-		_ = stmt.Close()
-	}()
-	if err != nil {
-		return
-	}
-	err = stmt.Get(f, f)
-	err = call.DB.CheckError(err)
+	var query = `INSERT INTO files (user_id, hash, path, name, 
+		original_name, extension, size) VALUES ($1, $2, $3, 
+			$4, $5, $6, $7) 
+		RETURNING *`
+	err = fileAdapter.Get(f, query, f.UserID, f.Hash, f.Path, f.Name, f.OriginalName, f.Extension, f.Size)
 	return
 }
 
@@ -81,16 +56,14 @@ func (f *File) Create() (err error) {
 func (f *File) FindByID() (found bool, err error) {
 	found = false
 	var query = "SELECT * FROM files WHERE id=$1 LIMIT 1"
-	err = call.DB.Conn.Get(f, query, f.ID)
-	if call.DB.IsNotFound(err) {
-		err = nil
-		return
-	}
-	err = call.DB.CheckError(err)
+	founded, err := fileAdapter.Find(query, f.ID)
 	if err != nil {
 		return
 	}
-	found = true
+	if founded != nil {
+		found = true
+		*f = *founded
+	}
 	return
 }
 
@@ -98,23 +71,20 @@ func (f *File) FindByID() (found bool, err error) {
 func (f *File) FindByHash() (found bool, err error) {
 	found = false
 	var query = "SELECT * FROM files WHERE hash=$1 LIMIT 1"
-	err = call.DB.Conn.Get(f, query, f.Hash)
-	if call.DB.IsNotFound(err) {
-		err = nil
-		return
-	}
-	err = call.DB.CheckError(err)
+	founded, err := fileAdapter.Find(query, f.ID)
 	if err != nil {
 		return
 	}
-	found = true
+	if founded != nil {
+		found = true
+		*f = *founded
+	}
 	return
 }
 
 // delete file in database by id field.
 func (f *File) DeleteByID() (err error) {
 	var query = "DELETE FROM files WHERE id=$1"
-	_, err = call.DB.Conn.Exec(query, f.ID)
-	err = call.DB.CheckError(err)
+	_, err = fileAdapter.Exec(query, f.ID)
 	return
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"servus/core/external/database"
 	"time"
 
 	"github.com/gosimple/slug"
@@ -26,8 +27,10 @@ type Article struct {
 	UpdatedAt    time.Time  `json:"updated_at" db:"updated_at"`
 }
 
+var articleAdapter = database.Adapter[Article]{}
+
 // get paginated.
-func (a *Article) GetPaginated(by string, start string, show string, page int, preview bool) (articles map[int]Article, totalPages int, err error) {
+func (a *Article) GetPaginated(by string, start string, show string, page int, preview bool) (articles map[int]*Article, totalPages int, err error) {
 	var query string
 	var queryCount string
 	switch show {
@@ -42,8 +45,7 @@ func (a *Article) GetPaginated(by string, start string, show string, page int, p
 	}
 	// get pages count.
 	totalPages = 1
-	err = call.DB.Conn.Get(&totalPages, queryCount)
-	err = call.DB.CheckError(err)
+	err = IntAdapter.Get(&totalPages, queryCount)
 	if err != nil {
 		return
 	}
@@ -52,32 +54,7 @@ func (a *Article) GetPaginated(by string, start string, show string, page int, p
 		return
 	}
 	// get.
-	rows, err := call.DB.Conn.Queryx(query, ArticlePageSize, (page-1)*ArticlePageSize)
-	defer func() {
-		_ = rows.Close()
-	}()
-	if call.DB.IsNotFound(err) {
-		err = nil
-		return
-	}
-	err = call.DB.CheckError(err)
-	if err != nil {
-		return
-	}
-	var mapCounter = 0
-	articles = make(map[int]Article, 0)
-	for rows.Next() {
-		article := Article{}
-		err = rows.StructScan(&article)
-		if err != nil {
-			return
-		}
-		if preview {
-			article.Content = ""
-		}
-		articles[mapCounter] = article
-		mapCounter++
-	}
+	articles, err = articleAdapter.GetRows(query, ArticlePageSize, (page-1)*ArticlePageSize)
 	return
 }
 
@@ -86,8 +63,7 @@ func (a *Article) Create() (err error) {
 	a.hookBeforeChange()
 	var query = `INSERT INTO articles (user_id, category_name, 
 		is_published, title, content, slug) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`
-	err = call.DB.Conn.Get(a, query, a.UserID, a.CategoryName, a.IsPublished, a.Title, a.Content, a.Slug)
-	err = call.DB.CheckError(err)
+	err = articleAdapter.Get(a, query, a.UserID, a.CategoryName, a.IsPublished, a.Title, a.Content, a.Slug)
 	if err != nil {
 		return
 	}
@@ -100,8 +76,7 @@ func (a *Article) Update() (err error) {
 	a.hookBeforeChange()
 	var query = `UPDATE articles SET user_id=$1, category_name=$2,
 	is_published=$3, title=$4, content=$5, slug=$6, published_at=$7 WHERE id=$8 RETURNING *`
-	err = call.DB.Conn.Get(a, query, a.UserID, a.CategoryName, a.IsPublished, a.Title, a.Content, a.Slug, a.PublishedAt, a.ID)
-	err = call.DB.CheckError(err)
+	err = articleAdapter.Get(a, query, a.UserID, a.CategoryName, a.IsPublished, a.Title, a.Content, a.Slug, a.PublishedAt, a.ID)
 	if err != nil {
 		return
 	}
@@ -113,24 +88,21 @@ func (a *Article) Update() (err error) {
 func (a *Article) FindByID() (found bool, err error) {
 	found = false
 	var query = "SELECT * FROM articles WHERE id=$1 LIMIT 1"
-	err = call.DB.Conn.Get(a, query, a.ID)
-	if call.DB.IsNotFound(err) {
-		err = nil
-		return
-	}
-	err = call.DB.CheckError(err)
+	founded, err := articleAdapter.Find(query, a.ID)
 	if err != nil {
 		return
 	}
-	found = true
+	if founded != nil {
+		found = true
+		*a = *founded
+	}
 	return
 }
 
 // delete article from database by id field.
 func (a *Article) DeleteByID() (err error) {
 	var query = "DELETE FROM articles WHERE id=$1"
-	_, err = call.DB.Conn.Exec(query, a.ID)
-	err = call.DB.CheckError(err)
+	_, err = articleAdapter.Exec(query, a.ID)
 	return
 }
 
@@ -165,7 +137,6 @@ func (a *Article) hookAfterChange() (err error) {
 	// create normal slug.
 	a.Slug = slug.Make(a.Title) + "-" + a.ID
 	var query = "UPDATE articles SET slug=$1 WHERE id=$2 RETURNING *"
-	row := call.DB.Conn.QueryRowx(query, a.Slug, a.ID)
-	err = row.StructScan(a)
+	err = articleAdapter.Get(a, query, a.Slug, a.ID)
 	return
 }

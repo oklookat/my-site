@@ -1,6 +1,7 @@
 package core
 
 import (
+	"database/sql"
 	"io"
 	"net/http"
 )
@@ -9,19 +10,19 @@ type _ctxHTTP string
 
 const ctxHTTP _ctxHTTP = "CORE_HTTP_PIPE"
 
-// HTTP - helper for request/response manipulations.
+// helper for request/response manipulations.
 type HTTP interface {
 	Send(body string, statusCode int, err error)
 	SetCookie(name string, value string) error
 }
 
-// Controller - sends information/controls server via 3rd party services, like Telegram bot.
+// sends information/controls server via 3rd party services, like Telegram bot.
 type Controller interface {
 	SendMessage(message string)
 	SendFile(caption *string, filename string, reader io.Reader)
 }
 
-// Logger - writes information.
+// writes information.
 type Logger interface {
 	Debug(message string)
 	Info(message string)
@@ -30,7 +31,7 @@ type Logger interface {
 	Panic(err error)
 }
 
-// Utils - useful utilities.
+// useful utilities.
 type Utils interface {
 	// RemoveSpaces - remove spaces from string.
 	RemoveSpaces(str string) string
@@ -44,7 +45,7 @@ type Utils interface {
 	GenerateULID() (ul string, err error)
 }
 
-// Middlewarer - basic middlewares.
+// basic middlewares.
 type Middlewarer interface {
 	// AsJson - set application/json header.
 	AsJson() func(http.Handler) http.Handler
@@ -56,14 +57,14 @@ type Middlewarer interface {
 	ProvideHTTP() func(http.Handler) http.Handler
 }
 
-// Encryptor - encrypt/hash values.
+// encrypt/hash values.
 type Encryptor struct {
 	AES    EncryptorCryptor
 	BCrypt EncryptorHasher
 	Argon  EncryptorHasher
 }
 
-// EncryptorHasher - hash/compare value.
+// hash/compare value.
 type EncryptorHasher interface {
 	// Hash - make hash.
 	Hash(data string) (hash string, err error)
@@ -73,10 +74,20 @@ type EncryptorHasher interface {
 	IsHash(data string) bool
 }
 
-// EncryptorCryptor - encrypt/decrypt value.
+// encrypt/decrypt value.
 type EncryptorCryptor interface {
 	// Encrypt - encrypt value.
 	Encrypt(data string) (encrypted string, err error)
 	// Decrypt - decrypt value.
 	Decrypt(encrypted string) (data string, err error)
+}
+
+// provides functions for database manipulaions.
+type Databaser[T comparable] interface {
+	// execute query with args and put result in dest (1 row).
+	Get(dest *T, query string, args ...any) (err error)
+	// execute query with args and get rows in map (many rows).
+	GetRows(query string, args ...any) (scaned map[int]*T, err error)
+	// execute query with args (no rows).
+	Exec(query string, args ...any) (res sql.Result, err error)
 }

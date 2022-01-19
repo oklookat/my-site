@@ -153,7 +153,7 @@ CREATE TABLE users
     reg_agent  varchar(324) DEFAULT NULL,
     created_at timestamp with time zone DEFAULT current_timestamp NOT NULL,
     updated_at timestamp with time zone,
-    CONSTRAINT users_length CHECK (length(username) >= 4 AND (length(password) >= 8)),
+    CONSTRAINT users_length CHECK (length(username) >= 4 AND (length(password) >= 8))
 ) TABLESPACE pg_default;
 ALTER TABLE users OWNER to postgres;
 CREATE TRIGGER user_before_insert_or_update BEFORE INSERT OR UPDATE ON users FOR EACH ROW
@@ -178,7 +178,7 @@ CREATE TABLE tokens
     auth_ip varchar(64) DEFAULT NULL,
     auth_agent varchar(324) DEFAULT NULL,
     created_at timestamp with time zone DEFAULT current_timestamp,
-    updated_at timestamp with time zone,
+    updated_at timestamp with time zone
 ) TABLESPACE pg_default;
 ALTER TABLE tokens OWNER to postgres;
 CREATE TRIGGER token_before_insert_or_update BEFORE INSERT OR UPDATE ON tokens FOR EACH ROW
@@ -194,7 +194,7 @@ CREATE TABLE article_categories
     id ulid PRIMARY KEY,
     name varchar(24) UNIQUE,
     created_at timestamp with time zone DEFAULT current_timestamp,
-    updated_at timestamp with time zone,
+    updated_at timestamp with time zone
 ) TABLESPACE pg_default;
 ALTER TABLE article_categories OWNER to postgres;
 CREATE TRIGGER article_cats_before_insert_or_update BEFORE INSERT OR UPDATE ON article_categories FOR EACH ROW
@@ -208,7 +208,7 @@ EXECUTE PROCEDURE before_update();
 CREATE TABLE articles
 (
     id ulid  PRIMARY KEY,
-    user_id ulid NOT NULL 
+    user_id ulid NOT NULL
     REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
     category_name varchar(24) DEFAULT NULL
     REFERENCES article_categories(name) ON UPDATE CASCADE ON DELETE SET NULL,
@@ -218,7 +218,7 @@ CREATE TABLE articles
     slug varchar(256) UNIQUE,
     published_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT current_timestamp,
-    updated_at timestamp with time zone,
+    updated_at timestamp with time zone
 ) TABLESPACE pg_default;
 ALTER TABLE articles OWNER to postgres;
 CREATE TRIGGER article_before_insert_or_update BEFORE INSERT OR UPDATE ON articles FOR EACH ROW
@@ -241,7 +241,7 @@ CREATE TABLE files
     extension varchar(64) DEFAULT NULL,
     size bigint NOT NULL,
     created_at timestamp with time zone DEFAULT current_timestamp,
-    updated_at timestamp with time zone,
+    updated_at timestamp with time zone
 ) TABLESPACE pg_default;
 ALTER TABLE files OWNER to postgres;
 CREATE TRIGGER file_before_insert_or_update BEFORE INSERT OR UPDATE ON files FOR EACH ROW

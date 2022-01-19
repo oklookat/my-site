@@ -4,9 +4,11 @@ import type { Article, Params } from '@/entities/articles/types'
 
 export default class ArticleAdapter {
 
+    private static prefix = "article/articles"
+
     public static async getAll(params: Params): Promise<Data<Article>> {
         try {
-            const response = await Duck.GET({ url: 'articles', params: params })
+            const response = await Duck.GET({ url: this.prefix, params: params })
             return Promise.resolve(response.body as Data<Article>)
         } catch (err) {
             return Promise.reject(err)
@@ -15,7 +17,7 @@ export default class ArticleAdapter {
 
     public static async get(id: string): Promise<Article> {
         try {
-            const response = await Duck.GET({ url: `articles/${id}` })
+            const response = await Duck.GET({ url: `${this.prefix}/${id}` })
             return Promise.resolve(response.body as Article)
         } catch (err) {
             return Promise.reject(err);
@@ -24,7 +26,7 @@ export default class ArticleAdapter {
 
     public static async delete(id: string): Promise<void> {
         try {
-            await Duck.DELETE({ url: `articles/${id}` })
+            await Duck.DELETE({ url: `${this.prefix}/${id}` })
             return Promise.resolve()
         } catch (err) {
             return Promise.reject(err);
@@ -33,7 +35,7 @@ export default class ArticleAdapter {
 
     public static async create(article: Article): Promise<Article> {
         try {
-            const response = await Duck.POST({ url: `articles`, body: article })
+            const response = await Duck.POST({ url: `${this.prefix}`, body: article })
             return Promise.resolve(response.body as Article)
         } catch (err) {
             return Promise.reject(err)
@@ -41,9 +43,8 @@ export default class ArticleAdapter {
     }
 
     public static async update(article: Article): Promise<Article> {
-        console.log(article.content)
         try {
-            const response = await Duck.PATCH({ url: `articles/${article.id}`, body: article })
+            const response = await Duck.PATCH({ url: `${this.prefix}/${article.id}`, body: article })
             return Promise.resolve(response.body as Article)
         } catch (err) {
             return Promise.reject(err)
@@ -52,7 +53,7 @@ export default class ArticleAdapter {
 
     public static async publish(id: string): Promise<Article> {
         try {
-            const response = await Duck.PATCH({ url: `articles/${id}`, body: { is_published: true } })
+            const response = await Duck.PATCH({ url: `${this.prefix}/${id}`, body: { is_published: true } })
             return Promise.resolve(response.body as Article)
         } catch (err) {
             return Promise.reject(err)
@@ -61,7 +62,7 @@ export default class ArticleAdapter {
 
     public static async unpublish(id: string): Promise<Article> {
         try {
-            const response = await Duck.PATCH({ url: `articles/${id}`, body: { is_published: false } })
+            const response = await Duck.PATCH({ url: `${this.prefix}/${id}`, body: { is_published: false } })
             return Promise.resolve(response.body as Article)
         } catch (err) {
             return Promise.reject(err)

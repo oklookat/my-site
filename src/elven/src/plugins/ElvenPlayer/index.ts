@@ -44,7 +44,6 @@ export default class ElvenPlayer implements IElvenPlayer {
     private subscribe() {
         const u1 = this.store.state.current.ended.onChange(v => {
             if (v && this.store.playing) {
-                console.log('lf')
                 this.next()
             }
         })

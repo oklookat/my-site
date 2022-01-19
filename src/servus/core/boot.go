@@ -2,8 +2,8 @@ package core
 
 import (
 	"fmt"
-	"os"
 	"servus/core/external/argument"
+	"servus/core/external/database"
 	"servus/core/internal/controlTelegram"
 	"servus/core/internal/cors"
 	"servus/core/internal/cryptor"
@@ -19,7 +19,6 @@ type Instance struct {
 	Logger     Logger
 	Middleware Middlewarer
 	Encryptor  *Encryptor
-	DB         *Database
 	Control    Controller
 }
 
@@ -111,10 +110,6 @@ func (i *Instance) bootEncryptor() {
 }
 
 func (i *Instance) bootDatabase() {
-	i.DB = &Database{}
-	err := i.DB.new(i.Config, i.Logger)
-	if err != nil {
-		i.Logger.Panic(err)
-		os.Exit(1)
-	}
+	var conn = database.Connector{}
+	conn.New(i.Config.DB, i.Logger)
 }

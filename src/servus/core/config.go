@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"os"
+	"servus/core/external/database"
 	"servus/core/internal/controlTelegram"
 	"servus/core/internal/cors"
 	"servus/core/internal/cryptor"
@@ -14,16 +15,12 @@ import (
 type ConfigFile struct {
 	// debug mode active? Writes to logger debug information etc.
 	Debug bool `json:"debug"`
-	// Timezone - timezone for database.
-	//
-	// see TZ Database Name in https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
-	Timezone string `json:"timezone"`
 	// app host. Ex: localhost.
 	Host string `json:"host"`
 	// app port. Ex: 3333.
 	Port string `json:"port"`
 	// database settings.
-	DB *DatabaseConfig `json:"db"`
+	DB *database.Config `json:"db"`
 	// writes messages to console and file.
 	Logger *logger.Config `json:"logger"`
 	// protect your ass from hackers.
@@ -79,20 +76,4 @@ func (c *ConfigFile) load(path string) (err error) {
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(c)
 	return
-}
-
-type DatabaseConfig struct {
-	// PostgreSQL settings.
-	Postgres struct {
-		// like: localhost.
-		Host string `json:"host"`
-		// like: 5432.
-		Port string `json:"port"`
-		// like: postgres.
-		User string `json:"user"`
-		// like: qwerty.
-		Password string `json:"password"`
-		// name of database.
-		DbName string `json:"database"`
-	} `json:"postgres"`
 }
