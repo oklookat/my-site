@@ -6,13 +6,12 @@ export default class ElvenProgress implements IElvenProgress {
     private basicActive = false
     private line: HTMLDivElement
     private _percents: number
-    // settings
     private settings: Settings = {
         height: '2px',
         basicLoading: {
             startTo: 45,
             startSpeed: 30,
-            finishSpeed: 5
+            finishSpeed: 1
         }
     }
 
@@ -22,7 +21,7 @@ export default class ElvenProgress implements IElvenProgress {
         }
         this.line = line
         this.line.style.height = this.settings.height
-        window.$elvenProgress = this
+        window.$progress = this
     }
 
     public get percents(): number {
@@ -63,14 +62,14 @@ export default class ElvenProgress implements IElvenProgress {
                 this.percents++
                 return
             }
+            this.reset()
             clearInterval(intervalID)
-            this.resetPercents()
-            this.basicActive = false
         }, this.settings.basicLoading.finishSpeed)
     }
 
 
-    public resetPercents() {
+    public reset() {
+        this.basicActive = false
         this.percents = 0
     }
 }

@@ -5,22 +5,20 @@
 </div>
 
 <style lang="scss">
-    $padding: 14px;
-
     .toolbar {
+        font-size: 1.1rem;
         border-radius: var(--border-radius);
         background-color: var(--color-level-1);
-        height: 48px;
         width: 100%;
-        font-size: 1.1rem;
+        min-height: 42px;
         &__content {
-            padding-left: $padding;
-            padding-right: $padding;
+            padding: 12px;
+            min-height: 42px + 12px;
+            height: 100%;
             display: flex;
             flex-flow: row wrap;
-            gap: 14px;
-            height: 100%;
             align-items: center;
+            gap: 14px;
         }
     }
 </style>

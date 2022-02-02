@@ -48,7 +48,7 @@ func (a *Instance) BootRoutes(router *mux.Router) {
 	categories.Use(a.middleware.SafeMethodsOnly)
 	categories.HandleFunc("", a.getCategories).Methods(http.MethodGet)
 	categories.HandleFunc("", a.addCategory).Methods(http.MethodPost)
-	categories.HandleFunc("/{name}", a.getCategory).Methods(http.MethodGet)
-	categories.HandleFunc("/{name}", a.renameCategory).Methods(http.MethodPut, http.MethodPatch)
-	categories.HandleFunc("/{name}", a.deleteCategory).Methods(http.MethodDelete)
+	categories.HandleFunc("/{id}", a.getCategory).Methods(http.MethodGet)
+	categories.HandleFunc("/{id}", a.renameCategory).Methods(http.MethodPut, http.MethodPatch)
+	categories.HandleFunc("/{id}", a.deleteCategory).Methods(http.MethodDelete)
 }

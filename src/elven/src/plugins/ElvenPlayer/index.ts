@@ -30,7 +30,7 @@ export default class ElvenPlayer implements IElvenPlayer {
         this.dom = new DOM(this.events)
         this.subscribe()
         this.initialized = true
-        window.$elvenPlayer = this
+        window.$player = this
     }
 
     public destroy() {
@@ -38,7 +38,7 @@ export default class ElvenPlayer implements IElvenPlayer {
         this.dom.destroy()
         this.dom = null
         this.initialized = false
-        window.$elvenPlayer = null
+        window.$player = null
     }
 
     private subscribe() {

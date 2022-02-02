@@ -37,11 +37,11 @@ func (a *Instance) getCategories(response http.ResponseWriter, request *http.Req
 // get one category (GET)
 func (a *Instance) getCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
-	// get name from params.
+	// get id from params.
 	var params = mux.Vars(request)
-	var name = params["name"]
+	var id = params["id"]
 	// find.
-	var category = model.ArticleCategory{Name: name}
+	var category = model.ArticleCategory{ID: id}
 	found, err := category.FindByID()
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
@@ -100,11 +100,11 @@ func (a *Instance) renameCategory(response http.ResponseWriter, request *http.Re
 	}
 	// get name from params.
 	var params = mux.Vars(request)
-	var name = params["name"]
+	var id = params["id"]
 	// find.
 	var category = model.ArticleCategory{}
-	category.Name = name
-	found, err := category.FindByName()
+	category.ID = id
+	found, err := category.FindByID()
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
@@ -134,11 +134,11 @@ func (a *Instance) deleteCategory(response http.ResponseWriter, request *http.Re
 	var h = call.Utils.GetHTTP(request)
 	// get name from params.
 	var params = mux.Vars(request)
-	var name = params["name"]
+	var id = params["id"]
 	// find.
 	var category = model.ArticleCategory{}
-	category.Name = name
-	found, err := category.FindByName()
+	category.ID = id
+	found, err := category.FindByID()
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return

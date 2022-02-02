@@ -9,18 +9,16 @@
   });
 </script>
 
-<div class="progress__container">
+<div class="progress">
   <div class="progress__line" bind:this={line} />
 </div>
 
 <style lang="scss">
   .progress {
-    &__container {
-      cursor: default;
-      position: absolute;
-      width: 100%;
-      height: 6px;
-    }
+    cursor: default;
+    position: absolute;
+    width: 100%;
+    height: 2px;
     &__line {
       height: 100%;
       width: 0;

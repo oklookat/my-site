@@ -1,7 +1,6 @@
 package core
 
 import (
-	"database/sql"
 	"io"
 	"net/http"
 )
@@ -19,7 +18,7 @@ type HTTP interface {
 // sends information/controls server via 3rd party services, like Telegram bot.
 type Controller interface {
 	SendMessage(message string)
-	SendFile(caption *string, filename string, reader io.Reader)
+	SendFile(caption *string, filename string, data io.Reader)
 }
 
 // writes information.
@@ -33,27 +32,35 @@ type Logger interface {
 
 // useful utilities.
 type Utils interface {
-	// RemoveSpaces - remove spaces from string.
+	// remove spaces from string.
 	RemoveSpaces(str string) string
-	// GetExecutionDir - get dir where binary started.
+	// get dir where binary started.
 	GetExecutionDir() (string, error)
-	// FormatPath - format path to system specific slashes.
+	// format path to system specific slashes.
 	FormatPath(path string) string
-	// GetHTTP - get HTTP from request context.
+	// get HTTP from request context.
 	GetHTTP(request *http.Request) HTTP
-	// GenerateULID - returns unique string like 1GFGVSSRTHYWW52GVXZ.
+	// returns unique string like 1GFGVSSRTHYWW52GVXZ.
 	GenerateULID() (ul string, err error)
+	// convert string to rune slice -> get len() of this slice
+	//
+	// example:
+	//
+	// with LenRune() "hello" and "вечер" will have the same length in 5
+	//
+	// with len(), result was be 5 and 10.
+	LenRune(val string) int
 }
 
 // basic middlewares.
 type Middlewarer interface {
-	// AsJson - set application/json header.
+	// set application/json header.
 	AsJson() func(http.Handler) http.Handler
-	// LimitBody - set CORS headers depending on config.
+	// set CORS headers depending on config.
 	CORS() func(http.Handler) http.Handler
-	// LimitBody - limit request body size.
+	// limit request body size.
 	LimitBody() func(http.Handler) http.Handler
-	// ProvideHTTP - get HTTP helper.
+	// get HTTP helper.
 	ProvideHTTP() func(http.Handler) http.Handler
 }
 
@@ -66,28 +73,18 @@ type Encryptor struct {
 
 // hash/compare value.
 type EncryptorHasher interface {
-	// Hash - make hash.
+	// make hash.
 	Hash(data string) (hash string, err error)
-	// Compare - compare value with hash.
+	// compare value with hash.
 	Compare(what, with string) (match bool, err error)
-	// IsHash - check is value a hash.
+	// check is value a hash.
 	IsHash(data string) bool
 }
 
 // encrypt/decrypt value.
 type EncryptorCryptor interface {
-	// Encrypt - encrypt value.
+	// encrypt data.
 	Encrypt(data string) (encrypted string, err error)
-	// Decrypt - decrypt value.
+	// decrypt data.
 	Decrypt(encrypted string) (data string, err error)
-}
-
-// provides functions for database manipulaions.
-type Databaser[T comparable] interface {
-	// execute query with args and put result in dest (1 row).
-	Get(dest *T, query string, args ...any) (err error)
-	// execute query with args and get rows in map (many rows).
-	GetRows(query string, args ...any) (scaned map[int]*T, err error)
-	// execute query with args (no rows).
-	Exec(query string, args ...any) (res sql.Result, err error)
 }

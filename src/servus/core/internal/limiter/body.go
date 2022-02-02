@@ -7,23 +7,35 @@ import (
 	"regexp"
 )
 
-type Instance struct {
-	active       bool
-	maxSizeBytes int64
-	except       []string
+type BodyConfig struct {
+	// limit body?
+	Active bool `json:"active"`
+	// max body size in MB.
+	MaxSize int64 `json:"maxSize"`
+	// not limit paths in this slice.
+	Except []string `json:"except"`
 }
 
-func New(active bool, maxSizeMB int64, except []string) *Instance {
+type Body struct {
+	config       *BodyConfig
+	maxSizeBytes int64
+}
+
+func NewBody(config *BodyConfig) *Body {
+	var except = config.Except
 	for index := range except {
 		except[index] = normalizePath(except[index])
 	}
-	var mbToByte = maxSizeMB * 1000 * 1000
-	return &Instance{active: active, maxSizeBytes: mbToByte, except: except}
+	var instance = &Body{}
+	instance.config = config
+	var mbToByte = config.MaxSize * 1000 * 1000
+	instance.maxSizeBytes = mbToByte
+	return instance
 }
 
-func (i *Instance) Middleware(next http.Handler) http.Handler {
+func (i *Body) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if !i.active || i.checkExcept(request.URL.Path) {
+		if !i.config.Active || i.checkExcept(request.URL.Path) {
 			next.ServeHTTP(writer, request)
 			return
 		}
@@ -32,14 +44,11 @@ func (i *Instance) Middleware(next http.Handler) http.Handler {
 			writer.WriteHeader(413)
 			return
 		}
-		// bytes, _ := io.ReadAll(request.Body)
-		// log.Println(request.Method)
-		// log.Println(bytes)
 		next.ServeHTTP(writer, request)
 	})
 }
 
-func (i *Instance) Check(w http.ResponseWriter, r *http.Request) (passed bool) {
+func (i *Body) Check(w http.ResponseWriter, r *http.Request) (passed bool) {
 	limitedReader := http.MaxBytesReader(w, r.Body, i.maxSizeBytes)
 	defer func() {
 		_ = limitedReader.Close()
@@ -51,10 +60,10 @@ func (i *Instance) Check(w http.ResponseWriter, r *http.Request) (passed bool) {
 	return err == nil || err.Error() != "http: request body too large"
 }
 
-func (i *Instance) checkExcept(path string) (skip bool) {
+func (i *Body) checkExcept(path string) (skip bool) {
 	path = normalizePath(path)
-	for index := range i.except {
-		if i.except[index] == path {
+	for index := range i.config.Except {
+		if i.config.Except[index] == path {
 			return true
 		}
 	}

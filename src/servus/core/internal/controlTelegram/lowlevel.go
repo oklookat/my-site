@@ -2,7 +2,6 @@ package controlTelegram
 
 import (
 	"errors"
-	"io"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -58,28 +57,4 @@ func (t *bot) SendFile(chatID int64, file *File) (tgbotapi.Message, error) {
 		req.Caption = *file.caption
 	}
 	return t.api.Send(req)
-}
-
-type File struct {
-	caption  *string
-	filename string
-	reader   io.Reader
-}
-
-func (t *File) New(caption *string, filename string, reader io.Reader) {
-	t.caption = caption
-	t.filename = filename
-	t.reader = reader
-}
-
-func (t *File) NeedsUpload() bool {
-	return true
-}
-
-func (t *File) UploadData() (string, io.Reader, error) {
-	return t.filename, t.reader, nil
-}
-
-func (t *File) SendData() string {
-	return t.filename
 }

@@ -7,8 +7,9 @@ import Index from '@/entities/general/index.svelte'
 import Login from '@/entities/auth/comps/login.svelte'
 import Logout from '@/entities/auth/comps/logout.svelte'
 // articles
-import Articles from '@/entities/articles/comps/index.svelte'
-import ArticleCreate from '@/entities/articles/comps/create.svelte'
+import Articles from '@/entities/article/articles/comps/index.svelte'
+import ArticleCreate from '@/entities/article/articles/comps/create.svelte'
+import ArticlesCats from '@/entities/article/categories/comps/index.svelte'
 // files
 import Files from '@/entities/files/comps/index.svelte'
 // settings
@@ -44,6 +45,12 @@ const routes = {
     }),
     '/articles/create/:id?': wrap({
         component: ArticleCreate,
+        conditions: [
+            () => { return isAdmin() }
+        ]
+    }),
+    '/articles/cats': wrap({
+        component: ArticlesCats,
         conditions: [
             () => { return isAdmin() }
         ]

@@ -40,7 +40,7 @@ func (h *httpHelper) getInstance(req *http.Request, res http.ResponseWriter) *iH
 		err2 := zip.AddFile("request.txt", _http.GetDump())
 		// log zip errors.
 		if err1 != nil || err2 != nil {
-			var message = fmt.Sprintf("[#dump #code%v] http error. Make dump also failed.", code)
+			var message = fmt.Sprintf("[#dump #error%v] http error. Make dump also failed.", code)
 			if err1 != nil {
 				h.logger.Error("[core/http]: " + err1.Error())
 			}
@@ -51,7 +51,7 @@ func (h *httpHelper) getInstance(req *http.Request, res http.ResponseWriter) *iH
 			return
 		}
 		// send dump.
-		var message = fmt.Sprintf("[#dump #code%v] http error.", code)
+		var message = fmt.Sprintf("[#dump #error%v] http error.", code)
 		h.control.SendFile(&message, trace.GetTimestamp()+".zip", zip.GetRAW())
 	}
 	// when http error.

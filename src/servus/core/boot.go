@@ -52,7 +52,7 @@ func (i *Instance) bootConfig() {
 		if err != nil {
 			panic(err)
 		}
-		var path = fmt.Sprintf("%v/settings/config.json", executionDir)
+		var path = fmt.Sprintf("%s/settings/config.json", executionDir)
 		get(path)
 	}
 	// is config path in args?
@@ -76,8 +76,9 @@ func (i *Instance) bootLogger() {
 
 func (i *Instance) bootControl() {
 	var ctrl = &controller{}
-	// telegram.
-	if i.Config.Control.Telegram.Enabled {
+	// Telegram bot.
+	var tgEnabled = i.Config.Control.Telegram.Enabled
+	if tgEnabled {
 		var controlTG = controlTelegram.Controller{}
 		controlTG.New(i.Config.Control.Telegram, i.Logger)
 		ctrl.add(&controlTG)
@@ -89,19 +90,20 @@ func (i *Instance) bootMiddleware() {
 	// cors.
 	var corsInstance = cors.New(i.Config.Security.CORS)
 	// limiter.
-	_limiter := limiter.New(i.Config.Security.Limiter.Body.Active, i.Config.Security.Limiter.Body.MaxSize, i.Config.Security.Limiter.Body.Except)
-	// http
+	var bodyLimiter = limiter.NewBody(i.Config.Security.Limiter.Body)
+	// http.
 	var http = &httpHelper{}
 	http.new(i.Logger, i.Control, i.Config.Security.Cookie)
 	// middleware.
 	var md = &middleware.Instance{}
-	md.New(corsInstance.Middleware, _limiter.Middleware, http.middleware)
+	md.New(corsInstance.Middleware, bodyLimiter.Middleware, http.middleware)
 	i.Middleware = md
 }
 
 func (i *Instance) bootEncryptor() {
 	var cr = &cryptor.Instance{}
 	cr.New(i.Config.Security.Encryption)
+	//
 	var en = &Encryptor{}
 	en.AES = cr.AES
 	en.Argon = cr.Argon
@@ -110,6 +112,7 @@ func (i *Instance) bootEncryptor() {
 }
 
 func (i *Instance) bootDatabase() {
+	// connect to DB. Database be available via database.Adapter.
 	var conn = database.Connector{}
 	conn.New(i.Config.DB, i.Logger)
 }

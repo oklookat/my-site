@@ -13,10 +13,10 @@ import (
 // Instance - cool things for request/response.
 type Instance struct {
 	cookie      *ConfigCookie
-	onHTTPError func(code int, err error)
-	onSendError func(code int, err error)
 	request     *http.Request
 	response    http.ResponseWriter
+	onHTTPError func(code int, err error)
+	onSendError func(code int, err error)
 }
 
 // config for setting cookies.
@@ -31,17 +31,23 @@ type ConfigCookie struct {
 
 // creates new HTTP instance.
 func New(req *http.Request, res http.ResponseWriter, cookie *ConfigCookie) *Instance {
-	if req == nil {
-		panic("[iHTTP]: request nil pointer")
-	}
-	if cookie == nil {
-		panic("[iHTTP]: cookie config nil pointer")
-	}
 	var i = &Instance{}
 	i.request = req
 	i.response = res
 	i.cookie = cookie
 	return i
+}
+
+func (i *Instance) wrapError(err error) error {
+	if err == nil {
+		return nil
+	}
+	err = errors.Wrap(err, "[iHTTP] ")
+	return err
+}
+
+func (i *Instance) newError(message string) error {
+	return errors.New("[iHTTP] " + message)
 }
 
 // when 399+ error.
@@ -56,14 +62,9 @@ func (i *Instance) OnSendError(callback func(code int, err error)) {
 
 // sends response and log if error.
 func (i *Instance) Send(body string, statusCode int, err error) {
-	if err != nil {
-		err = errors.Wrap(err, "")
-	}
-	var is1xx = (statusCode-100) >= 0 && (statusCode-100) <= 99
-	var is2xx = (statusCode-200) >= 0 && (statusCode-200) <= 99
-	var is3xx = (statusCode-300) >= 0 && (statusCode-300) <= 99
 	// is http error and http error callback not empty?
-	if (!is1xx && !is2xx && !is3xx) && i.onHTTPError != nil {
+	var isHTTPError = statusCode > 399
+	if isHTTPError && i.onHTTPError != nil {
 		go i.onHTTPError(statusCode, err)
 	}
 	i.response.WriteHeader(statusCode)
@@ -77,8 +78,7 @@ func (i *Instance) Send(body string, statusCode int, err error) {
 func (i *Instance) SetCookie(name string, value string) error {
 	var maxAge, err = i.convertTimeWord(i.cookie.MaxAge)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "[iHTTP]: convert time failed. Error: ")
-		return errPretty
+		return i.wrapError(err)
 	}
 	maxAgeSeconds := int(maxAge.Seconds())
 	var domain = i.cookie.Domain
@@ -87,8 +87,7 @@ func (i *Instance) SetCookie(name string, value string) error {
 	var secure = i.cookie.Secure
 	sameSite, err := i.convertCookieSameSite(i.cookie.SameSite)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "[iHTTP]: failed convert sameSite. Error: ")
-		return errPretty
+		return i.wrapError(err)
 	}
 	var cookie = &http.Cookie{Name: name, Value: value, Path: path, Domain: domain, MaxAge: maxAgeSeconds, HttpOnly: httpOnly, Secure: secure, SameSite: sameSite}
 	http.SetCookie(i.response, cookie)
@@ -108,7 +107,7 @@ func (i *Instance) convertCookieSameSite(sameSite string) (http.SameSite, error)
 	case "NONE":
 		return http.SameSiteNoneMode, nil
 	default:
-		return http.SameSiteDefaultMode, errors.New("[iHTTP]: wrong sameSite string")
+		return http.SameSiteDefaultMode, i.newError("wrong sameSite string")
 	}
 }
 
@@ -127,7 +126,7 @@ value: %v
 secure: %v
 ////////////
 
-        `, cookie.Domain, cookie.Path, cookie.Name, cookie.Value, cookie.Secure)
+`, cookie.Domain, cookie.Path, cookie.Name, cookie.Value, cookie.Secure)
 		cookieString = cookieString + cook
 	}
 	if len(cookieString) < 2 {
@@ -140,7 +139,7 @@ path: %v
 rawPath: %v
 contentLength: %v
 rawQuery: %v
-	`, i.request.Method, i.request.URL.Path, i.request.URL.RawPath, i.request.ContentLength, i.request.URL.RawQuery)
+`, i.request.Method, i.request.URL.Path, i.request.URL.RawPath, i.request.ContentLength, i.request.URL.RawQuery)
 	// total.
 	var dump = fmt.Sprintf(`----URL----%v
 
@@ -149,12 +148,12 @@ rawQuery: %v
 }
 
 // convert time like "2h"; "2min"; "2sec" to duration.
-func (i *Instance) convertTimeWord(timeShortcut string) (time.Duration, error) {
+func (i *Instance) convertTimeWord(timeShortcut string) (dur time.Duration, err error) {
 	timeShortcut = strings.ToLower(timeShortcut)
-	timeDuration, err := time.ParseDuration(timeShortcut)
+	dur, err = time.ParseDuration(timeShortcut)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "[http/convertTimeWord]: converting failed. Error: ")
-		return 0, errPretty
+		err = i.wrapError(err)
+		return
 	}
-	return timeDuration, nil
+	return
 }

@@ -45,5 +45,6 @@ func MinMax(text *string, min int, max int) bool {
 	if text == nil {
 		return false
 	}
-	return len(*text) < min || len(*text) > max
+	var textLen = len([]rune(*text))
+	return textLen < min || textLen > max
 }

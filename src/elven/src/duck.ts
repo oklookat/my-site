@@ -1,40 +1,42 @@
-import Duckd from "@oklookat/duck"
+import Duckd, { type Cancelable } from "@oklookat/duck"
 import type { Hooks as IHooks, GlobalConfig } from "@oklookat/duck"
 import { AdapterError } from "@/tools/errors"
 import { Env } from "@/tools/paths"
 
 const apiURL = Env.getAPI()
 
+export class CancelToken implements Cancelable {
+    cancel(message?: string) {
+
+    }
+}
+
 const Hooks: IHooks = {
     onRequest(r) {
-        const method = r.config.method
-        if (method === 'OPTIONS' || method === 'HEAD') {
-            return
-        }
-        window.$elvenProgress.startBasic()
+        window.$progress.startBasic()
     },
     onResponse() {
-        window.$elvenProgress.finishBasic()
-        //window.$elvenProgress.resetPercents()
+        window.$progress.finishBasic()
+        //window.$progress.resetPercents()
     },
     onError(err) {
-        window.$elvenProgress.finishBasic()
-        window.$elvenProgress.resetPercents()
+        window.$progress.finishBasic()
+        window.$progress.reset()
         AdapterError.handle(err)
     },
     onUploadProgress(e) {
+        // no Content-Length
         if (!e.data.lengthComputable) {
-            // no Content-Length
-            console.log(`uploaded ${e.data.loaded} bytes`);
             return
         }
         const percents = (e.data.loaded / e.data.total) * 100
-        window.$elvenProgress.percents = percents
+        window.$progress.percents = percents
     }
 }
 
 
 const config: GlobalConfig = {
+    timeout: 30000,
     withCredentials: true,
     baseURL: apiURL,
     hooks: Hooks,

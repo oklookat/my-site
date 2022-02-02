@@ -82,9 +82,13 @@ VOLATILE;
 
 -- create ulid type from https://github.com/geckoboard/pgulid/issues/4
 DROP DOMAIN IF EXISTS uild CASCADE;
-CREATE DOMAIN ulid AS varchar(26) DEFAULT generate_ulid() NOT NULL
+CREATE DOMAIN ulid AS varchar(26) DEFAULT generate_ulid()
 CONSTRAINT ulid_length_check CHECK (char_length(value) = 26)
 CONSTRAINT ulid_upper_bound CHECK (value <= '7ZZZZZZZZZZZZZZZZZZZZZZZZZ');
+
+-- custom types
+DROP DOMAIN IF EXISTS created CASCADE;
+CREATE DOMAIN created AS timestamp with time zone DEFAULT current_timestamp NOT NULL;
 ---------------------- SERVICE FUNCTIONS END ----------------------
 
 ---------------------- BASIC FUNCTIONS. ACTUAL FOR ALL MODELS. ----------------------
@@ -151,7 +155,7 @@ CREATE TABLE users
     password   varchar(256) NOT NULL,
     reg_ip     varchar(64) DEFAULT NULL,
     reg_agent  varchar(324) DEFAULT NULL,
-    created_at timestamp with time zone DEFAULT current_timestamp NOT NULL,
+    created_at created,
     updated_at timestamp with time zone,
     CONSTRAINT users_length CHECK (length(username) >= 4 AND (length(password) >= 8))
 ) TABLESPACE pg_default;
@@ -177,7 +181,7 @@ CREATE TABLE tokens
     last_agent varchar(324) DEFAULT NULL,
     auth_ip varchar(64) DEFAULT NULL,
     auth_agent varchar(324) DEFAULT NULL,
-    created_at timestamp with time zone DEFAULT current_timestamp,
+    created_at created,
     updated_at timestamp with time zone
 ) TABLESPACE pg_default;
 ALTER TABLE tokens OWNER to postgres;
@@ -193,7 +197,7 @@ CREATE TABLE article_categories
 (
     id ulid PRIMARY KEY,
     name varchar(24) UNIQUE,
-    created_at timestamp with time zone DEFAULT current_timestamp,
+    created_at created,
     updated_at timestamp with time zone
 ) TABLESPACE pg_default;
 ALTER TABLE article_categories OWNER to postgres;
@@ -210,14 +214,13 @@ CREATE TABLE articles
     id ulid  PRIMARY KEY,
     user_id ulid NOT NULL
     REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    category_name varchar(24) DEFAULT NULL
-    REFERENCES article_categories(name) ON UPDATE CASCADE ON DELETE SET NULL,
+    category_id ulid DEFAULT NULL
+    REFERENCES article_categories(id) ON UPDATE CASCADE ON DELETE SET NULL,
     is_published boolean DEFAULT false,
     title varchar(124) DEFAULT 'Untitled'::varchar,
     content varchar(256000) NOT NULL,
-    slug varchar(256) UNIQUE,
     published_at timestamp with time zone,
-    created_at timestamp with time zone DEFAULT current_timestamp,
+    created_at created,
     updated_at timestamp with time zone
 ) TABLESPACE pg_default;
 ALTER TABLE articles OWNER to postgres;
@@ -240,7 +243,7 @@ CREATE TABLE files
     original_name varchar(512) DEFAULT NULL,
     extension varchar(64) DEFAULT NULL,
     size bigint NOT NULL,
-    created_at timestamp with time zone DEFAULT current_timestamp,
+    created_at created,
     updated_at timestamp with time zone
 ) TABLESPACE pg_default;
 ALTER TABLE files OWNER to postgres;

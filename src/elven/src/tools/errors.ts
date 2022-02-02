@@ -5,8 +5,8 @@ export class AdapterError {
 
     public static handle(err: HookOutput.onError): string {
         const message = this.sort(err)
-        if (window.$elvenNotify) {
-            window.$elvenNotify.add({message})
+        if (window.$notify) {
+            window.$notify.add({message})
         }
         return message
     }

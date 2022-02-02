@@ -1,4 +1,5 @@
-@import './themes.scss';
+@import "./themes.scss";
+@import "./ui.scss";
 
 :root {
   --header-height: 52px;
@@ -34,7 +35,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -51,51 +53,6 @@ body {
   min-height: 100%;
 }
 
-.logo__text {
-  font-size: 1.2rem;
-  letter-spacing: 0.8rem;
-  text-indent: 0.8rem;
-  user-select: none;
-}
-
-.item {
-  cursor: pointer;
-  border-radius: var(--border-radius);
-  height: 100%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  :hover {
-    background-color: var(--color-hover);
-  }
-}
-
-.active {
-  background-color: var(--color-hover);
-  border: none;
-}
-
-.no-scroll {
-  overflow: hidden;
-}
-
-.block {
-  background-color: var(--color-level-1);
-  border-radius: var(--border-radius);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  > * {
-    margin-left: 8px;
-  }
-}
-
-.big {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 6px;
-}
 
 a {
   color: inherit;
@@ -132,12 +89,14 @@ button {
   background-color: var(--color-level-2);
   color: var(--color-text);
   min-height: 24px;
-  &:disabled, [disabled] {
+  &:disabled,
+  [disabled] {
     display: none;
   }
 }
 
-img, video {
+img,
+video {
   min-height: 240px;
   min-width: 240px;
   object-fit: fill;
@@ -155,7 +114,6 @@ img, video {
     height: 40%;
   }
 }
-
 
 .jmarkd__toolbar {
   font-size: 0.8rem;

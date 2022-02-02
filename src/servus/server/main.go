@@ -24,16 +24,18 @@ func main() {
 func serve() {
 	var host = call.Config.Host
 	var port = call.Config.Port
-	var hostAndPort = fmt.Sprintf("%v:%v", host, port)
-	if !call.Config.Security.HTTPS.Active {
-		serveHttp(hostAndPort)
-	} else {
+	var hostAndPort = fmt.Sprintf("%s:%s", host, port)
+	// http(s)
+	var isHTTPS = call.Config.Security.HTTPS.Active
+	if isHTTPS {
 		serveHttps(hostAndPort)
+	} else {
+		serveHttp(hostAndPort)
 	}
 }
 
 func serveHttp(hostAndPort string) {
-	var listeningOn = fmt.Sprintf("servus: listening on http://%v", hostAndPort)
+	var listeningOn = fmt.Sprintf("servus: listening on http://%s", hostAndPort)
 	call.Logger.Info(listeningOn)
 	err := http.ListenAndServe(hostAndPort, nil)
 	if err != nil {
@@ -43,7 +45,7 @@ func serveHttp(hostAndPort string) {
 }
 
 func serveHttps(hostAndPort string) {
-	var listeningOn = fmt.Sprintf("servus: listening on https://%v", hostAndPort)
+	var listeningOn = fmt.Sprintf("servus: listening on https://%s", hostAndPort)
 	call.Logger.Info(listeningOn)
 	var certPath = call.Config.Security.HTTPS.CertPath
 	var keyPath = call.Config.Security.HTTPS.KeyPath

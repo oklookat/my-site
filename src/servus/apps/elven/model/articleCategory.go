@@ -1,7 +1,6 @@
 package model
 
 import (
-	"servus/core/external/database"
 	"time"
 )
 
@@ -12,8 +11,6 @@ type ArticleCategory struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
-
-var articleCatAdapter = database.Adapter[ArticleCategory]{}
 
 // get all categories.
 func (a *ArticleCategory) GetAll() (cats map[int]*ArticleCategory, err error) {

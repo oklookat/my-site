@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { push } from "svelte-spa-router";
   // ui
   import Overlay from "@/ui/overlay.svelte";
@@ -7,14 +7,12 @@
   import Toolbar from "@/ui/toolbar.svelte";
   import ToolbarBig from "@/ui/toolbarBig.svelte";
   // article
-  import type { Article, Params } from "../types";
-  import { Show, By, Start } from "../types";
+  import type { Article, Params } from "./../types";
+  import { Show, By, Start } from "./../types";
   import type { Meta } from "@/types";
-  import ArticleAdapter from "../adapter";
   import CArticle from "./article.svelte";
-  import { Route } from "@/tools/paths";
-  import Validate from "@/entities/articles/validate";
   import Utils from "@/tools/utils";
+  import ArticleAdapter from "../adapter";
 
   /** articles loaded? */
   let loaded = false;
@@ -38,42 +36,29 @@
     preview: true,
   };
 
-  Route.initPopState((searchParams) => {
-    Validate.params(requestParams, searchParams);
-    getAll(undefined, false);
+  onMount(async () => {
+    await getAll(undefined);
   });
 
-  onMount(() => {
-    const searchParams = Route.getSearchParams();
-    Validate.params(requestParams, searchParams);
-    Route.setHistoryParams(requestParams);
-    getAll(undefined, true);
-  });
+  onDestroy(() => {});
 
   /** get all articles.
    * @param p request params
-   *
-   * @param withHistory set history params **by p parameter** after articles loaded
    */
-  async function getAll(p: Params = requestParams, withHistory = true) {
+  async function getAll(p: Params = requestParams) {
     // trigger reactivity because baseParams may have been changed by history
     requestParams = requestParams;
     if (p.page < 1) {
       p.page = 1;
-      requestParams.page = 1
+      requestParams.page = 1;
     }
     loaded = false;
     try {
       const result = await ArticleAdapter.getAll(p);
       articles = result.data;
       meta = result.meta;
-      if (withHistory) {
-        Route.setHistoryParams(p);
-      }
       loaded = true;
-    } catch (err) {
-      throw err
-    }
+    } catch (err) {}
   }
 
   /** edit article */
@@ -111,7 +96,7 @@
 
   /** delete article */
   async function deleteArticle(counter: number) {
-    const isDelete = confirm("Are you sure?");
+    const isDelete = await window.$choose.confirm("delete article")
     if (!isDelete) {
       return;
     }
@@ -183,7 +168,7 @@
   }
 </script>
 
-<div class="articles">
+<div class="articles base__container">
   <ToolbarBig>
     <a href="#/articles/create">new</a>
     <a href="#/articles/cats">categories</a>
@@ -192,58 +177,52 @@
   <Toolbar>
     <div class="articles__show">
       {#if requestParams.show === Show.published}
-        <div class="articles__item" on:click={() => setShow(Show.drafts)}>
+        <div class="pointer" on:click={() => setShow(Show.drafts)}>
           published
         </div>
       {/if}
       {#if requestParams.show === Show.drafts}
-        <div class="articles__item" on:click={() => setShow(Show.published)}>
+        <div class="pointer" on:click={() => setShow(Show.published)}>
           drafts
         </div>
       {/if}
     </div>
     <div class="articles__sort-start">
       {#if requestParams.start === Start.newest}
-        <div class="articles__item" on:click={() => setStart(Start.oldest)}>
+        <div class="pointer" on:click={() => setStart(Start.oldest)}>
           newest
         </div>
       {/if}
       {#if requestParams.start === Start.oldest}
-        <div class="articles__item" on:click={() => setStart(Start.newest)}>
+        <div class="pointer" on:click={() => setStart(Start.newest)}>
           oldest
         </div>
       {/if}
     </div>
     <div class="articles__sort-by">
       {#if requestParams.by === By.updated}
-        <div class="articles__item" on:click={() => setBy(By.published)}>
+        <div class="pointer" on:click={() => setBy(By.published)}>
           by updated date
         </div>
       {/if}
       {#if requestParams.by === By.published}
-        <div class="articles__item" on:click={() => setBy(By.created)}>
+        <div class="pointer" on:click={() => setBy(By.created)}>
           by published date
         </div>
       {/if}
       {#if requestParams.by === By.created}
-        <div class="articles__item" on:click={() => setBy(By.updated)}>
+        <div class="pointer" on:click={() => setBy(By.updated)}>
           by created date
         </div>
       {/if}
     </div>
   </Toolbar>
 
-  {#if articles && Utils.getObjectLength(articles) > 0}
+  {#if articles}
     <div class="articles__list">
       {#each Object.entries(articles) as [id, article]}
         <CArticle {article} on:selected={(e) => select(parseInt(id, 10))} />
       {/each}
-    </div>
-  {/if}
-
-  {#if loaded && Utils.getObjectLength(articles) < 1}
-    <div class="articles__404">
-      <div>no articles :(</div>
     </div>
   {/if}
 
@@ -284,26 +263,6 @@
 
 <style lang="scss">
   .articles {
-    width: 95%;
-    height: 100%;
-    max-width: 512px;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    &__item {
-      cursor: pointer;
-    }
-    &__404 {
-      background-color: var(--color-level-1);
-      height: 240px;
-      border-radius: var(--border-radius);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 24px;
-    }
     &__list {
       height: 100%;
       width: 100%;
@@ -319,7 +278,6 @@
     display: flex;
     flex-direction: column;
     &__item {
-      transition: background-color 80ms ease-out;
       height: 64px;
       width: 100%;
       font-size: 1rem;

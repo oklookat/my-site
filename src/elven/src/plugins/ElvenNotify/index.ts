@@ -5,8 +5,6 @@ import type {
 } from "./types";
 import Notification from './notification';
 
-
-// TODO: add transition
 export class ElvenNotify implements IElvenNotify {
 
     private container: HTMLDivElement
@@ -23,7 +21,7 @@ export class ElvenNotify implements IElvenNotify {
 
     constructor(container: HTMLDivElement) {
         this.container = container
-        window.$elvenNotify = this
+        window.$notify = this
     }
  
     public add(n: TNotification) {
@@ -41,7 +39,8 @@ export class ElvenNotify implements IElvenNotify {
         }
         if (isMaxNotifications) {
             const first = this.container.lastElementChild
-            if (first && first instanceof HTMLDivElement) {
+            const isDiv = first && first['tagName'] && first.tagName === 'DIV'
+            if (isDiv) {
                 first.remove()
             }
         }

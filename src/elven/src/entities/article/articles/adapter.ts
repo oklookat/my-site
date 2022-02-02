@@ -1,6 +1,6 @@
 import Duck from '@/duck'
 import type { Data } from '@/types'
-import type { Article, Params } from '@/entities/articles/types'
+import type { Article, Params } from './types'
 
 export default class ArticleAdapter {
 

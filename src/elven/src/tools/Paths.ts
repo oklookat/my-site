@@ -64,16 +64,19 @@ export class Route {
     /** set history query string by params */
     public static setHistoryParams(params: string | string[][] |
         Record<string | number, string | number | boolean> |
-        URLSearchParams) {
-        // @ts-ignore
-        const _params = new URLSearchParams(params).toString()
+        URLSearchParams | null) {
+        let _params = ""
+        if(params) {
+            // @ts-ignore
+            _params = "?" + new URLSearchParams(params).toString()
+        }
         // set location
         const protocol = window.location.protocol + "//"
         const host = window.location.host;
         const pathname = window.location.pathname
         const base = `${protocol}${host}${pathname}`
         const _location = this.getLocation()
-        const newurl = `${base}#${_location}?${_params}`
+        const newurl = `${base}#${_location}${_params}`
         window.history.pushState({ params: _params }, "", newurl)
     }
 

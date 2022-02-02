@@ -31,13 +31,13 @@ func (c *controller) SendMessage(message string) {
 }
 
 // send file to all controllers.
-func (c *controller) SendFile(caption *string, filename string, reader io.Reader) {
+func (c *controller) SendFile(caption *string, filename string, data io.Reader) {
 	if c.controllers == nil {
 		return
 	}
 	go func() {
 		for index := range c.controllers {
-			c.controllers[index].SendFile(caption, filename, reader)
+			c.controllers[index].SendFile(caption, filename, data)
 		}
 	}()
 }

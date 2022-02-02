@@ -70,7 +70,7 @@
     function beforeUsername(): boolean {
         if (changer.newValue === userData.username) {
             const message = "You already have this username."
-            window.$elvenNotify.add({message});
+            window.$notify.add({message});
             return true;
         }
         return false;

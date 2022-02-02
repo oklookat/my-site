@@ -51,7 +51,7 @@
 ### /article/categories - manage article categories
 - **GET "/"** = get all
 - **POST "/"** = create
-- **GET "/id"** = get one
+- **GET "/name"** = get one
 - **PUT/PATCH "/id"** = rename
 - **DELETE "/id"** = delete
 

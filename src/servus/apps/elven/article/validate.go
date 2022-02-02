@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/url"
+	"regexp"
 	"servus/apps/elven/base"
 	"strconv"
 	"strings"
@@ -25,6 +26,7 @@ type Paginate struct {
 
 // represents article body of the request that the user should send. Used in create and update methods.
 type ArticleBody struct {
+	CategoryID  *string `json:"category_id"`
 	IsPublished *bool   `json:"is_published"`
 	Title       *string `json:"title"`
 	Content     *string `json:"content"`
@@ -136,16 +138,18 @@ func (a *ArticleBody) Validate(body io.ReadCloser) (val base.Validator) {
 	}
 	// content.
 	if isContent {
-		var contentInvalid = len(*a.Content) < 1 || len(*a.Content) > 256000
+		var contentLen = call.Utils.LenRune(*a.Content)
+		var contentInvalid = contentLen < 1 || contentLen > 256000
 		if contentInvalid {
 			val.Add("content")
 		}
 	}
 	// title.
 	if isTitle {
-		if len(*a.Title) < 1 {
+		var titleLen = call.Utils.LenRune(*a.Title)
+		if titleLen < 1 {
 			*a.Title = "Untitled"
-		} else if len(*a.Title) > 124 {
+		} else if titleLen > 124 {
 			val.Add("title")
 		}
 	}
@@ -161,8 +165,17 @@ func (c *CategoryBody) Validate(body io.ReadCloser) (val base.Validator) {
 		val.Add("body")
 		return
 	}
-	// check is valid
-	var notValid = len(c.Name) < 1 || len(c.Name) > 24
+	// replace new lines with one space
+	reg, _ := regexp.Compile(`[\r\n]`)
+	c.Name = reg.ReplaceAllString(c.Name, " ")
+	// replace 2+ spaces with one space
+	reg, _ = regexp.Compile(`[^\S]{2,}`)
+	c.Name = reg.ReplaceAllString(c.Name, "")
+	// remove spaces at start and end
+	c.Name = strings.Trim(c.Name, " ")
+	// length?
+	var nameLen = call.Utils.LenRune(c.Name)
+	var notValid = nameLen < 1 || nameLen > 24
 	if notValid {
 		val.Add("name")
 	}

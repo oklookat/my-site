@@ -48,7 +48,7 @@
     <div class="file__main">
         {#if file.extensionType === "image"}
             <div class="file__item file__preview" on:click|stopPropagation>
-                <img src={file.pathConverted.href} alt="" />
+                <img decoding="async" loading="lazy" src={file.pathConverted.href} alt="" />
             </div>
         {:else if file.extensionType === "video"}
             <div class="file__item file__preview" on:click|stopPropagation>

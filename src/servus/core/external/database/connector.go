@@ -11,11 +11,11 @@ import (
 
 var con *Connector
 
-// controls database connection.
+// controls database connection. After connecting, you can use Adapter.
 type Connector struct {
-	connection *sqlx.DB
-	config     *Config
-	logger     Logger
+	Connection *sqlx.DB
+	Config     *Config
+	Logger     Logger
 }
 
 // create new instance and connect.
@@ -31,8 +31,8 @@ func (c *Connector) New(config *Config, logger Logger) {
 		panic(verr)
 	}
 	// set
-	c.config = config
-	c.logger = logger
+	c.Config = config
+	c.Logger = logger
 	var pgHost = config.Postgres.Host
 	var pgUser = config.Postgres.User
 	var pgPassword = config.Postgres.Password
@@ -45,10 +45,10 @@ func (c *Connector) New(config *Config, logger Logger) {
 	connection, err := sqlx.Connect("pgx", connectionStr)
 	if err != nil {
 		err = c.wrapError(err)
-		c.logger.Panic(err)
+		c.Logger.Panic(err)
 		return
 	}
-	c.connection = connection
+	c.Connection = connection
 	con = c
 }
 
@@ -56,7 +56,7 @@ func (c *Connector) wrapError(err error) error {
 	if err == nil {
 		return nil
 	}
-	return errors.Wrap(err, "[database] ")
+	return errors.Wrap(err, "[database]")
 }
 
 // err == sql.ErrNoRows.
@@ -70,6 +70,6 @@ func (c *Connector) checkError(err error) error {
 		return nil
 	}
 	err = c.wrapError(err)
-	c.logger.Error(err.Error())
+	c.Logger.Error(err.Error())
 	return err
 }

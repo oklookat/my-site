@@ -30,10 +30,10 @@ export type Params = {
 export type Article = {
     id?: string
     user_id?: string
+    category_id?: string
     is_published?: boolean
     title: string
     content: string
-    slug?: string
     published_at?: string
     updated_at?: string
 }

@@ -2,7 +2,6 @@ package model
 
 import (
 	"net/http"
-	"servus/core/external/database"
 	"strings"
 	"time"
 )
@@ -19,8 +18,6 @@ type Token struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
-
-var tokenAdapter = database.Adapter[Token]{}
 
 // create Model in database.
 func (t *Token) Create() (err error) {

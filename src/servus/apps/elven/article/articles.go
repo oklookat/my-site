@@ -9,6 +9,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// TODO: use joins?
+// SELECT art.id, art.user_id, cats.id as category_id, cats.name as category_name, art.is_published,
+// art.title, art.content, art.slug, art.published_at, art.created_at, art.updated_at
+// FROM articles as art
+// LEFT JOIN article_categories as cats
+// ON cats.id = art.category_id;
+
 // GET url/. Get paginated articles.
 func (a *Instance) getArticles(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
@@ -132,9 +139,9 @@ func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Req
 		return
 	}
 	// check fields.
+	var isPublished = body.IsPublished != nil
 	var isTitle = body.Title != nil
 	var isContent = body.Content != nil
-	var isPublished = body.IsPublished != nil
 	// choose modification by method.
 	// if PUT method we need full article to update. If PATCH - we need at least one field.
 	if request.Method == http.MethodPut {
@@ -144,9 +151,9 @@ func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Req
 			h.Send(validator.GetJSON(), 400, err)
 			return
 		} else {
+			article.IsPublished = *body.IsPublished
 			article.Title = *body.Title
 			article.Content = *body.Content
-			article.IsPublished = *body.IsPublished
 		}
 	} else if request.Method == http.MethodPatch {
 		// need at least one field.
@@ -160,6 +167,7 @@ func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Req
 			article.IsPublished = *body.IsPublished
 		}
 	}
+	article.CategoryID = body.CategoryID
 	// update.
 	err = article.Update()
 	if err != nil {

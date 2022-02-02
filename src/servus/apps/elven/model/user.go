@@ -1,7 +1,6 @@
 package model
 
 import (
-	"servus/core/external/database"
 	"servus/core/external/validator"
 	"strings"
 	"time"
@@ -25,8 +24,6 @@ type User struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
-
-var userAdapter = database.Adapter[User]{}
 
 // create user in database.
 func (u *User) Create() (err error) {

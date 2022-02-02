@@ -6,8 +6,8 @@ export interface ElvenProgress {
     startBasic: () => void
     /** finish basic loading (progress go from n percents to 100 and resets) */
     finishBasic: () => void
-    /** reset percents */
-    resetPercents: () => void
+    /** reset */
+    reset: () => void
 }
 
 /** settings */
@@ -15,8 +15,11 @@ export type Settings = {
     /** height of progress line */
     height: string
     basicLoading: {
+        /** go to n percents */
         startTo: number
+        /** start with speed */
         startSpeed: number
+        /** finish with speed */
         finishSpeed: number
     }
 }

@@ -14,14 +14,14 @@ type Instance struct {
 func (m *Instance) New(
 	cors mFunc,
 	limitBody mFunc,
-	_http mFunc,
+	httpHelper mFunc,
 ) {
-	if cors == nil || limitBody == nil || _http == nil {
+	if cors == nil || limitBody == nil || httpHelper == nil {
 		panic("[middleware]: one of args has nil pointer")
 	}
 	m.cors = cors
 	m.limitBody = limitBody
-	m.provideHTTP = _http
+	m.provideHTTP = httpHelper
 	m.asJson = func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			writer.Header().Add("Content-Type", "application/json; charset=utf-8")

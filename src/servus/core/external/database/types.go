@@ -9,6 +9,7 @@ type Logger interface {
 	Panic(err error)
 }
 
+// database config.
 type Config struct {
 	// see timezones https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
 	Timezone string `json:"timezone"`

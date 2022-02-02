@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"math"
-	"servus/core/external/database"
 	"time"
 )
 
@@ -21,8 +20,6 @@ type File struct {
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }
-
-var fileAdapter = database.Adapter[File]{}
 
 func (f *File) GetPaginated(by string, start string, page int) (files map[int]*File, totalPages int, err error) {
 	// get pages count.

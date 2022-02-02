@@ -3,49 +3,56 @@ package model
 import (
 	"fmt"
 	"math"
-	"math/rand"
-	"servus/core/external/database"
 	"time"
-
-	"github.com/gosimple/slug"
-	"github.com/oklog/ulid/v2"
 )
 
 const ArticlePageSize = 2
 
 // represents article in database.
 type Article struct {
-	ID           string     `json:"id" db:"id"`
-	UserID       string     `json:"user_id" db:"user_id"`
+	ID         string  `json:"id" db:"id"`
+	UserID     string  `json:"user_id" db:"user_id"`
+	CategoryID *string `json:"category_id" db:"category_id"`
+	// name of category available only when we get article(s)
 	CategoryName *string    `json:"category_name" db:"category_name"`
 	IsPublished  bool       `json:"is_published" db:"is_published"`
 	Title        string     `json:"title" db:"title"`
 	Content      string     `json:"content" db:"content"`
-	Slug         string     `json:"slug" db:"slug"`
 	PublishedAt  *time.Time `json:"published_at" db:"published_at"`
 	CreatedAt    time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at" db:"updated_at"`
 }
 
-var articleAdapter = database.Adapter[Article]{}
+// get query to get article(s) with join category name
+func (a *Article) getQueryGetter() string {
+	return `
+	SELECT art.*, cats.name as category_name
+	FROM articles as art
+	LEFT JOIN article_categories as cats
+	ON art.category_id = cats.id
+
+	`
+}
+
+// get query to get rows count
+func (a *Article) getQueryRowsCount() string {
+	return `SELECT count(*) FROM articles `
+}
 
 // get paginated.
 func (a *Article) GetPaginated(by string, start string, show string, page int, preview bool) (articles map[int]*Article, totalPages int, err error) {
-	var query string
-	var queryCount string
-	switch show {
-	case "published":
-		// use sprintf to format validated.by and start because with $ database throws syntax error (I don't know why)
-		// it not allows sql injection, because start and by checked in validator
-		query = fmt.Sprintf("SELECT * FROM articles WHERE is_published=true ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", by, start, start)
-		queryCount = "SELECT count(*) FROM articles WHERE is_published=true"
-	case "drafts":
-		query = fmt.Sprintf("SELECT * FROM articles WHERE is_published=false ORDER BY %v %v, id %v LIMIT $1 OFFSET $2", by, start, start)
-		queryCount = "SELECT count(*) FROM articles WHERE is_published=false"
+	var isPublished string
+	if show == "published" {
+		isPublished = "true"
+	} else if show == "drafts" {
+		isPublished = "false"
+	} else {
+		return
 	}
+	var queryCount = a.getQueryRowsCount() + "WHERE is_published=$1"
 	// get pages count.
 	totalPages = 1
-	err = IntAdapter.Get(&totalPages, queryCount)
+	err = IntAdapter.Get(&totalPages, queryCount, isPublished)
 	if err != nil {
 		return
 	}
@@ -54,16 +61,22 @@ func (a *Article) GetPaginated(by string, start string, show string, page int, p
 		return
 	}
 	// get.
-	articles, err = articleAdapter.GetRows(query, ArticlePageSize, (page-1)*ArticlePageSize)
+	// attention: potential sql injection - check values in validator before use it
+	var query = a.getQueryGetter() + fmt.Sprintf(`
+		WHERE art.is_published = $1
+		ORDER BY %v %v, id %v LIMIT $2 OFFSET $3;
+		`, by, start, start)
+	articles, err = articleAdapter.GetRows(query, isPublished, ArticlePageSize, (page-1)*ArticlePageSize)
 	return
 }
 
 // create in database.
 func (a *Article) Create() (err error) {
 	a.hookBeforeChange()
-	var query = `INSERT INTO articles (user_id, category_name, 
-		is_published, title, content, slug) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`
-	err = articleAdapter.Get(a, query, a.UserID, a.CategoryName, a.IsPublished, a.Title, a.Content, a.Slug)
+	var query = `
+	INSERT INTO articles (user_id, category_id, 
+	is_published, title, content) VALUES ($1, $2, $3, $4, $5) RETURNING *`
+	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.IsPublished, a.Title, a.Content)
 	if err != nil {
 		return
 	}
@@ -74,9 +87,9 @@ func (a *Article) Create() (err error) {
 // update all article in database.
 func (a *Article) Update() (err error) {
 	a.hookBeforeChange()
-	var query = `UPDATE articles SET user_id=$1, category_name=$2,
-	is_published=$3, title=$4, content=$5, slug=$6, published_at=$7 WHERE id=$8 RETURNING *`
-	err = articleAdapter.Get(a, query, a.UserID, a.CategoryName, a.IsPublished, a.Title, a.Content, a.Slug, a.PublishedAt, a.ID)
+	var query = `UPDATE articles SET user_id=$1, category_id=$2,
+	is_published=$3, title=$4, content=$5, published_at=$6 WHERE id=$7 RETURNING *`
+	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.IsPublished, a.Title, a.Content, a.PublishedAt, a.ID)
 	if err != nil {
 		return
 	}
@@ -87,7 +100,7 @@ func (a *Article) Update() (err error) {
 // find article in database by id field.
 func (a *Article) FindByID() (found bool, err error) {
 	found = false
-	var query = "SELECT * FROM articles WHERE id=$1 LIMIT 1"
+	var query = a.getQueryGetter() + "WHERE art.id=$1 LIMIT 1"
 	founded, err := articleAdapter.Find(query, a.ID)
 	if err != nil {
 		return
@@ -111,32 +124,24 @@ func (a *Article) hookBeforeChange() {
 	if len(a.Title) == 0 {
 		a.Title = "Untitled"
 	}
-	// create temp slug (ULID).
-	t := time.Now()
-	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
-	a.Slug = ulid.MustNew(ulid.Timestamp(t), entropy).String()
 	// check published.
 	if a.IsPublished && a.PublishedAt == nil {
 		var cur = time.Now()
 		a.PublishedAt = &cur
 	}
 	// check category.
-	if a.CategoryName != nil {
+	if a.CategoryID != nil {
 		var cat = ArticleCategory{}
-		cat.ID = *a.CategoryName
-		found, err := cat.FindByName()
+		cat.ID = *a.CategoryID
+		found, err := cat.FindByID()
 		if err == nil && !found {
 			// if category not found - reset category
-			a.CategoryName = nil
+			a.CategoryID = nil
 		}
 	}
 }
 
 // executes after article create or update.
 func (a *Article) hookAfterChange() (err error) {
-	// create normal slug.
-	a.Slug = slug.Make(a.Title) + "-" + a.ID
-	var query = "UPDATE articles SET slug=$1 WHERE id=$2 RETURNING *"
-	err = articleAdapter.Get(a, query, a.Slug, a.ID)
 	return
 }

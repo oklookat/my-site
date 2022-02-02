@@ -16,6 +16,7 @@ import (
 type utils struct {
 }
 
+// remove spaces from string.
 func (u *utils) RemoveSpaces(str string) string {
 	return strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
@@ -25,6 +26,7 @@ func (u *utils) RemoveSpaces(str string) string {
 	}, str)
 }
 
+// get dir where bin executes.
 func (u *utils) GetExecutionDir() (path string, err error) {
 	path, err = os.Executable()
 	if err != nil {
@@ -44,18 +46,21 @@ func (u *utils) GetExecutionDir() (path string, err error) {
 	return
 }
 
+// fromat path slashes.
 func (u *utils) FormatPath(path string) string {
 	path = filepath.FromSlash(path)
 	path = filepath.ToSlash(path)
 	return path
 }
 
+// get HTTP from request context.
 func (u *utils) GetHTTP(request *http.Request) HTTP {
 	var ctx = request.Context()
 	var h, _ = ctx.Value(ctxHTTP).(HTTP)
 	return h
 }
 
+// generate ULID.
 func (u *utils) GenerateULID() (ul string, err error) {
 	current := time.Now()
 	entropy := ulid.Monotonic(rand.New(rand.NewSource(current.UnixNano())), 0)
@@ -65,4 +70,9 @@ func (u *utils) GenerateULID() (ul string, err error) {
 	}
 	ul = ulType.String()
 	return
+}
+
+// get rune length.
+func (u *utils) LenRune(val string) int {
+	return len([]rune(val))
 }

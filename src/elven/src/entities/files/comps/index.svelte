@@ -80,7 +80,7 @@
 
   /** delete file */
   async function deleteFile(counter: number) {
-    const isDelete = confirm("Are you sure?");
+    const isDelete = await window.$choose.confirm("delete file")
     if (!isDelete) {
       return;
     }
@@ -150,14 +150,14 @@
     } catch (err) {
       message = "Copy to clipboard: not have permission.";
     }
-    window.$elvenNotify.add({ message });
+    window.$notify.add({ message });
     toolsOverlay = false;
   }
 
   /** play audio by url */
   function playAudio(url: URL) {
-    window.$elvenPlayer.playlist = { position: 0, sources: [url.href] };
-    window.$elvenPlayer.play();
+    window.$player.playlist = { position: 0, sources: [url.href] };
+    window.$player.play();
   }
 
   /** delete file from files array */
@@ -180,7 +180,7 @@
   }
 </script>
 
-<div class="files">
+<div class="files base__container">
   <ToolbarBig>
     <div class="files__upload" on:click={() => onUploadClick()}>
       upload
@@ -257,12 +257,6 @@
 
 <style lang="scss">
   .files {
-    width: 95%;
-    max-width: 512px;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
     &__404 {
       background-color: var(--color-level-1);
       height: 240px;
