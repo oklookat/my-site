@@ -6,7 +6,7 @@
     let plugin: ElvenNotify;
 
     onMount(() => {
-        plugin = new ElvenNotify(container);
+        plugin = new ElvenNotify(container, 2000);
     });
 </script>
 

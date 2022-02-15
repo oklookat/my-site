@@ -117,6 +117,10 @@ export default class ElvenPlayer implements IElvenPlayer {
         }
     }
 
+    public get isPlaying(): boolean {
+        return this.store.playing
+    }
+
     public get playlist(): Playlist {
         return this._playlist
     }

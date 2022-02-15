@@ -47,7 +47,6 @@
   .overlay {
     background-color: rgba(0, 0, 0, 0.7);
     z-index: 9998;
-    max-width: 100vw;
     width: 100%;
     height: 100%;
     position: fixed;
@@ -61,12 +60,9 @@
     &__main {
       border-radius: var(--border-radius);
       z-index: 9999;
-      max-width: 365px;
-      max-height: 524px;
+      max-width: 95%;
       width: 294px;
       height: 224px;
-      box-sizing: border-box;
-      font-size: 1rem;
     }
     &__content {
       background-color: white;

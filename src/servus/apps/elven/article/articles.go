@@ -32,7 +32,7 @@ func (a *Instance) getArticles(response http.ResponseWriter, request *http.Reque
 	}
 	// get.
 	pag := model.Article{}
-	articles, totalPages, err := pag.GetPaginated(validatedBody.By, validatedBody.Start, validatedBody.Show, validatedBody.Page, validatedBody.Preview)
+	articles, totalPages, err := pag.GetPaginated(validatedBody.By, validatedBody.Start, validatedBody.Show, validatedBody.Page, validatedBody.Preview, validatedBody.CategoryName)
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return

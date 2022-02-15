@@ -1,6 +1,6 @@
 import './style.scss'
-import type { 
-    ElvenNotify as IElvenNotify, 
+import type {
+    ElvenNotify as IElvenNotify,
     Notification as TNotification
 } from "./types";
 import Notification from './notification';
@@ -19,11 +19,12 @@ export class ElvenNotify implements IElvenNotify {
         maxNotificationsMobile: 2
     }
 
-    constructor(container: HTMLDivElement) {
+    constructor(container: HTMLDivElement, time: number = 5000) {
+        this.settings.deletedIn = time
         this.container = container
         window.$notify = this
     }
- 
+
     public add(n: TNotification) {
         const count = this.container.childNodes.length
         // clear counter if no notifications
@@ -49,7 +50,7 @@ export class ElvenNotify implements IElvenNotify {
 
     /** create full notification and render */
     private set(n: TNotification) {
-        const not = new Notification(this.container, this.counter, n.message)
+        const not = new Notification(this.container, this.counter, n.message, this.settings.deletedIn)
         not.render()
         this.counter++
     }

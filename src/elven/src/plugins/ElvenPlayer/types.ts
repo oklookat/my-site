@@ -110,6 +110,8 @@ export type ComponentState = {
 export interface ElvenPlayer {
     /** player store / state */
     store: Store
+    /** is playing? */
+    get isPlaying(): boolean
     /** set playlist */
     set playlist(playlist: Playlist)
     /** get playlist */

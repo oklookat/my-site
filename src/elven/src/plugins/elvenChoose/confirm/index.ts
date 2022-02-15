@@ -1,3 +1,4 @@
+import Animation from "../../../tools/animation"
 import "./style.scss"
 
 enum className {
@@ -22,6 +23,7 @@ export default class Confirm {
         return new Promise(resolve => {
             // container
             const container = this.buildContainer(resolve)
+            container.style.opacity = '0' // for animation
             this.container = container
             // second container
             const secondContainer = this.buildSecondContainer()
@@ -43,7 +45,9 @@ export default class Confirm {
             NYC.appendChild(yes)
             //
             this.overflowSetter = this.getOverflowSetter()
+            //
             document.body.appendChild(this.container)
+            Animation.fadeIn(this.container, 10)
         })
     }
 
@@ -54,7 +58,10 @@ export default class Confirm {
         if (!isRemovable) {
             return
         }
-        document.body.removeChild(this.container)
+        Animation.fadeOut(this.container, 10)
+            .then(() => {
+                document.body.removeChild(this.container)
+            })
     }
 
     /** first call sets overflow hidden, second call reset overflow to default */

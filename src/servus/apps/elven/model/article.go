@@ -23,36 +23,51 @@ type Article struct {
 	UpdatedAt    time.Time  `json:"updated_at" db:"updated_at"`
 }
 
-// get query to get article(s) with join category name
-func (a *Article) getQueryGetter() string {
+// get query what gets articles + categories names (join)
+func (a *Article) getQueryGetterWithCatsNames() string {
 	return `
 	SELECT art.*, cats.name as category_name
 	FROM articles as art
 	LEFT JOIN article_categories as cats
 	ON art.category_id = cats.id
-
 	`
+}
+
+// get query to get article(s) with join category name
+func (a *Article) getQueryGetter() string {
+	return "SELECT * FROM (" + a.getQueryGetterWithCatsNames() + ") as tentacles\n"
 }
 
 // get query to get rows count
 func (a *Article) getQueryRowsCount() string {
-	return `SELECT count(*) FROM articles `
+	return "SELECT count(*) FROM (" + a.getQueryGetterWithCatsNames() + ") as tentacles\n"
 }
 
 // get paginated.
-func (a *Article) GetPaginated(by string, start string, show string, page int, preview bool) (articles map[int]*Article, totalPages int, err error) {
-	var isPublished string
+func (a *Article) GetPaginated(by string, start string, show string, page int, preview bool, categoryName *string) (articles map[int]*Article, totalPages int, err error) {
+	var isPublished bool
 	if show == "published" {
-		isPublished = "true"
+		isPublished = true
 	} else if show == "drafts" {
-		isPublished = "false"
+		isPublished = false
 	} else {
 		return
 	}
-	var queryCount = a.getQueryRowsCount() + "WHERE is_published=$1"
-	// get pages count.
+
+	// queries. //
+	var categoryNameExists = categoryName != nil
+	var queryWhereIsPublished = "WHERE is_published = $1 "
+	var queryAndCategoryName = "AND category_name = $2 "
+
+	// get pages count depend on category name. //
+	var queryGetCount = a.getQueryRowsCount() + queryWhereIsPublished
+	var getPagesCountArgsArr = []any{isPublished}
+	if categoryNameExists {
+		queryGetCount += queryAndCategoryName
+		getPagesCountArgsArr = append(getPagesCountArgsArr, *categoryName)
+	}
 	totalPages = 1
-	err = IntAdapter.Get(&totalPages, queryCount, isPublished)
+	err = IntAdapter.Get(&totalPages, queryGetCount, getPagesCountArgsArr...)
 	if err != nil {
 		return
 	}
@@ -60,13 +75,24 @@ func (a *Article) GetPaginated(by string, start string, show string, page int, p
 	if page > totalPages {
 		return
 	}
-	// get.
+
+	// get articles depend on category name (prepare). //
+	var queryGetArticles = a.getQueryGetter() + queryWhereIsPublished
+	var getArticlesArgsArr = []any{isPublished}
+	var getArticlesArgsDollars [2]string = [2]string{"$2", "$3"}
+	if categoryNameExists {
+		queryGetArticles += queryAndCategoryName
+		getArticlesArgsArr = append(getArticlesArgsArr, *categoryName)
+		getArticlesArgsDollars[0] = "$3"
+		getArticlesArgsDollars[1] = "$4"
+	}
+
+	// get articles & paginate. //
 	// attention: potential sql injection - check values in validator before use it
-	var query = a.getQueryGetter() + fmt.Sprintf(`
-		WHERE art.is_published = $1
-		ORDER BY %v %v, id %v LIMIT $2 OFFSET $3;
-		`, by, start, start)
-	articles, err = articleAdapter.GetRows(query, isPublished, ArticlePageSize, (page-1)*ArticlePageSize)
+	queryGetArticles += fmt.Sprintf("ORDER BY %v %v, id %v LIMIT %v OFFSET %v", by, start, start,
+		getArticlesArgsDollars[0], getArticlesArgsDollars[1])
+	getArticlesArgsArr = append(getArticlesArgsArr, ArticlePageSize, (page-1)*ArticlePageSize)
+	articles, err = articleAdapter.GetRows(queryGetArticles, getArticlesArgsArr...)
 	return
 }
 
@@ -100,7 +126,7 @@ func (a *Article) Update() (err error) {
 // find article in database by id field.
 func (a *Article) FindByID() (found bool, err error) {
 	found = false
-	var query = a.getQueryGetter() + "WHERE art.id=$1 LIMIT 1"
+	var query = a.getQueryGetter() + "WHERE id=$1 LIMIT 1"
 	founded, err := articleAdapter.Find(query, a.ID)
 	if err != nil {
 		return

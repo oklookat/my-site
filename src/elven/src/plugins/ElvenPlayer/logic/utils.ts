@@ -20,8 +20,8 @@ export default class Utils {
         // https://stackoverflow.com/a/1322771/16762009
         seconds = Math.round(seconds)
         const modes = {
-            hours: [11, 8],
-            minutes: [14, 5]
+            hours: [11, 19],
+            minutes: [14, 19]
         }
         let sub = [0, 0]
         switch (mode) {
@@ -37,9 +37,9 @@ export default class Utils {
         }
         let pretty = '00:00'
         try {
-            pretty = new Date(seconds * 1000).toISOString().substr(sub[0], sub[1])
+            pretty = new Date(seconds * 1000).toISOString().substring(sub[0], sub[1])
         } catch (err) {
-            Logger.warn('getPretty(): invalid value')
+            Logger.warn('getPretty(): ' + err)
         }
         return pretty
     }

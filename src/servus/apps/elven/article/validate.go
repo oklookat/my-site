@@ -22,9 +22,11 @@ type Paginate struct {
 	Start string
 	// true (with content); false (gives you empty content).
 	Preview bool
+	// category name.
+	CategoryName *string
 }
 
-// represents article body of the request that the user should send. Used in create and update methods.
+// represents article request body that user should send to create/update article.
 type ArticleBody struct {
 	CategoryID  *string `json:"category_id"`
 	IsPublished *bool   `json:"is_published"`
@@ -115,6 +117,11 @@ func (a *Paginate) Validate(params url.Values, isAdmin bool) (val base.Validator
 		val.Add("page")
 	} else {
 		a.Page = page
+	}
+	// "category name" param
+	var categoryName = params.Get("category_name")
+	if len(categoryName) > 0 {
+		a.CategoryName = &categoryName
 	}
 	return
 }

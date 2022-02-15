@@ -5,16 +5,16 @@
   import "@oklookat/jmarkd/styles";
   import type { config } from "@oklookat/jmarkd";
   // utils
+  import Animation from "@/tools/animation";
   import TextareaResizer from "@/tools/textareaResizer";
   // ui
   import Toolbar from "../../../../ui/toolbar.svelte";
   // article
   import type { Article } from "../types";
   import ArticleAdapter from "../adapter";
-  import Select from "../../../../ui/select.svelte";
-  import CategoryAdapter from "../../categories/adapter";
-  import type { Category } from "../../categories/types";
   import Validate from "../validate";
+  import Selector from "../../categories/comps/selector.svelte";
+  import type { Category } from "../../categories/types";
 
   /** edit article with id (url params) */
   export let params: { id?: string };
@@ -35,15 +35,6 @@
   /** text editor */
   let editor: jmarkd;
   let editorEL: HTMLDivElement;
-  /** categories from server */
-  let categories: Record<number, Category> = {};
-  /** fetched categories for select element */
-  let catsSelectData: {
-    value: string;
-    text: string;
-  }[] = [];
-  /** currently selected category value (counter) */
-  let selectedCategoryValue: string | undefined;
 
   onMount(async () => {
     // check edit mode
@@ -51,14 +42,13 @@
     if (id) {
       await getArticle(id);
     }
-    // get available categories
-    await getCategories();
     // manually add title before creating TextareaResizer, for correct height in start
+    textareaResizer = new TextareaResizer(articleTitleEL, 54);
     articleTitleEL.value = article.title;
-    textareaResizer = new TextareaResizer(articleTitleEL);
     initEditor(article.content);
-    // all loaded - set display
-    createContainer.style.display = "flex";
+    // all loaded - set opacity
+    // (not display, because it brokes title resizing on init)
+    await Animation.fadeIn(createContainer);
   });
 
   onDestroy(() => {
@@ -74,19 +64,6 @@
     } catch (err) {
       return Promise.reject();
     }
-    return Promise.resolve();
-  }
-
-  /** get categories for categories selector */
-  async function getCategories() {
-    // get categories
-    try {
-      const result = await CategoryAdapter.getAll();
-      categories = result.data;
-    } catch (err) {
-      return Promise.reject();
-    }
-    makeCategoriesSelectable();
     return Promise.resolve();
   }
 
@@ -165,86 +142,33 @@
     };
   }
 
-  /** format categories from server and put result in catsSelectData */
-  function makeCategoriesSelectable() {
-    catsSelectData = [];
-
-    // create "no category" item
-    const noCategory = { value: "", text: "No category" };
-    catsSelectData[0] = noCategory;
-
-    // if article without category - set "no category" as default
-    const articleCatID = article.category_id;
-    if (!articleCatID) {
-      selectedCategoryValue = "";
-    }
-
-    // format categories for select element
-    for (const [counter, _category] of Object.entries(categories)) {
-      const option = {
-        value: counter,
-        text: _category.name,
-      };
-      // same categories?
-      const sameCats = articleCatID === _category.id;
-      if (sameCats) {
-        selectedCategoryValue = counter;
-      }
-      catsSelectData.push(option);
-    }
-
-    // render
-    catsSelectData = catsSelectData;
-  }
-
-  /** when category on select element changed */
-  function onCategoryChanged(counter?: string) {
-    // no counter = no category
-    let newCatID = null;
-    if (counter) {
-      const cat = getCategoryByCounter(counter);
-      if (!cat) {
-        return;
-      }
-      newCatID = cat.id;
-    }
-
+  function onCategoryChanged(newCat: Category | null) {
     // category not changed?
-    const notChanged = article.id === newCatID;
+    const newCatNotEmpty = newCat && newCat.id;
+    const notChanged =
+      (!article.category_id && !newCat) ||
+      (newCatNotEmpty && article.category_id === newCat.id);
     if (notChanged) {
       return;
     }
-
     const oldCatID = article.category_id;
-    article.category_id = newCatID;
+    if (newCatNotEmpty) {
+      article.category_id = newCat.id;
+    } else {
+      article.category_id = null;
+    }
     save().catch(() => {
       // revert changes
       article.category_id = oldCatID;
-      makeCategoriesSelectable();
     });
-  }
-
-  /** get category by categories counter */
-  function getCategoryByCounter(counter?: string | number): Category | null {
-    let cat: Category | null = null;
-    if (!counter) {
-      return cat;
-    }
-    try {
-      const isString = typeof counter === "string";
-      const counterInt = isString ? parseInt(counter, 10) : counter;
-      cat = categories[counterInt] || null;
-    } catch (err) {}
-    return cat;
   }
 </script>
 
 <div class="create" bind:this={createContainer}>
   <Toolbar>
-    <Select
-      bind:options={catsSelectData}
-      bind:selected={selectedCategoryValue}
-      on:selected={(e) => onCategoryChanged(e.detail)}
+    <Selector
+      bind:selectedID={article.category_id}
+      on:changed={(e) => onCategoryChanged(e.detail)}
     />
   </Toolbar>
 
@@ -263,9 +187,10 @@
 
 <style lang="scss">
   .create {
-    // after data loaded - display = flex
-    display: none;
-    height: 100%;
+    // after data loaded - opacity = 1
+    opacity: 0;
+    display: flex;
+    height: fit-content;
     width: 95%;
     max-width: 424px;
     margin: auto;

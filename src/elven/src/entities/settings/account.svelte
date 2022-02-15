@@ -69,8 +69,8 @@
     // hook before changing username
     function beforeUsername(): boolean {
         if (changer.newValue === userData.username) {
-            const message = "You already have this username."
-            window.$notify.add({message});
+            const message = "You already have this username.";
+            window.$notify.add({ message });
             return true;
         }
         return false;
@@ -114,40 +114,39 @@
     </div>
 {/if}
 
-<Overlay
-    active={changeOverlayActive}
-    on:deactivated={() => (changeOverlayActive = false)}
->
-    <div class="overlay">
-        <div class="overlay__change">
-            {#if changer.what === "username"}
-                <input
-                    type="text"
-                    placeholder="new username"
-                    bind:value={changer.newValue}
-                    on:input={onUsernameInput}
-                />
-            {:else if changer.what === "password"}
+{#if changeOverlayActive}
+    <Overlay onClose={() => (changeOverlayActive = false)}>
+        <div class="overlay">
+            <div class="overlay__change">
+                {#if changer.what === "username"}
+                    <input
+                        type="text"
+                        placeholder="new username"
+                        bind:value={changer.newValue}
+                        on:input={onUsernameInput}
+                    />
+                {:else if changer.what === "password"}
+                    <input
+                        type="password"
+                        placeholder="new password"
+                        bind:value={changer.newValue}
+                        on:input={onPasswordInput}
+                    />
+                {/if}
                 <input
                     type="password"
-                    placeholder="new password"
-                    bind:value={changer.newValue}
-                    on:input={onPasswordInput}
+                    placeholder="password"
+                    bind:value={changer.password}
+                    on:input={onPasswordConfirmInput}
                 />
-            {/if}
-            <input
-                type="password"
-                placeholder="password"
-                bind:value={changer.password}
-                on:input={onPasswordConfirmInput}
-            />
-            <button
-                disabled={!(newValueValid && passwordConfirmValid)}
-                on:click={change}>change</button
-            >
+                <button
+                    disabled={!(newValueValid && passwordConfirmValid)}
+                    on:click={change}>change</button
+                >
+            </div>
         </div>
-    </div>
-</Overlay>
+    </Overlay>
+{/if}
 
 <style lang="scss">
     .account {

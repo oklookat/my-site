@@ -75,12 +75,12 @@
 <style lang="scss">
     .category {
         background-color: var(--color-level-1);
-        font-size: 1.3rem;
+        font-size: 1.2rem;
         border-radius: 4px;
         display: flex;
         align-items: center;
         width: 100%;
-        height: 100%;
+        height: fit-content;
         min-height: 48px;
         align-content: center;
         &__name {
@@ -93,6 +93,7 @@
             height: 100%;
             display: flex;
             justify-content: center;
+            align-items: center;
             svg {
                 fill: red;
                 width: 20px;

@@ -4,7 +4,8 @@ export default class Extension {
 
     private static readonly imageExtensions = ['jpeg', 'jpg', 'gif', 'png', 'bmp', 'svg', 'webp']
     private static readonly videoExtensions = ['mp4', 'mov', 'wmv', 'avi', 'flv', 'mkv', 'webm']
-    private static readonly audioExtensions = ['mp3', 'm4a', 'flac', 'wav', 'wma', 'aac', 'alac', 'oog', 'aiff']
+    /** supported extensions to play audio in files */
+    private static readonly audioExtensions = ['mp3', 'flac', 'wav', 'ogg']
 
     public static getType(extension: string): FileType {
         extension = extension.toLowerCase()

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import { push } from "svelte-spa-router";
+  import { params, push } from "svelte-spa-router";
   // ui
   import Overlay from "@/ui/overlay.svelte";
   import Pagination from "@/ui/pagination.svelte";
@@ -13,6 +13,8 @@
   import CArticle from "./article.svelte";
   import Utils from "@/tools/utils";
   import ArticleAdapter from "../adapter";
+  import Selector from "../../categories/comps/selector.svelte";
+  import type { Category } from "../../categories/types";
 
   /** articles loaded? */
   let loaded = false;
@@ -34,6 +36,7 @@
     by: By.updated,
     start: Start.newest,
     preview: true,
+    category_name: null,
   };
 
   onMount(async () => {
@@ -96,7 +99,7 @@
 
   /** delete article */
   async function deleteArticle(counter: number) {
-    const isDelete = await window.$choose.confirm("delete article")
+    const isDelete = await window.$choose.confirm("delete article");
     if (!isDelete) {
       return;
     }
@@ -166,6 +169,16 @@
       }
     }
   }
+
+  /** sort by category */
+  function onCategoryChanged(cat: Category | null) {
+    let catName = null;
+    if (cat && cat["name"]) {
+      catName = cat.name;
+    }
+    requestParams.category_name = catName;
+    getAll();
+  }
 </script>
 
 <div class="articles base__container">
@@ -175,7 +188,11 @@
   </ToolbarBig>
 
   <Toolbar>
-    <div class="articles__show">
+    <Selector on:changed={(e) => onCategoryChanged(e.detail)} />
+  </Toolbar>
+
+  <Toolbar>
+    <div class="articles__item">
       {#if requestParams.show === Show.published}
         <div class="pointer" on:click={() => setShow(Show.drafts)}>
           published
@@ -187,7 +204,7 @@
         </div>
       {/if}
     </div>
-    <div class="articles__sort-start">
+    <div class="articles__item">
       {#if requestParams.start === Start.newest}
         <div class="pointer" on:click={() => setStart(Start.oldest)}>
           newest
@@ -199,7 +216,7 @@
         </div>
       {/if}
     </div>
-    <div class="articles__sort-by">
+    <div class="articles__item">
       {#if requestParams.by === By.updated}
         <div class="pointer" on:click={() => setBy(By.published)}>
           by updated date
@@ -234,37 +251,39 @@
     />
   {/if}
 
-  <Overlay
-    bind:active={toolsOverlay}
-    on:deactivated={() => (toolsOverlay = false)}
-  >
-    <div class="overlay">
-      {#if selected && selected.article.is_published}
-        <div class="overlay__item" on:click={() => unpublish(selected.counter)}>
-          unpublish
+  {#if toolsOverlay}
+    <Overlay onClose={() => (toolsOverlay = false)}>
+      <div class="overlay">
+        {#if selected && selected.article.is_published}
+          <div
+            class="overlay__item"
+            on:click={() => unpublish(selected.counter)}
+          >
+            unpublish
+          </div>
+        {:else}
+          <div class="overlay__item" on:click={() => publish(selected.counter)}>
+            publish
+          </div>
+        {/if}
+        <div class="overlay__item" on:click={() => edit(selected.counter)}>
+          edit
         </div>
-      {:else}
-        <div class="overlay__item" on:click={() => publish(selected.counter)}>
-          publish
+        <div
+          class="overlay__item"
+          on:click={() => deleteArticle(selected.counter)}
+        >
+          delete
         </div>
-      {/if}
-      <div class="overlay__item" on:click={() => edit(selected.counter)}>
-        edit
       </div>
-      <div
-        class="overlay__item"
-        on:click={() => deleteArticle(selected.counter)}
-      >
-        delete
-      </div>
-    </div>
-  </Overlay>
+    </Overlay>
+  {/if}
 </div>
 
 <style lang="scss">
   .articles {
     &__list {
-      height: 100%;
+      height: fit-content;
       width: 100%;
       display: flex;
       flex-direction: column;

@@ -12,6 +12,8 @@ const baseConf = {
   plugins: [svelte()],
   optimizeDeps: { exclude: ["svelte-router-spa"] },
   resolve: {
+    // include .d.ts
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.d.ts'],
     alias: [
       {
         find: '@', replacement: path.resolve('./src')

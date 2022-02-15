@@ -1,17 +1,18 @@
-import type { HookOutput } from "@oklookat/duck"
+import type { DuckHook } from "@oklookat/duck"
+
 
 /** handle request / response errors */
 export class AdapterError {
 
-    public static handle(err: HookOutput.onError): string {
-        const message = this.sort(err)
+    public static handle(output: DuckHook.Output.onError): string {
+        const message = this.sort(output)
         if (window.$notify) {
             window.$notify.add({message})
         }
         return message
     }
 
-    private static sort(output: HookOutput.onError): string {
+    private static sort(output: DuckHook.Output.onError): string {
         // server send response with error
         const err = output.data
         if(err.type === "cancel") {

@@ -80,7 +80,7 @@
 
   /** delete file */
   async function deleteFile(counter: number) {
-    const isDelete = await window.$choose.confirm("delete file")
+    const isDelete = await window.$choose.confirm("delete file");
     if (!isDelete) {
       return;
     }
@@ -113,7 +113,7 @@
   }
 
   /** when file changed on file input */
-  function onInputChange(e) {
+  function onInputChange(e: Event) {
     const target = e.target as HTMLInputElement;
     if (target.files.length < 1) {
       return 0;
@@ -204,74 +204,57 @@
     </div>
   </Toolbar>
 
-  {#if loaded && Utils.getObjectLength(files) < 1}
-    <div class="files__404">
-      <div>no files :(</div>
-    </div>
-  {/if}
-
   {#if loaded && Utils.getObjectLength(files) > 0}
     <div class="files__list">
       {#each Object.entries(files) as [id, file]}
-        <CFile {file} on:selected={(e) => select(parseInt(id, 10))} />
+        <CFile {file} on:selected={() => select(parseInt(id, 10))} />
       {/each}
-
-      <Overlay
-        bind:active={toolsOverlay}
-        on:deactivated={() => {
-          toolsOverlay = false;
-        }}
-      >
-        <div class="overlay">
-          {#if selected.file.extensionType === "audio"}
-            <div
-              class="overlay__item file__play"
-              on:click={() => playAudio(selected.file.pathConverted)}
-            >
-              play
-            </div>
-          {/if}
-          <div
-            class="overlay__item file__copy-link"
-            on:click={() => copyLink(selected.counter)}
-          >
-            copy link
-          </div>
-          <div
-            class="overlay__item file__delete"
-            on:click={() => deleteFile(selected.counter)}
-          >
-            delete
-          </div>
-        </div>
-      </Overlay>
     </div>
+  {/if}
 
+  {#if loaded && meta && meta.total_pages && meta.current_page}
     <Pagination
       total={meta.total_pages}
       current={meta.current_page}
       on:changed={(e) => onPageChanged(e.detail)}
     />
   {/if}
+
+  {#if toolsOverlay}
+    <Overlay onClose={() => (toolsOverlay = false)}>
+      <div class="overlay">
+        {#if selected.file.extensionType === "audio"}
+          <div
+            class="overlay__item file__play"
+            on:click={() => playAudio(selected.file.pathConverted)}
+          >
+            play
+          </div>
+        {/if}
+        <div
+          class="overlay__item file__copy-link"
+          on:click={() => copyLink(selected.counter)}
+        >
+          copy link
+        </div>
+        <div
+          class="overlay__item file__delete"
+          on:click={() => deleteFile(selected.counter)}
+        >
+          delete
+        </div>
+      </div>
+    </Overlay>
+  {/if}
 </div>
 
 <style lang="scss">
   .files {
-    &__404 {
-      background-color: var(--color-level-1);
-      height: 240px;
-      border-radius: var(--border-radius);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 24px;
-    }
     &__upload {
       cursor: pointer;
     }
     &__list {
-      height: 100%;
+      height: fit-content;
       width: 100%;
       display: flex;
       flex-direction: column;

@@ -11,6 +11,7 @@ export default class ArticleAdapter {
             const response = await Duck.GET({ url: this.prefix, params: params })
             return Promise.resolve(response.body as Data<Article>)
         } catch (err) {
+            console.log(err)
             return Promise.reject(err)
         }
     }

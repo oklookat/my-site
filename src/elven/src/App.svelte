@@ -11,7 +11,6 @@
   import Header from "@/entities/general/header.svelte";
   import ServiceWrapper from "@/entities/general/serviceWrapper.svelte";
 
-  
   let isNotAuth = $location !== "/login" && $location !== "/logout";
   location.subscribe((value) => {
     isNotAuth = value !== "/login" && value !== "/logout";
@@ -25,15 +24,11 @@
     <Header />
   {/if}
   <div class="content">
-    <div style="height: 16px;" />
-    <Router {routes} />
-    <div style="height: 64px;" />
+    <Router {routes} restoreScrollState={true} />
   </div>
   <Notify />
   {#if isNotAuth}
-    <div class="service">
-      <ServiceWrapper />
-    </div>
+    <ServiceWrapper />
   {/if}
 </div>
 
@@ -41,8 +36,11 @@
   .container {
     min-height: 100vh;
     word-break: break-word;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
+    // header - content - service
+    grid-template-rows: max-content 1fr min-content;
+    gap: 16px;
   }
 
   .content {
@@ -51,14 +49,5 @@
     font-size: 1.1rem;
     line-height: 1.46rem;
     letter-spacing: 0.0007rem;
-  }
-
-  .service {
-    width: 100%;
-    z-index: 7777;
-  }
-
-  .service {
-    bottom: 0;
   }
 </style>

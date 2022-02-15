@@ -34,6 +34,6 @@
         border-radius: 0.4rem;
         padding: 0.5rem;
         min-width: 84px;
-        max-width: 24vw;
+        max-width: fit-content;
     }
 </style>

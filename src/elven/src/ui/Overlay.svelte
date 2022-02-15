@@ -1,41 +1,32 @@
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
+  import Animation from "../tools/animation";
 
-  export let active: boolean;
+  let container: HTMLDivElement;
+  export let onClose: () => void;
 
-  const dispatch = createEventDispatcher<{ deactivated: boolean }>();
+  onMount(() => {
+    document.body.classList.add("no-scroll");
+    Animation.fadeIn(container, 10);
+  });
 
   onDestroy(() => {
     document.body.classList.remove("no-scroll");
   });
-
-  $: watchActive(active);
-  function watchActive(value: boolean) {
-    if (value) {
-      document.body.classList.add("no-scroll");
-      return
-    }
-    document.body.classList.remove("no-scroll");
-  }
-
-  function deactivate() {
-    document.body.classList.remove("no-scroll");
-    dispatch("deactivated");
-  }
 </script>
 
-{#if active}
-  <div class="overlay" on:click|self={deactivate}>
-    <div class="overlay__main">
-      <div class="overlay__content">
-        <slot />
-      </div>
+<div class="overlay" bind:this={container} on:click|self={onClose}>
+  <div class="overlay__main">
+    <div class="overlay__content">
+      <slot />
     </div>
   </div>
-{/if}
+</div>
 
 <style lang="scss">
   .overlay {
+    // for animation
+    opacity: 0;
     background-color: rgba(0, 0, 0, 0.4);
     z-index: 9998;
     max-width: 100vw;

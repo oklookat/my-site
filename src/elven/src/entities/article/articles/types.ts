@@ -7,7 +7,7 @@ export enum Show {
 /** request param */
 export enum By {
     created = 'created',
-    published = 'published', 
+    published = 'published',
     updated = 'updated'
 }
 
@@ -19,11 +19,12 @@ export enum Start {
 
 /** request params */
 export type Params = {
-    page: number
-    show: Show
-    by: By
-    start: Start
-    preview: boolean
+    page?: number
+    show?: Show
+    by?: By
+    start?: Start
+    preview?: boolean
+    category_name?: string
 }
 
 /** article */
@@ -31,6 +32,7 @@ export type Article = {
     id?: string
     user_id?: string
     category_id?: string
+    category_name?: string
     is_published?: boolean
     title: string
     content: string

@@ -6,8 +6,6 @@
     import TimeSlider from "./timeSlider.svelte";
     import type { ComponentState } from "../types";
 
-    export let active: boolean;
-
     export let state: ComponentState;
 
     const dispatch = createEventDispatcher<{
@@ -17,6 +15,8 @@
         currentTimeChanged: number;
         /** when user drag time slider. In percents */
         currentTimePreviewChanged: number;
+        /** overlay on/off */
+        deactivated: void;
     }>();
 
     /** current player state */
@@ -36,55 +36,61 @@
     function setCurrentTimeDraggingNow(v: boolean) {
         state.current.time.draggingNow = v;
     }
+
+    function onDeactivated() {
+        dispatch("deactivated");
+    }
 </script>
 
-{#if active}
-    <Overlay on:deactivated={() => (active = false)}>
-        <div class="overlay__controls">
-            <div class="current">
-                <div class="current__sliders">
-                    <div class="progress__buffered">
-                        <Progress bind:percents={state.current.buffered.percents} --color="#383659" --border-radius="12px" />
-                    </div>
-                    <div class="slider__time">
-                        <TimeSlider
-                            positionPercents={state.current.time.percents}
-                            on:draggingNow={(e) =>
-                                setCurrentTimeDraggingNow(e.detail)}
-                            on:currentTimeChanged={(e) =>
-                                onCurrentTimeChanged(e.detail)}
-                            on:currentTimePreview={(e) =>
-                                onCurrentTimePreviewChanged(e.detail)}
-                        />
-                    </div>
+<Overlay on:deactivated={() => onDeactivated()}>
+    <div class="overlay">
+        <div class="current">
+            <div class="current__sliders">
+                <div class="progress__buffered">
+                    <Progress
+                        bind:percents={state.current.buffered.percents}
+                        --color="#383659"
+                        --border-radius="12px"
+                    />
                 </div>
-                <div class="current__info">
-                    <div class="current__position">
-                        {state.current.time.pretty}
-                    </div>
-                    <div class="current__total">
-                        {state.current.duration.pretty}
-                    </div>
+                <div class="slider__time">
+                    <TimeSlider
+                        positionPercents={state.current.time.percents}
+                        on:draggingNow={(e) =>
+                            setCurrentTimeDraggingNow(e.detail)}
+                        on:currentTimeChanged={(e) =>
+                            onCurrentTimeChanged(e.detail)}
+                        on:currentTimePreview={(e) =>
+                            onCurrentTimePreviewChanged(e.detail)}
+                    />
                 </div>
             </div>
-
-            <div class="slider__volume">
-                <Slider
-                    percents={state.volume.percents}
-                    afterUp={false}
-                    on:slide={(e) => onVolumeChanged(e.detail)}
-                />
-            </div>
-
-            <div class="playback">
-                <slot name="playbackControls"></slot>
+            <div class="current__info">
+                <div class="current__position">
+                    {state.current.time.pretty}
+                </div>
+                <div class="current__total">
+                    {state.current.duration.pretty}
+                </div>
             </div>
         </div>
-    </Overlay>
-{/if}
+
+        <div class="slider__volume">
+            <Slider
+                percents={state.volume.percents}
+                afterUp={false}
+                on:slide={(e) => onVolumeChanged(e.detail)}
+            />
+        </div>
+
+        <div class="playback">
+            <slot name="playbackControls" />
+        </div>
+    </div>
+</Overlay>
 
 <style lang="scss">
-    .overlay__controls {
+    .overlay {
         height: 100%;
         width: 100%;
         display: grid;

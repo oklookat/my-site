@@ -1,6 +1,7 @@
 import { ClassName } from "./types"
-import Animation from "./animation"
+import Animation from "../../tools/animation"
 
+/** represents one notification */
 export default class Notification {
 
     public id: number = 0
@@ -31,15 +32,14 @@ export default class Notification {
     public timestampWhenDeleted: number = 0
     /** when deleted (in percents) */
     public progress: number = 100
-    /** executes delete function after time */
-    private deletionTimeout: NodeJS.Timeout
     /** update percents */
     private percentsInterval: ReturnType<typeof setInterval>
     /** is timers active */
     public isExecuted: boolean = false
 
 
-    constructor(root: HTMLDivElement, id: number, message: string) {
+    constructor(root: HTMLDivElement, id: number, message: string, time: number = 5000) {
+        this.deletedIn = time
         this.el.root = root
         this.id = id
         this.message = message
@@ -93,7 +93,7 @@ export default class Notification {
         // set time when item deleted
         this.timestampWhenDeleted = this.getTimestamp() + this.deletedIn
         // when deleting
-        this.deletionTimeout = setTimeout(() => {
+        setTimeout(() => {
             this.delete()
         }, this.deletedIn)
         // when shown

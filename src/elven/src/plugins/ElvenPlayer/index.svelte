@@ -9,6 +9,17 @@
   let active: boolean = false;
   export let core: ElvenPlayer;
 
+  /** when player open/close */
+  export let onActiveChanged: (active?: boolean) => void | undefined =
+    undefined;
+  $: onActiveChange(active);
+  function onActiveChange(val: boolean) {
+    if (!onActiveChanged) {
+      return;
+    }
+    onActiveChanged(val);
+  }
+
   /** is player controls overlay active */
   let isOverlay = false;
 
@@ -138,9 +149,9 @@
         viewBox="0 0 191 168"
         on:click={() => (isOverlay = !isOverlay)}
       >
-        <rect x="1" y="138" width="190" height="30" rx="15" style="fill:#fff" />
-        <rect y="69" width="190" height="30" rx="15" style="fill:#fff" />
-        <rect x="1" width="190" height="30" rx="15" style="fill:#fff" />
+        <rect x="1" y="138" width="190" height="30" rx="15" />
+        <rect y="69" width="190" height="30" rx="15" />
+        <rect x="1" width="190" height="30" rx="15" />
       </svg>
     </div>
 
@@ -172,57 +183,54 @@
     </div>
   </div>
 
-  <OverlayMenu
-    bind:state
-    bind:active={isOverlay}
-    on:volumeChanged={(e) => setVolumePercents(e.detail)}
-    on:currentTimeChanged={(e) => setCurrentTimePercents(e.detail)}
-    on:currentTimePreviewChanged={(e) => setCurrentTimePreview(e.detail)}
-  >
-    <PlaybackControls
-      slot="playbackControls"
-      bind:isPlaying={state.playing}
-      on:play={() => onPlay()}
-      on:pause={() => onPause()}
-      on:next={() => onNext()}
-      on:prev={() => onPrev()}
-    />
-  </OverlayMenu>
+  {#if isOverlay}
+    <OverlayMenu
+      bind:state
+      on:deactivated={() => (isOverlay = false)}
+      on:volumeChanged={(e) => setVolumePercents(e.detail)}
+      on:currentTimeChanged={(e) => setCurrentTimePercents(e.detail)}
+      on:currentTimePreviewChanged={(e) => setCurrentTimePreview(e.detail)}
+    >
+      <PlaybackControls
+        slot="playbackControls"
+        bind:isPlaying={state.playing}
+        on:play={() => onPlay()}
+        on:pause={() => onPause()}
+        on:next={() => onNext()}
+        on:prev={() => onPrev()}
+      />
+    </OverlayMenu>
+  {/if}
 {/if}
 
 <style lang="scss">
   .player {
-    background-color: rgba(0, 0, 0, 0.5);
-    border-top-right-radius: 6px;
-    border-top-left-radius: 6px;
+    background-color: var(--color-level-1);
+    width: 100%;
     height: 64px;
-    width: 214px;
-    position: fixed;
-    left: 50%;
-    bottom: 0;
-    transform: translate(-50%, 0);
     display: grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: 1fr 2fr 1fr;
-    justify-items: center;
+    grid-template-columns: 52px 1fr 52px;
     svg {
-      fill: white;
       height: 20px;
-      width: 20px;
+      width: 100%;
     }
     > div {
       height: 100%;
-      width: 100%;
       display: flex;
-      justify-items: center;
       justify-content: center;
+      align-items: center;
       > svg {
         cursor: pointer;
-        align-self: center;
       }
     }
-    &__controls {
-      fill: white;
+    &__controls,
+    svg {
+      @media (prefers-color-scheme: dark) {
+        fill: white;
+      }
+      @media (prefers-color-scheme: light) {
+        fill: black;
+      }
     }
   }
 </style>

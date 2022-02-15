@@ -22,7 +22,7 @@
     "vite": "^2.7.13"
   },
   "dependencies": {
-    "@oklookat/duck": "^1.0.2",
+    "@oklookat/duck": "^2.0.0",
     "@oklookat/jmarkd": "^1.0.7",
     "byte-size": "^8.1.0",
     "svelte-spa-router": "^3.2.0"

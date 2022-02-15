@@ -9,8 +9,9 @@
     // player
     let player: ElvenPlayer;
     let playerReady = false;
+    let playerActive = false;
     // choose
-    const choose = new ElvenChoose();
+    new ElvenChoose();
 
     function startPlugins() {
         // player
@@ -34,6 +35,19 @@
     });
 </script>
 
-{#if playerReady}
-    <Player core={player} />
-{/if}
+<div class="service">
+    {#if playerReady}
+        <Player core={player} onActiveChanged={(val) => (playerActive = val)} />
+    {/if}
+</div>
+
+<style lang="scss">
+    .service {
+        display: flex;
+        height: fit-content;
+        background-color: red;
+        bottom: 0;
+        width: 100%;
+        z-index: 7777;
+    }
+</style>

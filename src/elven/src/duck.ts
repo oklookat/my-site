@@ -1,17 +1,11 @@
-import Duckd, { type Cancelable } from "@oklookat/duck"
-import type { Hooks as IHooks, GlobalConfig } from "@oklookat/duck"
+import Duckd, { type Config, type DuckHook } from "@oklookat/duck"
+
 import { AdapterError } from "@/tools/errors"
 import { Env } from "@/tools/paths"
 
 const apiURL = Env.getAPI()
 
-export class CancelToken implements Cancelable {
-    cancel(message?: string) {
-
-    }
-}
-
-const Hooks: IHooks = {
+const Hooks: DuckHook.List = {
     onRequest(r) {
         window.$progress.startBasic()
     },
@@ -35,7 +29,7 @@ const Hooks: IHooks = {
 }
 
 
-const config: GlobalConfig = {
+const config: Config = {
     timeout: 30000,
     withCredentials: true,
     baseURL: apiURL,

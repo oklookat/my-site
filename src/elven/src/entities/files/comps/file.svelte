@@ -70,7 +70,7 @@
         background-color: var(--color-level-1);
         cursor: pointer;
         width: 100%;
-        height: 100%;
+        height: fit-content;
         display: flex;
         flex-direction: column;
         padding-bottom: 12px;
