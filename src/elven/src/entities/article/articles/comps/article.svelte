@@ -58,7 +58,7 @@
             font-size: 1.1rem;
         }
         &__meta {
-            padding: 12px;
+            padding: 12px 12px 8px;
             display: flex;
             flex-direction: row;
             height: fit-content;
@@ -66,9 +66,7 @@
             flex-wrap: wrap;
             .meta__item {
                 font-size: 0.9rem;
-                background-color: var(--color-level-2);
                 min-width: 44px;
-                padding: 6px;
                 border-radius: 12px;
                 min-height: 32px;
                 height: fit-content;
@@ -88,8 +86,7 @@
             font-size: 1.6rem;
             line-height: 2rem;
             letter-spacing: 0.0099rem;
-            padding: 12px;
-            padding-bottom: 18px;
+            padding: 8px 12px 18px;
         }
     }
 </style>

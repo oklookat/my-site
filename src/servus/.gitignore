@@ -21,7 +21,6 @@
 *.sln
 *.sw?
 
-
 logs
 settings/config.json
 settings/config.dev.json

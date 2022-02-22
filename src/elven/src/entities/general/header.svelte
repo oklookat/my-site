@@ -55,6 +55,7 @@
     font-weight: bold;
     background-color: var(--color-level-1);
     color: var(--color-header-text);
+    border-bottom: var(--color-border) 1px solid;
     height: var(--header-height);
     width: 100%;
     display: flex;

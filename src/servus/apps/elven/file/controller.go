@@ -9,31 +9,24 @@ import (
 	"servus/apps/elven/base"
 	"servus/apps/elven/model"
 	"servus/core/external/filer"
-	"strings"
-
-	"github.com/gorilla/mux"
 )
 
-// GET url/
-// params:
-// cursor = ULID
-// by = created (uploaded)
-// start = newest (DESC), oldest (ASC)
+// get paginated files (GET).
 func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// get pipe.
 	pipe := f.pipe.GetByContext(request)
 	isAdmin := pipe != nil && pipe.IsAdmin()
 	// validate.
-	body := &Paginate{}
-	validator := body.Validate(request.URL.Query(), isAdmin)
+	body := &base.FileGetParams{}
+	validator := ValidateGetParams(body, request.URL.Query(), isAdmin)
 	if validator.HasErrors() {
 		h.Send(validator.GetJSON(), 400, nil)
 		return
 	}
 	// get paginated.
 	pag := model.File{}
-	files, totalPages, err := pag.GetPaginated(body.By, body.Start, body.Page)
+	files, totalPages, err := pag.GetPaginated(body)
 	if err != nil {
 		h.Send(f.throw.Server(), 500, err)
 		return
@@ -53,11 +46,12 @@ func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	h.Send(string(jsonResponse), 200, err)
 }
 
-// POST url/
+// upload file (POST).
 func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	auth := f.pipe.GetByContext(request)
 	validator := validate.Create()
+
 	// get from form.
 	var tempDir = call.Config.Uploads.Temp
 	processed, err := filer.ProcessFromForm(request, "file", tempDir)
@@ -70,7 +64,8 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}
-	// find in db by hash.
+
+	// find duplicates in db by hash.
 	var hash = processed.Hash
 	var fileInDB = model.File{Hash: hash}
 	found, err := fileInDB.FindByHash()
@@ -78,9 +73,11 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}
+
 	// exists?
+
 	if found {
-		// send found info.
+		// send found file.
 		_ = os.Remove(processed.Temp.Name())
 		fileJSON, err := json.Marshal(fileInDB)
 		if err != nil {
@@ -90,53 +87,74 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 		h.Send(string(fileJSON), 200, err)
 		return
 	}
-	// not exists, create new.
+
+	// create new.
+
 	// generate directories struct by hash.
-	var dirsHash, _ = filer.GenerateDirsByHash(hash)
-	var uploadTo = call.Config.Uploads.To
-	// generate random filename.
+	dirsHash, err := filer.GenerateDirsByHash(hash)
+	if err != nil {
+		h.Send(f.throw.Server(), 500, err)
+		return
+	}
+
+	// generate ULID filename.
 	filenameULID, err := call.Utils.GenerateULID()
 	if err != nil {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}
+
 	// get extension.
-	var filename = processed.Header.Filename
-	var extension = filepath.Ext(filename)
-	var extensionWithoutDot = strings.Replace(extension, ".", "", -1)
+	var extension = processed.Extension
+
 	// concat random name and extension.
-	var newFileName = filenameULID + extension
+	var newFileName string
+	if len(extension) > 0 {
+		newFileName = filenameULID + "." + extension
+	} else {
+		newFileName = filenameULID
+	}
+
 	// concat dirs struct and filename. Output like: 1c/2d/1513cd2345e.jpg.
 	var newFilePathLocal = dirsHash + "/" + newFileName
-	// saveAt - full path where temp file will be moved. Like: D:/images/files/1c/2d/.
+	var uploadTo = call.Config.Uploads.To
+
+	// full path where temp file will be moved. Like: D:/images/files/1c/2d/.
 	var saveAt = fmt.Sprintf("%v/%v/", uploadTo, dirsHash)
-	// newFilePath - full path to file. Like: D:/images/files/1c/2d/1513cd2345e.jpg.
+
+	// full path to file. Like: D:/images/files/1c/2d/1513cd2345e.jpg.
 	var newFilePath = saveAt + "/" + newFileName
+
 	// make dirs.
 	err = os.MkdirAll(saveAt, os.ModePerm)
 	if err != nil {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}
+
 	defer func() {
 		// if something goes wrong, delete created dirs.
 		if err != nil {
 			_ = filer.DeleteEmptyDirsRecursive(saveAt)
 		}
 	}()
+
 	// move file from temp dir to created dir.
 	err = os.Rename(processed.Temp.Name(), newFilePath)
 	if err != nil {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}
+
 	defer func() {
 		// if something goes wrong, delete file.
 		if err != nil {
 			_ = os.Remove(newFilePath)
 		}
 	}()
+
 	// create model.
+	var filename = processed.Header.Filename
 	var size = processed.Header.Size
 	fileInDB = model.File{
 		UserID:       auth.GetID(),
@@ -144,21 +162,24 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 		Path:         newFilePathLocal,
 		Name:         newFileName,
 		OriginalName: filename,
-		Extension:    extensionWithoutDot,
+		Extension:    extension,
 		Size:         size,
 	}
+
 	// save to db.
 	err = fileInDB.Create()
 	if err != nil {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}
+
 	defer func() {
 		// if something goes wrong, delete from db.
 		if err != nil {
 			_ = fileInDB.DeleteByID()
 		}
 	}()
+
 	// send to user.
 	fileJSON, err := json.Marshal(&fileInDB)
 	if err != nil {
@@ -168,12 +189,11 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	h.Send(string(fileJSON), 200, err)
 }
 
-// DELETE url/id
+// delete by ID (DELETE).
 func (f *Instance) deleteOne(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// get id from params.
-	var params = mux.Vars(request)
-	var id = params["id"]
+	var id = h.GetRouteArgs()["id"]
 	// find.
 	var file = model.File{ID: id}
 	found, err := file.FindByID()

@@ -9,6 +9,8 @@ type RequestError interface {
 	Forbidden() string
 	// 404 error.
 	NotFound() string
+	// 409 error.
+	Exists() string
 }
 
 // create validator.

@@ -37,6 +37,14 @@
     start: Start.newest,
     preview: true,
     category_name: null,
+    without_category: false,
+  };
+  /** custom categories for filter */
+  const customCategories: Record<number, Category> = {
+    "-1": {
+      id: "-1",
+      name: "All",
+    },
   };
 
   onMount(async () => {
@@ -172,8 +180,12 @@
 
   /** sort by category */
   function onCategoryChanged(cat: Category | null) {
+    requestParams.page = 1;
+    // no categories
+    requestParams.without_category = cat === null;
     let catName = null;
-    if (cat && cat["name"]) {
+    const notAllCategories = cat && cat["name"] && cat.id !== "-1"
+    if (notAllCategories) {
       catName = cat.name;
     }
     requestParams.category_name = catName;
@@ -188,7 +200,11 @@
   </ToolbarBig>
 
   <Toolbar>
-    <Selector on:changed={(e) => onCategoryChanged(e.detail)} />
+    <Selector
+      {customCategories}
+      selectedID={"-1"}
+      on:changed={(e) => onCategoryChanged(e.detail)}
+    />
   </Toolbar>
 
   <Toolbar>

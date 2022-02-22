@@ -7,14 +7,7 @@ import (
 	"strings"
 )
 
-// get paginated files by params.
-type Paginate struct {
-	Page  int
-	Start string
-	By    string
-}
-
-func (f *Paginate) Validate(params url.Values, isAdmin bool) (val base.Validator) {
+func ValidateGetParams(f *base.FileGetParams, params url.Values, isAdmin bool) (val base.Validator) {
 	val = validate.Create()
 	// "start" param.
 	var start = params.Get("start")

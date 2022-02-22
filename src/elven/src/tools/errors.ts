@@ -7,7 +7,7 @@ export class AdapterError {
     public static handle(output: DuckHook.Output.onError): string {
         const message = this.sort(output)
         if (window.$notify) {
-            window.$notify.add({message})
+            window.$notify.add({ message })
         }
         return message
     }
@@ -15,8 +15,8 @@ export class AdapterError {
     private static sort(output: DuckHook.Output.onError): string {
         // server send response with error
         const err = output.data
-        if(err.type === "cancel") {
-            if(!err.message) {
+        if (err.type === "cancel") {
+            if (!err.message) {
                 return 'Request cancelled.'
             }
             return `Request cancelled: ${err.message}`
@@ -37,6 +37,8 @@ export class AdapterError {
                     return 'Access denied.'
                 case 404:
                     return 'Not found.'
+                case 409:
+                    return 'Already exists.'
                 case 413:
                     return 'Upload size too big.'
                 default:
@@ -52,7 +54,7 @@ export class AdapterError {
         if (err.type === "timeout") {
             return `Server not responding.`
         }
-        if(err.type === "network") {
+        if (err.type === "network") {
             return 'Network error.'
         }
         console.error(err)

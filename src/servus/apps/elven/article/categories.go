@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"servus/apps/elven/base"
 	"servus/apps/elven/model"
-
-	"github.com/gorilla/mux"
 )
 
 // get all categories (GET)
@@ -34,12 +32,11 @@ func (a *Instance) getCategories(response http.ResponseWriter, request *http.Req
 	h.Send(string(jsonResponse), 200, err)
 }
 
-// get one category (GET)
+// get category by ID (GET)
 func (a *Instance) getCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// get id from params.
-	var params = mux.Vars(request)
-	var id = params["id"]
+	var id = h.GetRouteArgs()["id"]
 	// find.
 	var category = model.ArticleCategory{ID: id}
 	found, err := category.FindByID()
@@ -64,8 +61,8 @@ func (a *Instance) getCategory(response http.ResponseWriter, request *http.Reque
 func (a *Instance) addCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// validate.
-	body := CategoryBody{}
-	validator := body.Validate(request.Body)
+	body := &base.CategoryBody{}
+	validator := ValidateCategoryBody(body, request.Body)
 	if validator.HasErrors() {
 		h.Send(validator.GetJSON(), 400, nil)
 		return
@@ -73,8 +70,18 @@ func (a *Instance) addCategory(response http.ResponseWriter, request *http.Reque
 	// fill.
 	var category = model.ArticleCategory{}
 	category.Name = body.Name
+	// exists?
+	found, err := category.FindByName()
+	if err != nil {
+		h.Send(a.throw.Server(), 500, err)
+		return
+	}
+	if found {
+		h.Send(a.throw.Exists(), 409, err)
+		return
+	}
 	// create.
-	err := category.Create()
+	err = category.Create()
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
@@ -92,15 +99,14 @@ func (a *Instance) addCategory(response http.ResponseWriter, request *http.Reque
 func (a *Instance) renameCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// validate.
-	body := CategoryBody{}
-	validator := body.Validate(request.Body)
+	body := &base.CategoryBody{}
+	validator := ValidateCategoryBody(body, request.Body)
 	if validator.HasErrors() {
 		h.Send(validator.GetJSON(), 400, nil)
 		return
 	}
 	// get name from params.
-	var params = mux.Vars(request)
-	var id = params["id"]
+	var id = h.GetRouteArgs()["id"]
 	// find.
 	var category = model.ArticleCategory{}
 	category.ID = id
@@ -129,12 +135,11 @@ func (a *Instance) renameCategory(response http.ResponseWriter, request *http.Re
 	h.Send(string(categoryJson), 200, err)
 }
 
-// delete category (DELETE)
+// delete category by ID (DELETE)
 func (a *Instance) deleteCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// get name from params.
-	var params = mux.Vars(request)
-	var id = params["id"]
+	var id = h.GetRouteArgs()["id"]
 	// find.
 	var category = model.ArticleCategory{}
 	category.ID = id

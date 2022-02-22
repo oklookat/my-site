@@ -118,6 +118,12 @@
     <Overlay onClose={() => (changeOverlayActive = false)}>
         <div class="overlay">
             <div class="overlay__change">
+                <input
+                    type="password"
+                    placeholder="password"
+                    bind:value={changer.password}
+                    on:input={onPasswordConfirmInput}
+                />
                 {#if changer.what === "username"}
                     <input
                         type="text"
@@ -133,12 +139,6 @@
                         on:input={onPasswordInput}
                     />
                 {/if}
-                <input
-                    type="password"
-                    placeholder="password"
-                    bind:value={changer.password}
-                    on:input={onPasswordConfirmInput}
-                />
                 <button
                     disabled={!(newValueValid && passwordConfirmValid)}
                     on:click={change}>change</button

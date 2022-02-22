@@ -25,13 +25,15 @@ export type Params = {
     start?: Start
     preview?: boolean
     category_name?: string
+    /** show articles without category */
+    without_category?: boolean
 }
 
 /** article */
 export type Article = {
     id?: string
     user_id?: string
-    category_id?: string
+    category_id?: string | "nope"
     category_name?: string
     is_published?: boolean
     title: string

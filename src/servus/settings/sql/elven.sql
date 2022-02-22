@@ -216,6 +216,8 @@ CREATE TABLE articles
     REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
     category_id ulid DEFAULT NULL
     REFERENCES article_categories(id) ON UPDATE CASCADE ON DELETE SET NULL,
+    cover_id uild DEFAULT NULL
+    REFERENCES files(id) ON UPDATE CASCADE ON DELETE SET NULL,
     is_published boolean DEFAULT false,
     title varchar(124) DEFAULT 'Untitled'::varchar,
     content varchar(256000) NOT NULL,
@@ -239,8 +241,8 @@ CREATE TABLE files
     REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
     hash varchar(32) NOT NULL UNIQUE,
     path varchar(512) NOT NULL UNIQUE,
-    name varchar(512) NOT NULL UNIQUE,
-    original_name varchar(512) DEFAULT NULL,
+    name varchar(26) NOT NULL UNIQUE,
+    original_name varchar(264) DEFAULT NULL,
     extension varchar(64) DEFAULT NULL,
     size bigint NOT NULL,
     created_at created,

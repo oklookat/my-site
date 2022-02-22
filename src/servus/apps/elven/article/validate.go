@@ -3,44 +3,17 @@ package article
 import (
 	"encoding/json"
 	"io"
+	"net/http"
 	"net/url"
 	"regexp"
 	"servus/apps/elven/base"
+	"servus/apps/elven/model"
 	"strconv"
 	"strings"
 )
 
-// params to get paginated articles.
-type Paginate struct {
-	// number of page.
-	Page int
-	// published; drafts.
-	Show string
-	// created; updated; published.
-	By string
-	// newest (DESC); oldest (ASC).
-	Start string
-	// true (with content); false (gives you empty content).
-	Preview bool
-	// category name.
-	CategoryName *string
-}
-
-// represents article request body that user should send to create/update article.
-type ArticleBody struct {
-	CategoryID  *string `json:"category_id"`
-	IsPublished *bool   `json:"is_published"`
-	Title       *string `json:"title"`
-	Content     *string `json:"content"`
-}
-
-// user should send this body to create/update category.
-type CategoryBody struct {
-	Name string `json:"name"`
-}
-
 // validate params to get paginated articles.
-func (a *Paginate) Validate(params url.Values, isAdmin bool) (val base.Validator) {
+func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool) (val base.Validator) {
 	val = validate.Create()
 	// "show" param
 	var show = params.Get("show")
@@ -61,18 +34,18 @@ func (a *Paginate) Validate(params url.Values, isAdmin bool) (val base.Validator
 	if len(by) == 0 {
 		by = "published"
 	}
-	var isByCreated = by == "created"
-	var isByPublished = by == "published"
-	var isByUpdated = by == "updated"
-	var isByInvalid = !isByCreated && !isByPublished && !isByUpdated
-	var isByForbidden = (isByCreated || isByUpdated) && !isAdmin
-	if isByInvalid || isByForbidden {
-		val.Add("by")
-	}
 	switch by {
+	default:
+		val.Add("by")
 	case "created":
+		if !isAdmin {
+			val.Add("by")
+		}
 		by = "created_at"
 	case "updated":
+		if !isAdmin {
+			val.Add("by")
+		}
 		by = "updated_at"
 	case "published":
 		by = "published_at"
@@ -118,53 +91,193 @@ func (a *Paginate) Validate(params url.Values, isAdmin bool) (val base.Validator
 	} else {
 		a.Page = page
 	}
-	// "category name" param
-	var categoryName = params.Get("category_name")
-	if len(categoryName) > 0 {
-		a.CategoryName = &categoryName
+	// "without category" param
+	var withoutCategory = params.Get("without_category")
+	a.WithoutCategory = len(withoutCategory) > 0 && withoutCategory == "true"
+	if !a.WithoutCategory {
+		// "category name" param
+		var categoryName = params.Get("category_name")
+		if len(categoryName) > 0 {
+			a.CategoryName = &categoryName
+		}
 	}
 	return
 }
 
-// validate request body when POST or PUT.
-func (a *ArticleBody) Validate(body io.ReadCloser) (val base.Validator) {
-	val = validate.Create()
-	// body.
-	err := json.NewDecoder(body).Decode(a)
+// validate/filter body to change/create article.
+//
+// requestMethod = validation depends on request method (changing mode).
+//
+// body = request body.
+//
+// reference = reference article. Needs when we change existing article.
+//
+// ----returns:----
+//
+// nil if validation error;
+//
+// if changing mode = copy of reference but filtered/validated by body.
+//
+// if creating mode = semi-filled filtered/validated article by body.
+func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Article) *model.Article {
+
+	// updating existing article?
+	var isChangingMode = requestMethod == http.MethodPut || requestMethod == http.MethodPatch
+	// no validate if no reference in changing mode.
+	if isChangingMode && reference == nil {
+		return nil
+	}
+
+	// decode body.
+	var bodyStruct = &base.ArticleBody{}
+	err := json.NewDecoder(body).Decode(bodyStruct)
 	if err != nil {
-		val.Add("body")
-		return
+		return nil
 	}
-	// if all fields empty.
-	var isContent = a.Content != nil
-	var isTitle = a.Title != nil
-	var isPublished = a.IsPublished != nil
-	if !isContent && !isTitle && !isPublished {
-		val.Add("body")
-		return
+
+	// FUNC title.
+	//
+	// returns: is valid, title length.
+	var checkTitle = func() (bool, int) {
+		var isNil = bodyStruct.Title != nil
+		if isNil {
+			return false, 0
+		}
+		var titleLength = call.Utils.LenRune(*bodyStruct.Title)
+		var isEmpty = titleLength < 1
+		return !isEmpty, titleLength
 	}
-	// content.
-	if isContent {
-		var contentLen = call.Utils.LenRune(*a.Content)
-		var contentInvalid = contentLen < 1 || contentLen > 256000
-		if contentInvalid {
-			val.Add("content")
+
+	// body has title field?
+	var isTitle, titleLength = checkTitle()
+
+	// pre check title.
+	if isTitle && titleLength > 124 {
+		return nil
+	}
+
+	// FUNC isPublished.
+	var checkIsPublished = func() bool {
+		return bodyStruct.IsPublished != nil
+	}
+
+	// FUNC category id.
+	var checkCategoryID = func() bool {
+		return bodyStruct.CategoryID != nil
+	}
+
+	// FUNC cover id.
+	var checkCoverID = func() bool {
+		return bodyStruct.CoverID != nil
+	}
+
+	// FUNC content.
+	//
+	// returns: is valid, content length.
+	var checkContent = func() (bool, int) {
+		var isNil = bodyStruct.Content == nil
+		if isNil {
+			return false, 0
+		}
+		var contentLen = call.Utils.LenRune(*bodyStruct.Content)
+		var isEmpty = contentLen < 1
+		return !isEmpty, contentLen
+	}
+
+	// body has content field?
+	var isContent, contentLength = checkContent()
+
+	// pre check content.
+	if contentLength > 256000 {
+		return nil
+	}
+
+	// body has is_published field?
+	var isPublished = checkIsPublished()
+	// body has category_id field?
+	var isCategoryID = checkCategoryID()
+	// body has cover_id field?
+	var isCoverID = checkCoverID()
+
+	// check request method.
+	switch requestMethod {
+	default:
+		return nil
+	// POST (create) = need minimal body.
+	case http.MethodPost:
+		var invalid = !isContent
+		if invalid {
+			return nil
+		}
+	// PUT (update full) = need full body.
+	case http.MethodPut:
+		var invalid = !isPublished || !isCategoryID || !isCoverID || !isTitle || !isContent
+		if invalid {
+			return nil
+		}
+	// PATCH (update) = need at least one field.
+	case http.MethodPatch:
+		var invalid = !isPublished && !isCategoryID && !isCoverID && !isTitle && !isContent
+		if invalid {
+			return nil
 		}
 	}
-	// title.
+
+	var filtered *model.Article
+	if isChangingMode {
+		var articleCopy = *reference
+		filtered = &articleCopy
+	} else {
+		filtered = &model.Article{}
+	}
+
+	// check body fields / add to filtered.
+
+	if isPublished {
+		filtered.IsPublished = *bodyStruct.IsPublished
+	}
+	if isCategoryID {
+		if *bodyStruct.CategoryID == "nope" {
+			bodyStruct.CategoryID = nil
+		}
+		filtered.CategoryID = bodyStruct.CategoryID
+	}
 	if isTitle {
-		var titleLen = call.Utils.LenRune(*a.Title)
-		if titleLen < 1 {
-			*a.Title = "Untitled"
-		} else if titleLen > 124 {
-			val.Add("title")
+		filtered.Title = *bodyStruct.Title
+	}
+	if isContent {
+		filtered.Content = *bodyStruct.Content
+	}
+
+	// check filtered fields / filter filtered (¯\_(ツ)_/¯).
+
+	// category.
+	if filtered.CategoryID != nil {
+		var cat = model.ArticleCategory{}
+		cat.ID = *filtered.CategoryID
+		found, err := cat.FindByID()
+		// validation error: fake category or DB error.
+		if err != nil || !found {
+			return nil
 		}
 	}
-	// isPublished.
-	return
+	// cover.
+	if filtered.CoverID != nil {
+		var file = model.File{}
+		file.ID = *filtered.CoverID
+		found, err := file.FindByID()
+		// validation error: fake file or DB error.
+		if err != nil || !found {
+			return nil
+		}
+		// can this file be a cover?
+		// TODO: write check.
+	}
+
+	return filtered
 }
 
-func (c *CategoryBody) Validate(body io.ReadCloser) (val base.Validator) {
+func ValidateCategoryBody(c *base.CategoryBody, body io.ReadCloser) (val base.Validator) {
 	val = validate.Create()
 	// body.
 	err := json.NewDecoder(body).Decode(c)

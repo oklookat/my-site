@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"math"
+	"servus/apps/elven/base"
 	"time"
 )
 
@@ -13,7 +14,8 @@ type Article struct {
 	ID         string  `json:"id" db:"id"`
 	UserID     string  `json:"user_id" db:"user_id"`
 	CategoryID *string `json:"category_id" db:"category_id"`
-	// name of category available only when we get article(s)
+	CoverID    *string `json:"cover_id" db:"cover_id"`
+	// name of category available only when we get article(s).
 	CategoryName *string    `json:"category_name" db:"category_name"`
 	IsPublished  bool       `json:"is_published" db:"is_published"`
 	Title        string     `json:"title" db:"title"`
@@ -44,27 +46,31 @@ func (a *Article) getQueryRowsCount() string {
 }
 
 // get paginated.
-func (a *Article) GetPaginated(by string, start string, show string, page int, preview bool, categoryName *string) (articles map[int]*Article, totalPages int, err error) {
+func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]*Article, totalPages int, err error) {
+	//
 	var isPublished bool
-	if show == "published" {
+	if params.Show == "published" {
 		isPublished = true
-	} else if show == "drafts" {
+	} else if params.Show == "drafts" {
 		isPublished = false
 	} else {
 		return
 	}
+	var categoryNameExists = params.CategoryName != nil
 
 	// queries. //
-	var categoryNameExists = categoryName != nil
 	var queryWhereIsPublished = "WHERE is_published = $1 "
 	var queryAndCategoryName = "AND category_name = $2 "
+	var queryAndCategoryIDnull = "AND category_id IS NULL "
 
 	// get pages count depend on category name. //
 	var queryGetCount = a.getQueryRowsCount() + queryWhereIsPublished
 	var getPagesCountArgsArr = []any{isPublished}
-	if categoryNameExists {
+	if params.WithoutCategory {
+		queryGetCount += queryAndCategoryIDnull
+	} else if categoryNameExists {
+		getPagesCountArgsArr = append(getPagesCountArgsArr, *params.CategoryName)
 		queryGetCount += queryAndCategoryName
-		getPagesCountArgsArr = append(getPagesCountArgsArr, *categoryName)
 	}
 	totalPages = 1
 	err = IntAdapter.Get(&totalPages, queryGetCount, getPagesCountArgsArr...)
@@ -72,54 +78,54 @@ func (a *Article) GetPaginated(by string, start string, show string, page int, p
 		return
 	}
 	totalPages = int(math.Round(float64(totalPages) / float64(ArticlePageSize)))
-	if page > totalPages {
+	if params.Page > totalPages {
 		return
 	}
 
 	// get articles depend on category name (prepare). //
 	var queryGetArticles = a.getQueryGetter() + queryWhereIsPublished
 	var getArticlesArgsArr = []any{isPublished}
-	var getArticlesArgsDollars [2]string = [2]string{"$2", "$3"}
-	if categoryNameExists {
+	var getArticlesArgsLimitOffset = [2]string{"$2", "$3"}
+	if params.WithoutCategory {
+		queryGetArticles += queryAndCategoryIDnull
+	} else if categoryNameExists {
 		queryGetArticles += queryAndCategoryName
-		getArticlesArgsArr = append(getArticlesArgsArr, *categoryName)
-		getArticlesArgsDollars[0] = "$3"
-		getArticlesArgsDollars[1] = "$4"
+		getArticlesArgsLimitOffset[0] = "$3"
+		getArticlesArgsLimitOffset[1] = "$4"
+		getArticlesArgsArr = append(getArticlesArgsArr, *params.CategoryName)
 	}
 
 	// get articles & paginate. //
 	// attention: potential sql injection - check values in validator before use it
-	queryGetArticles += fmt.Sprintf("ORDER BY %v %v, id %v LIMIT %v OFFSET %v", by, start, start,
-		getArticlesArgsDollars[0], getArticlesArgsDollars[1])
-	getArticlesArgsArr = append(getArticlesArgsArr, ArticlePageSize, (page-1)*ArticlePageSize)
+	queryGetArticles += fmt.Sprintf("ORDER BY %v %v, id %v LIMIT %v OFFSET %v", params.By, params.Start, params.Start,
+		getArticlesArgsLimitOffset[0], getArticlesArgsLimitOffset[1])
+	getArticlesArgsArr = append(getArticlesArgsArr, ArticlePageSize, (params.Page-1)*ArticlePageSize)
 	articles, err = articleAdapter.GetRows(queryGetArticles, getArticlesArgsArr...)
 	return
 }
 
-// create in database.
+// create in database. AFTER CREATING RETURNS ONLY ID.
 func (a *Article) Create() (err error) {
 	a.hookBeforeChange()
 	var query = `
 	INSERT INTO articles (user_id, category_id, 
-	is_published, title, content) VALUES ($1, $2, $3, $4, $5) RETURNING *`
+	is_published, title, content) VALUES ($1, $2, $3, $4, $5) RETURNING id`
 	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.IsPublished, a.Title, a.Content)
 	if err != nil {
 		return
 	}
-	_ = a.hookAfterChange()
 	return
 }
 
 // update all article in database.
 func (a *Article) Update() (err error) {
 	a.hookBeforeChange()
-	var query = `UPDATE articles SET user_id=$1, category_id=$2,
-	is_published=$3, title=$4, content=$5, published_at=$6 WHERE id=$7 RETURNING *`
-	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.IsPublished, a.Title, a.Content, a.PublishedAt, a.ID)
+	var query = `UPDATE articles SET user_id=$1, category_id=$2, cover_id=$3,
+	is_published=$4, title=$5, content=$6, published_at=$7 WHERE id=$8 RETURNING *`
+	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.CoverID, a.IsPublished, a.Title, a.Content, a.PublishedAt, a.ID)
 	if err != nil {
 		return
 	}
-	_ = a.hookAfterChange()
 	return
 }
 
@@ -147,27 +153,9 @@ func (a *Article) DeleteByID() (err error) {
 
 // executes before article create or update.
 func (a *Article) hookBeforeChange() {
-	if len(a.Title) == 0 {
-		a.Title = "Untitled"
-	}
-	// check published.
+	// article published and no published date? wtf lets fix that.
 	if a.IsPublished && a.PublishedAt == nil {
 		var cur = time.Now()
 		a.PublishedAt = &cur
 	}
-	// check category.
-	if a.CategoryID != nil {
-		var cat = ArticleCategory{}
-		cat.ID = *a.CategoryID
-		found, err := cat.FindByID()
-		if err == nil && !found {
-			// if category not found - reset category
-			a.CategoryID = nil
-		}
-	}
-}
-
-// executes after article create or update.
-func (a *Article) hookAfterChange() (err error) {
-	return
 }

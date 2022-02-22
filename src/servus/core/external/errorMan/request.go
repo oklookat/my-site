@@ -44,3 +44,13 @@ func (r RequestError) NotFound() string {
 	var bytes, _ = json.Marshal(err)
 	return string(bytes)
 }
+
+// exists error JSON (409).
+func (r RequestError) Exists() string {
+	err := ePrimitive{
+		eError{StatusCode: 409, ErrorCode: "E_EXISTS"},
+		"Already exists.",
+	}
+	var bytes, _ = json.Marshal(err)
+	return string(bytes)
+}

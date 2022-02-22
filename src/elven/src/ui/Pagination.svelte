@@ -65,30 +65,33 @@
 
 {#if active}
   <div class="pagination">
-    <div class="pagination__prev">
-      {#if currentPageData !== 1}
-        <div class="pagination__prev_ pointer center" on:click={onPrevButton}>
-          previous
-        </div>
-      {/if}
+    <div class="pagination__paginator">
+      <div class="pagination__paginator--prev">
+        {#if currentPageData !== 1}
+          <div
+            class="pagination__paginator--prev--butt pointer center"
+            on:click={onPrevButton}
+          ></div>
+        {/if}
+      </div>
+      <div class="pagination__paginator--page">
+        <input
+          class="pagination__input"
+          type="text"
+          placeholder="page"
+          bind:value={inputPage}
+          on:input={onPageInput}
+        />
+      </div>
+      <div class="pagination__paginator--next">
+        {#if currentPageData < totalPagesData}
+          <div class="pagination__paginator--next--butt pointer center" on:click={onNextButton}></div>
+        {/if}
+      </div>
     </div>
-    <div class="pagination__go">
-      <input
-        class="pagination__input"
-        type="text"
-        placeholder="page"
-        bind:value={inputPage}
-        on:input={onPageInput}
-      />
+    <div class="pagination__total">
+      <div class="pagination__total--count center">{totalPagesData}</div>
     </div>
-    <div class="pagination__next">
-      {#if currentPageData < totalPagesData}
-        <div class="pagination__next_ pointer center" on:click={onNextButton}>
-          next
-        </div>
-      {/if}
-    </div>
-    <div class="pagination__total center">{totalPagesData} pages</div>
   </div>
 {/if}
 
@@ -105,38 +108,62 @@
     width: 100%;
   }
 
+  $border-radius: var(--border-radius);
   .pagination {
-    border-radius: var(--border-radius);
-    background-color: var(--color-level-1);
-    height: 94px;
-    display: grid;
-    grid-template-columns: 2fr 1fr 2fr;
-    grid-template-rows: 54px 1fr;
-    align-items: center;
-    &__go {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
+    width: 100%;
+    height: max-content;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    &__paginator,
+    &__total {
       width: 100%;
-      input {
-        font-size: 1.1rem;
-        height: 75%;
+      background: var(--color-level-1);
+      border-radius: $border-radius;
+      border: var(--color-border) 1px solid;
+    }
+    &__paginator {
+      height: 64px;
+      display: grid;
+      grid-template-rows: 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
+      &--prev--butt,
+      &--next--butt {
+        background: var(--color-level-2);
         width: 100%;
+        height: 100%;
+      }
+      &--prev {
+        &--butt {
+          border-radius: $border-radius 0 0 $border-radius;
+        }
+      }
+      &--page {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        input {
+          width: 75%;
+          height: 75%;
+          background: var(--color-level-2);
+          border: none;
+          font-size: 1.4rem;
+          text-align: center;
+          text-indent: 0;
+        }
+      }
+      &--next {
+        &--butt {
+          border-radius: 0 $border-radius $border-radius 0;
+        }
       }
     }
-    &__prev,
-    &__next,
     &__total {
-      width: 100%;
-      height: 100%;
-    }
-    &__prev,
-    &__next {
-      border-radius: var(--border-radius);
-    }
-    &__total {
-      grid-column: 1 / 4;
+      min-height: 54px;
+      font-size: 1.3rem;
+      padding: 12px;
     }
   }
 </style>

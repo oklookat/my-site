@@ -1,6 +1,9 @@
 **oklookat.ru / REST API backend**
 **powered by servus little framework**
 
+# Requirements
+
+**go 1.18+**
 
 # Useful
 
@@ -10,7 +13,7 @@
 
 # Commands & flags
 
-## flags
+## run args
 **path to config:**
 ```-config=/dir/dir2/config.json```
 

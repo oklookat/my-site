@@ -11,8 +11,20 @@ const ctxHTTP _ctxHTTP = "CORE_HTTP_PIPE"
 
 // helper for request/response manipulations.
 type HTTP interface {
+	// send response.
 	Send(body string, statusCode int, err error)
+	// set cookie.
 	SetCookie(name string, value string) error
+	// get route args [name: value].
+	//
+	// ----example:----
+	//
+	// route: /api/users/{username}/{id}
+	//
+	// request: /api/users/oklookat/1
+	//
+	// map: = [username: oklookat, id: 1]
+	GetRouteArgs() map[string]string
 }
 
 // sends information/controls server via 3rd party services, like Telegram bot.

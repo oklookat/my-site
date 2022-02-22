@@ -10,13 +10,17 @@ import (
 	"servus/core/internal/zipify"
 )
 
+// get request params.
+type httpParamsGetter func(r *http.Request) map[string]string
+
 type httpHelper struct {
 	logger  Logger
 	control Controller
 	cookie  *iHTTP.ConfigCookie
 }
 
-func (h *httpHelper) new(l Logger, c Controller, cookie *iHTTP.ConfigCookie) {
+func (h *httpHelper) new(l Logger, c Controller, cookie *iHTTP.ConfigCookie, vars httpParamsGetter) {
+	iHTTP.RouteArgsGetter = (func(r *http.Request) map[string]string)(vars)
 	h.logger = l
 	h.control = c
 	h.cookie = cookie

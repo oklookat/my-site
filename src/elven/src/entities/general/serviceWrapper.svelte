@@ -9,7 +9,6 @@
     // player
     let player: ElvenPlayer;
     let playerReady = false;
-    let playerActive = false;
     // choose
     new ElvenChoose();
 
@@ -37,7 +36,7 @@
 
 <div class="service">
     {#if playerReady}
-        <Player core={player} onActiveChanged={(val) => (playerActive = val)} />
+        <Player core={player} />
     {/if}
 </div>
 

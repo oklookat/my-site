@@ -1,16 +1,16 @@
 @media (prefers-color-scheme: light) {
     :root {
-      --color-body: #e6e6e6;
+      --color-body: #f5f5f5;
       --color-text: black;
       --color-text-inactive: #656565;
-      --color-text-selection: #b5a9ff;
+      --color-text-selection: #b4a8ff;
       --color-level-1: #ffffff;
-      --color-level-2: #ebebeb;
+      --color-level-2: #f8f8f8;
       --color-scrollbar: #505050;
       --color-scrollbar-hover: #707070;
       --color-placeholder: #808080;
       --color-hover: rgba(0, 0, 0, 0.05);
-      --color-border: #f2f2f2;
+      --color-border: #e0e0e0;
       --color-header-active: #ffffff;
       --color-header-text: #000000;
     }
@@ -28,7 +28,7 @@
       --color-scrollbar-hover: #707070;
       --color-placeholder: #808080;
       --color-hover: #303030;
-      --color-border: #252525;
+      --color-border: #2a2a2a;
       --color-header-active: rgba(105, 105, 105, 0.1);
       --color-header-text: white;
     }

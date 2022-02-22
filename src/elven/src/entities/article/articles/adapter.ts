@@ -11,7 +11,6 @@ export default class ArticleAdapter {
             const response = await Duck.GET({ url: this.prefix, params: params })
             return Promise.resolve(response.body as Data<Article>)
         } catch (err) {
-            console.log(err)
             return Promise.reject(err)
         }
     }
@@ -35,6 +34,7 @@ export default class ArticleAdapter {
     }
 
     public static async create(article: Article): Promise<Article> {
+        this.beforeCRUD(article)
         try {
             const response = await Duck.POST({ url: `${this.prefix}`, body: article })
             return Promise.resolve(response.body as Article)
@@ -44,6 +44,7 @@ export default class ArticleAdapter {
     }
 
     public static async update(article: Article): Promise<Article> {
+        this.beforeCRUD(article)
         try {
             const response = await Duck.PATCH({ url: `${this.prefix}/${article.id}`, body: article })
             return Promise.resolve(response.body as Article)
@@ -70,4 +71,9 @@ export default class ArticleAdapter {
         }
     }
 
+    private static beforeCRUD(article: Article) {
+        if(!article.category_id) {
+            article.category_id = "nope"
+        }
+    }
 }

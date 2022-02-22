@@ -5,9 +5,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
-
-	"github.com/pkg/errors"
 )
 
 // Instance - cool things for request/response.
@@ -29,6 +26,9 @@ type ConfigCookie struct {
 	SameSite string `json:"sameSite"`
 }
 
+// get route arguments.
+var RouteArgsGetter func(r *http.Request) map[string]string
+
 // creates new HTTP instance.
 func New(req *http.Request, res http.ResponseWriter, cookie *ConfigCookie) *Instance {
 	var i = &Instance{}
@@ -36,18 +36,6 @@ func New(req *http.Request, res http.ResponseWriter, cookie *ConfigCookie) *Inst
 	i.response = res
 	i.cookie = cookie
 	return i
-}
-
-func (i *Instance) wrapError(err error) error {
-	if err == nil {
-		return nil
-	}
-	err = errors.Wrap(err, "[iHTTP] ")
-	return err
-}
-
-func (i *Instance) newError(message string) error {
-	return errors.New("[iHTTP] " + message)
 }
 
 // when 399+ error.
@@ -94,23 +82,6 @@ func (i *Instance) SetCookie(name string, value string) error {
 	return err
 }
 
-// convert cookie sameSite string to http.SameSite.
-func (i *Instance) convertCookieSameSite(sameSite string) (http.SameSite, error) {
-	sameSite = strings.ToUpper(sameSite)
-	switch sameSite {
-	case "DEFAULT":
-		return http.SameSiteDefaultMode, nil
-	case "LAX":
-		return http.SameSiteLaxMode, nil
-	case "STRICT":
-		return http.SameSiteStrictMode, nil
-	case "NONE":
-		return http.SameSiteNoneMode, nil
-	default:
-		return http.SameSiteDefaultMode, i.newError("wrong sameSite string")
-	}
-}
-
 // get pretty HTTP request info in string/io.Reader.
 func (i *Instance) GetDump() io.Reader {
 	// cookies.
@@ -147,13 +118,17 @@ rawQuery: %v
 	return strings.NewReader(dump)
 }
 
-// convert time like "2h"; "2min"; "2sec" to duration.
-func (i *Instance) convertTimeWord(timeShortcut string) (dur time.Duration, err error) {
-	timeShortcut = strings.ToLower(timeShortcut)
-	dur, err = time.ParseDuration(timeShortcut)
-	if err != nil {
-		err = i.wrapError(err)
-		return
+// get route arguments.
+//
+// like route: /users/{username}/{id}
+//
+// request: /users/iam/111
+//
+// and map will be: [username: iam, id: 111]
+func (i *Instance) GetRouteArgs() map[string]string {
+	if RouteArgsGetter == nil {
+		fmt.Println("[iHTTP] warning: Instance.GetRouteArgs called, but iHTTP.RouteArgsGetter is nil")
+		return nil
 	}
-	return
+	return RouteArgsGetter(i.request)
 }

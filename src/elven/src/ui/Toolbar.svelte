@@ -9,6 +9,7 @@
         font-size: 0.9rem;
         background-color: var(--color-level-1);
         border-radius: var(--border-radius);
+        border: var(--color-border) 1px solid;
         width: 100%;
         min-height: 52px;
         padding: 14px;

@@ -13,25 +13,11 @@
     min-height: 52px;
     border-radius: 6px;
     align-self: center;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr min-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     &__message {
-      margin-top: 4px;
-      margin-left: 12px;
-      margin-right: 8px;
-    }
-    &__progress-wrapper {
-      width: 50%;
-      margin-bottom: 12px;
-      margin-top: 12px;
-      justify-self: center;
-    }
-    &__progress {
-      border-radius: 4px;
-      height: 4px;
-      transition: transform 120ms linear;
-      background-color: rgb(190, 190, 190);
+      padding: 14px;
     }
     @include _desktop() {
       position: relative;
@@ -43,11 +29,12 @@
       }
     }
     @media (prefers-color-scheme: light) {
-      background-color: rgb(60, 60, 60);
-      border: 1px solid rgb(50, 50, 50);
+      color: black;
+      background-color: rgb(255, 255, 255);
+      border: 1px solid rgb(215, 215, 215);
     }
     @media (prefers-color-scheme: dark) {
-      background-color: rgb(40, 40, 40);
-      border: 1px solid rgb(30, 30, 30);
+      background-color: rgb(30, 30, 30);
+      border: 1px solid rgb(50, 50, 50);
     }
   }

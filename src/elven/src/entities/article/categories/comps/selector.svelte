@@ -8,6 +8,8 @@
 
     /** initial id */
     export let selectedID: string | null | undefined = undefined;
+    /** custom categories. Puts before server categories */
+    export let customCategories: Record<number, Category> = {};
 
     const dispatch = createEventDispatcher<{
         /** dispatch new category when changed */
@@ -51,18 +53,26 @@
     function makeCategoriesSelectable() {
         selectData = [];
 
+        // format custom categories for select element
+        fetchCategories(customCategories);
+
         // create "no category" item
         const noCategory = { value: "", text: "No category" };
-        selectData[0] = noCategory;
+        selectData.push(noCategory)
 
+        // format categories for select element
+        fetchCategories(categories);
+    }
+
+    /** format & add categories to select */
+    function fetchCategories(items: Record<number, Category>) {
         // if without selected category id - set "no category" as default
         const initialID = selectedID;
         if (!initialID) {
             selectedValue = "";
         }
-
-        // format categories for select element
-        for (const [counter, _category] of Object.entries(categories)) {
+        // format custom categories for select element
+        for (const [counter, _category] of Object.entries(items)) {
             const option = {
                 value: counter,
                 text: _category.name,
@@ -74,9 +84,9 @@
             }
             selectData.push(option);
         }
-
         // render
         selectData = selectData;
+
     }
 
     /** when category on select element changed */
@@ -98,7 +108,8 @@
         try {
             const isString = typeof counter === "string";
             const counterInt = isString ? parseInt(counter, 10) : counter;
-            cat = categories[counterInt] || null;
+            cat =
+                categories[counterInt] || customCategories[counterInt] || null;
         } catch (err) {}
         return cat;
     }
@@ -109,6 +120,3 @@
     bind:selected={selectedValue}
     on:selected={(e) => onCategoryChanged(e.detail)}
 />
-
-<style lang="scss">
-</style>

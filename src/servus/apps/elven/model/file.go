@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"math"
+	"servus/apps/elven/base"
 	"time"
 )
 
@@ -21,7 +22,7 @@ type File struct {
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }
 
-func (f *File) GetPaginated(by string, start string, page int) (files map[int]*File, totalPages int, err error) {
+func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, totalPages int, err error) {
 	// get pages count.
 	var queryCount = "SELECT count(*) FROM files"
 	totalPages = 1
@@ -30,12 +31,12 @@ func (f *File) GetPaginated(by string, start string, page int) (files map[int]*F
 		return
 	}
 	totalPages = int(math.Round(float64(totalPages) / float64(FilePageSize)))
-	if page > totalPages {
+	if params.Page > totalPages {
 		return
 	}
 	// get.
-	var query = fmt.Sprintf("SELECT * FROM files ORDER BY %s %s, id %s LIMIT $1 OFFSET $2", by, start, start)
-	files, err = fileAdapter.GetRows(query, FilePageSize, (page-1)*FilePageSize)
+	var query = fmt.Sprintf("SELECT * FROM files ORDER BY %s %s, id %s LIMIT $1 OFFSET $2", params.By, params.Start, params.Start)
+	files, err = fileAdapter.GetRows(query, FilePageSize, (params.Page-1)*FilePageSize)
 	return
 }
 

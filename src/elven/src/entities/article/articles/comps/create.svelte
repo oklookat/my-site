@@ -155,6 +155,7 @@
     if (newCatNotEmpty) {
       article.category_id = newCat.id;
     } else {
+      // no category
       article.category_id = null;
     }
     save().catch(() => {
@@ -204,13 +205,14 @@
 
   .title,
   .editor {
+    box-sizing: border-box;
+    border: var(--color-border) 1px solid;
     margin: auto;
   }
 
   .title {
     background-color: white;
     color: black;
-    border: none;
     font-size: 1.6rem;
     font-weight: bold;
     min-height: 54px;

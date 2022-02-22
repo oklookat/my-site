@@ -14,7 +14,7 @@ type ArticleCategory struct {
 
 // get all categories.
 func (a *ArticleCategory) GetAll() (cats map[int]*ArticleCategory, err error) {
-	var query = "SELECT * FROM article_categories ORDER BY created_at DESC"
+	var query = "SELECT * FROM article_categories ORDER BY name ASC"
 	cats, err = articleCatAdapter.GetRows(query)
 	return
 }
