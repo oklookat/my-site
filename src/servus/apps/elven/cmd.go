@@ -141,7 +141,7 @@ func (c *cmd) migrate() {
 	}
 	_, err = model.StringAdapter.Exec(string(script))
 	if err != nil {
-		var errPretty = errors.Wrap(err, "elven: migration failed. Failed to execute SQL file)")
+		var errPretty = errors.Wrap(err, "elven: migration failed. Failed to execute SQL file")
 		call.Logger.Panic(errPretty)
 		os.Exit(1)
 	}

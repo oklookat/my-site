@@ -139,7 +139,7 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 	//
 	// returns: is valid, title length.
 	var checkTitle = func() (bool, int) {
-		var isNil = bodyStruct.Title != nil
+		var isNil = bodyStruct.Title == nil
 		if isNil {
 			return false, 0
 		}
@@ -258,7 +258,8 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 		found, err := cat.FindByID()
 		// validation error: fake category or DB error.
 		if err != nil || !found {
-			return nil
+			// reset category.
+			filtered.CategoryID = nil
 		}
 	}
 	// cover.
@@ -271,7 +272,14 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 			return nil
 		}
 		// can this file be a cover?
-		// TODO: write check.
+		var extension = strings.ToUpper(file.Extension)
+		var isCoverable = extension == "JPG" || extension == "JPEG" || extension == "PNG" ||
+			extension == "GIF" || extension == "WEBP" || extension == "MP4"
+		// validation error: bad article cover.
+		if !isCoverable {
+			// reset cover.
+			filtered.CoverID = nil
+		}
 	}
 
 	return filtered

@@ -151,8 +151,8 @@ CREATE TABLE users
 (
     id         ulid PRIMARY KEY,
     role       user_roles DEFAULT 'user'::user_roles NOT NULL,
-    username   varchar(24) UNIQUE NOT NULL,
-    password   varchar(256) NOT NULL,
+    username   varchar(24) UNIQUE NOT NULL CHECK (length(username) > 0),
+    password   varchar(256) NOT NULL CHECK (length(password) > 8),
     reg_ip     varchar(64) DEFAULT NULL,
     reg_agent  varchar(324) DEFAULT NULL,
     created_at created,
@@ -208,40 +208,15 @@ EXECUTE PROCEDURE before_insert();
 CREATE TRIGGER article_cats_before_update BEFORE UPDATE ON article_categories FOR EACH ROW
 EXECUTE PROCEDURE before_update();
 
----- ARTICLES ----
-CREATE TABLE articles
-(
-    id ulid  PRIMARY KEY,
-    user_id ulid NOT NULL
-    REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    category_id ulid DEFAULT NULL
-    REFERENCES article_categories(id) ON UPDATE CASCADE ON DELETE SET NULL,
-    cover_id uild DEFAULT NULL
-    REFERENCES files(id) ON UPDATE CASCADE ON DELETE SET NULL,
-    is_published boolean DEFAULT false,
-    title varchar(124) DEFAULT 'Untitled'::varchar,
-    content varchar(256000) NOT NULL,
-    published_at timestamp with time zone,
-    created_at created,
-    updated_at timestamp with time zone
-) TABLESPACE pg_default;
-ALTER TABLE articles OWNER to postgres;
-CREATE TRIGGER article_before_insert_or_update BEFORE INSERT OR UPDATE ON articles FOR EACH ROW
-EXECUTE PROCEDURE before_insert_or_update();
-CREATE TRIGGER article_before_insert BEFORE INSERT ON articles FOR EACH ROW
-EXECUTE PROCEDURE before_insert();
-CREATE TRIGGER article_before_update BEFORE UPDATE ON articles FOR EACH ROW
-EXECUTE PROCEDURE before_update();
-
 ---- FILES ----
 CREATE TABLE files
 (
     id ulid PRIMARY KEY,
     user_id ulid NOT NULL
     REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    hash varchar(32) NOT NULL UNIQUE,
+    hash varchar(32) NOT NULL UNIQUE CHECK (length(hash) = 32),
     path varchar(512) NOT NULL UNIQUE,
-    name varchar(26) NOT NULL UNIQUE,
+    name varchar(104) NOT NULL UNIQUE,
     original_name varchar(264) DEFAULT NULL,
     extension varchar(64) DEFAULT NULL,
     size bigint NOT NULL,
@@ -255,4 +230,31 @@ CREATE TRIGGER file_before_insert BEFORE INSERT ON files FOR EACH ROW
 EXECUTE PROCEDURE before_insert();
 CREATE TRIGGER file_before_update BEFORE UPDATE ON files FOR EACH ROW
 EXECUTE PROCEDURE before_update();
+
+---- ARTICLES ----
+CREATE TABLE articles
+(
+    id ulid  PRIMARY KEY,
+    user_id ulid NOT NULL
+    REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    category_id ulid DEFAULT NULL
+    REFERENCES article_categories(id) ON UPDATE CASCADE ON DELETE SET NULL,
+    cover_id ulid DEFAULT NULL
+    REFERENCES files(id) ON UPDATE CASCADE ON DELETE SET NULL,
+    is_published boolean DEFAULT false,
+    title varchar(124) DEFAULT 'Untitled'::varchar CHECK (length(title) > 0),
+    content varchar(256000) NOT NULL,
+    published_at timestamp with time zone,
+    created_at created,
+    updated_at timestamp with time zone
+) TABLESPACE pg_default;
+ALTER TABLE articles OWNER to postgres;
+CREATE TRIGGER article_before_insert_or_update BEFORE INSERT OR UPDATE ON articles FOR EACH ROW
+EXECUTE PROCEDURE before_insert_or_update();
+CREATE TRIGGER article_before_insert BEFORE INSERT ON articles FOR EACH ROW
+EXECUTE PROCEDURE before_insert();
+CREATE TRIGGER article_before_update BEFORE UPDATE ON articles FOR EACH ROW
+EXECUTE PROCEDURE before_update();
+
+
 ---------------------- TABLES END ----------------------

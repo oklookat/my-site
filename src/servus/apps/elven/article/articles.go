@@ -144,6 +144,7 @@ func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Req
 		h.Send("invalid", 400, err)
 		return
 	}
+	article = *filteredArticle
 
 	// update.
 	err = article.Update()

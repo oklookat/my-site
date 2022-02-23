@@ -69,7 +69,7 @@ func (f *File) FindByID() (found bool, err error) {
 func (f *File) FindByHash() (found bool, err error) {
 	found = false
 	var query = "SELECT * FROM files WHERE hash=$1 LIMIT 1"
-	founded, err := fileAdapter.Find(query, f.ID)
+	founded, err := fileAdapter.Find(query, f.Hash)
 	if err != nil {
 		return
 	}
