@@ -19,11 +19,11 @@ var requestErrors = errorMan.RequestError{}
 var validate = &Validate{}
 
 type App struct {
-	middleware *middleware
-	auth       *auth.Instance
-	article    *article.Instance
-	file       *file.Instance
-	user       *user.Instance
+	Middleware *middleware
+	Auth       *auth.Instance
+	Article    *article.Instance
+	File       *file.Instance
+	User       *user.Instance
 }
 
 func (a *App) Boot(c *core.Instance) {
@@ -32,25 +32,26 @@ func (a *App) Boot(c *core.Instance) {
 	// models.
 	model.Boot(c)
 	// cmd.
-	var _cmd = &cmd{}
-	_cmd.boot()
-	a.middleware = &middleware{}
+	var cmdArgs = &cmd{}
+	cmdArgs.boot(a)
+	// middleware.
+	a.Middleware = &middleware{}
 	// pipe.
 	pipe.Boot(c)
 	var pipeToken = &pipe.Token{}
 	var pipeUser = &pipe.User{}
 	// auth.
-	a.auth = &auth.Instance{}
-	a.auth.Boot(call, a.middleware, pipeToken, requestErrors, validate)
+	a.Auth = &auth.Instance{}
+	a.Auth.Boot(call, a.Middleware, pipeToken, requestErrors, validate)
 	// article.
-	a.article = &article.Instance{}
-	a.article.Boot(call, a.middleware, pipeUser, requestErrors, validate)
+	a.Article = &article.Instance{}
+	a.Article.Boot(call, a.Middleware, pipeUser, requestErrors, validate)
 	// file.
-	a.file = &file.Instance{}
-	a.file.Boot(call, a.middleware, pipeUser, requestErrors, validate)
+	a.File = &file.Instance{}
+	a.File.Boot(call, a.Middleware, pipeUser, requestErrors, validate)
 	// user.
-	a.user = &user.Instance{}
-	a.user.Boot(call, a.middleware, pipeUser, requestErrors, validate)
+	a.User = &user.Instance{}
+	a.User.Boot(call, a.Middleware, pipeUser, requestErrors, validate)
 	//
 	a.bootRoutes()
 }
@@ -59,13 +60,13 @@ func (a *App) bootRoutes() {
 	router := mux.NewRouter().PathPrefix("/elven").Subrouter()
 	router.Use(call.Middleware.ProvideHTTP())
 	router.Use(call.Middleware.AsJson())
-	router.Use(a.middleware.ProvideTokenPipe)
-	router.Use(a.middleware.ProvideUserPipe)
+	router.Use(a.Middleware.ProvideTokenPipe)
+	router.Use(a.Middleware.ProvideUserPipe)
 	//
-	a.auth.BootRoutes(router)
-	a.article.BootRoutes(router)
-	a.file.BootRoutes(router)
-	a.user.BootRoutes(router)
+	a.Auth.BootRoutes(router)
+	a.Article.BootRoutes(router)
+	a.File.BootRoutes(router)
+	a.User.BootRoutes(router)
 	//
 	var useBeforeRouter = call.Middleware.CORS()(
 		call.Middleware.LimitBody()(router))

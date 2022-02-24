@@ -1,7 +1,6 @@
 package model
 
 import (
-	"servus/core/external/validator"
 	"strings"
 	"time"
 
@@ -84,41 +83,10 @@ func (u *User) DeleteByID() (err error) {
 	return
 }
 
-// validate username from UserModel. Used in cmd create user.
-func (u *User) ValidateUsername() error {
-	if validator.MinMax(&u.Username, 4, 24) {
-		return ErrUserUsernameMinMax
-	}
-	if !validator.IsAlphanumeric(&u.Username) {
-		return ErrUserUsernameAlphanumeric
-	}
-	return nil
-}
-
-// validate UserModel password. Used in cmd create user.
-func (u *User) ValidatePassword() error {
-	if validator.MinMax(&u.Password, 8, 64) {
-		return ErrUserPasswordMinMax
-	}
-	if !validator.IsAlphanumericWithSymbols(&u.Password) {
-		return ErrUserPasswordWrongSymbols
-	}
-	return nil
-}
-
 // change data before send it to DB.
 func (u *User) hookBeforeChange() (err error) {
 	// convert to lower
 	u.Username = strings.ToLower(u.Username)
-	// validate.
-	err = u.ValidateUsername()
-	if err != nil {
-		return
-	}
-	err = u.ValidatePassword()
-	if err != nil {
-		return
-	}
 	// check if password not hashed.
 	var isHashed = call.Encryptor.Argon.IsHash(u.Password)
 	if !isHashed {

@@ -30,16 +30,19 @@ func (t *Token) GetByContext(request *http.Request) base.TokenPipe {
 
 // used for ex. providing pipe to request context.
 func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
+
 	// get encrypted.
 	encrypted, found := t.getEncryptedByRequest(request)
 	if !found {
 		return nil, nil
 	}
+
 	// decrypt to get ID.
 	id, err := call.Encryptor.AES.Decrypt(encrypted)
 	if err != nil {
 		return nil, err
 	}
+
 	// search by ID.
 	var md = &model.Token{}
 	md.ID = id
@@ -47,7 +50,9 @@ func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
 	if !found || err != nil {
 		return nil, err
 	}
+
 	md.SetLastAgents(request)
+
 	// create pipe.
 	var pipe = &TokenPipe{}
 	pipe.model = md
@@ -56,8 +61,9 @@ func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
 
 // get encrypted token from request cookie or headers.
 func (t *Token) getEncryptedByRequest(request *http.Request) (encrypted string, found bool) {
-	// get from cookie.
 	found = false
+
+	// get from cookie.
 	encrypted = ""
 	cookieToken, err := request.Cookie("token")
 	if err == nil && len(cookieToken.Value) > 4 {
@@ -65,14 +71,17 @@ func (t *Token) getEncryptedByRequest(request *http.Request) (encrypted string, 
 		encrypted = cookieToken.Value
 		return
 	}
-	// get from authorization header.
-	// get something like: 'Elven tokenHere'.
+
+	// get from authorization header
+	// get string like: 'Elven tokenHere'.
 	var authHeader = request.Header.Get("Authorization")
 	if len(authHeader) < 12 {
 		return
 	}
+
 	// remove 6 symbols (Elven and space) to get only token.
 	encrypted = authHeader[:len(authHeader)-6]
+
 	found = true
 	return
 }

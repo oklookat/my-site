@@ -9,13 +9,15 @@ import (
 // generate token if username and password are correct.
 func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
+
 	// validate credentials.
 	body := Body{}
-	validator := body.Validate(request.Body)
-	if validator.HasErrors() {
-		h.Send(validator.GetJSON(), 400, nil)
+	isValid := body.Validate(request.Body)
+	if !isValid {
+		h.Send("invalid request", 400, nil)
 		return
 	}
+
 	// find user.
 	var user = model.User{Username: body.Username}
 	found, err := user.FindByUsername()
@@ -27,12 +29,14 @@ func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 		h.Send(a.throw.NotAuthorized(), 401, err)
 		return
 	}
+
 	// compare found user and provided password.
 	var isPassword, _ = call.Encryptor.Argon.Compare(body.Password, user.Password)
 	if !isPassword {
 		h.Send(a.throw.NotAuthorized(), 401, err)
 		return
 	}
+
 	// generate token.
 	var tokenModel = model.Token{}
 	encryptedToken, _, err := tokenModel.Generate(user.ID)
@@ -45,11 +49,12 @@ func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
-	// send token depending by auth type.
+
+	// send token depending on auth type.
 	switch body.Type {
 	case "direct":
-		var direct = fmt.Sprintf(`{token: "%v"}`, encryptedToken)
-		h.Send(direct, 200, err)
+		var tokenJSON = fmt.Sprintf(`{token: "%v"}`, encryptedToken)
+		h.Send(tokenJSON, 200, err)
 		return
 	case "cookie":
 		h.SetCookie("token", encryptedToken)
@@ -61,20 +66,25 @@ func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
-// get token from user and delete.
+// get token from user and delete. | PROTECTED BY AUTHORIZED ONLY MIDDLEWARE.
 func (a *Instance) logout(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
+
 	// get token from cookie or auth header.
 	var pipe = a.pipe.GetByContext(request)
 	if pipe == nil {
-		// not authorized.
-		h.Send("", 400, nil)
+		h.Send("not authorized", 400, nil)
 		return
 	}
+
 	// delete token.
 	var token = model.Token{}
 	token.ID = pipe.GetID()
-	_ = token.DeleteByID()
-	// send OK.
-	h.Send("", 200, nil)
+	err := token.DeleteByID()
+	if err != nil {
+		h.Send(a.throw.Server(), 500, err)
+		return
+	}
+
+	h.Send("", 200, err)
 }

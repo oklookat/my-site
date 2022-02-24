@@ -35,7 +35,8 @@ func (a *Instance) Boot(
 // add routes to router.
 func (a *Instance) BootRoutes(router *mux.Router) {
 	var root = router.PathPrefix("/article").Subrouter()
-	// articles
+
+	// articles | /article/articles
 	var articles = root.PathPrefix("/articles").Subrouter()
 	articles.Use(a.middleware.SafeMethodsOnly)
 	articles.HandleFunc("", a.getArticles).Methods(http.MethodGet)
@@ -43,7 +44,8 @@ func (a *Instance) BootRoutes(router *mux.Router) {
 	articles.HandleFunc("/{id}", a.getArticle).Methods(http.MethodGet)
 	articles.HandleFunc("/{id}", a.updateArticle).Methods(http.MethodPut, http.MethodPatch)
 	articles.HandleFunc("/{id}", a.deleteArticle).Methods(http.MethodDelete)
-	// categories
+
+	// categories | /article/categories
 	var categories = root.PathPrefix("/categories").Subrouter()
 	categories.Use(a.middleware.SafeMethodsOnly)
 	categories.HandleFunc("", a.getCategories).Methods(http.MethodGet)

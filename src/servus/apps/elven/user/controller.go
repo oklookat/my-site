@@ -2,12 +2,12 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"servus/apps/elven/model"
 )
 
-// GET
-// send some user data by token.
+// send some user data by token (GET).
 func (u *Instance) getMe(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	pipe := u.pipe.GetByContext(request)
@@ -22,55 +22,125 @@ func (u *Instance) getMe(response http.ResponseWriter, request *http.Request) {
 	h.Send(string(bytes), 200, err)
 }
 
-// POST
-// change username or password.
-// body: what change (username or password); password to confirm; new value for change.
+// change username or password (POST).
 func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
+
 	// validate body.
 	var body = Body{}
-	validator := body.Validate(request.Body)
-	if validator.HasErrors() {
-		h.Send(validator.GetJSON(), 400, nil)
+	isValid := body.Validate(request.Body)
+	if !isValid {
+		h.Send("invalid request", 400, nil)
 		return
 	}
+
 	// get pipe.
 	pipe := u.pipe.GetByContext(request)
+
+	// compare confirm password from body and original password from pipe.
 	match, err := call.Encryptor.Argon.Compare(body.Password, pipe.GetPassword())
 	if err != nil || !match {
 		h.Send(u.throw.NotAuthorized(), 401, err)
 		return
 	}
-	// creating model and copy id from pipe.
+
+	var sendValidationErr = func() {
+		h.Send("invalid request", 400, err)
+		return
+	}
+
+	// configure model & update.
 	var user = model.User{}
 	user.ID = pipe.GetID()
-	if body.What == "username" {
+	switch body.What {
+	case "username":
+		// validate username.
+		isValid = ValidateUsername(body.NewValue)
+		if !isValid {
+			sendValidationErr()
+			return
+		}
 		user.Username = body.NewValue
-		// check if exists.
-		userExists, err := user.FindByUsername()
+
+		// check is username in use.
+		isUsernameTaken, err := user.FindByUsername()
 		if err != nil {
 			h.Send(u.throw.Server(), 500, err)
 			return
 		}
-		if userExists {
-			validator.Add("username")
-			h.Send(validator.GetJSON(), 409, err)
+		if isUsernameTaken {
+			h.Send("username already in use", 409, err)
 			return
 		}
-	} else if body.What == "password" {
+	case "password":
+		// validate password.
+		isValid = ValidatePassword(body.NewValue)
+		if !isValid {
+			sendValidationErr()
+			return
+		}
 		user.Password = body.NewValue
 	}
+
+	// update.
 	err = user.Update()
 	if err != nil {
-		// check if validation error.
-		validationErr := err == model.ErrUserUsernameMinMax || err == model.ErrUserUsernameAlphanumeric || err == model.ErrUserPasswordMinMax || err == model.ErrUserPasswordWrongSymbols
-		if validationErr {
-			validator.Add(body.What)
-			h.Send(validator.GetJSON(), 400, err)
-			return
-		}
 		h.Send(u.throw.Server(), 500, err)
 		return
 	}
 	h.Send("", 200, err)
+}
+
+// create new user. THIS IS NOT A ROUTE.
+func (u *Instance) Create(username string, password string, isAdmin bool) (err error) {
+
+	// validate.
+	isValid := ValidateUsername(username)
+	if !isValid {
+		return errors.New("invalid username")
+	}
+	isValid = ValidatePassword(password)
+	if !isValid {
+		return errors.New("invalid password")
+	}
+
+	// fill.
+	var user = model.User{}
+	var role string
+	if isAdmin {
+		role = "admin"
+	} else {
+		role = "user"
+	}
+	user.Role = role
+	user.Username = username
+	user.Password = password
+
+	// user with this username exists?
+	found, err := user.FindByUsername()
+	if err != nil {
+		return
+	}
+	if found {
+		return errors.New("user with this username already exists")
+	}
+
+	// create
+	err = user.Create()
+
+	return
+}
+
+func (u *Instance) DeleteByUsername(username string) (err error) {
+	var user = model.User{}
+	user.Username = username
+	found, err := user.FindByUsername()
+	if !found {
+		return errors.New("user not found")
+	}
+	if err != nil {
+		return
+	}
+	err = user.DeleteByID()
+	return
 }

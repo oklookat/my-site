@@ -21,7 +21,7 @@ type UserPipe struct {
 	model *model.User
 }
 
-// get pipe by request context. Use only if you provided to request context.
+// get pipe by request context.
 func (u *User) GetByContext(request *http.Request) base.UserPipe {
 	pipe, ok := request.Context().Value(CtxUser).(base.UserPipe)
 	if !ok {
@@ -30,16 +30,16 @@ func (u *User) GetByContext(request *http.Request) base.UserPipe {
 	return pipe
 }
 
-// used for ex. providing pipe to request context. Get id from Model.Token.
+// get pipe by user id.
 func (u *User) GetByID(id string) (*UserPipe, error) {
-	var md = &model.User{}
-	md.ID = id
-	found, err := md.FindByID()
+	var user = &model.User{}
+	user.ID = id
+	found, err := user.FindByID()
 	if !found {
 		return nil, err
 	}
 	var pipe = &UserPipe{}
-	pipe.model = md
+	pipe.model = user
 	return pipe, err
 }
 

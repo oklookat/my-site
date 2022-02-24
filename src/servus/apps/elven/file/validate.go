@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-func ValidateGetParams(f *base.FileGetParams, params url.Values, isAdmin bool) (val base.Validator) {
-	val = validate.Create()
+func ValidateGetParams(params url.Values, isAdmin bool) (bodyParams *base.FileGetParams) {
+
 	// "start" param.
 	var start = params.Get("start")
 	if len(start) == 0 {
@@ -18,15 +18,16 @@ func ValidateGetParams(f *base.FileGetParams, params url.Values, isAdmin bool) (
 	var isOldest = strings.EqualFold(start, "oldest")
 	var isStartInvalid = !isNewest && !isOldest
 	if isStartInvalid {
-		val.Add("start")
-	} else {
-		if isNewest {
-			start = "DESC"
-		} else if isOldest {
-			start = "ASC"
-		}
+		return nil
 	}
-	f.Start = start
+	if isNewest {
+		start = "DESC"
+	} else if isOldest {
+		start = "ASC"
+	}
+	bodyParams = &base.FileGetParams{}
+	bodyParams.Start = start
+
 	// "by" param.
 	var by = params.Get("by")
 	if len(by) == 0 {
@@ -36,13 +37,14 @@ func ValidateGetParams(f *base.FileGetParams, params url.Values, isAdmin bool) (
 	var isByInvalid = !isByCreated
 	var isByForbidden = (isByCreated) && !isAdmin
 	if isByInvalid || isByForbidden {
-		val.Add("created")
+		return nil
 	}
 	switch by {
 	case "created":
 		by = "created_at"
 	}
-	f.By = by
+	bodyParams.By = by
+
 	// "page" param.
 	var pageStr = params.Get("page")
 	if len(pageStr) == 0 {
@@ -50,9 +52,9 @@ func ValidateGetParams(f *base.FileGetParams, params url.Values, isAdmin bool) (
 	}
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page <= 0 {
-		val.Add("page")
-	} else {
-		f.Page = page
+		return nil
 	}
+	bodyParams.Page = page
+
 	return
 }

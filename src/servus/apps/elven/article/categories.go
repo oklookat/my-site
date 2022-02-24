@@ -7,36 +7,44 @@ import (
 	"servus/apps/elven/model"
 )
 
+// ALL HANDLERS PROTECTED BY SAFE METHODS MIDDLEWARE.
+
 // get all categories (GET)
 func (a *Instance) getCategories(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
-	// get
+
+	// get all.
 	category := model.ArticleCategory{}
 	categories, err := category.GetAll()
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
-	// fill info
+
+	// fill response.
 	var responseContent = base.ResponseContent{}
 	responseContent.Meta.CurrentPage = 1
 	responseContent.Meta.TotalPages = 1
 	responseContent.Meta.PerPage = 1
 	responseContent.Data = categories
-	// make & send json.
+
+	// send.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
+
 	h.Send(string(jsonResponse), 200, err)
 }
 
 // get category by ID (GET)
 func (a *Instance) getCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
+
 	// get id from params.
 	var id = h.GetRouteArgs()["id"]
+
 	// find.
 	var category = model.ArticleCategory{ID: id}
 	found, err := category.FindByID()
@@ -48,6 +56,7 @@ func (a *Instance) getCategory(response http.ResponseWriter, request *http.Reque
 		h.Send(a.throw.NotFound(), 404, err)
 		return
 	}
+
 	// send.
 	categoryJson, err := json.Marshal(category)
 	if err != nil {
@@ -60,6 +69,7 @@ func (a *Instance) getCategory(response http.ResponseWriter, request *http.Reque
 // add category (POST)
 func (a *Instance) addCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
+
 	// validate.
 	body := &base.CategoryBody{}
 	validator := ValidateCategoryBody(body, request.Body)
@@ -67,9 +77,11 @@ func (a *Instance) addCategory(response http.ResponseWriter, request *http.Reque
 		h.Send(validator.GetJSON(), 400, nil)
 		return
 	}
+
 	// fill.
 	var category = model.ArticleCategory{}
 	category.Name = body.Name
+
 	// exists?
 	found, err := category.FindByName()
 	if err != nil {
@@ -80,12 +92,14 @@ func (a *Instance) addCategory(response http.ResponseWriter, request *http.Reque
 		h.Send(a.throw.Exists(), 409, err)
 		return
 	}
+
 	// create.
 	err = category.Create()
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
+
 	// send created.
 	categoryJson, err := json.Marshal(&category)
 	if err != nil {

@@ -23,10 +23,15 @@ const (
 
 // commandline methods.
 type cmd struct {
+	app *App
 }
 
 // call methods depending on arguments.
-func (c *cmd) boot() {
+func (c *cmd) boot(app *App) {
+	if app == nil {
+		panic("[cmd]: app nil pointer")
+	}
+	c.app = app
 	// create superuser.
 	var createSU = argument.Get(cmdFlagSuperuser)
 	if createSU != nil {
@@ -57,6 +62,7 @@ func (c *cmd) boot() {
 
 // create user or superuser (UserModel).
 func (c *cmd) createUser(flag string) {
+
 	// validate args.
 	var usernameArg = argument.Get(cmdFlagUsername)
 	var passwordArg = argument.Get(cmdFlagPassword)
@@ -68,56 +74,49 @@ func (c *cmd) createUser(flag string) {
 		call.Logger.Error("username or password cannot be empty")
 		return
 	}
-	// main.
+
+	// log error.
 	var err error
 	defer func() {
 		if err != nil {
 			call.Logger.Error(err.Error())
 		}
 	}()
-	var username = *usernameArg.Value
-	var password = *passwordArg.Value
-	var deleteIfExists = argument.Get(cmdFlagDeleteIfExists) != nil
-	var role string
+
+	// choose rights.
+	var isAdmin bool
 	switch flag {
 	default:
 		call.Logger.Error("wrong flag provided to createUser")
 	case cmdFlagSuperuser:
-		role = "admin"
+		isAdmin = true
 	case cmdFlagUser:
-		role = "user"
+		isAdmin = false
 	}
-	var user = model.User{}
-	user.Username = username
-	err = user.ValidateUsername()
+
+	// create.
+	var deleteIfExists = argument.Get(cmdFlagDeleteIfExists) != nil
+	var username = *usernameArg.Value
+	var password = *passwordArg.Value
+	err = c.app.User.Create(username, password, isAdmin)
 	if err != nil {
-		return
-	}
-	found, err := user.FindByUsername()
-	if err != nil {
-		return
-	}
-	// if user exists
-	if found {
-		if !deleteIfExists {
-			call.Logger.Info("user already exists")
-			return
+		// if username exists.
+		if err.Error() == "user with this username already exists" {
+			// delete if exists.
+			if deleteIfExists {
+				err = c.app.User.DeleteByUsername(username)
+				if err != nil {
+					return
+				}
+				err = c.app.User.Create(username, password, isAdmin)
+				if err != nil {
+					return
+				}
+			} else {
+				// exit if exists.
+				return
+			}
 		}
-		err = user.DeleteByID()
-		if err != nil {
-			return
-		}
-	}
-	user.Password = password
-	err = user.ValidatePassword()
-	if err != nil {
-		return
-	}
-	// create
-	user.Role = role
-	err = user.Create()
-	if err != nil {
-		return
 	}
 	call.Logger.Info("done")
 }

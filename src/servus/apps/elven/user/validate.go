@@ -3,7 +3,7 @@ package user
 import (
 	"encoding/json"
 	"io"
-	"servus/apps/elven/base"
+	"servus/core/external/validator"
 )
 
 type Body struct {
@@ -12,11 +12,36 @@ type Body struct {
 	NewValue string
 }
 
-func (u *Body) Validate(body io.ReadCloser) (val base.Validator) {
-	val = validate.Create()
+func (u *Body) Validate(body io.ReadCloser) (isValid bool) {
+	isValid = false
 	err := json.NewDecoder(body).Decode(u)
 	if err != nil {
-		val.Add("body")
+		return
 	}
+	isValid = true
+	return
+}
+
+func ValidateUsername(username string) (isValid bool) {
+	isValid = false
+	if validator.MinMax(&username, 4, 24) {
+		return
+	}
+	if !validator.IsAlphanumeric(&username) {
+		return
+	}
+	isValid = true
+	return
+}
+
+func ValidatePassword(password string) (isValid bool) {
+	isValid = false
+	if validator.MinMax(&password, 8, 64) {
+		return
+	}
+	if !validator.IsAlphanumericWithSymbols(&password) {
+		return
+	}
+	isValid = true
 	return
 }

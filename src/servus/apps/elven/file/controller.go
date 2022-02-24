@@ -11,19 +11,23 @@ import (
 	"servus/core/external/filer"
 )
 
+// ALL ROUTES PROTECTED BY ADMIN ONLY MIDDLEWARE.
+
 // get paginated files (GET).
 func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
+
 	// get pipe.
 	pipe := f.pipe.GetByContext(request)
 	isAdmin := pipe != nil && pipe.IsAdmin()
-	// validate.
-	body := &base.FileGetParams{}
-	validator := ValidateGetParams(body, request.URL.Query(), isAdmin)
-	if validator.HasErrors() {
-		h.Send(validator.GetJSON(), 400, nil)
+
+	// validate/filter.
+	body := ValidateGetParams(request.URL.Query(), isAdmin)
+	if body == nil {
+		h.Send("invalid request", 400, nil)
 		return
 	}
+
 	// get paginated.
 	pag := model.File{}
 	files, totalPages, err := pag.GetPaginated(body)
@@ -31,12 +35,14 @@ func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}
+
 	// generate response with pagination.
 	var responseContent = base.ResponseContent{}
 	responseContent.Meta.CurrentPage = body.Page
 	responseContent.Meta.TotalPages = totalPages
 	responseContent.Meta.PerPage = model.FilePageSize
 	responseContent.Data = files
+
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
@@ -50,15 +56,13 @@ func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	auth := f.pipe.GetByContext(request)
-	validator := validate.Create()
 
 	// get from form.
 	var tempDir = call.Config.Uploads.Temp
 	processed, err := filer.ProcessFromForm(request, "file", tempDir)
 	if err != nil {
 		if err == filer.ErrBadFileProvided {
-			validator.Add("file")
-			h.Send(validator.GetJSON(), 400, err)
+			h.Send("bad file provided", 400, err)
 			return
 		}
 		h.Send(f.throw.Server(), 500, err)
@@ -192,8 +196,10 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 // delete by ID (DELETE).
 func (f *Instance) deleteOne(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
+
 	// get id from params.
 	var id = h.GetRouteArgs()["id"]
+
 	// find.
 	var file = model.File{ID: id}
 	found, err := file.FindByID()
@@ -205,6 +211,7 @@ func (f *Instance) deleteOne(response http.ResponseWriter, request *http.Request
 		h.Send(f.throw.NotFound(), 404, err)
 		return
 	}
+
 	// delete file from dir.
 	var fullPath = call.Config.Uploads.To + "/" + file.Path
 	err = os.Remove(fullPath)
@@ -213,6 +220,7 @@ func (f *Instance) deleteOne(response http.ResponseWriter, request *http.Request
 		fullPath, _ = filepath.Split(fullPath)
 		_ = filer.DeleteEmptyDirsRecursive(fullPath)
 	}
+
 	// delete file from db.
 	err = file.DeleteByID()
 	if err != nil {

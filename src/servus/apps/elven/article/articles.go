@@ -7,6 +7,8 @@ import (
 	"servus/apps/elven/model"
 )
 
+// ALL HANDLERS PROTECTED BY SAFE METHODS MIDDLEWARE.
+
 // get paginated articles (GET url/).
 func (a *Instance) getArticles(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)

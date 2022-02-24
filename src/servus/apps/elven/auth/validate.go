@@ -3,44 +3,47 @@ package auth
 import (
 	"encoding/json"
 	"io"
-	"servus/apps/elven/base"
-	coreValidator "servus/core/external/validator"
+	"servus/core/external/validator"
 )
 
-// represents the body of the request that the user should send to login.
+// request body that user should send to login.
 type Body struct {
 	Username string
 	Password string
 	Type     string
 }
 
-func (a *Body) Validate(body io.ReadCloser) (val base.Validator) {
-	val = validate.Create()
+func (a *Body) Validate(body io.ReadCloser) (isValid bool) {
+	isValid = false
+
 	// body.
 	err := json.NewDecoder(body).Decode(a)
 	if err != nil {
-		val.Add("body")
 		return
 	}
+
 	// username.
 	var username = a.Username
-	if coreValidator.IsEmpty(&username) {
-		val.Add("username")
+	if validator.IsEmpty(&username) {
+		return
 	}
+
 	// password.
 	var password = a.Password
-	if coreValidator.IsEmpty(&password) {
-		val.Add("password")
+	if validator.IsEmpty(&password) {
+		return
 	}
+
 	// auth type.
 	var authType = a.Type
-	if coreValidator.IsEmpty(&authType) {
-		val.Add("type")
-	} else {
-		var isAuthType = authType == "cookie" || authType == "direct"
-		if !isAuthType {
-			val.Add("type")
-		}
+	if validator.IsEmpty(&authType) {
+		return
 	}
+	var isAuthType = authType == "cookie" || authType == "direct"
+	if !isAuthType {
+		return
+	}
+
+	isValid = true
 	return
 }
