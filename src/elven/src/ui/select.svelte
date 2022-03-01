@@ -20,20 +20,21 @@
     }
 </script>
 
-<select class="selector" on:change={(e) => onChange(e)} value={selected}>
+<select class="select" on:change={(e) => onChange(e)} value={selected}>
     {#each options as piece}
         <option value={piece.value}>{piece.text}</option>
     {/each}
 </select>
 
 <style lang="scss">
-    .selector {
+    .select {
         color: var(--color-text);
         background-color: var(--color-level-2);
         box-sizing: border-box;
         border-radius: 0.4rem;
-        padding: 0.5rem;
-        min-width: 84px;
+        min-width: 94px;
         max-width: fit-content;
+        height: 100%;
+        padding: 4px;
     }
 </style>

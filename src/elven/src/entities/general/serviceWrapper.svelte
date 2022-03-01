@@ -48,5 +48,7 @@
         bottom: 0;
         width: 100%;
         z-index: 7777;
+        position: sticky;
+        bottom: 0;
     }
 </style>

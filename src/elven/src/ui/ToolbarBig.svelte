@@ -1,4 +1,4 @@
-<div class="toolbar">
+<div class="toolbar with-border">
     <div class="toolbar__content">
         <slot />
     </div>
@@ -7,9 +7,7 @@
 <style lang="scss">
     .toolbar {
         font-size: 1.1rem;
-        border-radius: var(--border-radius);
         background-color: var(--color-level-1);
-        border: var(--color-border) 1px solid;
         width: 100%;
         min-height: 52px;
         &__content {

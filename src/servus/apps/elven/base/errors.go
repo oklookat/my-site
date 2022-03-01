@@ -1,5 +1,9 @@
 package base
 
+import (
+	"fmt"
+)
+
 type RequestError interface {
 	// 500 error.
 	Server() string
@@ -13,14 +17,18 @@ type RequestError interface {
 	Exists() string
 }
 
-// create validator.
-type Validate interface {
-	Create() Validator
+type ValidationError struct {
+	Issuer  string
+	Message string
 }
 
-// provides functions to validate things.
-type Validator interface {
-	Add(field string)
-	HasErrors() bool
-	GetJSON() string
+func (v *ValidationError) New(issuer string) func(message string) {
+	v.Issuer = issuer
+	return func(message string) {
+		v.Message = message
+	}
+}
+
+func (v *ValidationError) Error() string {
+	return fmt.Sprintf("[validation/%v] %v", v.Issuer, v.Message)
 }

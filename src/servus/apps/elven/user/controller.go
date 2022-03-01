@@ -28,8 +28,8 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 
 	// validate body.
 	var body = Body{}
-	isValid := body.Validate(request.Body)
-	if !isValid {
+	err := body.Validate(request.Body)
+	if err != nil {
 		h.Send("invalid request", 400, nil)
 		return
 	}
@@ -55,8 +55,8 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 	switch body.What {
 	case "username":
 		// validate username.
-		isValid = ValidateUsername(body.NewValue)
-		if !isValid {
+		err = ValidateUsername(body.NewValue)
+		if err != nil {
 			sendValidationErr()
 			return
 		}
@@ -74,8 +74,8 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 		}
 	case "password":
 		// validate password.
-		isValid = ValidatePassword(body.NewValue)
-		if !isValid {
+		err = ValidatePassword(body.NewValue)
+		if err != nil {
 			sendValidationErr()
 			return
 		}
@@ -95,12 +95,12 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 func (u *Instance) Create(username string, password string, isAdmin bool) (err error) {
 
 	// validate.
-	isValid := ValidateUsername(username)
-	if !isValid {
+	err = ValidateUsername(username)
+	if err != nil {
 		return errors.New("invalid username")
 	}
-	isValid = ValidatePassword(password)
-	if !isValid {
+	err = ValidatePassword(password)
+	if err != nil {
 		return errors.New("invalid password")
 	}
 
@@ -131,6 +131,7 @@ func (u *Instance) Create(username string, password string, isAdmin bool) (err e
 	return
 }
 
+// delete user. THIS IS NOT A ROUTE.
 func (u *Instance) DeleteByUsername(username string) (err error) {
 	var user = model.User{}
 	user.Username = username

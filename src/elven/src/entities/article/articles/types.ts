@@ -23,9 +23,11 @@ export type Params = {
     show?: Show
     by?: By
     start?: Start
+    /** full article or only title? */
     preview?: boolean
+    //
     category_name?: string
-    /** show articles without category */
+    /** show articles without category? */
     without_category?: boolean
 }
 
@@ -34,10 +36,14 @@ export type Article = {
     id?: string
     user_id?: string
     category_id?: string | "nope"
-    category_name?: string
+    cover_id?: string
     is_published?: boolean
     title: string
     content: string
     published_at?: string
     updated_at?: string
+    // joined (GET-only)
+    category_name?: string
+    cover_path?: string
+    cover_extension?: string
 }

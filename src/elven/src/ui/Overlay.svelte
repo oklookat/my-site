@@ -15,7 +15,7 @@
   });
 </script>
 
-<div class="overlay" bind:this={container} on:click|self={onClose}>
+<div class="overlay overlay-foundation" bind:this={container} on:click|self={onClose}>
   <div class="overlay__main">
     <div class="overlay__content">
       <slot />
@@ -25,22 +25,6 @@
 
 <style lang="scss">
   .overlay {
-    // for animation
-    opacity: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: 9998;
-    max-width: 100vw;
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     &__main {
       border-radius: var(--border-radius);
       z-index: 9999;

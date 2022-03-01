@@ -1,7 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
     import type { File } from "../types";
-    import { Env } from "@/tools/paths";
+    import { PathTools } from "@/tools/paths";
     import Dates from "@/tools/dates";
     import Size from "@/tools/size";
     import Extension from "@/tools/extension";
@@ -24,8 +24,7 @@
     function convert(file: File) {
         let isNeedPath = !(file.pathConverted instanceof URL);
         if (isNeedPath) {
-            const path = `${Env.getUploads()}/${file.path}`;
-            file.pathConverted = new URL(path);
+            file.pathConverted = PathTools.getUploadsWith(file.path);
         }
         if (!file.extensionType) {
             file.extensionType = Extension.getType(file.extension);
@@ -71,9 +70,10 @@
         cursor: pointer;
         width: 100%;
         height: fit-content;
-        display: flex;
-        flex-direction: column;
         padding-bottom: 12px;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
         gap: 8px;
         &__item {
             font-size: 0.9rem;
@@ -88,9 +88,13 @@
             color: var(--color-text-inactive);
         }
         &__main {
+            height:auto;
             display: flex;
             flex-direction: column;
             gap: 4px;
+        }
+        &__preview {
+            max-width: 100%;
         }
         &__name {
             font-size: 1.1rem;

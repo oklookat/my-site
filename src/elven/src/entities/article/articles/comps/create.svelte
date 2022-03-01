@@ -15,6 +15,10 @@
   import Validate from "../validate";
   import Selector from "../../categories/comps/selector.svelte";
   import type { Category } from "../../categories/types";
+  import CoverRender from "./cover_render.svelte";
+  // file
+  import FilesPortable from "../../../files/comps/files_portable.svelte";
+  import type { File } from "../../../files/types";
 
   /** edit article with id (url params) */
   export let params: { id?: string };
@@ -35,6 +39,8 @@
   /** text editor */
   let editor: jmarkd;
   let editorEL: HTMLDivElement;
+  /** is choose cover overlay opened? */
+  let isChooseCover = false;
 
   onMount(async () => {
     // check edit mode
@@ -163,27 +169,75 @@
       article.category_id = oldCatID;
     });
   }
+
+  function onCoverSelected(file: File) {
+    isChooseCover = false;
+    article.cover_id = file.id;
+    article.cover_extension = file.extension;
+    article.cover_path = file.path;
+    save();
+  }
+
+  function removeCover() {
+    isChooseCover = false;
+    if (!article.cover_id) {
+      return;
+    }
+    article.cover_id = undefined;
+    save();
+  }
 </script>
 
 <div class="create" bind:this={createContainer}>
-  <Toolbar>
-    <Selector
-      bind:selectedID={article.category_id}
-      on:changed={(e) => onCategoryChanged(e.detail)}
+  <div class="create__tools">
+    <Toolbar>
+      <Selector
+        bind:selectedID={article.category_id}
+        on:changed={(e) => onCategoryChanged(e.detail)}
+      />
+      <div class="remove-cover button" on:click={() => removeCover()}>
+        remove cover
+      </div>
+    </Toolbar>
+
+    <div
+      class="cover pointer"
+      on:click={() => {
+        isChooseCover = !isChooseCover;
+      }}
+    >
+      {#if article.cover_id && article.cover_path && article.cover_extension}
+        <div class="cover__itself">
+          <CoverRender bind:article />
+        </div>
+      {:else}
+        <div class="cover__upload item with-border">select cover</div>
+      {/if}
+    </div>
+  </div>
+
+  <div class="create__editable">
+    <textarea
+      class="title"
+      placeholder="Actually..."
+      rows="1"
+      maxlength="124"
+      bind:value={article.title}
+      bind:this={articleTitleEL}
+      on:input={() => save()}
     />
-  </Toolbar>
+    <div class="editor" bind:this={editorEL} on:input={() => save()} />
+  </div>
 
-  <textarea
-    class="title"
-    placeholder="Actually..."
-    rows="1"
-    maxlength="124"
-    bind:value={article.title}
-    bind:this={articleTitleEL}
-    on:input={() => save()}
-  />
-
-  <div class="editor" bind:this={editorEL} on:input={() => save()} />
+  {#if isChooseCover}
+    <FilesPortable
+      onClose={() => (isChooseCover = false)}
+      params={{ extensionType: "image" }}
+      on:selected={(e) => {
+        onCoverSelected(e.detail);
+      }}
+    />
+  {/if}
 </div>
 
 <style lang="scss">
@@ -201,6 +255,34 @@
     flex-direction: column;
     align-items: center;
     gap: 24px;
+    &__tools,
+    &__editable {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+
+  .remove-cover {
+    width: 104px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .cover {
+    width: 100%;
+    &__upload {
+      width: 100%;
+      height: 54px;
+      background-color: var(--color-level-1);
+    }
+    &__itself {
+      width: 100%;
+    }
   }
 
   .title,
@@ -208,6 +290,7 @@
     box-sizing: border-box;
     border: var(--color-border) 1px solid;
     margin: auto;
+    width: 100%;
   }
 
   .title {
@@ -216,13 +299,11 @@
     font-size: 1.6rem;
     font-weight: bold;
     min-height: 54px;
-    width: 100%;
     border-radius: 8px;
     padding: 12px;
   }
 
   .editor {
-    width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;

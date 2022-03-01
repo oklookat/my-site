@@ -9,7 +9,6 @@ import (
 )
 
 var call *core.Instance
-var validate base.Validate
 
 type Instance struct {
 	middleware base.MiddlewareAuthorizedOnly
@@ -22,13 +21,11 @@ func (u *Instance) Boot(
 	_middleware base.MiddlewareAuthorizedOnly,
 	_pipe base.UserPiper,
 	_throw base.RequestError,
-	_validate base.Validate,
 ) {
 	call = _core
 	u.middleware = _middleware
 	u.pipe = _pipe
 	u.throw = _throw
-	validate = _validate
 }
 
 func (u *Instance) BootRoutes(router *mux.Router) {

@@ -39,6 +39,10 @@ type FileGetParams struct {
 	Page int
 	// newest (DESC); oldest (ASC).
 	Start string
-	// created.
+	// created (by creation date).
 	By string
+	// file extension without dot.
+	Extension *string
+	// OR extension type. image || audio || video.
+	ExtensionType *string
 }

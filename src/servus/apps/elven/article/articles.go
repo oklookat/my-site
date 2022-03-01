@@ -16,13 +16,15 @@ func (a *Instance) getArticles(response http.ResponseWriter, request *http.Reque
 	var isAdmin = false
 	var pipe = a.pipe.GetByContext(request)
 	isAdmin = pipe != nil && pipe.IsAdmin()
+
 	// validate.
 	validatedBody := &base.ArticleGetParams{}
-	validator := ValidateGetParams(validatedBody, request.URL.Query(), isAdmin)
-	if validator.HasErrors() {
-		h.Send(validator.GetJSON(), 400, err)
+	err = ValidateGetParams(validatedBody, request.URL.Query(), isAdmin)
+	if err != nil {
+		h.Send("bad request", 400, err)
 		return
 	}
+
 	// get.
 	article := model.Article{}
 	articles, totalPages, err := article.GetPaginated(validatedBody)
@@ -30,13 +32,15 @@ func (a *Instance) getArticles(response http.ResponseWriter, request *http.Reque
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
-	// fill pagination.
+
+	// fill response.
 	var responseContent = base.ResponseContent{}
 	responseContent.Meta.CurrentPage = validatedBody.Page
 	responseContent.Meta.TotalPages = totalPages
 	responseContent.Meta.PerPage = model.ArticlePageSize
 	responseContent.Data = articles
-	// make & send json.
+
+	// send.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
@@ -83,17 +87,23 @@ func (a *Instance) createArticle(response http.ResponseWriter, request *http.Req
 	var h = call.Utils.GetHTTP(request)
 
 	// validate.
-	var article = ValidateBody(request.Method, request.Body, nil)
-	if article == nil {
-		h.Send("invalid", 400, nil)
-		return
+	var article, err = ValidateBody(request.Method, request.Body, nil)
+	if err != nil {
+		switch err.(type) {
+		default:
+			h.Send(a.throw.Server(), 500, err)
+			return
+		case *base.ValidationError:
+			h.Send("bad request", 400, err)
+			return
+		}
 	}
 
 	var pAuth = a.pipe.GetByContext(request)
 	article.UserID = pAuth.GetID()
 
 	// create (get ID after creating).
-	err := article.Create()
+	err = article.Create()
 	if err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
@@ -141,10 +151,17 @@ func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Req
 	}
 
 	// validate body.
-	var filteredArticle = ValidateBody(request.Method, request.Body, &article)
-	if filteredArticle == nil {
-		h.Send("invalid", 400, err)
-		return
+	var filteredArticle *model.Article
+	filteredArticle, err = ValidateBody(request.Method, request.Body, &article)
+	if err != nil {
+		switch err.(type) {
+		default:
+			h.Send(a.throw.Server(), 500, err)
+			return
+		case *base.ValidationError:
+			h.Send("bad request", 400, err)
+			return
+		}
 	}
 	article = *filteredArticle
 

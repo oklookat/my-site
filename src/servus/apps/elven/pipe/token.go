@@ -51,7 +51,7 @@ func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
 		return nil, err
 	}
 
-	md.SetLastAgents(request)
+	_ = md.SetLastAgents(request)
 
 	// create pipe.
 	var pipe = &TokenPipe{}

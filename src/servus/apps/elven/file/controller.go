@@ -9,6 +9,7 @@ import (
 	"servus/apps/elven/base"
 	"servus/apps/elven/model"
 	"servus/core/external/filer"
+	"strings"
 )
 
 // ALL ROUTES PROTECTED BY ADMIN ONLY MIDDLEWARE.
@@ -22,9 +23,9 @@ func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	isAdmin := pipe != nil && pipe.IsAdmin()
 
 	// validate/filter.
-	body := ValidateGetParams(request.URL.Query(), isAdmin)
-	if body == nil {
-		h.Send("invalid request", 400, nil)
+	body, err := ValidateGetParams(request.URL.Query(), isAdmin)
+	if err != nil {
+		h.Send("bad request", 400, nil)
 		return
 	}
 
@@ -108,8 +109,15 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// get extension.
+	// get & correct extension.
 	var extension = processed.Extension
+	extension = strings.ToLower(extension)
+	switch extension {
+	case "jpeg":
+		extension = "jpg"
+	case "mpeg":
+		extension = "mpg"
+	}
 
 	// concat random name and extension.
 	var newFileName string

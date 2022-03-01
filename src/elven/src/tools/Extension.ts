@@ -2,12 +2,17 @@ export type FileType = 'unknown' | 'image' | 'video' | 'audio'
 
 export default class Extension {
 
-    private static readonly imageExtensions = ['jpeg', 'jpg', 'gif', 'png', 'bmp', 'svg', 'webp']
-    private static readonly videoExtensions = ['mp4', 'mov', 'wmv', 'avi', 'flv', 'mkv', 'webm']
-    /** supported extensions to play audio in files */
+    /** browser support this image extensions */
+    private static readonly imageExtensions = ['jpeg', 'jpg', 'gif', 'png', 'svg', 'bmp', 'webp']
+    /** browser support this video extensions */
+    private static readonly videoExtensions = ['mpg', 'mpeg', 'webm', 'mp4']
+    /** browser support this audio extensions */
     private static readonly audioExtensions = ['mp3', 'flac', 'wav', 'ogg']
 
-    public static getType(extension: string): FileType {
+    public static getType(extension?: string): FileType {
+        if (!extension) {
+            return "unknown"
+        }
         extension = extension.toLowerCase()
         const image = this.imageExtensions.includes(extension)
         if (image) {

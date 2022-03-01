@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   // tools
   import type { Meta } from "@/types";
   import { Env, Route } from "@/tools/paths";
@@ -13,7 +13,11 @@
   import FileAdapter from "../adapter";
   import { By, Start, type File, type Params } from "../types";
   import CFile from "./file.svelte";
-  import Validate from "@/entities/files/validate";
+
+  /** add "select" option to selection overlay and dispatch event if this button clicked */
+  export let withSelect: boolean = false;
+
+  const dispatch = createEventDispatcher<{ selected: File }>();
 
   /** file input for upload */
   let inputEL: HTMLInputElement;
@@ -30,6 +34,8 @@
   let files: Record<number, File> = {};
   /** response information */
   let meta: Meta;
+  /** request params from portable mode */
+  export let params: Params = undefined;
   /** request params */
   let requestParams: Params = {
     page: 1,
@@ -37,16 +43,11 @@
     by: By.created,
   };
 
-  Route.initPopState((searchParams) => {
-    Validate.params(requestParams, searchParams);
-    getAll(undefined, false);
-  });
-
   onMount(() => {
-    const searchParams = Route.getSearchParams();
-    Validate.params(requestParams, searchParams);
-    Route.setHistoryParams(requestParams);
-    getAll(undefined, true);
+    if (params) {
+      Object.assign(requestParams, params);
+    }
+    getAll(undefined);
   });
 
   /** get all files.
@@ -54,7 +55,7 @@
    *
    * @param withHistory set history params **by p parameter** after files loaded
    */
-  async function getAll(p: Params = requestParams, withHistory = true) {
+  async function getAll(p: Params = requestParams) {
     requestParams = requestParams;
     if (p.page < 1) {
       p.page = 1;
@@ -65,9 +66,6 @@
       files = result.data;
       meta = result.meta;
       loaded = true;
-      if (withHistory) {
-        Route.setHistoryParams(p);
-      }
     } catch (err) {}
   }
 
@@ -223,22 +221,29 @@
   {#if toolsOverlay}
     <Overlay onClose={() => (toolsOverlay = false)}>
       <div class="overlay">
+        {#if withSelect}
+          <div
+            class="overlay__item"
+            on:click={() => {
+              dispatch("selected", selected.file);
+            }}
+          >
+            select
+          </div>
+        {/if}
         {#if selected.file.extensionType === "audio"}
           <div
-            class="overlay__item file__play"
+            class="overlay__item"
             on:click={() => playAudio(selected.file.pathConverted)}
           >
             play
           </div>
         {/if}
-        <div
-          class="overlay__item file__copy-link"
-          on:click={() => copyLink(selected.counter)}
-        >
+        <div class="overlay__item" on:click={() => copyLink(selected.counter)}>
           copy link
         </div>
         <div
-          class="overlay__item file__delete"
+          class="overlay__item"
           on:click={() => deleteFile(selected.counter)}
         >
           delete

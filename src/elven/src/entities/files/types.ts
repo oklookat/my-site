@@ -13,9 +13,11 @@ export enum By {
 
 /** request params */
 export type Params = {
-    page: number
-    start: Start
-    by: By
+    page?: number
+    start?: Start
+    by?: By
+    extension?: string
+    extensionType?: FileType
 }
 
 /** file */

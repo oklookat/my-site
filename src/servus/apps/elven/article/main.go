@@ -9,7 +9,6 @@ import (
 )
 
 var call *core.Instance
-var validate base.Validate
 
 type Instance struct {
 	middleware base.MiddlewareSafeMethodsOnly
@@ -22,14 +21,12 @@ func (a *Instance) Boot(
 	_middleware base.MiddlewareSafeMethodsOnly,
 	_pipe base.UserPiper,
 	_throw base.RequestError,
-	_validate base.Validate,
 
 ) {
 	call = _core
 	a.middleware = _middleware
 	a.pipe = _pipe
 	a.throw = _throw
-	validate = _validate
 }
 
 // add routes to router.

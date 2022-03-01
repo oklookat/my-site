@@ -15,6 +15,16 @@ export class Env {
 
 }
 
+export class PathTools {
+
+    /** get uploads URL + path */
+    public static getUploadsWith(path: string): URL {
+        const final = `${Env.getUploads()}/${path}`;
+        return new URL(final)
+    }
+
+}
+
 export class Route {
 
     /** init onpopstate and set  */

@@ -11,28 +11,39 @@ const ArticlePageSize = 2
 
 // represents article in database.
 type Article struct {
-	ID         string  `json:"id" db:"id"`
-	UserID     string  `json:"user_id" db:"user_id"`
-	CategoryID *string `json:"category_id" db:"category_id"`
-	CoverID    *string `json:"cover_id" db:"cover_id"`
-	// name of category available only when we get article(s).
-	CategoryName *string    `json:"category_name" db:"category_name"`
-	IsPublished  bool       `json:"is_published" db:"is_published"`
-	Title        string     `json:"title" db:"title"`
-	Content      string     `json:"content" db:"content"`
-	PublishedAt  *time.Time `json:"published_at" db:"published_at"`
-	CreatedAt    time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at" db:"updated_at"`
+	ID          string     `json:"id" db:"id"`
+	UserID      string     `json:"user_id" db:"user_id"`
+	CategoryID  *string    `json:"category_id" db:"category_id"`
+	CoverID     *string    `json:"cover_id" db:"cover_id"`
+	IsPublished bool       `json:"is_published" db:"is_published"`
+	Title       string     `json:"title" db:"title"`
+	Content     string     `json:"content" db:"content"`
+	PublishedAt *time.Time `json:"published_at" db:"published_at"`
+	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
+
+	// available only when we get article(s).
+	CategoryName   *string `json:"category_name" db:"category_name"`
+	CoverPath      *string `json:"cover_path" db:"cover_path"`
+	CoverExtension *string `json:"cover_extension" db:"cover_extension"`
 }
 
 // get query what gets articles + categories names (join)
 func (a *Article) getQueryGetterWithCatsNames() string {
-	return `
+	var withCats = `
 	SELECT art.*, cats.name as category_name
 	FROM articles as art
 	LEFT JOIN article_categories as cats
 	ON art.category_id = cats.id
 	`
+	var withFile = `
+	SELECT with_cat.*, 
+	file.path as cover_path, file.extension as cover_extension
+	FROM (` + withCats + `) as with_cat
+	LEFT JOIN files as file
+	ON with_cat.cover_id = file.id
+	`
+	return withFile
 }
 
 // get query to get article(s) with join category name
@@ -108,9 +119,9 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 func (a *Article) Create() (err error) {
 	a.hookBeforeChange()
 	var query = `
-	INSERT INTO articles (user_id, category_id, 
-	is_published, title, content) VALUES ($1, $2, $3, $4, $5) RETURNING id`
-	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.IsPublished, a.Title, a.Content)
+	INSERT INTO articles (user_id, category_id, cover_id,
+	is_published, title, content) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
+	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.CoverID, a.IsPublished, a.Title, a.Content)
 	if err != nil {
 		return
 	}

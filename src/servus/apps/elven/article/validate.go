@@ -13,8 +13,9 @@ import (
 )
 
 // validate params to get paginated articles.
-func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool) (val base.Validator) {
-	val = validate.Create()
+func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool) (err error) {
+	var validationErr = base.ValidationError{}
+
 	// "show" param
 	var show = params.Get("show")
 	if len(show) == 0 {
@@ -25,10 +26,16 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 	var isShowInvalid = !isShowPublished && !isShowDrafts
 	var isShowForbidden = isShowDrafts && !isAdmin
 	if isShowInvalid || isShowForbidden {
-		val.Add("show")
-	} else {
-		a.Show = show
+		if isShowInvalid {
+			validationErr.New("show")("invalid value")
+		} else {
+			validationErr.New("show")("not allowed")
+		}
+		err = &validationErr
+		return
 	}
+	a.Show = show
+
 	// "by" param.
 	var by = params.Get("by")
 	if len(by) == 0 {
@@ -36,21 +43,21 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 	}
 	switch by {
 	default:
-		val.Add("by")
-	case "created":
+		validationErr.New("by")("invalid value")
+		err = &validationErr
+		return
+	case "created", "updated":
 		if !isAdmin {
-			val.Add("by")
+			validationErr.New("by")("not allowed")
+			err = &validationErr
+			return
 		}
-		by = "created_at"
-	case "updated":
-		if !isAdmin {
-			val.Add("by")
-		}
-		by = "updated_at"
 	case "published":
-		by = "published_at"
+		break
 	}
+	by = by + "_at"
 	a.By = by
+
 	// "start" param.
 	var start = params.Get("start")
 	if len(start) == 0 {
@@ -60,37 +67,46 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 	var isOldest = strings.EqualFold(start, "oldest")
 	var isStartInvalid = !isNewest && !isOldest
 	if isStartInvalid {
-		val.Add("start")
+		validationErr.New("start")("invalid value")
+		err = &validationErr
+		return
 	} else {
 		if isNewest {
 			start = "DESC"
 		} else if isOldest {
 			start = "ASC"
 		}
-		a.Start = start
 	}
+	a.Start = start
+
 	// "preview" param.
 	var preview = params.Get("preview")
 	if len(preview) == 0 {
 		preview = "true"
 	}
 	var previewBool bool
-	previewBool, err := strconv.ParseBool(preview)
+	previewBool, err = strconv.ParseBool(preview)
 	if err != nil {
-		val.Add("preview")
+		validationErr.New("preview")("not a boolean")
+		err = &validationErr
+		return
 	}
 	a.Preview = previewBool
+
 	// "page" param
 	var pageStr = params.Get("page")
 	if len(pageStr) == 0 {
-		pageStr = "0"
+		pageStr = "1"
 	}
-	page, err := strconv.Atoi(pageStr)
+	var page = 0
+	page, err = strconv.Atoi(pageStr)
 	if err != nil || page <= 0 {
-		val.Add("page")
-	} else {
-		a.Page = page
+		validationErr.New("page")("invalid value")
+		err = &validationErr
+		return
 	}
+	a.Page = page
+
 	// "without category" param
 	var withoutCategory = params.Get("without_category")
 	a.WithoutCategory = len(withoutCategory) > 0 && withoutCategory == "true"
@@ -119,20 +135,24 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 // if changing mode = copy of reference but filtered/validated by body.
 //
 // if creating mode = semi-filled filtered/validated article by body.
-func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Article) *model.Article {
+func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Article) (filtered *model.Article, err error) {
+
+	var validationErr = base.ValidationError{}
 
 	// updating existing article?
 	var isChangingMode = requestMethod == http.MethodPut || requestMethod == http.MethodPatch
-	// no validate if no reference in changing mode.
+	// changing mode and no reference? we not validate this.
 	if isChangingMode && reference == nil {
-		return nil
+		validationErr.New("body")("changing mode enabled but reference has nil pointer")
+		err = &validationErr
+		return
 	}
 
 	// decode body.
 	var bodyStruct = &base.ArticleBody{}
-	err := json.NewDecoder(body).Decode(bodyStruct)
+	err = json.NewDecoder(body).Decode(bodyStruct)
 	if err != nil {
-		return nil
+		return
 	}
 
 	// FUNC title.
@@ -153,7 +173,9 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 
 	// pre check title.
 	if isTitle && titleLength > 124 {
-		return nil
+		validationErr.New("title")("max length is 124")
+		err = &validationErr
+		return
 	}
 
 	// FUNC isPublished.
@@ -189,7 +211,9 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 
 	// pre check content.
 	if contentLength > 256000 {
-		return nil
+		validationErr.New("content")("max length is 256000")
+		err = &validationErr
+		return
 	}
 
 	// body has is_published field?
@@ -202,28 +226,35 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 	// check request method.
 	switch requestMethod {
 	default:
-		return nil
+		validationErr.New("request method")("wrong request method")
+		err = &validationErr
+		return
 	// POST (create) = need minimal body.
 	case http.MethodPost:
 		var invalid = !isContent
 		if invalid {
-			return nil
+			validationErr.New("request method")("for POST request expected at least content field")
+			err = &validationErr
+			return
 		}
 	// PUT (update full) = need full body.
 	case http.MethodPut:
 		var invalid = !isPublished || !isCategoryID || !isCoverID || !isTitle || !isContent
 		if invalid {
-			return nil
+			validationErr.New("request method")("for PUT method expected all fields")
+			err = &validationErr
+			return
 		}
 	// PATCH (update) = need at least one field.
 	case http.MethodPatch:
 		var invalid = !isPublished && !isCategoryID && !isCoverID && !isTitle && !isContent
 		if invalid {
-			return nil
+			validationErr.New("request method")("for PATCH method expected at least one field")
+			err = &validationErr
+			return
 		}
 	}
 
-	var filtered *model.Article
 	if isChangingMode {
 		var articleCopy = *reference
 		filtered = &articleCopy
@@ -235,16 +266,27 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 
 	if isPublished {
 		filtered.IsPublished = *bodyStruct.IsPublished
+	} else {
+		filtered.IsPublished = false
 	}
+
 	if isCategoryID {
 		if *bodyStruct.CategoryID == "nope" {
 			bodyStruct.CategoryID = nil
 		}
 		filtered.CategoryID = bodyStruct.CategoryID
 	}
+
+	if isCoverID {
+		filtered.CoverID = bodyStruct.CoverID
+	}
+
 	if isTitle {
 		filtered.Title = *bodyStruct.Title
+	} else {
+		filtered.Title = "Untitled"
 	}
+
 	if isContent {
 		filtered.Content = *bodyStruct.Content
 	}
@@ -262,50 +304,67 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 			filtered.CategoryID = nil
 		}
 	}
+
 	// cover.
 	if filtered.CoverID != nil {
 		var file = model.File{}
 		file.ID = *filtered.CoverID
-		found, err := file.FindByID()
-		// validation error: fake file or DB error.
-		if err != nil || !found {
-			return nil
+		var isFound bool
+		isFound, err = file.FindByID()
+		// DB error.
+		if err != nil {
+			return
 		}
-		// can this file be a cover?
-		var extension = strings.ToUpper(file.Extension)
-		var isCoverable = extension == "JPG" || extension == "JPEG" || extension == "PNG" ||
-			extension == "GIF" || extension == "WEBP" || extension == "MP4"
-		// validation error: bad article cover.
-		if !isCoverable {
-			// reset cover.
+		var resetCover = false
+		// file does not exists.
+		if !isFound {
+			resetCover = true
+		} else {
+			// can this file be a cover?
+			var extension = strings.ToUpper(file.Extension)
+			var isCoverable = extension == "JPG" || extension == "JPEG" || extension == "PNG" ||
+				extension == "GIF" || extension == "WEBP" || extension == "MP4"
+			// validation error: bad article cover.
+			if !isCoverable {
+				resetCover = true
+			}
+		}
+		if resetCover {
 			filtered.CoverID = nil
 		}
 	}
 
-	return filtered
+	return
 }
 
-func ValidateCategoryBody(c *base.CategoryBody, body io.ReadCloser) (val base.Validator) {
-	val = validate.Create()
+func ValidateCategoryBody(c *base.CategoryBody, body io.ReadCloser) (err error) {
+	var validationErr = base.ValidationError{}
+
 	// body.
-	err := json.NewDecoder(body).Decode(c)
+	err = json.NewDecoder(body).Decode(c)
 	if err != nil {
-		val.Add("body")
 		return
 	}
+
 	// replace new lines with one space
 	reg, _ := regexp.Compile(`[\r\n]`)
 	c.Name = reg.ReplaceAllString(c.Name, " ")
+
 	// replace 2+ spaces with one space
 	reg, _ = regexp.Compile(`[^\S]{2,}`)
 	c.Name = reg.ReplaceAllString(c.Name, "")
+
 	// remove spaces at start and end
 	c.Name = strings.Trim(c.Name, " ")
+
 	// length?
 	var nameLen = call.Utils.LenRune(c.Name)
 	var notValid = nameLen < 1 || nameLen > 24
 	if notValid {
-		val.Add("name")
+		validationErr.New("name")("min length is 1 and max is 24")
+		err = &validationErr
+		return
 	}
+
 	return
 }

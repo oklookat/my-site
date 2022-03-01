@@ -24,15 +24,17 @@ func (m *middleware) AuthorizedOnly(next http.Handler) http.Handler {
 	})
 }
 
-// allow only safe methods for non-privileged users.
+// allow only safe methods if user not authorized/not admin.
 //
 // https://developer.mozilla.org/en-US/docs/Glossary/Safe/HTTP
 func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var h = call.Utils.GetHTTP(request)
+
 		// check method.
 		var method = request.Method
 		var safeMethod = method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions
+
 		// check rights.
 		var user = pipe.User{}
 		userPipe := user.GetByContext(request)
@@ -50,6 +52,7 @@ func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var h = call.Utils.GetHTTP(request)
+
 		// check rights.
 		var user = pipe.User{}
 		userPipe := user.GetByContext(request)
@@ -61,7 +64,7 @@ func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 	})
 }
 
-// gets token if exists and provides token pipe to request context.
+// get token if exists and provide token pipe to request context.
 func (m *middleware) ProvideTokenPipe(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var ctx = request.Context()
@@ -76,10 +79,11 @@ func (m *middleware) ProvideTokenPipe(next http.Handler) http.Handler {
 	})
 }
 
-// gets user by token pipe and provides user pipe to request context. Use only after ProvideTokenPipe.
+// get user by token pipe and provide user pipe to request context. Use only after ProvideTokenPipe.
 func (m *middleware) ProvideUserPipe(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var ctx = request.Context()
+
 		// get token.
 		var token = pipe.Token{}
 		tokenPipe := token.GetByContext(request)

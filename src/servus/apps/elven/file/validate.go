@@ -7,7 +7,9 @@ import (
 	"strings"
 )
 
-func ValidateGetParams(params url.Values, isAdmin bool) (bodyParams *base.FileGetParams) {
+func ValidateGetParams(params url.Values, isAdmin bool) (bodyParams *base.FileGetParams, err error) {
+
+	var validationErr = base.ValidationError{}
 
 	// "start" param.
 	var start = params.Get("start")
@@ -18,7 +20,9 @@ func ValidateGetParams(params url.Values, isAdmin bool) (bodyParams *base.FileGe
 	var isOldest = strings.EqualFold(start, "oldest")
 	var isStartInvalid = !isNewest && !isOldest
 	if isStartInvalid {
-		return nil
+		validationErr.New("start")("invalid value")
+		err = &validationErr
+		return
 	}
 	if isNewest {
 		start = "DESC"
@@ -37,7 +41,14 @@ func ValidateGetParams(params url.Values, isAdmin bool) (bodyParams *base.FileGe
 	var isByInvalid = !isByCreated
 	var isByForbidden = (isByCreated) && !isAdmin
 	if isByInvalid || isByForbidden {
-		return nil
+		if isByInvalid {
+			validationErr.New("by")("invalid value")
+			err = &validationErr
+		} else {
+			validationErr.New("by")("not allowed")
+			err = &validationErr
+		}
+		return
 	}
 	switch by {
 	case "created":
@@ -48,13 +59,30 @@ func ValidateGetParams(params url.Values, isAdmin bool) (bodyParams *base.FileGe
 	// "page" param.
 	var pageStr = params.Get("page")
 	if len(pageStr) == 0 {
-		pageStr = "0"
+		pageStr = "1"
 	}
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page <= 0 {
-		return nil
+		validationErr.New("page")("invalid value")
+		err = &validationErr
+		return
 	}
 	bodyParams.Page = page
+
+	// "extension" param.
+	var extension = params.Get("extension")
+	if len(extension) > 0 {
+		bodyParams.Extension = &extension
+	}
+
+	// "extensionType" param
+	var extensionType = params.Get("extensionType")
+	if len(extensionType) > 0 {
+		var isValidType = extensionType == "image" || extensionType == "audio" || extensionType == "video"
+		if isValidType {
+			bodyParams.ExtensionType = &extensionType
+		}
+	}
 
 	return
 }

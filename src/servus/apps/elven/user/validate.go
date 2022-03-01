@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"io"
+	"servus/apps/elven/base"
 	"servus/core/external/validator"
 )
 
@@ -12,36 +13,33 @@ type Body struct {
 	NewValue string
 }
 
-func (u *Body) Validate(body io.ReadCloser) (isValid bool) {
-	isValid = false
-	err := json.NewDecoder(body).Decode(u)
-	if err != nil {
-		return
-	}
-	isValid = true
+func (u *Body) Validate(body io.ReadCloser) (err error) {
+	err = json.NewDecoder(body).Decode(u)
 	return
 }
 
-func ValidateUsername(username string) (isValid bool) {
-	isValid = false
+func ValidateUsername(username string) (err error) {
+	var valErr = base.ValidationError{}
 	if validator.MinMax(&username, 4, 24) {
-		return
+		valErr.New("username")("invalid length: min 4, max 24")
+		return &valErr
 	}
 	if !validator.IsAlphanumeric(&username) {
-		return
+		valErr.New("username")("allowed only alphanumeric")
+		return &valErr
 	}
-	isValid = true
 	return
 }
 
-func ValidatePassword(password string) (isValid bool) {
-	isValid = false
+func ValidatePassword(password string) (err error) {
+	var valErr = base.ValidationError{}
 	if validator.MinMax(&password, 8, 64) {
-		return
+		valErr.New("password")("invalid length: min 8, max 64")
+		return &valErr
 	}
 	if !validator.IsAlphanumericWithSymbols(&password) {
-		return
+		valErr.New("password")("allowed only alphanumeric with symbols")
+		return &valErr
 	}
-	isValid = true
 	return
 }

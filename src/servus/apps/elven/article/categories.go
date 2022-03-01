@@ -72,9 +72,9 @@ func (a *Instance) addCategory(response http.ResponseWriter, request *http.Reque
 
 	// validate.
 	body := &base.CategoryBody{}
-	validator := ValidateCategoryBody(body, request.Body)
-	if validator.HasErrors() {
-		h.Send(validator.GetJSON(), 400, nil)
+	err := ValidateCategoryBody(body, request.Body)
+	if err != nil {
+		h.Send("bad request", 400, nil)
 		return
 	}
 
@@ -112,15 +112,18 @@ func (a *Instance) addCategory(response http.ResponseWriter, request *http.Reque
 // rename category (PUT/PATCH)
 func (a *Instance) renameCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
+
 	// validate.
 	body := &base.CategoryBody{}
-	validator := ValidateCategoryBody(body, request.Body)
-	if validator.HasErrors() {
-		h.Send(validator.GetJSON(), 400, nil)
+	err := ValidateCategoryBody(body, request.Body)
+	if err != nil {
+		h.Send("bad request", 400, nil)
 		return
 	}
+
 	// get name from params.
 	var id = h.GetRouteArgs()["id"]
+
 	// find.
 	var category = model.ArticleCategory{}
 	category.ID = id
@@ -133,6 +136,7 @@ func (a *Instance) renameCategory(response http.ResponseWriter, request *http.Re
 		h.Send(a.throw.NotFound(), 404, err)
 		return
 	}
+
 	// update.
 	category.Name = body.Name
 	err = category.ChangeNameByID()
@@ -140,6 +144,7 @@ func (a *Instance) renameCategory(response http.ResponseWriter, request *http.Re
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
+
 	// send.
 	categoryJson, err := json.Marshal(&category)
 	if err != nil {
