@@ -1,5 +1,8 @@
 <script lang="ts">
-    import Extension, { type FileType } from "../../../../tools/extension";
+    import Extension, {
+        type FileTypeSelector,
+    } from "@/entities/files/extension";
+
     import { PathTools } from "../../../../tools/paths";
 
     import type { Article } from "../types";
@@ -8,13 +11,17 @@
     $: onArticle(article);
 
     let coverExists = false;
-    let extensionType: FileType;
+    let extensionType: FileTypeSelector;
     let fullPath: string;
     function onArticle(val: Article) {
         if (!val) {
             return;
         }
-        coverExists = !!(article.cover_id && article.cover_path && article.cover_extension);
+        coverExists = !!(
+            article.cover_id &&
+            article.cover_path &&
+            article.cover_extension
+        );
         if (!coverExists) {
             return;
         }
@@ -25,7 +32,7 @@
 
 <div class="cover">
     {#if coverExists}
-        {#if extensionType === "image"}
+        {#if extensionType.selected === "IMAGE"}
             <div class="cover__image">
                 <img
                     decoding="async"
@@ -34,7 +41,7 @@
                     src={fullPath}
                 />
             </div>
-        {:else}
+        {:else if extensionType.selected === "VIDEO"}
             <div class="cover__video">
                 <video autoplay muted src={fullPath} />
             </div>
@@ -43,12 +50,23 @@
 </div>
 
 <style lang="scss">
-    .cover{
+    @import "./src/assets/variables";
+
+    .cover {
         width: 100%;
         height: 100%;
-        &__image, &__video {
+        &__image,
+        &__video {
             width: 100%;
             height: 100%;
+            :global(img),
+            :global(video) {
+                object-fit: fill;
+                width: 100%;
+                max-height: 224px;
+
+                max-width: $max-card-width;
+            }
         }
     }
 </style>

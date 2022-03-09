@@ -7,5 +7,18 @@ export default class Utils {
         }
         return Object.keys(o).length
     }
+
+    public static debounce(f: Function, ms: number) {
+        let isCooldown = false;
+        return function() {
+          if (isCooldown) return;
+      
+          f.apply(this, arguments);
+      
+          isCooldown = true;
+      
+          setTimeout(() => isCooldown = false, ms);
+        };
+      }
     
 }

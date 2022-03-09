@@ -1,4 +1,4 @@
-import type { FileType } from '@/tools/extension'
+import type { FileTypeSelector } from './extension'
 
 /** request param */
 export enum Start {
@@ -16,8 +16,8 @@ export type Params = {
     page?: number
     start?: Start
     by?: By
-    extension?: string
-    extensionType?: FileType
+    extensions?: FileTypeSelector
+    filename?: string
 }
 
 /** file */
@@ -36,5 +36,5 @@ export type File = {
     pathConverted?: URL
     sizeConverted?: string
     createdAtConverted?: string
-    extensionType?: FileType
+    extensionType?: FileTypeSelector
 }

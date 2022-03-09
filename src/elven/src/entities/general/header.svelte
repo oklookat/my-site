@@ -26,49 +26,61 @@
 </script>
 
 <nav class="header">
-  <div
-    class="header__item {path === '/' ? 'header__item-active' : ''}"
-    on:click={() => goIndex()}
-  >
-    elven
-  </div>
-  <div
-    class="header__item {path.startsWith('/articles')
-      ? 'header__item-active'
-      : ''}"
-    on:click={() => goArticles()}
-  >
-    articles
-  </div>
-  <div
-    class="header__item {path.startsWith('/files')
-      ? 'header__item-active'
-      : ''}"
-    on:click={() => goFiles()}
-  >
-    files
+  <div class="header__items">
+    <div
+      class="header__item {path === '/' ? 'header__item-active' : ''}"
+      on:click={() => goIndex()}
+    >
+      elven
+    </div>
+    <div
+      class="header__item {path.startsWith('/articles')
+        ? 'header__item-active'
+        : ''}"
+      on:click={() => goArticles()}
+    >
+      articles
+    </div>
+    <div
+      class="header__item {path.startsWith('/files')
+        ? 'header__item-active'
+        : ''}"
+      on:click={() => goFiles()}
+    >
+      files
+    </div>
   </div>
 </nav>
 
 <style lang="scss">
   .header {
     font-weight: bold;
-    background-color: var(--color-level-1);
     color: var(--color-header-text);
     border-bottom: var(--color-border) 1px solid;
     height: var(--header-height);
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 42px;
-    &__item {
+    &__items {
+      width: 100%;
       display: flex;
-      justify-content: center;
       align-items: center;
+      gap: 42px;
+      margin-left: 2vw;
+      margin-right: 2vw;
+      @media screen and (max-width: 1023px) {
+        justify-content: center;
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+    &__item {
       height: 80%;
       width: max-content;
       cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     &__item-active {
       text-decoration: underline 1px;

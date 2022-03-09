@@ -1,7 +1,7 @@
 <script lang="ts">
 </script>
 
-<div class="elven-hello">
+<div class="elven-hello base__container">
     <a href="#/settings" class="settings__link">settings</a>
 </div>
 
@@ -9,10 +9,7 @@
     .settings__link {
         background-color: var(--color-level-1);
         border-radius: var(--border-radius);
-        width: 95%;
-        min-height: 64px;
-        max-width: 512px;
-        margin: auto;
+        height: 64px;
         display: flex;
         flex-direction: column;
         justify-content: center;

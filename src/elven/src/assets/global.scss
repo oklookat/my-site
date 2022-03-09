@@ -3,7 +3,7 @@
 
 :root {
   --header-height: 52px;
-  --border-radius: 8px;
+  --border-radius: 4px;
 }
 
 ::placeholder {
@@ -71,12 +71,12 @@ input {
   background-color: var(--color-level-1);
   border: 1px solid var(--color-border);
   min-height: 24px;
-  border-radius: var(--border-radius);
+  border-radius: 4px;
   text-indent: 6px;
-  ::placeholder {
-    opacity: 20%;
+  &::placeholder {
+    opacity: 75%;
   }
-  :focus::placeholder {
+  &:focus::placeholder {
     color: transparent;
   }
 }

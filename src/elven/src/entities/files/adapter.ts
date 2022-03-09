@@ -6,6 +6,21 @@ export default class FileAdapter {
 
     /** get files list */
     public static async getAll(params: Params): Promise<Data<TFile>> {
+        // format params.extensions to string like: "jpg,png,mp4,webp"
+        if (params.extensions) {
+            var selected = params.extensions.selected
+            if (typeof selected === "string") {
+                params.extensions = params.extensions.types[selected].join(",") as any
+            } else if (selected instanceof Array) {
+                const types = new Set()
+                for (const selType of selected) {
+                    types.add(params.extensions.types[selType])
+                }
+                // remove dups
+                const typesUniq = [...new Set(types)];
+                params.extensions = typesUniq.join(",") as any
+            }
+        }
         try {
             const response = await Duck.GET({ url: 'files', params })
             return Promise.resolve(response.body as Data<TFile>)

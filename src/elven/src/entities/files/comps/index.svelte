@@ -2,25 +2,24 @@
   import { createEventDispatcher, onMount } from "svelte";
   // tools
   import type { Meta } from "@/types";
-  import { Env, Route } from "@/tools/paths";
+  import { Env } from "@/tools/paths";
   import Utils from "@/tools/utils";
   // ui
   import Pagination from "@/ui/pagination.svelte";
   import Overlay from "@/ui/overlay.svelte";
-  import ToolbarBig from "@/ui/toolbarBig.svelte";
   import Toolbar from "@/ui/toolbar.svelte";
+  import SearchBar from "../../../ui/searchBar.svelte";
   // file
   import FileAdapter from "../adapter";
   import { By, Start, type File, type Params } from "../types";
   import CFile from "./file.svelte";
+  import Uploader from "./uploader.svelte";
 
   /** add "select" option to selection overlay and dispatch event if this button clicked */
   export let withSelect: boolean = false;
 
   const dispatch = createEventDispatcher<{ selected: File }>();
 
-  /** file input for upload */
-  let inputEL: HTMLInputElement;
   /** files loaded? */
   let loaded: boolean = false;
   /** file selected / overlay opened? */
@@ -110,27 +109,6 @@
     }
   }
 
-  /** when file changed on file input */
-  function onInputChange(e: Event) {
-    const target = e.target as HTMLInputElement;
-    if (target.files.length < 1) {
-      return 0;
-    }
-    const file = target.files[0];
-    FileAdapter.upload(file).then(() => {
-      getAll();
-    });
-  }
-
-  /** when file upload button clicked */
-  function onUploadClick() {
-    if (!inputEL) {
-      return;
-    }
-    inputEL.value = "";
-    inputEL.click();
-  }
-
   /** when page changed */
   function onPageChanged(page: number) {
     requestParams.page = page;
@@ -176,47 +154,57 @@
   function getIDByCounter(counter: number): string {
     return files[counter].id;
   }
+
+  function search(val: string) {
+    requestParams.filename = val;
+    getAll();
+  }
 </script>
 
 <div class="files base__container">
-  <ToolbarBig>
-    <div class="files__upload" on:click={() => onUploadClick()}>
-      upload
-      <input
-        type="file"
-        style="display: none"
-        bind:this={inputEL}
-        on:input={onInputChange}
-      />
-    </div>
-  </ToolbarBig>
+  <div class="toolbars">
+    <Uploader onUploaded={() => getAll()} />
 
-  <Toolbar>
-    <div class="files__sort-by-date">
-      {#if requestParams.start === Start.newest}
-        <div class="item" on:click={() => setStart(Start.oldest)}>newest</div>
-      {/if}
-      {#if requestParams.start === Start.oldest}
-        <div class="item" on:click={() => setStart(Start.newest)}>oldest</div>
-      {/if}
+    <div class="oneline">
+      <div class="sort">
+        <Toolbar>
+          <div class="sort-by-old">
+            {#if requestParams.start === Start.newest}
+              <div class="item" on:click={() => setStart(Start.oldest)}>
+                newest
+              </div>
+            {/if}
+            {#if requestParams.start === Start.oldest}
+              <div class="item" on:click={() => setStart(Start.newest)}>
+                oldest
+              </div>
+            {/if}
+          </div>
+        </Toolbar>
+      </div>
+      <div class="search">
+        <SearchBar on:search={(e) => search(e.detail)} placeholder="search" />
+      </div>
     </div>
-  </Toolbar>
+  </div>
 
-  {#if loaded && Utils.getObjectLength(files) > 0}
-    <div class="files__list">
+  <div class="list">
+    {#if loaded && Utils.getObjectLength(files) > 0}
       {#each Object.entries(files) as [id, file]}
         <CFile {file} on:selected={() => select(parseInt(id, 10))} />
       {/each}
-    </div>
-  {/if}
+    {/if}
+  </div>
 
-  {#if loaded && meta && meta.total_pages && meta.current_page}
-    <Pagination
-      total={meta.total_pages}
-      current={meta.current_page}
-      on:changed={(e) => onPageChanged(e.detail)}
-    />
-  {/if}
+  <div class="pages">
+    {#if loaded && meta && meta.total_pages && meta.current_page}
+      <Pagination
+        total={meta.total_pages}
+        current={meta.current_page}
+        on:changed={(e) => onPageChanged(e.detail)}
+      />
+    {/if}
+  </div>
 
   {#if toolsOverlay}
     <Overlay onClose={() => (toolsOverlay = false)}>
@@ -231,7 +219,7 @@
             select
           </div>
         {/if}
-        {#if selected.file.extensionType === "audio"}
+        {#if selected.file.extensionType.selected === "AUDIO"}
           <div
             class="overlay__item"
             on:click={() => playAudio(selected.file.pathConverted)}
@@ -254,17 +242,22 @@
 </div>
 
 <style lang="scss">
-  .files {
-    &__upload {
-      cursor: pointer;
-    }
-    &__list {
-      height: fit-content;
-      width: 100%;
+  .toolbars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    .oneline {
       display: flex;
-      flex-direction: column;
-      min-height: 42px;
-      gap: 12px;
+      gap: 14px;
+      width: 100%;
+      .sort {
+        width: 50%;
+      }
+      .search {
+        height: 54px;
+        width: 50%;
+      }
     }
   }
 

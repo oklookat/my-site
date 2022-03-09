@@ -184,7 +184,7 @@
     // no categories
     requestParams.without_category = cat === null;
     let catName = null;
-    const notAllCategories = cat && cat["name"] && cat.id !== "-1"
+    const notAllCategories = cat && cat["name"] && cat.id !== "-1";
     if (notAllCategories) {
       catName = cat.name;
     }
@@ -194,78 +194,82 @@
 </script>
 
 <div class="articles base__container">
-  <ToolbarBig>
-    <a href="#/articles/create">new</a>
-    <a href="#/articles/cats">categories</a>
-  </ToolbarBig>
+  <div class="toolbars">
+    <ToolbarBig>
+      <a href="#/articles/create">new</a>
+      <a href="#/articles/cats">categories</a>
+    </ToolbarBig>
 
-  <Toolbar>
-    <Selector
-      {customCategories}
-      selectedID={"-1"}
-      on:changed={(e) => onCategoryChanged(e.detail)}
-    />
-  </Toolbar>
+    <Toolbar>
+      <Selector
+        {customCategories}
+        selectedID={"-1"}
+        on:changed={(e) => onCategoryChanged(e.detail)}
+      />
+    </Toolbar>
 
-  <Toolbar>
-    <div class="articles__item">
-      {#if requestParams.show === Show.published}
-        <div class="pointer" on:click={() => setShow(Show.drafts)}>
-          published
-        </div>
-      {/if}
-      {#if requestParams.show === Show.drafts}
-        <div class="pointer" on:click={() => setShow(Show.published)}>
-          drafts
-        </div>
-      {/if}
-    </div>
-    <div class="articles__item">
-      {#if requestParams.start === Start.newest}
-        <div class="pointer" on:click={() => setStart(Start.oldest)}>
-          newest
-        </div>
-      {/if}
-      {#if requestParams.start === Start.oldest}
-        <div class="pointer" on:click={() => setStart(Start.newest)}>
-          oldest
-        </div>
-      {/if}
-    </div>
-    <div class="articles__item">
-      {#if requestParams.by === By.updated}
-        <div class="pointer" on:click={() => setBy(By.published)}>
-          by updated date
-        </div>
-      {/if}
-      {#if requestParams.by === By.published}
-        <div class="pointer" on:click={() => setBy(By.created)}>
-          by published date
-        </div>
-      {/if}
-      {#if requestParams.by === By.created}
-        <div class="pointer" on:click={() => setBy(By.updated)}>
-          by created date
-        </div>
-      {/if}
-    </div>
-  </Toolbar>
+    <Toolbar>
+      <div class="articles__item">
+        {#if requestParams.show === Show.published}
+          <div class="pointer" on:click={() => setShow(Show.drafts)}>
+            published
+          </div>
+        {/if}
+        {#if requestParams.show === Show.drafts}
+          <div class="pointer" on:click={() => setShow(Show.published)}>
+            drafts
+          </div>
+        {/if}
+      </div>
+      <div class="articles__item">
+        {#if requestParams.start === Start.newest}
+          <div class="pointer" on:click={() => setStart(Start.oldest)}>
+            newest
+          </div>
+        {/if}
+        {#if requestParams.start === Start.oldest}
+          <div class="pointer" on:click={() => setStart(Start.newest)}>
+            oldest
+          </div>
+        {/if}
+      </div>
+      <div class="articles__item">
+        {#if requestParams.by === By.updated}
+          <div class="pointer" on:click={() => setBy(By.published)}>
+            by updated date
+          </div>
+        {/if}
+        {#if requestParams.by === By.published}
+          <div class="pointer" on:click={() => setBy(By.created)}>
+            by published date
+          </div>
+        {/if}
+        {#if requestParams.by === By.created}
+          <div class="pointer" on:click={() => setBy(By.updated)}>
+            by created date
+          </div>
+        {/if}
+      </div>
+    </Toolbar>
+  </div>
 
-  {#if articles}
-    <div class="articles__list">
+  <div class="list">
+    {#if articles}
       {#each Object.entries(articles) as [id, article]}
         <CArticle {article} on:selected={(e) => select(parseInt(id, 10))} />
       {/each}
-    </div>
-  {/if}
+    {/if}
+  </div>
 
-  {#if meta}
-    <Pagination
-      total={meta.total_pages}
-      current={meta.current_page}
-      on:changed={(e) => onPageChanged(e.detail)}
-    />
-  {/if}
+  <div class="pages">
+    {#if meta}
+      <Pagination
+        total={meta.total_pages}
+        current={meta.current_page}
+        on:changed={(e) => onPageChanged(e.detail)}
+      />
+    {/if}
+  </div>
 
   {#if toolsOverlay}
     <Overlay onClose={() => (toolsOverlay = false)}>
@@ -297,15 +301,11 @@
 </div>
 
 <style lang="scss">
-  .articles {
-    &__list {
-      height: fit-content;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      min-height: 42px;
-      gap: 12px;
-    }
+
+  .toolbars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .overlay {

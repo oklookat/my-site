@@ -19,6 +19,7 @@
   // file
   import FilesPortable from "../../../files/comps/files_portable.svelte";
   import type { File } from "../../../files/types";
+  import { generateFileTypeSelector } from "../../../files/extension";
 
   /** edit article with id (url params) */
   export let params: { id?: string };
@@ -41,6 +42,16 @@
   let editorEL: HTMLDivElement;
   /** is choose cover overlay opened? */
   let isChooseCover = false;
+  let isCoverExists = false;
+
+  $: onCoverChanged(article.cover_id);
+  function onCoverChanged(val) {
+    isCoverExists = !!(
+      article.cover_id &&
+      article.cover_path &&
+      article.cover_extension
+    );
+  }
 
   onMount(async () => {
     // check edit mode
@@ -188,16 +199,18 @@
   }
 </script>
 
-<div class="create" bind:this={createContainer}>
-  <div class="create__tools">
+<div class="create base__container" bind:this={createContainer}>
+  <div class="toolbars">
     <Toolbar>
       <Selector
         bind:selectedID={article.category_id}
         on:changed={(e) => onCategoryChanged(e.detail)}
       />
-      <div class="remove-cover button" on:click={() => removeCover()}>
-        remove cover
-      </div>
+      {#if isCoverExists}
+        <div class="remove-cover button" on:click={() => removeCover()}>
+          remove cover
+        </div>
+      {/if}
     </Toolbar>
 
     <div
@@ -206,17 +219,35 @@
         isChooseCover = !isChooseCover;
       }}
     >
-      {#if article.cover_id && article.cover_path && article.cover_extension}
+      {#if isCoverExists}
         <div class="cover__itself">
           <CoverRender bind:article />
         </div>
       {:else}
-        <div class="cover__upload item with-border">select cover</div>
+        <div class="cover__upload item with-border">
+          <svg
+            version="1.1"
+            id="Capa_1"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            x="0px"
+            y="0px"
+            viewBox="0 0 230 230"
+            style="enable-background:new 0 0 230 230;"
+            xml:space="preserve"
+          >
+            <path
+              d="M132.651,140.748H97.349v-35.301h35.302V140.748z M59.32,52.496H230v141.203H0V52.496h17.571V36.301H59.32V52.496z
+          M166.313,81.975h45.491V67.781h-45.491V81.975z M65.87,123.096c0,27.136,21.996,49.131,49.13,49.131s49.13-21.995,49.13-49.131
+         c0-27.131-21.996-49.129-49.13-49.129S65.87,95.965,65.87,123.096z"
+            />
+          </svg>
+        </div>
       {/if}
     </div>
   </div>
 
-  <div class="create__editable">
+  <div class="editable">
     <textarea
       class="title"
       placeholder="Actually..."
@@ -232,7 +263,7 @@
   {#if isChooseCover}
     <FilesPortable
       onClose={() => (isChooseCover = false)}
-      params={{ extensionType: "image" }}
+      params={{ extensions: generateFileTypeSelector(["IMAGE", "VIDEO"]) }}
       on:selected={(e) => {
         onCoverSelected(e.detail);
       }}
@@ -245,23 +276,20 @@
     // after data loaded - opacity = 1
     opacity: 0;
     display: flex;
-    height: fit-content;
-    width: 95%;
-    max-width: 424px;
-    margin: auto;
-    @media screen and (min-width: 1365px) {
-      max-width: 724px;
-    }
     flex-direction: column;
     align-items: center;
     gap: 24px;
-    &__tools,
-    &__editable {
+    .toolbars,
+    .editable {
       width: 100%;
-      height: 100%;
       display: flex;
       flex-direction: column;
       gap: 12px;
+    }
+    .cover,
+    .editable {
+      width: 100%;
+      max-width: 744px;
     }
   }
 
@@ -274,14 +302,29 @@
   }
 
   .cover {
-    width: 100%;
+    background-color: var(--color-level-1);
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    justify-items: center;
     &__upload {
       width: 100%;
-      height: 54px;
-      background-color: var(--color-level-1);
+      height: 84px;
+      svg {
+        width: 40px;
+        height: 40px;
+        opacity: 0.5;
+        @media screen and(prefers-color-scheme: light) {
+          fill: black;
+        }
+        @media screen and(prefers-color-scheme: dark) {
+          fill: white;
+        }
+      }
     }
     &__itself {
       width: 100%;
+      height: max-content;
     }
   }
 
@@ -304,7 +347,7 @@
   }
 
   .editor {
-    height: 100%;
+    min-height: 244px;
     display: flex;
     justify-content: center;
   }
