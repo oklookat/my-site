@@ -242,7 +242,7 @@ CREATE TABLE articles
     cover_id ulid DEFAULT NULL
     REFERENCES files(id) ON UPDATE CASCADE ON DELETE SET NULL,
     is_published boolean DEFAULT false,
-    title varchar(124) DEFAULT 'Untitled'::varchar CHECK (length(title) > 0),
+    title varchar(124) DEFAULT 'Untitled'::varchar,
     content varchar(256000) NOT NULL,
     published_at timestamp with time zone,
     created_at created,

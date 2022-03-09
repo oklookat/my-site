@@ -14,8 +14,10 @@ type ArticleGetParams struct {
 	Preview bool
 	// category name.
 	CategoryName *string
-	// show articles only without category
+	// show articles only without category?
 	WithoutCategory bool
+	// find articles with this title.
+	Title *string
 }
 
 // article request body that user should send to create/update article.
@@ -41,8 +43,8 @@ type FileGetParams struct {
 	Start string
 	// created (by creation date).
 	By string
-	// file extension without dot.
-	Extension *string
-	// OR extension type. image || audio || video.
-	ExtensionType *string
+	// extensions without dot.
+	Extensions []string
+	// filename.
+	Filename *string
 }

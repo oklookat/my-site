@@ -1,9 +1,13 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"math"
+	"regexp"
 	"servus/apps/elven/base"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -32,27 +36,50 @@ func (f *File) queryGetCount() string {
 
 func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, totalPages int, err error) {
 
+	// validate 'by' and 'start' params.
+	orderGuard := regexp.MustCompile("^[A-Za-z0-9_]+$")
+	var orderByValid = orderGuard.MatchString(params.By) && orderGuard.MatchString(params.Start)
+	if !orderByValid {
+		err = errors.New("Potential SQL injection: invalid 'by' or 'start' param")
+		return
+	}
+
 	// preapare query.
 	var query = f.queryGetSelectAll()
-	var limitOffsetDollars = [2]string{"$1", "$2"}
+	var getAllDollars = make([]string, 0)
+	var getAllArgs = make([]any, 0)
+	var addGetAllArg = func(arg any) (insertedDollar string) {
+		// add dollar.
+		var dollar = "$" + strconv.Itoa(len(getAllDollars)+1)
+		getAllDollars = append(getAllDollars, dollar)
+		// add arg.
+		getAllArgs = append(getAllArgs, arg)
+		return getAllDollars[len(getAllDollars)-1]
+	}
 
 	// args to get paginated files.
-	var getAllArgs = []any{}
-	if params.Extension != nil {
-		limitOffsetDollars[0] = "$2"
-		limitOffsetDollars[1] = "$3"
-		// add where arg.
-		getAllArgs = append(getAllArgs, *params.Extension)
-		query += "WHERE extension = $1 "
-	} else if params.ExtensionType != nil {
-		var typd = *params.ExtensionType
-		switch typd {
-		case "image":
-			query += "WHERE extension IN ('jpeg', 'jpg', 'gif', 'png', 'svg', 'bmp', 'webp') "
-		case "audio":
-			query += "WHERE extension IN ('mp3', 'flac', 'wav', 'ogg') "
-		case "video":
-			query += "WHERE extension IN ('mpg', 'mpeg', 'webm', 'mp4') "
+
+	// extensions.
+	var isExtensionsExists = params.Extensions != nil && len(params.Extensions) > 0
+	if isExtensionsExists {
+		// add extension dollars & args
+		var extensionsLen = len(params.Extensions)
+		for i := 0; i < extensionsLen; i++ {
+			addGetAllArg(params.Extensions[i])
+		}
+		query += "WHERE extension IN (" + strings.Join(getAllDollars, ",") + ") "
+	}
+
+	// filename. DEPENDS ON PREVIOUS PARAM! IF YOU NEED TO CHANGE PREVIOUS PARAMS, RECHECK THIS CODE.
+	if params.Filename != nil {
+		*params.Filename = strings.ToLower(*params.Filename)
+		var dollar = addGetAllArg(*params.Filename)
+		var whereQuery = "LOWER(original_name) LIKE '%'||" + dollar + "||'%' "
+		// > 1 because except previous appending.
+		if len(getAllArgs) > 1 {
+			query += "AND " + whereQuery
+		} else {
+			query += "WHERE " + whereQuery
 		}
 	}
 
@@ -69,10 +96,13 @@ func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, to
 	}
 
 	// sort. WARNING: potential SQL injection, be careful and validate this params.
-	query += fmt.Sprintf("ORDER BY %s %s, id %s ", params.By, params.Start, params.Start)
+	query += fmt.Sprintf(`ORDER BY %s %s, id %s `, params.By, params.Start, params.Start)
 
 	// add limit offset args.
-	query += fmt.Sprintf("LIMIT %s OFFSET %s ", limitOffsetDollars[0], limitOffsetDollars[1])
+	var limitOffsetDollars = [2]int{1, 2}
+	limitOffsetDollars[0] = len(getAllDollars) + 1
+	limitOffsetDollars[1] = len(getAllDollars) + 2
+	query += fmt.Sprintf("LIMIT $%v OFFSET $%v ", limitOffsetDollars[0], limitOffsetDollars[1])
 	getAllArgs = append(getAllArgs, FilePageSize, (params.Page-1)*FilePageSize)
 
 	// get all.
@@ -82,10 +112,11 @@ func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, to
 
 // create file in database.
 func (f *File) Create() (err error) {
-	var query = `INSERT INTO files (user_id, hash, path, name, 
-		original_name, extension, size) VALUES ($1, $2, $3, 
-			$4, $5, $6, $7) 
-		RETURNING *`
+	var query = `INSERT INTO files 
+	(user_id, hash, path, name, original_name, extension, size) 
+	VALUES 
+	($1, $2, $3, $4, $5, $6, $7) 
+	RETURNING *`
 	err = fileAdapter.Get(f, query, f.UserID, f.Hash, f.Path, f.Name, f.OriginalName, f.Extension, f.Size)
 	return
 }

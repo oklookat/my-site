@@ -69,19 +69,17 @@ func ValidateGetParams(params url.Values, isAdmin bool) (bodyParams *base.FileGe
 	}
 	bodyParams.Page = page
 
-	// "extension" param.
-	var extension = params.Get("extension")
-	if len(extension) > 0 {
-		bodyParams.Extension = &extension
+	// "extensions" param.
+	var extensions = params.Get("extensions")
+	if len(extensions) > 0 {
+		var extensionsSlice = strings.Split(extensions, ",")
+		bodyParams.Extensions = extensionsSlice
 	}
 
-	// "extensionType" param
-	var extensionType = params.Get("extensionType")
-	if len(extensionType) > 0 {
-		var isValidType = extensionType == "image" || extensionType == "audio" || extensionType == "video"
-		if isValidType {
-			bodyParams.ExtensionType = &extensionType
-		}
+	// "filename" param.
+	var filename = params.Get("filename")
+	if len(filename) > 0 {
+		bodyParams.Filename = &filename
 	}
 
 	return

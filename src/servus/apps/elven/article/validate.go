@@ -283,8 +283,6 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 
 	if isTitle {
 		filtered.Title = *bodyStruct.Title
-	} else {
-		filtered.Title = "Untitled"
 	}
 
 	if isContent {

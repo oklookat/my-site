@@ -1,9 +1,11 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"servus/apps/elven/base"
+	"strings"
 	"time"
 )
 
@@ -58,16 +60,18 @@ func (a *Article) getQueryRowsCount() string {
 
 // get paginated.
 func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]*Article, totalPages int, err error) {
-	//
+
+	// convert 'show' param to bool.
 	var isPublished bool
 	if params.Show == "published" {
 		isPublished = true
 	} else if params.Show == "drafts" {
 		isPublished = false
 	} else {
+		err = errors.New("Wrong 'show' parameter")
 		return
 	}
-	var categoryNameExists = params.CategoryName != nil
+	var isCategoryNameExists = params.CategoryName != nil
 
 	// queries. //
 	var queryWhereIsPublished = "WHERE is_published = $1 "
@@ -79,7 +83,7 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 	var getPagesCountArgsArr = []any{isPublished}
 	if params.WithoutCategory {
 		queryGetCount += queryAndCategoryIDnull
-	} else if categoryNameExists {
+	} else if isCategoryNameExists {
 		getPagesCountArgsArr = append(getPagesCountArgsArr, *params.CategoryName)
 		queryGetCount += queryAndCategoryName
 	}
@@ -99,7 +103,7 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 	var getArticlesArgsLimitOffset = [2]string{"$2", "$3"}
 	if params.WithoutCategory {
 		queryGetArticles += queryAndCategoryIDnull
-	} else if categoryNameExists {
+	} else if isCategoryNameExists {
 		queryGetArticles += queryAndCategoryName
 		getArticlesArgsLimitOffset[0] = "$3"
 		getArticlesArgsLimitOffset[1] = "$4"
@@ -119,8 +123,10 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 func (a *Article) Create() (err error) {
 	a.hookBeforeChange()
 	var query = `
-	INSERT INTO articles (user_id, category_id, cover_id,
-	is_published, title, content) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
+	INSERT INTO articles 
+	(user_id, category_id, cover_id, is_published, title, content) 
+	VALUES ($1, $2, $3, $4, $5, $6) 
+	RETURNING id`
 	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.CoverID, a.IsPublished, a.Title, a.Content)
 	if err != nil {
 		return
@@ -131,8 +137,11 @@ func (a *Article) Create() (err error) {
 // update all article in database.
 func (a *Article) Update() (err error) {
 	a.hookBeforeChange()
-	var query = `UPDATE articles SET user_id=$1, category_id=$2, cover_id=$3,
-	is_published=$4, title=$5, content=$6, published_at=$7 WHERE id=$8 RETURNING *`
+	var query = `UPDATE articles SET 
+	user_id=$1, category_id=$2, cover_id=$3,
+	is_published=$4, title=$5, content=$6, 
+	published_at=$7 
+	WHERE id=$8 RETURNING *`
 	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.CoverID, a.IsPublished, a.Title, a.Content, a.PublishedAt, a.ID)
 	if err != nil {
 		return
@@ -164,6 +173,12 @@ func (a *Article) DeleteByID() (err error) {
 
 // executes before article create or update.
 func (a *Article) hookBeforeChange() {
+
+	// title.
+	if len(strings.TrimSpace(a.Title)) < 1 {
+		a.Title = "Untitled"
+	}
+
 	// article published and no published date? wtf lets fix that.
 	if a.IsPublished && a.PublishedAt == nil {
 		var cur = time.Now()
