@@ -6,28 +6,36 @@
   import Notify from "@/plugins/elvenNotify/notify.svelte";
   // routing
   import Router, { location } from "svelte-spa-router";
-  import routes from "@/routes";
+  import routes from "@/views/routes";
   // components
-  import Header from "@/entities/general/header.svelte";
-  import ServiceWrapper from "@/entities/general/serviceWrapper.svelte";
+  import Header from "@/components/header.svelte";
+  import ServiceWrapper from "@/components/service_wrapper.svelte";
+  import { GlobalState } from "@/tools/storage";
 
-  let isNotAuth = $location !== "/login" && $location !== "/logout";
+  // TODO: check user not by local storage.
+  // On secured routes get user by request to something like /users/me and check isAdmin field
+
+  // state
+  let isAuthPage = false;
   location.subscribe((value) => {
-    isNotAuth = value !== "/login" && value !== "/logout";
+    isAuthPage = value.includes("/login") && value.includes("/logout");
   });
-  // TODO: check user not by local storage. On secured routes get user by request to something like /users/me and check isAdmin field
+  let is404Page = false;
+  GlobalState.isNotFoundPage.subscribe((value) => {
+    is404Page = value;
+  });
 </script>
 
 <div class="container">
   <Progress />
-  {#if isNotAuth}
+  {#if !isAuthPage && !is404Page}
     <Header />
   {/if}
   <div class="content">
     <Router {routes} restoreScrollState={true} />
   </div>
   <Notify />
-  {#if isNotAuth}
+  {#if !isAuthPage && !is404Page}
     <ServiceWrapper />
   {/if}
 </div>

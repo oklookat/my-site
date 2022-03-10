@@ -1,0 +1,109 @@
+<script lang="ts">
+  import { createEventDispatcher } from "svelte";
+
+  export let isPlaying: boolean = false;
+
+  const dispatch = createEventDispatcher<{
+    play: null;
+    pause: null;
+    next: null;
+    prev: null;
+  }>();
+
+  function play() {
+    dispatch("play");
+  }
+
+  function pause() {
+    dispatch("pause");
+  }
+
+  function next() {
+    dispatch("next");
+  }
+
+  function prev() {
+    dispatch("prev");
+  }
+</script>
+
+<div class="controls">
+  <div class="previous">
+    <svg
+      on:click={() => prev()}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 406.76 169.37"
+    >
+      <path
+        d="M180.76,320.07V179.49A14.38,14.38,0,0,0,159.29,167l-124,70.29a14.38,14.38,0,0,0,0,25l124,70.29A14.38,14.38,0,0,0,180.76,320.07Z"
+        transform="translate(-28 -165.09)"
+      />
+      <path
+        d="M434.76,320.07V179.49A14.38,14.38,0,0,0,413.29,167l-124,70.29a14.38,14.38,0,0,0,0,25l124,70.29A14.38,14.38,0,0,0,434.76,320.07Z"
+        transform="translate(-28 -165.09)"
+      />
+    </svg>
+  </div>
+
+  <div class="playpause">
+    {#if isPlaying}
+      <svg
+        on:click={() => pause()}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 207 310"
+      >
+        <rect width="70" height="310" />
+        <rect x="137" width="70" height="310" />
+      </svg>
+    {:else}
+      <svg
+        on:click={() => play()}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 152.76 169.37"
+      >
+        <path
+          d="M173.62,320.29V179.71a14.38,14.38,0,0,1,21.47-12.51l124,70.29a14.38,14.38,0,0,1,0,25l-124,70.29A14.38,14.38,0,0,1,173.62,320.29Z"
+          transform="translate(-173.62 -165.31)"
+        />
+      </svg>
+    {/if}
+  </div>
+
+  <div class="next">
+    <svg
+      on:click={() => next()}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 406.76 169.37"
+    >
+      <path
+        d="M308,320.07V179.49A14.37,14.37,0,0,1,329.46,167l124,70.29a14.38,14.38,0,0,1,0,25l-124,70.29A14.37,14.37,0,0,1,308,320.07Z"
+        transform="translate(-54 -165.09)"
+      />
+      <path
+        d="M54,320.07V179.49A14.37,14.37,0,0,1,75.46,167l124,70.29a14.38,14.38,0,0,1,0,25l-124,70.29A14.37,14.37,0,0,1,54,320.07Z"
+        transform="translate(-54 -165.09)"
+      />
+    </svg>
+  </div>
+</div>
+
+<style lang="scss">
+  .controls {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    svg {
+      height: 20px;
+      width: 20px;
+    }
+    > div {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      svg {
+        cursor: pointer;
+      }
+    }
+  }
+</style>

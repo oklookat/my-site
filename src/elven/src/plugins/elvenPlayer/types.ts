@@ -1,5 +1,3 @@
-import type DOM from "./logic/dom"
-
 export type ConvertSecondsMode = 'auto' | 'hours' | 'minutes'
 export type Source = string
 export type Sources = Array<string>

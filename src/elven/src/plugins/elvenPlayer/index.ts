@@ -1,9 +1,9 @@
 import type { Events as IEvents, Store as IStore, Playlist, Source, ElvenPlayer as IElvenPlayer, Unsubscribe } from "./types";
-import DOM from "./logic/dom";
-import Store from "./logic/store";
-import Events from "./logic/events";
-import Logger from "./logic/logger";
-import Utils from "./logic/utils";
+import DOM from "./core/dom";
+import Store from "./core/store";
+import Events from "./core/events";
+import Logger from "./core/logger";
+import Utils from "./core/utils";
 
 // warning: Chrome has bug with FLAC double-rewind to the end (PTS not defined). Idk how fix that, except decrease time of rewinding to end
 /** controls audio player */
