@@ -120,6 +120,7 @@
     <input
         type="file"
         style="display: none"
+        multiple={multipleUploading}
         bind:this={inputEL}
         on:input={onInputChange}
     />

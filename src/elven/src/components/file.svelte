@@ -6,6 +6,9 @@
     import Size from "@/tools/size";
     import Extension from "@/tools/extension";
     import type { File } from "@/types/files";
+    // ui
+    import Popup from "@/components/popup.svelte";
+    let popupMouseEvent: MouseEvent;
 
     const dispatch = createEventDispatcher<{ selected: File }>();
 
@@ -16,8 +19,11 @@
         convert(file);
     }
 
-    function onSelected(file: File) {
-        dispatch("selected", file);
+    let isSelected = false;
+    function onSelected(file: File, e: MouseEvent) {
+        isSelected = true;
+        popupMouseEvent = e;
+        //dispatch("selected", file);
     }
 
     /** convert file path, extension etc */
@@ -27,8 +33,8 @@
         if (isNeedPath) {
             file.pathConverted = PathTools.getUploadsWith(file.path);
         }
-        if (!file.extensionType) {
-            file.extensionType = Extension.getType(file.extension);
+        if (!file.extensionsSelector) {
+            file.extensionsSelector = Extension.getSelector(file.extension);
         }
         if (!file.sizeConverted) {
             file.sizeConverted = Size.convert(file.size);
@@ -39,7 +45,17 @@
     }
 </script>
 
-<div class="file base__card" on:click={() => onSelected(file)}>
+<!-- TODO: OVERLAY ON MOBILE / POPUP ON PC
+TODO: FILE MANIPULATIONS DO IN HERE, NOT IN FILES LIST
+TODO: AND WITH ARTICLE SAME -->
+{#if isSelected}
+    <Popup
+        bind:mouseEvent={popupMouseEvent}
+        onDisabled={() => (isSelected = false)}
+    />
+{/if}
+
+<div class="file base__card" on:click={(e) => onSelected(file, e)}>
     <div class="meta">
         <div class="meta__item">
             {file.createdAtConverted}
@@ -47,7 +63,7 @@
         <div class="meta__item">{file.sizeConverted}</div>
     </div>
     <div class="main">
-        {#if file.extensionType.selected === "IMAGE"}
+        {#if file.extensionsSelector.selected === "IMAGE"}
             <div class="file__preview">
                 <img
                     decoding="async"
@@ -56,7 +72,7 @@
                     alt=""
                 />
             </div>
-        {:else if file.extensionType.selected === "VIDEO"}
+        {:else if file.extensionsSelector.selected === "VIDEO"}
             <div class="file__preview" on:click|stopPropagation>
                 <video controls src={file.pathConverted.href}>
                     <track default kind="captions" srclang="en" src="" />

@@ -16,8 +16,11 @@ export type Params = {
     page?: number
     start?: Start
     by?: By
-    extensions?: FileTypeSelector
+    /** find files with this extensions. Format like: 'jpg,gif,png' */
+    extensions?: string
     filename?: string
+    // not in model
+    extensionsSelector?: FileTypeSelector
 }
 
 /** file */
@@ -36,5 +39,5 @@ export type File = {
     pathConverted?: URL
     sizeConverted?: string
     createdAtConverted?: string
-    extensionType?: FileTypeSelector
+    extensionsSelector: FileTypeSelector
 }

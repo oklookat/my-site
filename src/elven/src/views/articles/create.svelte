@@ -26,7 +26,7 @@
 
   /** save all data */
   const save = saver();
-  /** working on this article */
+  /** creating / editing this article */
   let article: Article = {
     title: "",
     content: "",
@@ -39,9 +39,11 @@
   let textareaResizer: TextareaResizer;
   /** text editor */
   let editor: jmarkd;
+  /** text editor element */
   let editorEL: HTMLDivElement;
   /** is choose cover overlay opened? */
   let isChooseCover = false;
+  /** is cover exists in article? */
   let isCoverExists = false;
 
   $: onCoverChanged(article.cover_id);
@@ -212,39 +214,38 @@
         </div>
       {/if}
     </Toolbar>
+  </div>
 
-    <div
-      class="cover pointer"
-      on:click={() => {
-        isChooseCover = !isChooseCover;
-      }}
-    >
-      {#if isCoverExists}
-        <div class="cover__itself">
-          <ArticleCover bind:article />
-        </div>
-      {:else}
-        <div class="cover__upload item with-border">
-          <svg
-            version="1.1"
-            id="Capa_1"
-            xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink"
-            x="0px"
-            y="0px"
-            viewBox="0 0 230 230"
-            style="enable-background:new 0 0 230 230;"
-            xml:space="preserve"
-          >
-            <path
-              d="M132.651,140.748H97.349v-35.301h35.302V140.748z M59.32,52.496H230v141.203H0V52.496h17.571V36.301H59.32V52.496z
-          M166.313,81.975h45.491V67.781h-45.491V81.975z M65.87,123.096c0,27.136,21.996,49.131,49.13,49.131s49.13-21.995,49.13-49.131
-         c0-27.131-21.996-49.129-49.13-49.129S65.87,95.965,65.87,123.096z"
-            />
-          </svg>
-        </div>
-      {/if}
-    </div>
+  <div
+    class="cover pointer"
+    on:click={() => {
+      isChooseCover = !isChooseCover;
+    }}
+  >
+    {#if isCoverExists}
+      <div class="cover__itself">
+        <ArticleCover bind:article />
+      </div>
+    {:else}
+      <div class="cover__upload item with-border">
+        <svg
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          x="0px"
+          y="0px"
+          viewBox="0 0 230 230"
+          style="enable-background:new 0 0 230 230;"
+          xml:space="preserve"
+        >
+          <path
+            d="M132.651,140.748H97.349v-35.301h35.302V140.748z M59.32,52.496H230v141.203H0V52.496h17.571V36.301H59.32V52.496z
+      M166.313,81.975h45.491V67.781h-45.491V81.975z M65.87,123.096c0,27.136,21.996,49.131,49.13,49.131s49.13-21.995,49.13-49.131
+     c0-27.131-21.996-49.129-49.13-49.129S65.87,95.965,65.87,123.096z"
+          />
+        </svg>
+      </div>
+    {/if}
   </div>
 
   <div class="editable">
@@ -263,7 +264,9 @@
   {#if isChooseCover}
     <FilesPortable
       onClose={() => (isChooseCover = false)}
-      params={{ extensions: generateFileTypeSelector(["IMAGE", "VIDEO"]) }}
+      params={{
+        extensionsSelector: generateFileTypeSelector(["IMAGE", "VIDEO"]),
+      }}
       on:selected={(e) => {
         onCoverSelected(e.detail);
       }}
@@ -278,7 +281,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 24px;
+    gap: 18px;
     .toolbars,
     .editable {
       width: 100%;
@@ -303,7 +306,6 @@
 
   .cover {
     background-color: var(--color-level-1);
-    margin: auto;
     display: flex;
     justify-content: center;
     justify-items: center;

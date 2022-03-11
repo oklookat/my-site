@@ -1,8 +1,6 @@
 <script lang="ts">
     // file
-    import Extension, {
-        type FileTypeSelector,
-    } from "@/tools/extension";
+    import Extension, { type FileTypeSelector } from "@/tools/extension";
     import { PathTools } from "@/tools/paths";
     // article
     import type { Article } from "@/types/articles";
@@ -11,7 +9,7 @@
     $: onArticle(article);
 
     let coverExists = false;
-    let extensionType: FileTypeSelector;
+    let extensionSelector: FileTypeSelector;
     let fullPath: string;
     function onArticle(val: Article) {
         if (!val) {
@@ -25,14 +23,14 @@
         if (!coverExists) {
             return;
         }
-        extensionType = Extension.getType(article.cover_extension);
+        extensionSelector = Extension.getSelector(article.cover_extension);
         fullPath = PathTools.getUploadsWith(article.cover_path).toString();
     }
 </script>
 
 <div class="cover">
     {#if coverExists}
-        {#if extensionType.selected === "IMAGE"}
+        {#if extensionSelector.selected === "IMAGE"}
             <div class="cover__image">
                 <img
                     decoding="async"
@@ -41,7 +39,7 @@
                     src={fullPath}
                 />
             </div>
-        {:else if extensionType.selected === "VIDEO"}
+        {:else if extensionSelector.selected === "VIDEO"}
             <div class="cover__video">
                 <video autoplay muted src={fullPath} />
             </div>
@@ -59,12 +57,13 @@
         &__video {
             width: 100%;
             height: 100%;
+            display: flex;
+            justify-content: center;
             :global(img),
             :global(video) {
                 object-fit: fill;
                 width: 100%;
                 max-height: 224px;
-
                 max-width: $max-card-width;
             }
         }

@@ -1,28 +1,40 @@
 import Duck from '@/network'
-import type { File as TFile, Params } from '../entities/files/types'
+import type { File as TFile, Params } from '@/types/files'
 import type { Data } from '@/types'
 
 export default class FilesNetwork {
 
     /** get files list */
     public static async getAll(params: Params): Promise<Data<TFile>> {
-        // format params.extensions to string like: "jpg,png,mp4,webp"
-        if (params.extensions) {
-            var selected = params.extensions.selected
-            if (typeof selected === "string") {
-                params.extensions = params.extensions.types[selected].join(",") as any
-            } else if (selected instanceof Array) {
-                const types = new Set()
-                for (const selType of selected) {
-                    types.add(params.extensions.types[selType])
+        const paramsCopy: Params = {...params}
+        // convert params.extensionsSelector to params.extensions
+        if (paramsCopy.extensionsSelector) {
+            let extensionsParsed: string[] = []
+
+            // get selected extension to parse
+            var extensions = paramsCopy.extensionsSelector.extensions
+            var selected = paramsCopy.extensionsSelector.selected
+
+            // if string - we need one type of file, like images
+            if(typeof selected === "string") {
+                // get one file types
+                extensionsParsed = extensions[selected]
+            } else if(selected instanceof Array) {
+                // if array - we search many types of file, need concat that shit
+                for(const readable of selected) {
+                    const names = extensions[readable]
+                    for(const extension of names) {
+                        extensionsParsed.push(extension)
+                    }
                 }
-                // remove dups
-                const typesUniq = [...new Set(types)];
-                params.extensions = typesUniq.join(",") as any
             }
+            // remove dups
+            const extensionsUniq = [...new Set(extensionsParsed)];
+            paramsCopy.extensions = extensionsUniq.join(",") as any
+            params["extensions"] = paramsCopy.extensions
         }
         try {
-            const response = await Duck.GET({ url: 'files', params })
+            const response = await Duck.GET({ url: 'files', params: paramsCopy })
             return Promise.resolve(response.body as Data<TFile>)
         } catch (err) {
         }

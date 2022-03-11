@@ -1,3 +1,12 @@
+/** wtf is going on here:
+ * 1. We need to search files by extensions / or after getting file from server we need readable extension
+ * 2. API recieves param for searching extensions in format like: 'jpg,png,mp4' etc
+ * 3. To easily manipulate this we need fileTypeSelector
+ * 4. FTS contains extensions for file types, and selected file type(s)
+ * 5. Selected = what extensions we selected to search / extensions = FileTypeSelector.extensions[selected]
+ */
+
+
 /** generate file type selector by file type and extensions */
 export function generateFileTypeSelector(readable: FileExtensionReadable | FileExtensionReadable[], 
     extensions: FileExtensions = FileExtensionsDefault): FileTypeSelector {
@@ -8,6 +17,7 @@ export function generateFileTypeSelector(readable: FileExtensionReadable | FileE
     return select
 }
 
+export type FileExtensionReadable = 'UNKNOWN' | 'IMAGE' | 'VIDEO' | 'AUDIO'
 export const FileExtensionsDefault: FileExtensions = {
     UNKNOWN: [],
     IMAGE: ['jpeg', 'jpg', 'gif', 'png', 'svg', 'bmp', 'webp'],
@@ -16,11 +26,12 @@ export const FileExtensionsDefault: FileExtensions = {
 }
 
 export interface FileTypeSelector {
+    /** file type */
     selected: FileExtensionReadable | FileExtensionReadable[]
+    /** file extensions by types */
     get extensions(): FileExtensions
 }
 
-export type FileExtensionReadable = 'UNKNOWN' | 'IMAGE' | 'VIDEO' | 'AUDIO'
 
 export interface FileExtensions {
     UNKNOWN: string[]
@@ -34,10 +45,10 @@ export interface FileExtensions {
 
 export default class Extension {
 
-    /** get readable file type.
+    /** get file type selector by extension.
      * @param extension extension without dot
      */
-    public static getType(extension?: string): FileTypeSelector {
+    public static getSelector(extension?: string): FileTypeSelector {
         const select = generateFileTypeSelector("UNKNOWN")
         if (!extension) {
             return select

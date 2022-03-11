@@ -219,7 +219,7 @@
             select
           </div>
         {/if}
-        {#if selected.file.extensionType.selected === "AUDIO"}
+        {#if selected.file.extensionsSelector.selected === "AUDIO"}
           <div
             class="overlay__item"
             on:click={() => playAudio(selected.file.pathConverted)}
