@@ -1,29 +1,19 @@
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
+    import { createEventDispatcher, onMount } from "svelte";
 
     import { PathTools } from "@/tools/paths";
     import Dates from "@/tools/dates";
     import Size from "@/tools/size";
     import Extension from "@/tools/extension";
     import type { File } from "@/types/files";
-    // ui
-    import Popup from "@/components/popup.svelte";
-    let popupMouseEvent: MouseEvent;
-
-    const dispatch = createEventDispatcher<{ selected: File }>();
 
     export let file: File;
-    $: watchFile(file);
+    export let onSelected: (file: File, evt: MouseEvent) => void
 
-    function watchFile(file: File) {
-        convert(file);
-    }
+    convert(file);
 
-    let isSelected = false;
-    function onSelected(file: File, e: MouseEvent) {
-        isSelected = true;
-        popupMouseEvent = e;
-        //dispatch("selected", file);
+    function onFileSelected(e: MouseEvent) {
+        onSelected(file, e)
     }
 
     /** convert file path, extension etc */
@@ -45,17 +35,8 @@
     }
 </script>
 
-<!-- TODO: OVERLAY ON MOBILE / POPUP ON PC
-TODO: FILE MANIPULATIONS DO IN HERE, NOT IN FILES LIST
-TODO: AND WITH ARTICLE SAME -->
-{#if isSelected}
-    <Popup
-        bind:mouseEvent={popupMouseEvent}
-        onDisabled={() => (isSelected = false)}
-    />
-{/if}
 
-<div class="file base__card" on:click={(e) => onSelected(file, e)}>
+<div class="file base__card" on:click={onFileSelected}>
     <div class="meta">
         <div class="meta__item">
             {file.createdAtConverted}

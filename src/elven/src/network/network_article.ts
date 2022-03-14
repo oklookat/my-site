@@ -2,7 +2,7 @@ import Duck from '@/network'
 import type { Data } from '@/types'
 import type { Article, Params } from '@/types/articles'
 
-export default class ArticleNetwork {
+export default class NetworkArticle {
 
     private static prefix = "article/articles"
 

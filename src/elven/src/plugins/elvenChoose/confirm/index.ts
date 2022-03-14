@@ -9,6 +9,7 @@ enum className {
     NYContainer = "confirm__ny",
     no = "confirm__no",
     yes = "confirm__yes",
+    divider = "confirm__divider"
 }
 
 export default class Confirm {
@@ -40,6 +41,9 @@ export default class Confirm {
             // no
             const no = this.buildNo(resolve)
             NYC.appendChild(no)
+            // divider
+            const divider = this.buildDivider()
+            NYC.appendChild(divider)
             // yes
             const yes = this.buildYes(resolve)
             NYC.appendChild(yes)
@@ -126,6 +130,12 @@ export default class Confirm {
             resolve(false)
         }
         return no
+    }
+
+    private buildDivider(): HTMLDivElement {
+        const divider = document.createElement('div')
+        divider.className = className.divider
+        return divider
     }
 
     private buildYes(resolve: (v: boolean) => void): HTMLDivElement {

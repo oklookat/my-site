@@ -83,11 +83,7 @@
 
 <svelte:window on:click={watchClick} />
 <div class="popup with-border" bind:this={popupEL}>
-    <div class="item">итем</div>
-    <div class="item">итем</div>
-    <div class="item">итем</div>
-    <div class="item">итем</div>
-    <div class="item">итем</div>
+    <slot />
 </div>
 
 <style lang="scss">
@@ -96,21 +92,7 @@
         position: absolute;
         background-color: var(--color-level-1);
         border-radius: var(--border-radius);
-        width: 200px;
+        width: 124px;
         height: max-content;
-        padding: 6px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        :global(div),
-        :global(a) {
-            border-bottom: 1px solid var(--color-body);
-            width: 100%;
-            height: auto;
-            min-height: 32px;
-            &:hover {
-                background-color: var(--color-hover);
-            }
-        }
     }
 </style>

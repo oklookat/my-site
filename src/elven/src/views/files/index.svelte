@@ -14,27 +14,35 @@
   import { By, Start, type File, type Params } from "@/types/files";
   import CFile from "@/components/file.svelte";
   import Uploader from "@/components/files_uploader.svelte";
+  import FileActions from "@/components/file_actions.svelte";
 
   /** add "select" option to selection overlay and dispatch event if this button clicked */
   export let withSelect: boolean = false;
 
+  /** request params from portable mode */
+  export let params: Params = undefined;
+
   const dispatch = createEventDispatcher<{ selected: File }>();
 
   /** files loaded? */
-  let loaded: boolean = false;
-  /** file selected / overlay opened? */
-  let toolsOverlay = false;
+  let loaded = false;
+
+  /** is file selected? */
+  let isSelected = false;
+
   /** selected file */
   let selected: {
     counter: number | null;
     file: File | null;
-  } = { counter: null, file: null };
+    mouseEvent: MouseEvent;
+  } = { counter: null, file: null, mouseEvent: null };
+
   /** response files */
   let files: Record<number, File> = {};
+
   /** response information */
   let meta: Meta;
-  /** request params from portable mode */
-  export let params: Params = undefined;
+
   /** request params */
   let requestParams: Params = {
     page: 1,
@@ -49,11 +57,7 @@
     getAll(undefined);
   });
 
-  /** get all files.
-   * @param p request params
-   *
-   * @param withHistory set history params **by p parameter** after files loaded
-   */
+  /** get all files */
   async function getAll(p: Params = requestParams) {
     requestParams = requestParams;
     if (p.page < 1) {
@@ -69,24 +73,11 @@
   }
 
   /** select file */
-  function select(counter: number) {
-    toolsOverlay = true;
+  function select(file: File, mouseEvent: MouseEvent, counter: number) {
     selected.counter = counter;
+    selected.mouseEvent = mouseEvent;
     selected.file = files[counter];
-  }
-
-  /** delete file */
-  async function deleteFile(counter: number) {
-    const isDelete = await window.$choose.confirm("delete file");
-    if (!isDelete) {
-      return;
-    }
-    toolsOverlay = false;
-    try {
-      const converted = getIDByCounter(counter);
-      await NetworkFile.delete(converted);
-      await deleteFromArray(counter);
-    } catch (err) {}
+    isSelected = true;
   }
 
   /** refresh files */
@@ -115,25 +106,23 @@
     getAll();
   }
 
-  /** copy link to clipboard */
-  async function copyLink(counter: number) {
-    let message = "";
-    const path = files[counter].path;
-    const formattedPath = Env.getUploads() + "/" + path;
-    try {
-      await navigator.clipboard.writeText(formattedPath);
-      message = "Link copied to clipboard.";
-    } catch (err) {
-      message = "Copy to clipboard: not have permission.";
-    }
-    window.$notify.add({ message });
-    toolsOverlay = false;
+  /** set 'start' param and get files */
+  function setStart(start: Start = Start.newest) {
+    requestParams.start = start;
+    requestParams.page = 1;
+    getAll();
   }
 
-  /** play audio by url */
-  function playAudio(url: URL) {
-    window.$player.playlist = { position: 0, sources: [url.href] };
-    window.$player.play();
+  /** search by filename */
+  function search(val: string) {
+    requestParams.filename = val;
+    getAll();
+  }
+
+  /** on selected file deleted */
+  function onDeleted() {
+    isSelected = false;
+    deleteFromArray(selected.counter);
   }
 
   /** delete file from files array */
@@ -142,24 +131,17 @@
     files = files;
     await refresh();
   }
-
-  /** set 'start' param and get files */
-  function setStart(start: Start = Start.newest) {
-    requestParams.start = start;
-    requestParams.page = 1;
-    getAll();
-  }
-
-  /** get file id by files counter id */
-  function getIDByCounter(counter: number): string {
-    return files[counter].id;
-  }
-
-  function search(val: string) {
-    requestParams.filename = val;
-    getAll();
-  }
 </script>
+
+{#if isSelected}
+  <FileActions
+    {withSelect}
+    file={selected.file}
+    mouseEvent={selected.mouseEvent}
+    onDisabled={() => (isSelected = false)}
+    onDeleted={() => onDeleted()}
+  />
+{/if}
 
 <div class="files base__container">
   <div class="toolbars">
@@ -190,8 +172,12 @@
 
   <div class="list">
     {#if loaded && Utils.getObjectLength(files) > 0}
-      {#each Object.entries(files) as [id, file]}
-        <CFile {file} on:selected={() => select(parseInt(id, 10))} />
+      {#each Object.entries(files) as [counter, file]}
+        <CFile
+          {file}
+          onSelected={(file, event) =>
+            select(file, event, parseInt(counter, 10))}
+        />
       {/each}
     {/if}
   </div>
@@ -205,40 +191,6 @@
       />
     {/if}
   </div>
-
-  {#if toolsOverlay}
-    <Overlay onClose={() => (toolsOverlay = false)}>
-      <div class="overlay">
-        {#if withSelect}
-          <div
-            class="overlay__item"
-            on:click={() => {
-              dispatch("selected", selected.file);
-            }}
-          >
-            select
-          </div>
-        {/if}
-        {#if selected.file.extensionsSelector.selected === "AUDIO"}
-          <div
-            class="overlay__item"
-            on:click={() => playAudio(selected.file.pathConverted)}
-          >
-            play
-          </div>
-        {/if}
-        <div class="overlay__item" on:click={() => copyLink(selected.counter)}>
-          copy link
-        </div>
-        <div
-          class="overlay__item"
-          on:click={() => deleteFile(selected.counter)}
-        >
-          delete
-        </div>
-      </div>
-    </Overlay>
-  {/if}
 </div>
 
 <style lang="scss">
@@ -258,22 +210,6 @@
         height: 54px;
         width: 50%;
       }
-    }
-  }
-
-  .overlay {
-    width: 100%;
-    &__item {
-      height: 64px;
-      width: 100%;
-      font-size: 1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    &__item:hover {
-      background-color: var(--color-hover);
     }
   }
 </style>

@@ -1,9 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import { push } from "svelte-spa-router";
   import { querystring } from "svelte-spa-router";
   // ui
-  import Overlay from "@/components/overlay.svelte";
   import Pagination from "@/components/pagination.svelte";
   import Toolbar from "@/components/toolbar.svelte";
   import ToolbarBig from "@/components/toolbar_big.svelte";
@@ -16,21 +14,27 @@
   import NetworkArticle from "@/network/network_article";
   import CategoriesSelector from "@/components/categories_selector.svelte";
   import type { Category } from "@/types/articles/categories";
-  import { validate_component, validate_each_argument } from "svelte/internal";
+  import ArticleActions from "@/components/article_actions.svelte";
 
   /** articles loaded? */
   let loaded = false;
-  /** article selected / overlay opened? */
-  let toolsOverlay = false;
+
+  /** is article selected? */
+  let isSelected = false;
+
   /** selected article */
   let selected: {
     counter: number | null;
     article: Article | null;
-  } = { counter: null, article: null };
+    mouseEvent: MouseEvent;
+  } = { counter: null, article: null, mouseEvent: null };
+
   /** response articles */
   let articles: Record<number, Article> = {};
+
   /** response information */
   let meta: Meta;
+
   /** request params */
   let requestParams: Params = {
     page: 1,
@@ -41,7 +45,8 @@
     category_name: null,
     without_category: false,
   };
-  /** custom categories for filter */
+
+  /** custom categories for searching by category */
   const customCategories: Record<number, Category> = {
     "-1": {
       id: "-1",
@@ -61,7 +66,7 @@
   });
 
   //////////// PARAMS TEST
-  // TODO: validate requestParams before send to server, 
+  // TODO: validate requestParams before send to server,
   // changed querystring if sort changed
   async function queryStringToRequestParams() {
     if (!urlParams) {
@@ -69,11 +74,11 @@
     }
     return new Promise((resolve) => {
       urlParams.forEach((key, name) => {
-        console.log(name, key)
+        console.log(name, key);
         if (!requestParams[name]) {
           return;
         }
-        console.log('e')
+        console.log("e");
         requestParams[name] = key;
       });
       resolve(true);
@@ -113,51 +118,17 @@
     } catch (err) {}
   }
 
-  /** edit article */
-  function edit(counter: number) {
-    const articleID = getIDByCounter(counter);
-    push(`/articles/create/${articleID}`);
-  }
-
   /** select article */
-  function select(counter: number) {
-    toolsOverlay = true;
+  function select(article: Article, mouseEvent: MouseEvent, counter: number) {
     selected.counter = counter;
+    selected.mouseEvent = mouseEvent;
     selected.article = articles[counter];
+    isSelected = true;
   }
 
-  /** publish article */
-  async function publish(counter: number) {
-    const converted = getIDByCounter(counter);
-    toolsOverlay = false;
-    try {
-      await NetworkArticle.publish(converted);
-      await deleteFromArray(counter);
-    } catch (err) {}
-  }
-
-  /** unpublish article */
-  async function unpublish(counter: number) {
-    const converted = getIDByCounter(counter);
-    toolsOverlay = false;
-    try {
-      await NetworkArticle.unpublish(converted);
-      await deleteFromArray(counter);
-    } catch (err) {}
-  }
-
-  /** delete article */
-  async function deleteArticle(counter: number) {
-    const isDelete = await window.$choose.confirm("delete article");
-    if (!isDelete) {
-      return;
-    }
-    toolsOverlay = false;
-    try {
-      const converted = getIDByCounter(counter);
-      await NetworkArticle.delete(converted);
-      await deleteFromArray(counter);
-    } catch (err) {}
+  function onDeleted() {
+    isSelected = false;
+    deleteFromArray(selected.counter);
   }
 
   /** delete article from articles array and refresh articles */
@@ -194,11 +165,6 @@
     getAll();
   }
 
-  /** get article id by articles counter id */
-  function getIDByCounter(counter: number): string {
-    return articles[counter].id;
-  }
-
   /** refresh articles */
   async function refresh() {
     while (true) {
@@ -233,6 +199,15 @@
     getAll();
   }
 </script>
+
+{#if isSelected}
+  <ArticleActions
+    article={selected.article}
+    mouseEvent={selected.mouseEvent}
+    onDisabled={() => (isSelected = false)}
+    onDeleted={() => onDeleted()}
+  />
+{/if}
 
 <div class="articles base__container">
   <div class="toolbars">
@@ -296,8 +271,12 @@
 
   <div class="list">
     {#if articles}
-      {#each Object.entries(articles) as [id, article]}
-        <CArticle {article} on:selected={(e) => select(parseInt(id, 10))} />
+      {#each Object.entries(articles) as [counter, article]}
+        <CArticle
+          {article}
+          onSelected={(article, event) =>
+            select(article, event, parseInt(counter, 10))}
+        />
       {/each}
     {/if}
   </div>
@@ -311,34 +290,6 @@
       />
     {/if}
   </div>
-
-  {#if toolsOverlay}
-    <Overlay onClose={() => (toolsOverlay = false)}>
-      <div class="overlay">
-        {#if selected && selected.article.is_published}
-          <div
-            class="overlay__item"
-            on:click={() => unpublish(selected.counter)}
-          >
-            unpublish
-          </div>
-        {:else}
-          <div class="overlay__item" on:click={() => publish(selected.counter)}>
-            publish
-          </div>
-        {/if}
-        <div class="overlay__item" on:click={() => edit(selected.counter)}>
-          edit
-        </div>
-        <div
-          class="overlay__item"
-          on:click={() => deleteArticle(selected.counter)}
-        >
-          delete
-        </div>
-      </div>
-    </Overlay>
-  {/if}
 </div>
 
 <style lang="scss">
@@ -346,23 +297,5 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-  }
-
-  .overlay {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    &__item {
-      height: 64px;
-      width: 100%;
-      font-size: 1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    &__item:hover {
-      background-color: var(--color-hover);
-    }
   }
 </style>

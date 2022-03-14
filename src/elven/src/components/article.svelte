@@ -1,23 +1,21 @@
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
     import type { Article } from "@/types/articles";
     import Dates from "@/tools/dates";
     import ArticleCover from "./article_cover.svelte";
 
     export let article: Article;
-
-    const dispatch = createEventDispatcher<{ selected: Article }>();
+    export let onSelected: (article: Article, evt: MouseEvent) => void
 
     function convertDate(date: string | number | Date): string {
         return Dates.convert(date);
     }
 
-    function onSelected(article: Article) {
-        dispatch("selected", article);
+    function onArticleSelected(e: MouseEvent) {
+        onSelected(article, e)
     }
 </script>
 
-<article class="article base__card" on:click={() => onSelected(article)}>
+<article class="article base__card" on:click={onArticleSelected}>
     <div class="meta">
         <div class="meta__item">
             {#if article.is_published && article.published_at}

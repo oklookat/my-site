@@ -18,7 +18,7 @@
   // state
   let isAuthPage = false;
   location.subscribe((value) => {
-    isAuthPage = value.includes("/login") && value.includes("/logout");
+    isAuthPage = value.includes("/login") || value.includes("/logout");
   });
   let is404Page = false;
   GlobalState.isNotFoundPage.subscribe((value) => {

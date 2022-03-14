@@ -2,7 +2,7 @@ import Duck from '@/network'
 import type { File as TFile, Params } from '@/types/files'
 import type { Data } from '@/types'
 
-export default class FilesNetwork {
+export default class NetworkFile {
 
     /** get files list */
     public static async getAll(params: Params): Promise<Data<TFile>> {
