@@ -1,100 +1,89 @@
 <script lang="ts">
     import UserAdapter from "@/network/network_user";
-    import Overlay from "@/components/overlay.svelte";
     import type { User, UserChange } from "@/types/user";
     import { usernameValidate, passwordValidate } from "@/types/user";
     import { onMount } from "svelte";
 
-    let userData: User;
-    let userDataLoaded = false;
+    onMount(() => {
+        getMe();
+    });
 
-    let changeOverlayActive = false;
-    let newValueValid = false;
-    let passwordConfirmValid = false;
+    /** is user data loaded? */
+    let isUserDataLoaded = false;
+
+    /** current user */
+    let user: User;
+
+    /** get current user data */
+    async function getMe() {
+        try {
+            user = await UserAdapter.getMe();
+            isUserDataLoaded = true;
+        } catch (err) {
+            isUserDataLoaded = false;
+        }
+    }
+
+    /** change credentials active */
+    let isChangeCredentials = false;
+
+    /** changes data */
     let changer: UserChange = {
         what: "username",
         password: "",
         newValue: "",
     };
 
-    onMount(() => {
-        getMe();
-    });
-
-    async function getMe() {
-        try {
-            const user = await UserAdapter.getMe();
-            userData = user;
-            userDataLoaded = true;
-        } catch (err) {
-            userDataLoaded = false;
+    /** set what we changing */
+    function setChanger(what: "username" | "password") {
+        isChangeCredentials = !isChangeCredentials;
+        if (!isChangeCredentials) {
+            return;
         }
-    }
-
-    function changeReset() {
+        changer.what = what;
         changer.newValue = "";
         changer.password = "";
     }
 
-    function activeUsername() {
-        changeOverlayActive = true;
-        changer.what = "username";
-        changeReset();
-    }
+    let newValueValid = false;
 
-    function activePassword() {
-        changeOverlayActive = true;
-        changer.what = "password";
-        changeReset();
-    }
-
-    // on username change input
-    function onUsernameInput() {
+    /** on new username input */
+    function onNewUsernameInput() {
         const username = changer.newValue;
         newValueValid = usernameValidate(username);
     }
 
-    // on password change input
-    function onPasswordInput() {
-        const password = changer.newValue;
-        newValueValid = passwordValidate(password);
-    }
+    let passwordConfirmValid = false;
 
-    // on password confirm input
-    function onPasswordConfirmInput() {
+    /** on password confirm input */
+    function onPasswordInput() {
         const password = changer.password;
         passwordConfirmValid = passwordValidate(password);
     }
 
-    // hook before changing username
-    function beforeUsername(): boolean {
-        if (changer.newValue === userData.username) {
-            const message = "You already have this username.";
-            window.$notify.add({ message });
-            return true;
-        }
-        return false;
+    /** on new password  input */
+    function onNewPasswordInput() {
+        const password = changer.newValue;
+        newValueValid = passwordValidate(password);
     }
 
-    // hook before changing password
-    function beforePassword(): boolean {
-        return false;
-    }
-
-    async function change() {
+    /** change username or password depending on changer values */
+    async function changeCredentials() {
         if (!(newValueValid && passwordConfirmValid)) {
             return;
         }
-        let err: boolean;
+        let isError: boolean;
         switch (changer.what) {
             case "username":
-                err = beforeUsername();
+                const isAlreadyHaveThisUsername =
+                    changer.newValue === user.username;
+                isError = isAlreadyHaveThisUsername;
                 break;
             case "password":
-                err = beforePassword();
+                isError = false;
                 break;
         }
-        if (err) {
+        if (isError) {
             return;
         }
         await UserAdapter.change(changer);
@@ -102,75 +91,70 @@
     }
 </script>
 
-{#if userDataLoaded}
+{#if isUserDataLoaded}
     <div class="block account">
-        <div class="big">{userData.username}</div>
-        <div style="cursor: pointer;" on:click={() => activeUsername()}>
+        <div class="big">{user.username}</div>
+        <div class="pointer" on:click={() => setChanger("username")}>
             change username
         </div>
-        <div style="cursor: pointer;" on:click={() => activePassword()}>
+        <div class="pointer" on:click={() => setChanger("password")}>
             change password
         </div>
-    </div>
-{/if}
-
-{#if changeOverlayActive}
-    <Overlay onClose={() => (changeOverlayActive = false)}>
-        <div class="overlay">
-            <div class="overlay__change">
+        {#if isChangeCredentials}
+            <div class="change-credentials">
                 <input
                     type="password"
                     placeholder="password"
                     bind:value={changer.password}
-                    on:input={onPasswordConfirmInput}
+                    on:input={onPasswordInput}
                 />
                 {#if changer.what === "username"}
                     <input
                         type="text"
                         placeholder="new username"
                         bind:value={changer.newValue}
-                        on:input={onUsernameInput}
+                        on:input={onNewUsernameInput}
                     />
                 {:else if changer.what === "password"}
                     <input
                         type="password"
                         placeholder="new password"
                         bind:value={changer.newValue}
-                        on:input={onPasswordInput}
+                        on:input={onNewPasswordInput}
                     />
                 {/if}
-                <button
+                <div
+                    class="submit button"
                     disabled={!(newValueValid && passwordConfirmValid)}
-                    on:click={change}>change</button
+                    on:click={changeCredentials}
                 >
+                    change
+                </div>
             </div>
-        </div>
-    </Overlay>
+        {/if}
+    </div>
 {/if}
 
 <style lang="scss">
     .account {
-        height: 122px;
-    }
-
-    .overlay {
-        &__change {
+        padding: 14px;
+        height: max-content;
+        .change-credentials {
             width: 100%;
             height: 100%;
             margin-top: 24px;
             display: flex;
             flex-direction: column;
+            justify-content: center;
+            align-items: center;
             gap: 16px;
             > input {
-                align-self: center;
                 height: 46px;
                 max-width: 164px;
             }
-            > button {
-                margin-top: 8px;
-                height: 36px;
+            > .submit {
+                height: 42px;
                 width: 84px;
-                align-self: center;
             }
         }
     }

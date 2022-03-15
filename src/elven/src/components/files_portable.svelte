@@ -6,9 +6,12 @@
     import type { File, Params } from "@/types/files";
     import Files from "@/views/files/index.svelte";
 
-    const dispatch = createEventDispatcher<{ selected: File }>();
+    const dispatch = createEventDispatcher<{ 
+        /** on 'select' option clicked on file */
+        selected: File, 
+        /** on files closed */
+        closed: void  }>();
 
-    export let onClose: () => void;
     export let params: Params = undefined;
 
     let container: HTMLDivElement;
@@ -25,11 +28,15 @@
     function onSelected(file: File) {
         dispatch("selected", file);
     }
+
+    function onClosed() {
+        dispatch("closed")
+    }
 </script>
 
 <div class="overlay base__overlay" bind:this={container}>
     <div class="overlay__main">
-        <div class="close pointer" on:click={onClose}>
+        <div class="close pointer" on:click={onClosed}>
             <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"
                 ><path
                     d="M289.94,256l95-95A24,24,0,0,0,351,127l-95,95-95-95A24,24,0,0,0,127,161l95,95-95,95A24,24,0,1,0,161,385l95-95,95,95A24,24,0,0,0,385,351Z"

@@ -1,8 +1,12 @@
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
+    // files
     import NetworkFiles from "@/network/network_files";
 
-    /** when file uploaded */
-    export let onUploaded: () => void = undefined;
+    const dispatch = createEventDispatcher<{ 
+        /** on file uploaded */
+        uploaded: void 
+    }>();
 
     /** allow upload multiple files? */
     export let multipleUploading = false;
@@ -98,9 +102,7 @@
         isUploadingNow = true;
         try {
             await NetworkFiles.upload(file);
-            if (onUploaded) {
-                onUploaded();
-            }
+            dispatch("uploaded")
         } catch (err) {
         } finally {
             isUploadingNow = false;

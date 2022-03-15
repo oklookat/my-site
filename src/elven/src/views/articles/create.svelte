@@ -263,10 +263,10 @@
 
   {#if isChooseCover}
     <FilesPortable
-      onClose={() => (isChooseCover = false)}
       params={{
         extensionsSelector: generateFileTypeSelector(["IMAGE", "VIDEO"]),
       }}
+      on:closed={() => (isChooseCover = false)}
       on:selected={(e) => {
         onCoverSelected(e.detail);
       }}

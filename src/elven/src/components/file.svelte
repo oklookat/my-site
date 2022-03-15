@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { createEventDispatcher, onMount } from "svelte";
-
     import { PathTools } from "@/tools/paths";
     import Dates from "@/tools/dates";
     import Size from "@/tools/size";
@@ -8,13 +6,11 @@
     import type { File } from "@/types/files";
 
     export let file: File;
-    export let onSelected: (file: File, evt: MouseEvent) => void
+
+    /** when clicked on file */
+    export let onSelected: (e: MouseEvent) => void;
 
     convert(file);
-
-    function onFileSelected(e: MouseEvent) {
-        onSelected(file, e)
-    }
 
     /** convert file path, extension etc */
     // TODO: split converter functions(?)
@@ -35,8 +31,7 @@
     }
 </script>
 
-
-<div class="file base__card" on:click={onFileSelected}>
+<div class="file base__card" on:click={onSelected}>
     <div class="meta">
         <div class="meta__item">
             {file.createdAtConverted}

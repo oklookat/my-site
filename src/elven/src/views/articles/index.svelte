@@ -3,8 +3,6 @@
   import { querystring } from "svelte-spa-router";
   // ui
   import Pagination from "@/components/pagination.svelte";
-  import Toolbar from "@/components/toolbar.svelte";
-  import ToolbarBig from "@/components/toolbar_big.svelte";
   // article
   import type { Article, Params } from "@/types/articles";
   import { Show, By, Start } from "@/types/articles";
@@ -12,22 +10,11 @@
   import CArticle from "../../components/article.svelte";
   import Utils from "@/tools";
   import NetworkArticle from "@/network/network_article";
-  import CategoriesSelector from "@/components/categories_selector.svelte";
-  import type { Category } from "@/types/articles/categories";
   import ArticleActions from "@/components/article_actions.svelte";
+  import ArticlesToolbars from "@/components/articles_toolbars.svelte";
 
   /** articles loaded? */
   let loaded = false;
-
-  /** is article selected? */
-  let isSelected = false;
-
-  /** selected article */
-  let selected: {
-    counter: number | null;
-    article: Article | null;
-    mouseEvent: MouseEvent;
-  } = { counter: null, article: null, mouseEvent: null };
 
   /** response articles */
   let articles: Record<number, Article> = {};
@@ -46,13 +33,15 @@
     without_category: false,
   };
 
-  /** custom categories for searching by category */
-  const customCategories: Record<number, Category> = {
-    "-1": {
-      id: "-1",
-      name: "All",
-    },
-  };
+  /** is article selected? */
+  let isSelected = false;
+
+  /** selected article */
+  let selected: {
+    counter: number | null;
+    article: Article | null;
+    mouseEvent: MouseEvent;
+  } = { counter: null, article: null, mouseEvent: null };
 
   //////////// PARAMS TEST
   let urlParams: URLSearchParams;
@@ -99,9 +88,31 @@
     queryUnsub();
   });
 
-  /** get all articles.
-   * @param p request params
-   */
+  function onDeleted() {
+    isSelected = false;
+    deleteFromArray(selected.counter);
+  }
+
+  /** when page changed */
+  function onPageChanged(page: number) {
+    requestParams.page = page;
+    getAll();
+  }
+
+  /** on request param changed */
+  async function onParamChanged() {
+    await getAll();
+  }
+
+  /** select article */
+  function select(article: Article, mouseEvent: MouseEvent, counter: number) {
+    selected.counter = counter;
+    selected.mouseEvent = mouseEvent;
+    selected.article = articles[counter];
+    isSelected = true;
+  }
+
+  /** get all articles */
   async function getAll(p: Params = requestParams) {
     // trigger reactivity because baseParams may have been changed by history
     requestParams = requestParams;
@@ -118,19 +129,6 @@
     } catch (err) {}
   }
 
-  /** select article */
-  function select(article: Article, mouseEvent: MouseEvent, counter: number) {
-    selected.counter = counter;
-    selected.mouseEvent = mouseEvent;
-    selected.article = articles[counter];
-    isSelected = true;
-  }
-
-  function onDeleted() {
-    isSelected = false;
-    deleteFromArray(selected.counter);
-  }
-
   /** delete article from articles array and refresh articles */
   async function deleteFromArray(counter: number) {
     delete articles[counter];
@@ -138,65 +136,14 @@
     await refresh();
   }
 
-  /** set 'by' param and get articles */
-  function setBy(by: By = By.published) {
-    requestParams.by = by;
-    requestParams.page = 1;
-    getAll();
-  }
-
-  /** set 'start' param and get articles */
-  function setStart(start: Start = Start.newest) {
-    requestParams.start = start;
-    requestParams.page = 1;
-    getAll();
-  }
-
-  /** set 'show' param and get articles */
-  function setShow(show: Show) {
-    requestParams.show = show;
-    requestParams.page = 1;
-    getAll();
-  }
-
-  /** when page changed */
-  function onPageChanged(page: number) {
-    requestParams.page = page;
-    getAll();
-  }
-
   /** refresh articles */
   async function refresh() {
-    while (true) {
-      const articlesLength = Utils.getObjectLength(articles);
-      const noArticles = loaded && articlesLength < 1;
-      if (!noArticles) {
-        break;
-      }
-      requestParams.page--;
-      try {
-        await getAll();
-      } catch (err) {
-        break;
-      }
-      if (requestParams.page < 2) {
-        break;
-      }
+    const getData = async () => {
+      await getAll()
+      return articles
     }
-  }
-
-  /** sort by category */
-  function onCategoryChanged(cat: Category | null) {
-    requestParams.page = 1;
-    // no categories
-    requestParams.without_category = cat === null;
-    let catName = null;
-    const notAllCategories = cat && cat["name"] && cat.id !== "-1";
-    if (notAllCategories) {
-      catName = cat.name;
-    }
-    requestParams.category_name = catName;
-    getAll();
+    const setPage = (val: number) => (requestParams.page = val);
+    await Utils.refresh(requestParams.page, setPage, getData);
   }
 </script>
 
@@ -210,64 +157,10 @@
 {/if}
 
 <div class="articles base__container">
-  <div class="toolbars">
-    <ToolbarBig>
-      <a href="#/articles/create">new</a>
-      <a href="#/articles/cats">categories</a>
-    </ToolbarBig>
-
-    <Toolbar>
-      <CategoriesSelector
-        {customCategories}
-        selectedID={"-1"}
-        on:changed={(e) => onCategoryChanged(e.detail)}
-      />
-    </Toolbar>
-
-    <Toolbar>
-      <div class="articles__item">
-        {#if requestParams.show === Show.published}
-          <div class="pointer" on:click={() => setShow(Show.drafts)}>
-            published
-          </div>
-        {/if}
-        {#if requestParams.show === Show.drafts}
-          <div class="pointer" on:click={() => setShow(Show.published)}>
-            drafts
-          </div>
-        {/if}
-      </div>
-      <div class="articles__item">
-        {#if requestParams.start === Start.newest}
-          <div class="pointer" on:click={() => setStart(Start.oldest)}>
-            newest
-          </div>
-        {/if}
-        {#if requestParams.start === Start.oldest}
-          <div class="pointer" on:click={() => setStart(Start.newest)}>
-            oldest
-          </div>
-        {/if}
-      </div>
-      <div class="articles__item">
-        {#if requestParams.by === By.updated}
-          <div class="pointer" on:click={() => setBy(By.published)}>
-            by updated date
-          </div>
-        {/if}
-        {#if requestParams.by === By.published}
-          <div class="pointer" on:click={() => setBy(By.created)}>
-            by published date
-          </div>
-        {/if}
-        {#if requestParams.by === By.created}
-          <div class="pointer" on:click={() => setBy(By.updated)}>
-            by created date
-          </div>
-        {/if}
-      </div>
-    </Toolbar>
-  </div>
+  <ArticlesToolbars
+    bind:params={requestParams}
+    on:paramChanged={async () => await onParamChanged()}
+  />
 
   <div class="list">
     {#if articles}
@@ -293,9 +186,4 @@
 </div>
 
 <style lang="scss">
-  .toolbars {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
 </style>

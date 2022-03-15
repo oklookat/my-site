@@ -1,11 +1,12 @@
 export default class Utils {
 
-  /** get object keys length */
-  public static getObjectLength(o: object): number {
-    if (!o || !(o instanceof Object)) {
+  /** get Record keys length */
+  public static getRecordLength<T>(record: Record<any, T>): number {
+    const isObject = typeof record === 'object' && record !== null
+    if (!isObject) {
       return 0
     }
-    return Object.keys(o).length
+    return Object.keys(record).length
   }
 
   public static debounce(f: Function, ms: number) {
@@ -25,5 +26,28 @@ export default class Utils {
   public static isTouchDevice(): boolean {
     return matchMedia('(hover: none)').matches;
   }
-  
+
+  /** refresh data. Used for pagination */
+  public static async refresh<T>(page: number,
+    setPage: (val: number) => void, fetchData: () => Promise<Record<number, T>>) {
+    let data = await fetchData()
+    if (page < 2) {
+      return
+    }
+    while (true) {
+      const dataLength = this.getRecordLength(data)
+      const isNoData = dataLength > 0 || page < 2
+      if(isNoData) {
+        break
+      }
+      page--
+      setPage(page)
+      try {
+        data = await fetchData()
+      } catch (err) {
+        break
+      }
+    }
+  }
+
 }
