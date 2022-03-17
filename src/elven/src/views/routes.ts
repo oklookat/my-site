@@ -1,26 +1,12 @@
-import { push } from 'svelte-spa-router'
 import { wrap } from 'svelte-spa-router/wrap'
 // tools
 import { AuthStorage } from "@/tools/storage"
-// // main
-// import Index from './index.svelte'
-// // auth
-// import Login from './auth/login.svelte'
-// import Logout from './auth/logout.svelte'
-// // articles
-// import Articles from './articles/index.svelte'
-// import ArticleCreate from './articles/create.svelte'
-// import ArticlesCats from './articles/categories/index.svelte'
-// // files
-// import Files from './files/index.svelte'
-// // settings
-// import Settings from './settings/index.svelte'
 
 
 function isAdmin() {
     const authorized = AuthStorage.get()
     if (!authorized) {
-        push('/login')
+        AuthStorage.remove()
         return true
     }
     return authorized
@@ -29,7 +15,10 @@ function isAdmin() {
 const routes = {
     // index
     '/': wrap({
-        asyncComponent: () => import('./index.svelte')
+        asyncComponent: () => import('./index.svelte'),
+        conditions: [
+            () => { return isAdmin() }
+        ]
     }),
     // auth
     '/login': wrap({

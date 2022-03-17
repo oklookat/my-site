@@ -1,6 +1,6 @@
 import Duck from '@/network'
 import type { Data } from '@/types'
-import type { Category } from './types'
+import type { Category } from '@/types/articles/categories'
 
 export default class CategoriesNetwork {
 

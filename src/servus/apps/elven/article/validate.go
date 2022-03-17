@@ -233,7 +233,7 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 	case http.MethodPost:
 		var invalid = !isContent
 		if invalid {
-			validationErr.New("request method")("for POST request expected at least content field")
+			validationErr.New("request method")("for POST request expected at least 'content' field")
 			err = &validationErr
 			return
 		}

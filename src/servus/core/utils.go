@@ -76,3 +76,18 @@ func (u *utils) GenerateULID() (ul string, err error) {
 func (u *utils) LenRune(val string) int {
 	return len([]rune(val))
 }
+
+// callback can only be called once every 5 seconds.
+func (u *utils) Debounce(interval time.Duration) (debouncer func(callback func())) {
+	var isCooldown = false
+	return func(callback func()) {
+		if isCooldown {
+			return
+		}
+		if callback != nil {
+			callback()
+		}
+		isCooldown = true
+		time.AfterFunc(interval, func() { isCooldown = false })
+	}
+}

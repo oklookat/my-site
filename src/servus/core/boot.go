@@ -42,6 +42,7 @@ func (i *Instance) bootUtils() {
 
 func (i *Instance) bootConfig() {
 	var config = ConfigFile{}
+
 	// get from path.
 	var get = func(path string) {
 		err := config.load(path)
@@ -49,6 +50,7 @@ func (i *Instance) bootConfig() {
 			panic(err)
 		}
 	}
+
 	// get from current dir.
 	var getFromDir = func() {
 		var executionDir, err = i.Utils.GetExecutionDir()
@@ -58,6 +60,7 @@ func (i *Instance) bootConfig() {
 		var path = fmt.Sprintf("%s/settings/config.json", executionDir)
 		get(path)
 	}
+
 	// is config path in args?
 	var configFlag = "-config"
 	var arg = argument.Get(configFlag)
@@ -79,6 +82,7 @@ func (i *Instance) bootLogger() {
 
 func (i *Instance) bootControl() {
 	var ctrl = &controller{}
+
 	// Telegram bot.
 	var tgEnabled = i.Config.Control.Telegram.Enabled
 	if tgEnabled {
@@ -92,14 +96,17 @@ func (i *Instance) bootControl() {
 func (i *Instance) bootMiddleware() {
 	// cors.
 	var corsInstance = cors.New(i.Config.Security.CORS)
+
 	// limiter.
 	var bodyLimiter = limiter.NewBody(i.Config.Security.Limiter.Body)
+
 	// http.
 	var httpHelp = &httpHelper{}
 	var variablesGetter httpParamsGetter = func(r *http.Request) map[string]string {
 		return mux.Vars(r)
 	}
-	httpHelp.new(i.Logger, i.Control, i.Config.Security.Cookie, variablesGetter)
+	httpHelp.new(i.Logger, i.Control, i.Utils, i.Config.Security.Cookie, variablesGetter)
+
 	// middleware.
 	var md = &middleware.Instance{}
 	md.New(corsInstance.Middleware, bodyLimiter.Middleware, httpHelp.middleware)

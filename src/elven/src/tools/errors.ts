@@ -1,3 +1,4 @@
+import { AuthStorage } from "@/tools/storage"
 import type { DuckHook } from "@oklookat/duck"
 
 
@@ -29,12 +30,28 @@ export class AdapterError {
                 statusCode = apiStatusCode
             }
             switch (statusCode) {
+                /**
+                 * Logout user if:
+                 * 1. Bad request (can means p.2 or p.3)
+                 * 2. Not authorized
+                 * 3. Authorized, but not admin
+                 */
                 case 400:
-                    return 'Bad request.'
                 case 401:
-                    return 'Wrong credentials.'
                 case 403:
-                    return 'Access denied.'
+                    // no logout if user maek mistake while changing credentials
+                    const requestURL = output.config.url
+                    const isChangeCredentialsRoute = requestURL.includes("users/me/change")
+                    if (isChangeCredentialsRoute) {
+                        return 'Wrong password.'
+                    }
+                    // no logout if user try to login
+                    const isLoginRoute = requestURL.includes("auth/login")
+                    if(isLoginRoute) {
+                        return 'Wrong username or password.'
+                    }
+                    AuthStorage.remove()
+                    return 'Something goes wrong.'
                 case 404:
                     return 'Not found.'
                 case 409:
@@ -44,9 +61,11 @@ export class AdapterError {
                 default:
                     const str = statusCode.toString()
                     // 5**
-                    if (str.startsWith('5')) {
-                        return 'Server error.'
+                    const is5xx = str.startsWith('5')
+                    if (is5xx) {
+                        return 'Server error. Try later.'
                     }
+                    // ***
                     return 'Unknown server error.'
             }
         }

@@ -1,6 +1,8 @@
 package controlTelegram
 
-import "io"
+import (
+	"io"
+)
 
 // writes information.
 type Logger interface {

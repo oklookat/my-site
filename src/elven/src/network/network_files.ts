@@ -7,7 +7,8 @@ export default class NetworkFile {
     /** get files list */
     public static async getAll(params: Params): Promise<Data<TFile>> {
         const paramsCopy: Params = {...params}
-        // convert params.extensionsSelector to params.extensions
+
+        // convert params.extensionsSelector (if exists) to params.extensions
         if (paramsCopy.extensionsSelector) {
             let extensionsParsed: string[] = []
 
@@ -33,6 +34,8 @@ export default class NetworkFile {
             paramsCopy.extensions = extensionsUniq.join(",") as any
             params["extensions"] = paramsCopy.extensions
         }
+        
+        // send
         try {
             const response = await Duck.GET({ url: 'files', params: paramsCopy })
             return Promise.resolve(response.body as Data<TFile>)

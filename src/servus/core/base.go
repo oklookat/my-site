@@ -3,6 +3,7 @@ package core
 import (
 	"io"
 	"net/http"
+	"time"
 )
 
 type _ctxHTTP string
@@ -62,6 +63,16 @@ type Utils interface {
 	//
 	// with len(), result was be 5 and 10.
 	LenRune(val string) int
+	// create debouncer with interval
+	//
+	// when you call debouncer, callback can only be called once after *interval*.
+	//
+	// example: interval 1 second
+	//
+	// if debouncer will be called every 10 milliseconds, then the callback will not be called
+	//
+	// only after 1 second callback will be called once.
+	Debounce(interval time.Duration) (debouncer func(callback func()))
 }
 
 // basic middlewares.

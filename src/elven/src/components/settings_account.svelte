@@ -1,8 +1,9 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    // user
     import UserAdapter from "@/network/network_user";
     import type { User, UserChange } from "@/types/user";
     import { usernameValidate, passwordValidate } from "@/types/user";
-    import { onMount } from "svelte";
 
     onMount(() => {
         getMe();
@@ -72,18 +73,18 @@
         if (!(newValueValid && passwordConfirmValid)) {
             return;
         }
-        let isError: boolean;
+        let isHasError = false;
         switch (changer.what) {
             case "username":
                 const isAlreadyHaveThisUsername =
                     changer.newValue === user.username;
-                isError = isAlreadyHaveThisUsername;
+                isHasError = isAlreadyHaveThisUsername;
                 break;
             case "password":
-                isError = false;
+                isHasError = false;
                 break;
         }
-        if (isError) {
+        if (isHasError) {
             return;
         }
         await UserAdapter.change(changer);

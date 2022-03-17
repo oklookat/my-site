@@ -13,18 +13,23 @@ type middleware struct {
 func (m *middleware) AuthorizedOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var h = call.Utils.GetHTTP(request)
-		// check rights.
+
+		// get pipe.
 		var user = pipe.User{}
 		userPipe := user.GetByContext(request)
-		if userPipe == nil {
-			h.Send(requestErrors.Forbidden(), 403, nil)
+
+		// check rights.
+		var isAuthorized = userPipe != nil
+		if !isAuthorized {
+			h.Send(requestErrors.Forbidden(), 401, nil)
 			return
 		}
+
 		next.ServeHTTP(response, request)
 	})
 }
 
-// allow only safe methods if user not authorized/not admin.
+// allow only safe methods if user not admin.
 //
 // https://developer.mozilla.org/en-US/docs/Glossary/Safe/HTTP
 func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
@@ -33,18 +38,32 @@ func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 
 		// check method.
 		var method = request.Method
-		var safeMethod = method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions
+		var isSafeMethod = method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions
+		if isSafeMethod {
+			next.ServeHTTP(response, request)
+			return
+		}
 
 		// check rights.
 		var user = pipe.User{}
 		userPipe := user.GetByContext(request)
-		if !safeMethod {
-			if userPipe == nil || !userPipe.IsAdmin() {
-				h.Send(requestErrors.Forbidden(), 403, nil)
-				return
-			}
+
+		// allow if admin.
+		var isAuthorized = userPipe != nil
+		var isAdmin = isAuthorized && userPipe.IsAdmin()
+		if isAdmin {
+			next.ServeHTTP(response, request)
+			return
 		}
-		next.ServeHTTP(response, request)
+
+		// access denied. Set status code.
+		var statusCode = 403 // 403 = authorized, but not admin.
+		if !isAuthorized {
+			statusCode = 401 // 401 = not authorized
+		}
+		h.Send(requestErrors.Forbidden(), statusCode, nil)
+		return
+
 	})
 }
 
@@ -56,11 +75,21 @@ func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 		// check rights.
 		var user = pipe.User{}
 		userPipe := user.GetByContext(request)
-		if userPipe == nil || !userPipe.IsAdmin() {
-			h.Send(requestErrors.Forbidden(), 403, nil)
+		var isAuthorized = userPipe != nil
+		var isAdmin = isAuthorized && userPipe.IsAdmin()
+		if isAdmin {
+			next.ServeHTTP(response, request)
 			return
 		}
-		next.ServeHTTP(response, request)
+
+		// access denied. Set status code.
+		var statusCode = 403 // 403 = authorized, but not admin.
+		if !isAuthorized {
+			statusCode = 401 // 401 = not authorized
+		}
+		h.Send(requestErrors.Forbidden(), statusCode, nil)
+		return
+
 	})
 }
 
@@ -68,10 +97,11 @@ func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 func (m *middleware) ProvideTokenPipe(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var ctx = request.Context()
+		// get token.
 		var token = pipe.Token{}
-		tokenPipe, err := token.GetByRequest(request)
-		hasToken := !(tokenPipe == nil || err != nil)
-		if hasToken {
+		var tokenPipe, err = token.GetByRequest(request)
+		var isHasTokenPipe = !(tokenPipe == nil || err != nil)
+		if isHasTokenPipe {
 			var tokenCtx = context.WithValue(ctx, pipe.CtxToken, tokenPipe)
 			*request = *request.WithContext(tokenCtx)
 		}
@@ -83,16 +113,15 @@ func (m *middleware) ProvideTokenPipe(next http.Handler) http.Handler {
 func (m *middleware) ProvideUserPipe(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var ctx = request.Context()
-
 		// get token.
 		var token = pipe.Token{}
 		tokenPipe := token.GetByContext(request)
 		if tokenPipe != nil {
 			// get user.
 			var user = pipe.User{}
-			userPipe, err := user.GetByID(tokenPipe.GetUserID())
-			hasUser := !(userPipe == nil || err != nil)
-			if hasUser {
+			var userPipe, err = user.GetByID(tokenPipe.GetUserID())
+			var isHasUserPipe = !(userPipe == nil || err != nil)
+			if isHasUserPipe {
 				var userCtx = context.WithValue(ctx, pipe.CtxUser, userPipe)
 				*request = *request.WithContext(userCtx)
 			}
