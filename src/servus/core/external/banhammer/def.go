@@ -7,27 +7,27 @@ import (
 // ban ops.
 type Banner interface {
 	// ban.
-	Ban(ip string) error
+	Set(ip string) error
 	// unban.
-	Unban(ip string) error
+	Remove(ip string) error
 	// is IP banned?
-	IsBanned(ip string) error
+	IsBanned(ip string) (bool, error)
+	// when IP banned.
+	OnBanned(hook func(ip string))
 }
 
 // warn ops.
 type Warner interface {
 	// add warn. 3 warns = ban.
-	Warn(ip string) error
+	Add(ip string) error
 	// remove warn.
-	Unwarn(ip string) error
-	// get warns count.
-	GetWarnsCount(ip string) (int, error)
+	Remove(ip string) error
+	// when IP warned.
+	OnWarned(hook func(ip string))
 }
 
 // service funcs.
 type Servicer interface {
-	// remove IP from all lists.
-	Amnesty(ip string) error
 	// get ban checking middleware.
 	GetMiddleware() func(http.Handler) http.Handler
 }
@@ -44,6 +44,10 @@ type Lister interface {
 	GetList() (*IPList, error)
 	// get IP list entry by IP. If entry not exists returns nil.
 	GetEntry(ip string) (*IPEntry, error)
+	// add IP with entry to list. If entry exists - overwrites it.
+	AddEntry(ip string, entry IPEntry) error
+	// remove IP from list.
+	RemoveEntry(ip string) error
 	// write list to IP's file.
 	WriteList(list *IPList) error
 	// (re)create IP's list file.
@@ -54,7 +58,7 @@ type Hammerer interface {
 	// create new instance.
 	//
 	// listPath: IP's list file.
-	New(listPath string)
+	New(listPath string, maxWarns int)
 	Banner
 	Warner
 	Lister

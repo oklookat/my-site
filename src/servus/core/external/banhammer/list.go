@@ -23,6 +23,8 @@ type IPEntry struct {
 type List struct {
 	dir  string
 	path string
+	// cached (RAM) ip list.
+	cached *IPList
 }
 
 func (l *List) SetPath(path string) {
@@ -52,6 +54,11 @@ func (l *List) IsExists() (bool, error) {
 }
 
 func (l *List) GetList() (*IPList, error) {
+	// cache.
+	if l.cached != nil {
+		return l.cached, nil
+	}
+
 	// check.
 	var isExists, err = l.IsExists()
 	if err != nil {
@@ -88,6 +95,32 @@ func (l *List) GetEntry(ip string) (*IPEntry, error) {
 	return entry, err
 }
 
+func (l *List) AddEntry(ip string, entry IPEntry) error {
+	var ips, err = l.GetList()
+	if err != nil {
+		return err
+	}
+	if ips == nil {
+		return createError("AddEntry: nil IP list")
+	}
+	*ips.List[ip] = entry
+	err = l.WriteList(ips)
+	return err
+}
+
+func (l *List) RemoveEntry(ip string) error {
+	var ips, err = l.GetList()
+	if err != nil {
+		return err
+	}
+	if ips == nil {
+		return createError("RemoveIP: nil IP list")
+	}
+	delete(ips.List, ip)
+	err = l.WriteList(ips)
+	return err
+}
+
 func (l *List) Recreate() error {
 	return l.writeToFile(nil)
 }
@@ -96,9 +129,15 @@ func (l *List) WriteList(list *IPList) error {
 	if list == nil {
 		return createError("WriteList: nil list pointer")
 	}
-	return l.writeToFile(list)
+	var err = l.writeToFile(list)
+	if err == nil {
+		l.cached = list
+	}
+	return err
 }
 
+// -- SERVICE FUNC USE GetList() INSTEAD --
+//
 // open list file.
 func (l *List) openFile() (*os.File, error) {
 	var path = l.GetPath()
@@ -106,6 +145,8 @@ func (l *List) openFile() (*os.File, error) {
 	return file, err
 }
 
+// -- SERVICE FUNC USE WriteList() INSTEAD --
+//
 // write to list file.
 //
 // if content == nil: empties the list.
