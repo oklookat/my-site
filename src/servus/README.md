@@ -4,6 +4,7 @@
 # Requirements
 
 **go 1.18+**
+**GCC**
 
 # Useful
 
