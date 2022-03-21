@@ -62,6 +62,14 @@ func (a *App) Boot(c *core.Instance) {
 
 	// routes.
 	a.bootRoutes()
+
+	// TEST HOOKS.
+	call.Banhammer.OnWarned(func(ip string) {
+		println("[WARN] IP: " + ip)
+	})
+	call.Banhammer.OnBanned(func(ip string) {
+		println("[BAN] IP: " + ip)
+	})
 }
 
 func (a *App) bootRoutes() {
@@ -76,7 +84,14 @@ func (a *App) bootRoutes() {
 	a.File.BootRoutes(router)
 	a.User.BootRoutes(router)
 	//
-	var useBeforeRouter = call.Middleware.CORS()(
-		call.Middleware.LimitBody()(router))
+	call.Banhammer.GetMiddleware()
+
+	var corsMiddleware = call.Middleware.CORS()
+	var limitBodyMiddleware = call.Middleware.LimitBody()
+	var banhammerMiddleware = call.Banhammer.GetMiddleware()
+
+	var useBeforeRouter = corsMiddleware(
+		limitBodyMiddleware(banhammerMiddleware(router)),
+	)
 	http.Handle("/", useBeforeRouter)
 }

@@ -1,13 +1,14 @@
 package core
 
 import (
-	"fmt"
 	"net/http"
 	"servus/core/external/argument"
 	"servus/core/external/database"
+	"servus/core/internal/banhammer"
 	"servus/core/internal/controlTelegram"
 	"servus/core/internal/cors"
 	"servus/core/internal/cryptor"
+	"servus/core/internal/directories"
 	"servus/core/internal/limiter"
 	"servus/core/internal/logger"
 	"servus/core/internal/middleware"
@@ -18,8 +19,10 @@ import (
 // Instance - servus kernel. Provides cool things.
 type Instance struct {
 	Utils      Utils
-	Config     *ConfigFile
+	Dirs       Directories
+	Config     *Config
 	Logger     Logger
+	Banhammer  Banhammer
 	Middleware Middlewarer
 	Encryptor  *Encryptor
 	Control    Controller
@@ -28,8 +31,10 @@ type Instance struct {
 // boot Instance.
 func (i *Instance) Boot() {
 	i.bootUtils()
+	i.bootDirectories()
 	i.bootConfig()
 	i.bootLogger()
+	i.bootBanhammer()
 	i.bootControl()
 	i.bootMiddleware()
 	i.bootEncryptor()
@@ -40,8 +45,17 @@ func (i *Instance) bootUtils() {
 	i.Utils = &utils{}
 }
 
+func (i *Instance) bootDirectories() {
+	var dirs = directories.Instance{}
+	var err = dirs.Boot()
+	if err != nil {
+		panic(err)
+	}
+	i.Dirs = &dirs
+}
+
 func (i *Instance) bootConfig() {
-	var config = ConfigFile{}
+	var config = Config{}
 
 	// get from path.
 	var get = func(path string) {
@@ -51,13 +65,13 @@ func (i *Instance) bootConfig() {
 		}
 	}
 
-	// get from current dir.
+	// get from data dir.
 	var getFromDir = func() {
-		var executionDir, err = i.Utils.GetExecutionDir()
+		var dataDir, err = i.Dirs.GetData()
 		if err != nil {
 			panic(err)
 		}
-		var path = fmt.Sprintf("%s/settings/config.json", executionDir)
+		var path = dataDir + "/config.json"
 		get(path)
 	}
 
@@ -78,6 +92,22 @@ func (i *Instance) bootConfig() {
 func (i *Instance) bootLogger() {
 	var log = logger.New(i.Config.Logger)
 	i.Logger = log
+}
+
+func (i *Instance) bootBanhammer() {
+	// get dir.
+	var dataDir, err = i.Dirs.GetData()
+	if err != nil {
+		i.Logger.Panic(err)
+	}
+
+	// boot banhammer.
+	var hammer = banhammer.Instance{}
+	err = hammer.Boot(dataDir, 3)
+	if err != nil {
+		i.Logger.Panic(err)
+	}
+	i.Banhammer = hammer
 }
 
 func (i *Instance) bootControl() {
@@ -106,6 +136,8 @@ func (i *Instance) bootMiddleware() {
 		return mux.Vars(r)
 	}
 	httpHelp.new(i.Logger, i.Control, i.Utils, i.Config.Security.Cookie, variablesGetter)
+
+	// banhammer.
 
 	// middleware.
 	var md = &middleware.Instance{}

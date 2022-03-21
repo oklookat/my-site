@@ -33,6 +33,12 @@ func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 	// compare found user and provided password.
 	var isPassword, _ = call.Encryptor.Argon.Compare(body.Password, user.Password)
 	if !isPassword {
+		// wrong password.
+		var ip = call.Banhammer.GetIpByRequest(request)
+		if ip != nil {
+			// warn IP.
+			call.Banhammer.Warn(ip.String())
+		}
 		h.Send(a.throw.NotAuthorized(), 401, err)
 		return
 	}

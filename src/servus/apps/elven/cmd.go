@@ -126,7 +126,7 @@ func (c *cmd) migrate() {
 	var sqlPath string
 	var sqlPathVal = argument.Get(cmdFlagSQLPath)
 	if sqlPathVal.Value == nil {
-		var executionDir, _ = call.Utils.GetExecutionDir()
+		var executionDir, _ = call.Dirs.GetExecution()
 		sqlPath = fmt.Sprintf("%v/settings/sql/elven.sql", executionDir)
 	} else {
 		sqlPath = *sqlPathVal.Value

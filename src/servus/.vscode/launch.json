@@ -9,9 +9,9 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${cwd}/server/main.go",
+            "program": "${cwd}/main.go",
             "args": [
-                "-config=${cwd}/settings/config.dev.json"
+                "-config=${cwd}/data/config.dev.json"
             ],
         },
         {
@@ -19,9 +19,9 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${cwd}/server/main.go",
+            "program": "${cwd}/main.go",
             "args": [
-                "-config=${cwd}/settings/config.dev.json",
+                "-config=${cwd}/data/config.dev.json",
                 "el:rb", 
             ]
         },
@@ -30,10 +30,10 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${cwd}/server/main.go",
+            "program": "${cwd}/main.go",
             "args": [
-                "-config=${cwd}/settings/config.dev.json",
-                "-sql=${cwd}/settings/sql/elven.sql",
+                "-config=${cwd}/data/config.dev.json",
+                "-sql=${cwd}/data/elven.sql",
                 "el:mg", 
             ]
         },
@@ -42,9 +42,9 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${cwd}/server/main.go",
+            "program": "${cwd}/main.go",
             "args": [
-                "-config=${cwd}/settings/config.dev.json",
+                "-config=${cwd}/data/config.dev.json",
                 "el:tu", "-username=rootroot", "-password=rootroot", "-die"
             ]
         },
@@ -53,9 +53,9 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${cwd}/server/main.go",
+            "program": "${cwd}/main.go",
             "args": [
-                "-config=${cwd}/settings/config.dev.json", 
+                "-config=${cwd}/data/config.dev.json", 
                 "el:su", "-username=rootroot", "-password=rootroot", "-die"
             ]
         }

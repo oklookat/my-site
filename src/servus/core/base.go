@@ -2,6 +2,7 @@ package core
 
 import (
 	"io"
+	"net"
 	"net/http"
 	"time"
 )
@@ -32,6 +33,15 @@ type HTTP interface {
 type Controller interface {
 	SendMessage(message string)
 	SendFile(caption *string, filename string, data io.Reader)
+	AddCommand(command string, callback func(args []string))
+}
+
+// directories/files management.
+type Directories interface {
+	// get dir where bin executes.
+	GetExecution() (path string, err error)
+	// get dir where config and other files placed.
+	GetData() (path string, err error)
 }
 
 // writes information.
@@ -47,8 +57,6 @@ type Logger interface {
 type Utils interface {
 	// remove spaces from string.
 	RemoveSpaces(str string) string
-	// get dir where binary started.
-	GetExecutionDir() (string, error)
 	// format path to system specific slashes.
 	FormatPath(path string) string
 	// get HTTP from request context.
@@ -110,4 +118,32 @@ type EncryptorCryptor interface {
 	Encrypt(data string) (encrypted string, err error)
 	// decrypt data.
 	Decrypt(encrypted string) (data string, err error)
+}
+
+// ban/unban/warn IP's.
+type Banhammer interface {
+	//// ban.
+	Ban(ip string) error
+	// unban.
+	Unban(ip string) error
+	// is IP banned?
+	IsBanned(ip string) (bool, error)
+	// when IP banned.
+	OnBanned(hook func(ip string))
+
+	//// warn.
+	// add warn. 3 warns = ban.
+	Warn(ip string) error
+	// remove warn.
+	Unwarn(ip string) error
+	// when IP warned.
+	OnWarned(hook func(ip string))
+
+	//// service.
+	// get ban checking middleware.
+	GetMiddleware() func(http.Handler) http.Handler
+	// get IP by request by X-REAL-IP / X-FORWARDED-FOR
+	//
+	// returns nil if failed to get IP.
+	GetIpByRequest(request *http.Request) net.IP
 }

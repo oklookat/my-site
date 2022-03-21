@@ -3,14 +3,12 @@ package core
 import (
 	"math/rand"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
 	"unicode"
 
 	"github.com/oklog/ulid/v2"
-	"github.com/pkg/errors"
 )
 
 type utils struct {
@@ -26,30 +24,10 @@ func (u *utils) RemoveSpaces(str string) string {
 	}, str)
 }
 
-// get dir where bin executes.
-func (u *utils) GetExecutionDir() (path string, err error) {
-	path, err = os.Executable()
-	if err != nil {
-		err = errors.Wrap(err, "[core/utils]: failed to get execution directory. Error")
-		return
-	}
-	path, err = filepath.Abs(path)
-	if err != nil {
-		err = errors.Wrap(err, "[core/utils]: failed to get execution directory / absolute path. Error")
-		return
-	}
-	path, err = filepath.EvalSymlinks(path)
-	if err != nil {
-		err = errors.Wrap(err, "[core/utils]: failed to get execution directory / symlink follow. Error")
-		return
-	}
-	return
-}
-
 // fromat path slashes.
 func (u *utils) FormatPath(path string) string {
-	path = filepath.FromSlash(path)
 	path = filepath.ToSlash(path)
+	path = filepath.Clean(path)
 	return path
 }
 

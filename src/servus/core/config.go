@@ -13,7 +13,7 @@ import (
 )
 
 // main configuration (config.json).
-type ConfigFile struct {
+type Config struct {
 
 	// debug mode active? Writes to logger debug information etc.
 	Debug bool `json:"debug"`
@@ -74,7 +74,7 @@ type ConfigFile struct {
 }
 
 // load config file from path.
-func (c *ConfigFile) load(path string) (err error) {
+func (c *Config) load(path string) (err error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return

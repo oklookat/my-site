@@ -22,6 +22,7 @@
 *.sw?
 
 logs
-settings/config.json
-settings/config.dev.json
+data/config.json
+data/config.dev.json
+data/banhammer.db
 uploads
