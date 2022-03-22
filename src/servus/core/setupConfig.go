@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"os"
+	"servus/core/external/argument"
 	"servus/core/external/database"
 	"servus/core/internal/controlTelegram"
 	"servus/core/internal/cors"
@@ -11,6 +12,41 @@ import (
 	"servus/core/internal/limiter"
 	"servus/core/internal/logger"
 )
+
+func (i *Instance) setupConfig() {
+	var config = Config{}
+
+	// get from path.
+	var get = func(path string) {
+		err := config.load(path)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// get from data dir.
+	var getFromDir = func() {
+		var dataDir, err = i.Dirs.GetData()
+		if err != nil {
+			panic(err)
+		}
+		var path = dataDir + "/config.json"
+		get(path)
+	}
+
+	// is config path in args?
+	var configFlag = "-config"
+	var arg = argument.Get(configFlag)
+	var notInArgs = arg == nil || arg.Value == nil
+	if notInArgs {
+		// get from current dir.
+		getFromDir()
+	} else {
+		// get by path in args.
+		get(*arg.Value)
+	}
+	i.Config = &config
+}
 
 // main configuration (config.json).
 type Config struct {

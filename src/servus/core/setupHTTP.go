@@ -8,32 +8,26 @@ import (
 	"servus/core/internal/iHTTP"
 	"servus/core/internal/stacktracer"
 	"servus/core/internal/zipify"
-	"time"
 )
 
 // get request params.
 type httpParamsGetter func(r *http.Request) map[string]string
 
 type httpHelper struct {
-	logger    Logger
-	control   Controller
-	cookie    *iHTTP.ConfigCookie
-	debouncer func(callback func())
+	logger  Logger
+	control Controller
+	cookie  *iHTTP.ConfigCookie
 }
 
 func (h *httpHelper) new(
 	l Logger,
 	c Controller,
-	u Utils,
 	cookie *iHTTP.ConfigCookie,
 	vars httpParamsGetter) {
 	iHTTP.RouteArgsGetter = (func(r *http.Request) map[string]string)(vars)
 	h.logger = l
 	h.control = c
 	h.cookie = cookie
-
-	// create 5-second debouncer.
-	h.debouncer = u.Debounce(5 * time.Second)
 }
 
 func (h *httpHelper) getInstance(req *http.Request, res http.ResponseWriter) *iHTTP.Instance {
@@ -87,14 +81,10 @@ func (h *httpHelper) getInstance(req *http.Request, res http.ResponseWriter) *iH
 	// create iHTTP.
 	_http = iHTTP.New(req, res, h.cookie)
 	_http.OnHTTPError(func(code int, err error) {
-		h.debouncer(func() {
-			onHTTPError(code, err)
-		})
+		onHTTPError(code, err)
 	})
 	_http.OnSendError(func(code int, err error) {
-		h.debouncer(func() {
-			onResponseSendError(code, err)
-		})
+		onResponseSendError(code, err)
 	})
 	return _http
 }

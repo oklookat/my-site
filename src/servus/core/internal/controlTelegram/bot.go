@@ -6,7 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-// bot.
+// bot (lowlevel tgapi).
 type bot struct {
 	api      *tgbotapi.BotAPI
 	onUpdate func(update tgbotapi.Update)

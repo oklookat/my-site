@@ -1,6 +1,7 @@
 package elven
 
 import (
+	"fmt"
 	"net/http"
 	"servus/apps/elven/article"
 	"servus/apps/elven/auth"
@@ -10,6 +11,8 @@ import (
 	"servus/apps/elven/user"
 	"servus/core"
 	"servus/core/external/errorMan"
+	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -63,13 +66,27 @@ func (a *App) Boot(c *core.Instance) {
 	// routes.
 	a.bootRoutes()
 
-	// TEST HOOKS.
+	// dev test.
+	a.polygon()
+}
+
+func (a *App) polygon() {
+	// banhammer hooks.
 	call.Banhammer.OnWarned(func(ip string) {
 		println("[WARN] IP: " + ip)
 	})
 	call.Banhammer.OnBanned(func(ip string) {
 		println("[BAN] IP: " + ip)
 	})
+	// tg commands.
+	call.Control.AddCommand("/hello", func(args []string) {
+		println("hello command")
+		fmt.Println(args)
+	})
+	for i := 0; i < 10; i++ {
+		call.Control.SendMessage(strconv.Itoa(i))
+		time.Sleep(500 * time.Millisecond)
+	}
 }
 
 func (a *App) bootRoutes() {

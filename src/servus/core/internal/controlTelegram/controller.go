@@ -26,7 +26,7 @@ type Config struct {
 type Controller struct {
 	config *Config
 	logger Logger
-	bot    connector
+	bridge connector
 }
 
 func (c *Controller) New(config *Config, logger Logger) {
@@ -36,26 +36,27 @@ func (c *Controller) New(config *Config, logger Logger) {
 	if logger == nil {
 		panic("[control/telegram]: logger nil pointer.")
 	}
+	// service.
 	c.config = config
 	c.logger = logger
-	c.bot = connector{}
-	c.bot.New(c)
-}
 
-func (c *Controller) checkErr(err error) {
-	if err != nil {
-		c.logger.Error("[control/telegram]: " + err.Error())
-	}
-}
-
-func (c *Controller) SendFile(caption *string, filename string, reader io.Reader) {
-	err := c.bot.SendFile(caption, filename, reader)
-	c.checkErr(err)
+	// bridge.
+	c.bridge = connector{}
+	c.bridge.New(c)
 }
 
 func (c *Controller) SendMessage(message string) {
-	err := c.bot.SendMessage(message)
+	err := c.bridge.SendMessage(message)
 	c.checkErr(err)
+}
+
+func (c *Controller) SendFile(caption *string, filename string, reader io.Reader) {
+	err := c.bridge.SendFile(caption, filename, reader)
+	c.checkErr(err)
+}
+
+func (c *Controller) AddCommand(command string, callback func(args []string)) {
+	c.bridge.AddCommand(command, callback)
 }
 
 func (c *Controller) GetToken() string {
@@ -68,4 +69,10 @@ func (c *Controller) GetAllowedChats() []int64 {
 
 func (c *Controller) GetAllowedUsers() []int64 {
 	return c.config.AllowedUsers
+}
+
+func (c *Controller) checkErr(err error) {
+	if err != nil {
+		c.logger.Error("[control/telegram]: " + err.Error())
+	}
 }

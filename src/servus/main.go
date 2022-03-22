@@ -35,7 +35,7 @@ func serve() {
 }
 
 func serveHttp(hostAndPort string) {
-	var listeningOn = fmt.Sprintf("servus: listening on http://%s", hostAndPort)
+	var listeningOn = fmt.Sprintf("servus: listening at http://%s", hostAndPort)
 	call.Logger.Info(listeningOn)
 	err := http.ListenAndServe(hostAndPort, nil)
 	if err != nil {
@@ -45,7 +45,7 @@ func serveHttp(hostAndPort string) {
 }
 
 func serveHttps(hostAndPort string) {
-	var listeningOn = fmt.Sprintf("servus: listening on https://%s", hostAndPort)
+	var listeningOn = fmt.Sprintf("servus: listening at https://%s", hostAndPort)
 	call.Logger.Info(listeningOn)
 	var certPath = call.Config.Security.HTTPS.CertPath
 	var keyPath = call.Config.Security.HTTPS.KeyPath

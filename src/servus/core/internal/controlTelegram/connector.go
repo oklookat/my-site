@@ -3,68 +3,69 @@ package controlTelegram
 import (
 	"errors"
 	"io"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-// bridge between lowlevel and controller.
+// bridge between bot and controller.
 type connector struct {
-	outside telegramer
-	bot     *bot
-}
-
-type telegramer interface {
-	// get bot token.
-	GetToken() string
-	// get chats ids where bot can send messages.
-	GetAllowedChats() []int64
-	// get user IDs from which the bot can receive messages.
-	GetAllowedUsers() []int64
+	bot        *bot
+	controller *Controller
+	commands   map[string]func(args []string)
 }
 
 // create new ControlTelegram instance.
-func (c *connector) New(t telegramer) (err error) {
-	c.outside = t
+func (c *connector) New(ctrl *Controller) error {
+	// init.
+	c.commands = make(map[string]func(args []string))
+	c.controller = ctrl
+
+	// bot.
 	c.bot = &bot{}
 	c.bot.OnUpdate(c.onUpdate)
-	token := c.outside.GetToken()
-	err = c.bot.New(token)
-	return
+	token := c.controller.GetToken()
+	return c.bot.New(token)
 }
 
 // when message coming from user.
 func (c *connector) onUpdate(update tgbotapi.Update) {
-	c.allowedUsersCallback(func(userID int64) bool {
-		return userID == update.Message.From.ID
+	c.fetchAllowedUsers(func(userID int64) bool {
+		// disable if no commands / message.
+		var isNoMessage = update.Message == nil || update.Message.From == nil
+		if len(c.commands) < 1 || isNoMessage {
+			return true
+		}
+
+		// check is message from allowed user.
+		var isMessageFromAllowedUser = userID == update.Message.From.ID
+		if !isMessageFromAllowedUser {
+			return false
+		}
+
+		var message = update.Message.Text
+
+		// split message by space, maybe it's command?
+		var messageSpaced = strings.Split(message, " ")
+		var command, ok = c.commands[messageSpaced[0]]
+
+		// not a command.
+		if !ok {
+			return true
+		}
+
+		// execute callback (remove first element - its command).
+		command(messageSpaced[1:])
+
+		return true
 	})
 }
 
-// executes callback on every allowedChats ID. Callback must return bool where true = stop.
-func (c *connector) allowedChatsCallback(callback func(chatID int64) bool) {
-	if callback == nil {
-		return
-	}
-	var allowedChats = c.outside.GetAllowedChats()
-	for index := range allowedChats {
-		stop := callback(allowedChats[index])
-		if stop {
-			break
-		}
-	}
-}
-
-// executes callback on every allowedChats ID. Callback must return bool where true = stop.
-func (c *connector) allowedUsersCallback(callback func(userID int64) bool) {
-	if callback == nil {
-		return
-	}
-	var allowedUsers = c.outside.GetAllowedUsers()
-	for index := range allowedUsers {
-		stop := callback(allowedUsers[index])
-		if stop {
-			break
-		}
-	}
+// add command. When user type command, executes callback.
+//
+// ex: /command arg1 arg2 arg3
+func (c *connector) AddCommand(command string, callback func(args []string)) {
+	c.commands[command] = callback
 }
 
 // send file to allowed chats.
@@ -74,7 +75,7 @@ func (c *connector) SendFile(caption *string, filename string, reader io.Reader)
 	}
 	var file = File{}
 	file.New(caption, filename, reader)
-	c.allowedChatsCallback(func(chatID int64) bool {
+	c.fetchAllowedChats(func(chatID int64) bool {
 		_, err = c.bot.SendFile(chatID, &file)
 		return err != nil
 	})
@@ -86,9 +87,41 @@ func (c *connector) SendMessage(message string) (err error) {
 	if c.bot == nil {
 		return
 	}
-	c.allowedChatsCallback(func(chatID int64) bool {
+	c.fetchAllowedChats(func(chatID int64) bool {
 		_, err = c.bot.SendMessage(chatID, message)
 		return err != nil
 	})
 	return
+}
+
+// executes callback on every allowed chat ID.
+//
+// Callback must return bool where true = stop.
+func (c *connector) fetchAllowedChats(callback func(chatID int64) bool) {
+	if callback == nil {
+		return
+	}
+	var allowedChats = c.controller.GetAllowedChats()
+	for index := range allowedChats {
+		stop := callback(allowedChats[index])
+		if stop {
+			break
+		}
+	}
+}
+
+// executes callback on every allowed user.
+//
+// Callback must return bool where true = stop.
+func (c *connector) fetchAllowedUsers(callback func(userID int64) bool) {
+	if callback == nil {
+		return
+	}
+	var allowedUsers = c.controller.GetAllowedUsers()
+	for index := range allowedUsers {
+		stop := callback(allowedUsers[index])
+		if stop {
+			break
+		}
+	}
 }
