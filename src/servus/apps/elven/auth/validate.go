@@ -17,8 +17,7 @@ func (a *Body) Validate(body io.ReadCloser) (isValid bool) {
 	isValid = false
 
 	// body.
-	err := json.NewDecoder(body).Decode(a)
-	if err != nil {
+	if err := json.NewDecoder(body).Decode(a); err != nil {
 		return
 	}
 

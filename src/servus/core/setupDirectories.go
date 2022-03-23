@@ -2,11 +2,16 @@ package core
 
 import "servus/core/internal/directories"
 
-func (i *Instance) setupDirectories() {
+func (i *Instance) setupDirectories() error {
+	var err error
+
+	// boot.
 	var dirs = directories.Instance{}
-	var err = dirs.Boot()
-	if err != nil {
-		panic(err)
+	if err = dirs.Boot(); err != nil {
+		return err
 	}
+
+	// set.
 	i.Dirs = &dirs
+	return err
 }

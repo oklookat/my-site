@@ -117,8 +117,7 @@ func (t *Token) Generate(userID string) (token string, hash string, err error) {
 	// first we generate fake token model to get created token ID.
 	t.UserID = userID
 	t.Token = "-1"
-	err = t.Create()
-	if err != nil {
+	if err = t.Create(); err != nil {
 		return
 	}
 	defer func() {

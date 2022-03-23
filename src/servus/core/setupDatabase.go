@@ -2,8 +2,8 @@ package core
 
 import "servus/core/external/database"
 
-func (i *Instance) setupDatabase() {
+func (i *Instance) setupDatabase() error {
 	// connect to DB. Database be available via database.Adapter.
 	var conn = database.Connector{}
-	conn.New(i.Config.DB, i.Logger)
+	return conn.New(i.Config.DB, i.Logger)
 }

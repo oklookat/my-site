@@ -2,6 +2,7 @@ package file
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -62,7 +63,7 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	var tempDir = call.Config.Uploads.Temp
 	processed, err := filer.ProcessFromForm(request, "file", tempDir)
 	if err != nil {
-		if err == filer.ErrBadFileProvided {
+		if errors.Is(err, filer.ErrBadFileProvided) {
 			h.Send("bad file provided", 400, err)
 			return
 		}
@@ -138,8 +139,7 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	var newFilePath = saveAt + "/" + newFileName
 
 	// make dirs.
-	err = os.MkdirAll(saveAt, os.ModePerm)
-	if err != nil {
+	if err = os.MkdirAll(saveAt, os.ModePerm); err != nil {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}
@@ -152,8 +152,7 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	}()
 
 	// move file from temp dir to created dir.
-	err = os.Rename(processed.Temp.Name(), newFilePath)
-	if err != nil {
+	if err = os.Rename(processed.Temp.Name(), newFilePath); err != nil {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}
@@ -179,8 +178,7 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// save to db.
-	err = fileInDB.Create()
-	if err != nil {
+	if err = fileInDB.Create(); err != nil {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}
@@ -230,8 +228,7 @@ func (f *Instance) deleteOne(response http.ResponseWriter, request *http.Request
 	}
 
 	// delete file from db.
-	err = file.DeleteByID()
-	if err != nil {
+	if err = file.DeleteByID(); err != nil {
 		h.Send(f.throw.Server(), 500, err)
 		return
 	}

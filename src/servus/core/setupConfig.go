@@ -13,39 +13,38 @@ import (
 	"servus/core/internal/logger"
 )
 
-func (i *Instance) setupConfig() {
+func (i *Instance) setupConfig() error {
 	var config = Config{}
 
 	// get from path.
-	var get = func(path string) {
-		err := config.load(path)
-		if err != nil {
-			panic(err)
-		}
+	var get = func(path string) error {
+		return config.load(path)
 	}
 
 	// get from data dir.
-	var getFromDir = func() {
+	var getFromDir = func() error {
 		var dataDir, err = i.Dirs.GetData()
 		if err != nil {
-			panic(err)
+			return err
 		}
 		var path = dataDir + "/config.json"
-		get(path)
+		return get(path)
 	}
 
 	// is config path in args?
+	var err error
 	var configFlag = "-config"
 	var arg = argument.Get(configFlag)
 	var notInArgs = arg == nil || arg.Value == nil
 	if notInArgs {
 		// get from current dir.
-		getFromDir()
+		err = getFromDir()
 	} else {
 		// get by path in args.
-		get(*arg.Value)
+		err = get(*arg.Value)
 	}
 	i.Config = &config
+	return err
 }
 
 // main configuration (config.json).

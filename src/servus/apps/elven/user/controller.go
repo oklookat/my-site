@@ -28,8 +28,7 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 
 	// validate body.
 	var body = Body{}
-	err := body.Validate(request.Body)
-	if err != nil {
+	if err := body.Validate(request.Body); err != nil {
 		h.Send("invalid request", 400, nil)
 		return
 	}
@@ -55,8 +54,7 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 	switch body.What {
 	case "username":
 		// validate username.
-		err = ValidateUsername(body.NewValue)
-		if err != nil {
+		if err = ValidateUsername(body.NewValue); err != nil {
 			sendValidationErr()
 			return
 		}
@@ -74,8 +72,7 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 		}
 	case "password":
 		// validate password.
-		err = ValidatePassword(body.NewValue)
-		if err != nil {
+		if err = ValidatePassword(body.NewValue); err != nil {
 			sendValidationErr()
 			return
 		}
@@ -83,8 +80,7 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// update.
-	err = user.Update()
-	if err != nil {
+	if err = user.Update(); err != nil {
 		h.Send(u.throw.Server(), 500, err)
 		return
 	}
@@ -95,12 +91,10 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 func (u *Instance) Create(username string, password string, isAdmin bool) (err error) {
 
 	// validate.
-	err = ValidateUsername(username)
-	if err != nil {
+	if err = ValidateUsername(username); err != nil {
 		return errors.New("invalid username")
 	}
-	err = ValidatePassword(password)
-	if err != nil {
+	if err = ValidatePassword(password); err != nil {
 		return errors.New("invalid password")
 	}
 

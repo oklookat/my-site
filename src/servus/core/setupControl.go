@@ -7,7 +7,10 @@ import (
 )
 
 // setup parent controller.
-func (i *Instance) setupControl() {
+func (i *Instance) setupControl() error {
+	var err error
+
+	// create parent controller.
 	var parent = &parentController{}
 	parent.new(i.Utils)
 
@@ -15,12 +18,15 @@ func (i *Instance) setupControl() {
 	var tgEnabled = i.Config.Control.Telegram.Enabled
 	if tgEnabled {
 		var controlTG = controlTelegram.Controller{}
-		controlTG.New(i.Config.Control.Telegram, i.Logger)
+		if err = controlTG.New(i.Config.Control.Telegram, i.Logger); err != nil {
+			return err
+		}
 		parent.add(&controlTG)
 	}
 
 	// set.
 	i.Control = parent
+	return err
 }
 
 // control controllers / ops on all controllers.
@@ -87,6 +93,9 @@ func (c *parentController) SendFile(caption *string, filename string, data io.Re
 
 // add command to all controllers.
 func (c *parentController) AddCommand(command string, callback func(args []string)) {
+	if c.controllers == nil {
+		return
+	}
 	c.fetchControllers(func(c Controller) {
 		c.AddCommand(command, callback)
 	}, false)

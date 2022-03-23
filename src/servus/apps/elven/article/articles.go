@@ -2,6 +2,7 @@ package article
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"servus/apps/elven/base"
 	"servus/apps/elven/model"
@@ -19,8 +20,7 @@ func (a *Instance) getArticles(response http.ResponseWriter, request *http.Reque
 
 	// validate.
 	validatedBody := &base.ArticleGetParams{}
-	err = ValidateGetParams(validatedBody, request.URL.Query(), isAdmin)
-	if err != nil {
+	if err = ValidateGetParams(validatedBody, request.URL.Query(), isAdmin); err != nil {
 		h.Send("bad request", 400, err)
 		return
 	}
@@ -103,8 +103,7 @@ func (a *Instance) createArticle(response http.ResponseWriter, request *http.Req
 	article.UserID = pAuth.GetID()
 
 	// create (get ID after creating).
-	err = article.Create()
-	if err != nil {
+	if err = article.Create(); err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
@@ -154,20 +153,19 @@ func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Req
 	var filteredArticle *model.Article
 	filteredArticle, err = ValidateBody(request.Method, request.Body, &article)
 	if err != nil {
-		switch err.(type) {
-		default:
-			h.Send(a.throw.Server(), 500, err)
-			return
-		case *base.ValidationError:
+		var valError *base.ValidationError
+		if errors.As(err, &valError) {
 			h.Send("bad request", 400, err)
+			return
+		} else {
+			h.Send(a.throw.Server(), 500, err)
 			return
 		}
 	}
 	article = *filteredArticle
 
 	// update.
-	err = article.Update()
-	if err != nil {
+	if err = article.Update(); err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
@@ -201,8 +199,7 @@ func (a *Instance) deleteArticle(response http.ResponseWriter, request *http.Req
 	}
 
 	// delete.
-	err = article.DeleteByID()
-	if err != nil {
+	if err = article.DeleteByID(); err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}

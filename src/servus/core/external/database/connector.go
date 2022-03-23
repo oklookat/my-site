@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 
+	"errors"
+
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
 )
 
 var con *Connector
@@ -19,16 +20,17 @@ type Connector struct {
 }
 
 // create new instance and connect.
-func (c *Connector) New(config *Config, logger Logger) {
+func (c *Connector) New(config *Config, logger Logger) error {
+	var err error
 	if config == nil {
-		var verr = errors.New("config nil pointer")
-		verr = c.wrapError(verr)
-		panic(verr)
+		err = errors.New("config nil pointer")
+		err = c.wrapError(err)
+		return err
 	}
 	if logger == nil {
-		var verr = errors.New("logger nil pointer")
-		verr = c.wrapError(verr)
-		panic(verr)
+		err = errors.New("logger nil pointer")
+		err = c.wrapError(err)
+		return err
 	}
 	// set
 	c.Config = config
@@ -46,22 +48,23 @@ func (c *Connector) New(config *Config, logger Logger) {
 	if err != nil {
 		err = c.wrapError(err)
 		c.Logger.Panic(err)
-		return
+		return err
 	}
 	c.Connection = connection
 	con = c
+	return err
 }
 
 func (c *Connector) wrapError(err error) error {
 	if err == nil {
 		return nil
 	}
-	return errors.Wrap(err, "[database]")
+	return fmt.Errorf("[database] %w", err)
 }
 
 // err == sql.ErrNoRows.
 func (c *Connector) isNotFound(err error) bool {
-	return err != nil && err == sql.ErrNoRows
+	return err != nil && errors.Is(err, sql.ErrNoRows)
 }
 
 // database error checking. If error - send err to logger and return err. If no rows - error will not send to logger.

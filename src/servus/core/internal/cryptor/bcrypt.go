@@ -47,18 +47,21 @@ func (b *BCrypt) parse(hash string) (*BCryptParsed, error) {
 	if !strings.HasPrefix(hash, "$") {
 		return nil, errors.New("[bcrypt/parse]: hash not have dollar prefix")
 	}
+
 	// sliced output like: [ 2a 14 eyjC4iZWaXvn.yEw9gzrsO2qIEFLC0jTQwk1ttn.WGl0O/ogFSXJ6].
 	var sliced = strings.Split(hash, "$")
 	if len(sliced) != 4 {
 		return nil, errors.New("[bcrypt/parse]: invalid hash slice length / dollar split err")
 	}
 	var parsed = &BCryptParsed{}
+
 	// algorithm.
 	var algorithm = sliced[1]
 	if algorithm != "2a" {
 		return nil, errors.New("[bcrypt/parse]: invalid algorithm")
 	}
 	parsed.Algorithm = algorithm
+
 	// cost.
 	var cost = sliced[2]
 	costInt, err := strconv.Atoi(cost)
@@ -66,6 +69,7 @@ func (b *BCrypt) parse(hash string) (*BCryptParsed, error) {
 		return nil, errors.New("[bcrypt/parse]: cost NaN")
 	}
 	parsed.Cost = costInt
+
 	// payload.
 	var payload = sliced[3]
 	if len(payload) != 53 {

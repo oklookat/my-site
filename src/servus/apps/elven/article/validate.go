@@ -141,6 +141,7 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 
 	// updating existing article?
 	var isChangingMode = requestMethod == http.MethodPut || requestMethod == http.MethodPatch
+
 	// changing mode and no reference? we not validate this.
 	if isChangingMode && reference == nil {
 		validationErr.New("body")("changing mode enabled but reference has nil pointer")
@@ -339,8 +340,7 @@ func ValidateCategoryBody(c *base.CategoryBody, body io.ReadCloser) (err error) 
 	var validationErr = base.ValidationError{}
 
 	// body.
-	err = json.NewDecoder(body).Decode(c)
-	if err != nil {
+	if err = json.NewDecoder(body).Decode(c); err != nil {
 		return
 	}
 

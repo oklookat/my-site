@@ -56,8 +56,7 @@ func (i *Instance) Send(body string, statusCode int, err error) {
 		go i.onHTTPError(statusCode, err)
 	}
 	i.response.WriteHeader(statusCode)
-	_, err = i.response.Write([]byte(body))
-	if err != nil && i.onSendError != nil {
+	if _, err = i.response.Write([]byte(body)); err != nil && i.onSendError != nil {
 		go i.onSendError(statusCode, err)
 	}
 }

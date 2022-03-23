@@ -4,12 +4,12 @@ import (
 	"math/rand"
 	"net/http"
 	"path/filepath"
+	"servus/core/internal/gobounce"
 	"strings"
 	"time"
 	"unicode"
 
 	"github.com/oklog/ulid/v2"
-	"github.com/oklookat/gobounce"
 )
 
 func (i *Instance) setupUtils() {
@@ -31,8 +31,8 @@ func (u *utils) RemoveSpaces(str string) string {
 
 // fromat path slashes.
 func (u *utils) FormatPath(path string) string {
-	path = filepath.ToSlash(path)
 	path = filepath.Clean(path)
+	path = filepath.ToSlash(path)
 	return path
 }
 
@@ -62,5 +62,5 @@ func (u *utils) LenRune(val string) int {
 
 // callback can only be called once every 5 seconds.
 func (u *utils) Debounce(after time.Duration) func(f func()) {
-	return gobounce.New(after)
+	return gobounce.New(after, true)
 }

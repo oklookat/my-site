@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 var ErrUserUsernameMinMax = errors.New("validation: username min length 4, max 24")
@@ -26,8 +26,7 @@ type User struct {
 
 // create user in database.
 func (u *User) Create() (err error) {
-	err = u.hookBeforeChange()
-	if err != nil {
+	if err = u.hookBeforeChange(); err != nil {
 		call.Logger.Error(err.Error())
 		return
 	}
@@ -37,8 +36,7 @@ func (u *User) Create() (err error) {
 }
 
 func (u *User) Update() (err error) {
-	err = u.hookBeforeChange()
-	if err != nil {
+	if err = u.hookBeforeChange(); err != nil {
 		return
 	}
 	var query = "UPDATE users SET role=$1, username=$2, password=$3 WHERE id=$4 RETURNING *"

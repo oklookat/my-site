@@ -88,8 +88,7 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 		queryGetCount += queryAndCategoryName
 	}
 	totalPages = 1
-	err = IntAdapter.Get(&totalPages, queryGetCount, getPagesCountArgsArr...)
-	if err != nil {
+	if err = IntAdapter.Get(&totalPages, queryGetCount, getPagesCountArgsArr...); err != nil {
 		return
 	}
 	totalPages = int(math.Round(float64(totalPages) / float64(ArticlePageSize)))
@@ -142,8 +141,9 @@ func (a *Article) Update() (err error) {
 	is_published=$4, title=$5, content=$6, 
 	published_at=$7 
 	WHERE id=$8 RETURNING *`
-	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.CoverID, a.IsPublished, a.Title, a.Content, a.PublishedAt, a.ID)
-	if err != nil {
+	if err = articleAdapter.Get(a, query, a.UserID, a.CategoryID,
+		a.CoverID, a.IsPublished, a.Title,
+		a.Content, a.PublishedAt, a.ID); err != nil {
 		return
 	}
 	return

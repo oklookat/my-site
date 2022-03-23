@@ -18,13 +18,13 @@ type connector struct {
 // create new ControlTelegram instance.
 func (c *connector) New(ctrl *Controller) error {
 	// init.
+	c.bot = &bot{}
 	c.commands = make(map[string]func(args []string))
 	c.controller = ctrl
 
-	// bot.
-	c.bot = &bot{}
+	// connect.
+	var token = c.controller.GetToken()
 	c.bot.OnUpdate(c.onUpdate)
-	token := c.controller.GetToken()
 	return c.bot.New(token)
 }
 

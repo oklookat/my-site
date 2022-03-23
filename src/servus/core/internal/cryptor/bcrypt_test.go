@@ -18,9 +18,11 @@ func Test_BCrypt_HashCompare(t *testing.T) {
 	var cost = 14
 	var dirty = "123"
 	var dirtyWrong = "000"
+
 	//
 	var b = BCrypt{}
 	b.New(cost)
+
 	// hash.
 	t.Log("testing hashing...")
 	var hashed, err = hash(&b)
@@ -28,12 +30,13 @@ func Test_BCrypt_HashCompare(t *testing.T) {
 		t.Fatalf("failed to hash. Error: %v", err.Error())
 	}
 	t.Logf("hash: %v", hashed)
+
 	// compare (true).
 	t.Log("testing compare...")
-	_, err = b.Compare(dirty, hashed)
-	if err != nil {
+	if _, err = b.Compare(dirty, hashed); err != nil {
 		t.Fatalf("failed to compare. Error: %v", err.Error())
 	}
+
 	// compare (wrong).
 	t.Log("testing compare (wrong)...")
 	_, err = b.Compare(dirtyWrong, hashed)
@@ -52,9 +55,11 @@ func Test_BCrypt_Parse(t *testing.T) {
 		"$2a$14$/nQKx9M7VI/gFRgmaCiDh.LWco3PCva7Mk.Rv6mfnnAvzik1CvqyW1234567890",
 		"$2a/14//nQKx9M7VI/gFRgmaCiDh.LWco3PCva7Mk.Rv6mfnnAvzik1CvqyW",
 	}
+
 	//
 	var b = BCrypt{}
 	b.New(cost)
+
 	// parse.
 	t.Log("parsing (true)...")
 	parsed, err := b.parse(mockTrue)
@@ -73,11 +78,11 @@ func Test_BCrypt_Parse(t *testing.T) {
 	if parsed.Hash != "LWco3PCva7Mk.Rv6mfnnAvzik1CvqyW" {
 		t.Fatalf("wrong hash")
 	}
+
 	// wrong parsing.
 	t.Log("parsing (wrong)...")
 	for _, wrongCase := range mockWrongCases {
 		parsed, err = b.parse(wrongCase)
-		//t.Log(err.Error())
 		if parsed != nil || err == nil {
 			t.Errorf("parsed: %v", parsed)
 			t.Fatalf("wrong parsing failed")

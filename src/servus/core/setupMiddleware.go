@@ -23,8 +23,6 @@ func (i *Instance) setupMiddleware() {
 	}
 	httpHelp.new(i.Logger, i.Control, i.Config.Security.Cookie, variablesGetter)
 
-	// banhammer.
-
 	// middleware.
 	var md = &middleware.Instance{}
 	md.New(corsInstance.Middleware, bodyLimiter.Middleware, httpHelp.middleware)

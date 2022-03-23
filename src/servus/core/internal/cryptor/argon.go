@@ -120,30 +120,32 @@ func (a *Argon) parseHash(hash string) (config *Argon, salt, key []byte, err err
 	if version != argon2.Version {
 		return nil, nil, nil, ErrArgonIncompatibleVersion
 	}
+
 	config = &Argon{}
-	_, err = fmt.Sscanf(values[3], "m=%d,t=%d,p=%d", &config.Memory, &config.Iterations, &config.Parallelism)
-	if err != nil {
+	if _, err = fmt.Sscanf(values[3], "m=%d,t=%d,p=%d", &config.Memory,
+		&config.Iterations, &config.Parallelism); err != nil {
 		return nil, nil, nil, err
 	}
+
 	salt, err = base64.RawStdEncoding.Strict().DecodeString(values[4])
 	if err != nil {
 		return nil, nil, nil, err
 	}
+
 	config.SaltLength = uint32(len(salt))
 	key, err = base64.RawStdEncoding.Strict().DecodeString(values[5])
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	config.KeyLength = uint32(len(key))
 
+	config.KeyLength = uint32(len(key))
 	return config, salt, key, nil
 }
 
 // generate cryptographically random bytes.
 func (a *Argon) generateRandomBytes(n uint32) ([]byte, error) {
 	b := make([]byte, n)
-	_, err := rand.Read(b)
-	if err != nil {
+	if _, err := rand.Read(b); err != nil {
 		return nil, err
 	}
 	return b, nil

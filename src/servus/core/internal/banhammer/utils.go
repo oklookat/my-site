@@ -6,7 +6,12 @@ import (
 )
 
 func createError(message string) error {
-	return errors.New("[banhammer] " + message)
+	return errors.New(message)
+}
+
+func IsIpValid(ip string) bool {
+	var res = parseIP(ip)
+	return res != nil
 }
 
 func parseIP(ip string) net.IP {

@@ -16,8 +16,7 @@ func onSelectItem(title string, items []string) (selected string, err error) {
 			counter++
 		}
 		fmt.Println("- Choose: ")
-		err = scanner(&selected)
-		if err != nil {
+		if err = scanner(&selected); err != nil {
 			return "", err
 		}
 		selectedNumber, err := strconv.Atoi(selected)
@@ -45,8 +44,7 @@ func onQuestionItem(question string) (result bool, err error) {
 		// ex: - you drink water? (Y/N).
 		fmt.Println(fmt.Sprintf("- %v (Y/N)", question))
 		var input string
-		err = scanner(&input)
-		if err != nil {
+		if err = scanner(&input); err != nil {
 			return false, err
 		}
 		input = strings.ToUpper(input)

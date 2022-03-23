@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 // delete empty dirs
@@ -93,8 +93,7 @@ func ProcessFromForm(request *http.Request, formKey string, tempDir string) (dat
 	}
 
 	// create temp dir.
-	err = os.MkdirAll(tempDir, os.ModePerm)
-	if err != nil {
+	if err = os.MkdirAll(tempDir, os.ModePerm); err != nil {
 		return
 	}
 
@@ -127,14 +126,14 @@ func ProcessFromForm(request *http.Request, formKey string, tempDir string) (dat
 			err = nil
 			break
 		}
+
 		// write to temp file.
-		_, err = tempFile.Write(buf[:n])
-		if err != nil {
+		if _, err = tempFile.Write(buf[:n]); err != nil {
 			return
 		}
+
 		// write md5.
-		_, err = md5hr.Write(buf[:n])
-		if err != nil {
+		if _, err = md5hr.Write(buf[:n]); err != nil {
 			return
 		}
 	}

@@ -4,64 +4,68 @@ import (
 	"archive/zip"
 	"bytes"
 	"io"
-
-	"github.com/pkg/errors"
 )
 
 type ZipFile struct {
-	initialized bool
-	buffer      *bytes.Buffer
-	writer      *zip.Writer
+	isInit bool
+	buffer *bytes.Buffer
+	writer *zip.Writer
 }
 
-// creates new zip file.
+// create new zip file.
 func New() *ZipFile {
 	var archive = &ZipFile{}
-	// create a buffer to write our archive to.
+
+	// create buffer where .zip be.
 	archive.buffer = new(bytes.Buffer)
-	// create a new zip archive.
+
+	// create zip archive.
 	archive.writer = zip.NewWriter(archive.buffer)
-	archive.initialized = true
+	archive.isInit = true
 	return archive
 }
 
 // add file to archive. After you added all files you MUST call GetRAW() for closing archive.
+//
+// filename: filename with extension like 'myArchive.zip'
 func (z *ZipFile) AddFile(filename string, data io.Reader) error {
-	if !z.initialized || z.writer == nil {
-		return errors.New("[zipify]: not initialized. Maybe before you called GetRAW() or not called New()?")
+	if !z.isInit || z.writer == nil {
+		return ERR_NOT_INIT
 	}
 	if data == nil {
-		return errors.New("[zipify]: data nil pointer")
+		return ERR_NIL_POINTER
 	}
+
 	// add file.
-	f, err := z.writer.Create(filename)
+	var zipWriter, err = z.writer.Create(filename)
 	if err != nil {
 		return err
 	}
+
 	// write content to file.
-	buf := make([]byte, 1024)
+	var buf = make([]byte, 1024)
 	for {
 		n, err := data.Read(buf)
-		if err == io.EOF {
-			// there is no more data to read.
-			break
-		}
 		if err != nil {
+			if err == io.EOF {
+				// there is no more data to read.
+				break
+			}
 			return err
 		}
-		if n > 0 {
-			_, err = f.Write(buf[:n])
-			if err != nil {
-				return err
-			}
+		if n < 1 {
+			continue
+		}
+		if _, err = zipWriter.Write(buf[:n]); err != nil {
+			return err
 		}
 	}
 	return err
 }
 
 // get archive in bytes.Buffer. Also closes archive.
-func (z *ZipFile) GetRAW() *bytes.Buffer {
-	z.initialized = false
+func (z *ZipFile) GetBytesAndClose() *bytes.Buffer {
+	z.isInit = false
 	if z.writer == nil {
 		return nil
 	}

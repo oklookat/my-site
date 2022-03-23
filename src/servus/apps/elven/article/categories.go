@@ -72,8 +72,7 @@ func (a *Instance) addCategory(response http.ResponseWriter, request *http.Reque
 
 	// validate.
 	body := &base.CategoryBody{}
-	err := ValidateCategoryBody(body, request.Body)
-	if err != nil {
+	if err := ValidateCategoryBody(body, request.Body); err != nil {
 		h.Send("bad request", 400, nil)
 		return
 	}
@@ -94,8 +93,7 @@ func (a *Instance) addCategory(response http.ResponseWriter, request *http.Reque
 	}
 
 	// create.
-	err = category.Create()
-	if err != nil {
+	if err = category.Create(); err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
@@ -115,8 +113,7 @@ func (a *Instance) renameCategory(response http.ResponseWriter, request *http.Re
 
 	// validate.
 	body := &base.CategoryBody{}
-	err := ValidateCategoryBody(body, request.Body)
-	if err != nil {
+	if err := ValidateCategoryBody(body, request.Body); err != nil {
 		h.Send("bad request", 400, nil)
 		return
 	}
@@ -139,8 +136,7 @@ func (a *Instance) renameCategory(response http.ResponseWriter, request *http.Re
 
 	// update.
 	category.Name = body.Name
-	err = category.ChangeNameByID()
-	if err != nil {
+	if err = category.ChangeNameByID(); err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
@@ -172,8 +168,7 @@ func (a *Instance) deleteCategory(response http.ResponseWriter, request *http.Re
 		return
 	}
 	// delete.
-	err = category.DeleteByID()
-	if err != nil {
+	if err = category.DeleteByID(); err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}

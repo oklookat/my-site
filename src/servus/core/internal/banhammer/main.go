@@ -8,10 +8,11 @@ type Instance struct {
 }
 
 func (i *Instance) Boot(workPath string, maxWarns int) error {
+	var err error
+
 	// database.
 	var db = &SQLite{}
-	var err = db.Boot(workPath, maxWarns)
-	if err != nil {
+	if err = db.Boot(workPath, maxWarns); err != nil {
 		return err
 	}
 	i.db = db

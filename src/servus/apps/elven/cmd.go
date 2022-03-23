@@ -6,8 +6,6 @@ import (
 	"os"
 	"servus/apps/elven/model"
 	"servus/core/external/argument"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -98,18 +96,15 @@ func (c *cmd) createUser(flag string) {
 	var deleteIfExists = argument.Get(cmdFlagDeleteIfExists) != nil
 	var username = *usernameArg.Value
 	var password = *passwordArg.Value
-	err = c.app.User.Create(username, password, isAdmin)
-	if err != nil {
+	if err := c.app.User.Create(username, password, isAdmin); err != nil {
 		// if username exists.
 		if err.Error() == "user with this username already exists" {
 			// delete if exists.
 			if deleteIfExists {
-				err = c.app.User.DeleteByUsername(username)
-				if err != nil {
+				if err := c.app.User.DeleteByUsername(username); err != nil {
 					return
 				}
-				err = c.app.User.Create(username, password, isAdmin)
-				if err != nil {
+				if err := c.app.User.Create(username, password, isAdmin); err != nil {
 					return
 				}
 			} else {
@@ -134,17 +129,16 @@ func (c *cmd) migrate() {
 	sqlPath = call.Utils.FormatPath(sqlPath)
 	script, err := ioutil.ReadFile(sqlPath)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "elven: migration failed. Read SQL file error")
+		var errPretty = fmt.Errorf("[elven] migration failed. Read SQL file error: %w", err)
 		call.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	_, err = model.StringAdapter.Exec(string(script))
-	if err != nil {
-		var errPretty = errors.Wrap(err, "elven: migration failed. Failed to execute SQL file")
+	if _, err = model.StringAdapter.Exec(string(script)); err != nil {
+		var errPretty = fmt.Errorf("[elven] migration failed. Failed to execute SQL file: %w", err)
 		call.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	call.Logger.Info("elven: database migrate successful")
+	call.Logger.Info("[elven] database migrate successful")
 	os.Exit(1)
 }
 
@@ -157,10 +151,10 @@ func (c *cmd) rollback() {
 	GRANT ALL ON SCHEMA public TO public;
 	`)
 	if err != nil {
-		var errPretty = errors.Wrap(err, "elven: rollback failed. Failed to execute drop script")
+		var errPretty = fmt.Errorf("[elven] rollback failed: %w", err)
 		call.Logger.Panic(errPretty)
 		os.Exit(1)
 	}
-	call.Logger.Info("elven: database rollback successful")
+	call.Logger.Info("[elven] database rollback successful")
 	os.Exit(1)
 }

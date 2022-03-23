@@ -86,8 +86,7 @@ func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, to
 	// get pages count.
 	var queryCount = "SELECT count(*) FROM (" + query + ") as tentacles"
 	totalPages = 1
-	err = IntAdapter.Get(&totalPages, queryCount, getAllArgs...)
-	if err != nil {
+	if err = IntAdapter.Get(&totalPages, queryCount, getAllArgs...); err != nil {
 		return
 	}
 	totalPages = int(math.Round(float64(totalPages) / float64(FilePageSize)))

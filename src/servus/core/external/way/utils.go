@@ -11,8 +11,7 @@ import (
 // default endpoint for 404 page.
 func defaultNotFound(response http.ResponseWriter, request *http.Request) {
 	response.WriteHeader(404)
-	_, err := response.Write([]byte("not found"))
-	if err != nil {
+	if _, err := response.Write([]byte("not found")); err != nil {
 		log.Printf("way: default 404 endpoint, response send failed. Error: %v", err)
 		return
 	}
@@ -21,8 +20,7 @@ func defaultNotFound(response http.ResponseWriter, request *http.Request) {
 // default endpoint for 405 page.
 func defaultNotAllowed(response http.ResponseWriter, request *http.Request) {
 	response.WriteHeader(405)
-	_, err := response.Write([]byte("method not allowed"))
-	if err != nil {
+	if _, err := response.Write([]byte("method not allowed")); err != nil {
 		log.Printf("way: default 405 endpoint, response send failed. Error: %v", err)
 		return
 	}

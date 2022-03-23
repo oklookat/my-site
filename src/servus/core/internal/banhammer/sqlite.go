@@ -37,8 +37,7 @@ func (s *SQLite) Boot(databasePath string, maxWarns int) error {
 
 	// create database if not exists.
 	if !isDbExists {
-		err = s.createDatabase()
-		if err != nil {
+		if err = s.createDatabase(); err != nil {
 			return err
 		}
 	}
@@ -49,13 +48,13 @@ func (s *SQLite) Boot(databasePath string, maxWarns int) error {
 }
 
 func (s *SQLite) AddOrUpdateEntry(ip string, entry IPEntry) error {
-	if len(ip) < 4 {
-		return createError("AddOrUpdateEntry: wrong IP")
+	if !IsIpValid(ip) {
+		return createError("invalid IP")
 	}
 
 	// convert / correct.
 	var isBannedInt = 0
-	if entry.WarnsCount >= s.maxWarns {
+	if entry.IsBanned || entry.WarnsCount >= s.maxWarns {
 		entry.WarnsCount = s.maxWarns
 		entry.IsBanned = true
 		isBannedInt = 1
@@ -92,6 +91,7 @@ func (s *SQLite) AddOrUpdateEntry(ip string, entry IPEntry) error {
 }
 
 func (s *SQLite) GetEntry(ip string) (*IPEntry, error) {
+	var err error
 	// get.
 	var row = s.connection.QueryRow("SELECT * FROM ip_list WHERE ip = $1 LIMIT 1", ip)
 	if row == nil {
@@ -99,8 +99,7 @@ func (s *SQLite) GetEntry(ip string) (*IPEntry, error) {
 	}
 	var entry = IPEntry{}
 	var isBannedInt = 0
-	var err = row.Scan(&entry.ID, &entry.IP, &isBannedInt, &entry.WarnsCount)
-	if err != nil {
+	if err = row.Scan(&entry.ID, &entry.IP, &isBannedInt, &entry.WarnsCount); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -163,14 +162,13 @@ func (s *SQLite) isDatabaseExists() (bool, error) {
 
 func (s *SQLite) createDatabase() error {
 	// create database file.
-	var err = os.WriteFile(s.GetDatabasePath(), nil, 0644)
-	if err != nil {
+	var err error
+	if err = os.WriteFile(s.GetDatabasePath(), nil, 0644); err != nil {
 		return err
 	}
 
 	// open connection.
-	err = s.connectToDatabase()
-	if err != nil {
+	if err = s.connectToDatabase(); err != nil {
 		return err
 	}
 	defer s.connection.Close()

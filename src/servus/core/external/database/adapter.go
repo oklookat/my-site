@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 )
 
 // provides database functions. You must call Connector.New to init database connection (once, in core).
@@ -18,7 +19,7 @@ func (a *Adapter[T]) Get(dest *T, query string, args ...any) (err error) {
 	destCopy = *dest
 	err = con.Connection.Get(&destCopy, query, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			err = nil
 		} else {
 			err = con.checkError(err)
@@ -37,8 +38,7 @@ func (a *Adapter[T]) GetRows(query string, args ...any) (result map[int]*T, err 
 			_ = rows.Close()
 		}
 	}()
-	err = con.checkError(err)
-	if err != nil {
+	if err = con.checkError(err); err != nil {
 		return
 	}
 	var mapCounter = 0
@@ -65,8 +65,7 @@ func (a *Adapter[T]) Exec(query string, args ...any) (res sql.Result, err error)
 // find and put in found. found = nil if error or not found.
 func (a *Adapter[T]) Find(query string, args ...any) (found *T, err error) {
 	found = new(T)
-	err = a.Get(found, query, args...)
-	if err != nil {
+	if err = a.Get(found, query, args...); err != nil {
 		found = nil
 		return
 	}

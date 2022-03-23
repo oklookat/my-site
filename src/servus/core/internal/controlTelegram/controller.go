@@ -1,6 +1,7 @@
 package controlTelegram
 
 import (
+	"errors"
 	"io"
 )
 
@@ -29,12 +30,12 @@ type Controller struct {
 	bridge connector
 }
 
-func (c *Controller) New(config *Config, logger Logger) {
+func (c *Controller) New(config *Config, logger Logger) error {
 	if config == nil {
-		panic("[control/telegram]: config nil pointer.")
+		return errors.New("[control/telegram]: config nil pointer.")
 	}
 	if logger == nil {
-		panic("[control/telegram]: logger nil pointer.")
+		return errors.New("[control/telegram]: logger nil pointer.")
 	}
 	// service.
 	c.config = config
@@ -42,7 +43,7 @@ func (c *Controller) New(config *Config, logger Logger) {
 
 	// bridge.
 	c.bridge = connector{}
-	c.bridge.New(c)
+	return c.bridge.New(c)
 }
 
 func (c *Controller) SendMessage(message string) {
@@ -72,7 +73,8 @@ func (c *Controller) GetAllowedUsers() []int64 {
 }
 
 func (c *Controller) checkErr(err error) {
-	if err != nil {
-		c.logger.Error("[control/telegram]: " + err.Error())
+	if err == nil {
+		return
 	}
+	c.logger.Error("[control/telegram]: " + err.Error())
 }

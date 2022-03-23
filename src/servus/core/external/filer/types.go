@@ -4,7 +4,7 @@ import (
 	"mime/multipart"
 	"os"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 var ErrBadFileProvided = errors.New("bad file provided")

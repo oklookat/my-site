@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 var (
@@ -29,18 +29,26 @@ type AES struct {
 func (a *AES) Encrypt(text string) (encrypted string, err error) {
 	key := []byte(a.Secret)
 	plaintext := []byte(text)
+
+	// block.
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return "", ErrAESMakeCipher
 	}
+
+	// GCM.
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
 		return "", ErrAESMakeGCM
 	}
+
+	// nonce.
 	nonce := make([]byte, aesGCM.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
 		return "", ErrAESReadNonce
 	}
+
+	// encrypt.
 	ciphertext := aesGCM.Seal(nonce, nonce, plaintext, nil)
 	encrypted = fmt.Sprintf("%x", ciphertext)
 	return encrypted, err
@@ -55,20 +63,27 @@ func (a *AES) Decrypt(encrypted string) (text string, err error) {
 		return "", ErrAESSecretValidation
 	}
 	key := []byte(a.Secret)
+
 	// get hex from string (this is encrypted data)
 	hexed, err := hex.DecodeString(encrypted)
 	if err != nil {
 		// if presented string not a hex
 		return "", ErrAESDecodeHEX
 	}
+
+	// block.
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return "", ErrAESMakeCipher
 	}
+
+	// GCM.
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
 		return "", ErrAESMakeGCM
 	}
+
+	// nonce.
 	nonceSize := aesGCM.NonceSize()
 	nonce, ciphertext := hexed[:nonceSize], hexed[nonceSize:]
 	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)

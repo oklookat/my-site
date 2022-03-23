@@ -1,18 +1,19 @@
 package iHTTP
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 func (i *Instance) wrapError(err error) error {
 	if err == nil {
 		return nil
 	}
-	err = errors.Wrap(err, "[iHTTP] ")
+	err = fmt.Errorf("[iHTTP] %w", err)
 	return err
 }
 

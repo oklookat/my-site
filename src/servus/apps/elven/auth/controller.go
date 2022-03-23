@@ -50,8 +50,7 @@ func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
-	err = tokenModel.SetAuthAgents(request)
-	if err != nil {
+	if err = tokenModel.SetAuthAgents(request); err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
@@ -86,8 +85,8 @@ func (a *Instance) logout(response http.ResponseWriter, request *http.Request) {
 	// delete token.
 	var token = model.Token{}
 	token.ID = pipe.GetID()
-	err := token.DeleteByID()
-	if err != nil {
+	var err error
+	if err = token.DeleteByID(); err != nil {
 		h.Send(a.throw.Server(), 500, err)
 		return
 	}
