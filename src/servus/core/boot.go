@@ -50,11 +50,17 @@ func (i *Instance) Boot() {
 
 	// middleware.
 	i.Logger.Info("servus: setup middleware")
-	i.setupMiddleware()
+	if err := i.setupMiddleware(); err != nil {
+		i.Logger.Panic(err)
+		return
+	}
 
 	// encryptor.
 	i.Logger.Info("servus: setup encryptor")
-	i.setupEncryptor()
+	if err := i.setupEncryptor(); err != nil {
+		i.Logger.Panic(err)
+		return
+	}
 
 	// database.
 	i.Logger.Info("servus: setup database")

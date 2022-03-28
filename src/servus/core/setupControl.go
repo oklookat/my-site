@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"io"
 	"servus/core/internal/controlTelegram"
 	"time"
@@ -21,7 +22,9 @@ func (i *Instance) setupControl() error {
 		if err = controlTG.New(i.Config.Control.Telegram, i.Logger); err != nil {
 			return err
 		}
-		parent.add(&controlTG)
+		if err = parent.add(&controlTG); err != nil {
+			return err
+		}
 	}
 
 	// set.
@@ -44,14 +47,16 @@ func (c *parentController) new(u Utils) {
 }
 
 // add controller.
-func (c *parentController) add(co Controller) {
+func (c *parentController) add(co Controller) error {
+	var err error
 	if co == nil {
-		panic("[core/control]: controller nil pointer")
+		return errors.New("[core/control]: controller nil pointer")
 	}
 	if c.controllers == nil {
 		c.controllers = make([]Controller, 0)
 	}
 	c.controllers = append(c.controllers, co)
+	return err
 }
 
 // run callback on every controller.

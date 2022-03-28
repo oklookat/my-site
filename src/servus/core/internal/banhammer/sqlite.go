@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -16,6 +17,7 @@ type IPEntry struct {
 	IP         string
 	IsBanned   bool
 	WarnsCount int
+	CreatedAt  int64
 }
 
 type SQLite struct {
@@ -44,6 +46,10 @@ func (s *SQLite) Boot(databasePath string, maxWarns int) error {
 
 	// connect.
 	err = s.connectToDatabase()
+	if err == nil && isDbExists {
+		// remove older entries.
+		err = s.removeOlder()
+	}
 	return err
 }
 
@@ -80,9 +86,10 @@ func (s *SQLite) AddOrUpdateEntry(ip string, entry IPEntry) error {
 	} else {
 		// not exists - create.
 		query = `INSERT INTO ip_list 
-		(ip, is_banned, warns_count) values ($1, $2, $3)
+		(ip, is_banned, warns_count, created_at) values ($1, $2, $3, $4)
 		`
-		queryArgs = append(queryArgs, ip, isBannedInt, entry.WarnsCount)
+		var currentTime = time.Now().Unix()
+		queryArgs = append(queryArgs, ip, isBannedInt, entry.WarnsCount, currentTime)
 	}
 
 	// exec.
@@ -99,7 +106,7 @@ func (s *SQLite) GetEntry(ip string) (*IPEntry, error) {
 	}
 	var entry = IPEntry{}
 	var isBannedInt = 0
-	if err = row.Scan(&entry.ID, &entry.IP, &isBannedInt, &entry.WarnsCount); err != nil {
+	if err = row.Scan(&entry.ID, &entry.IP, &isBannedInt, &entry.WarnsCount, &entry.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -117,6 +124,12 @@ func (s *SQLite) GetEntry(ip string) (*IPEntry, error) {
 
 func (s *SQLite) RemoveEntry(ip string) error {
 	var _, err = s.connection.Exec("DELETE FROM ip_list WHERE ip = $1", ip)
+	return err
+}
+
+func (s *SQLite) removeOlder() error {
+	var fiveDaysAgo = time.Now().Add(120 - time.Hour).Unix()
+	var _, err = s.connection.Exec("DELETE FROM ip_list WHERE created_at <= $1", fiveDaysAgo)
 	return err
 }
 
@@ -179,7 +192,8 @@ func (s *SQLite) createDatabase() error {
 		id INTEGER PRIMARY KEY AUTOINCREMENT, 
 		ip TEXT UNIQUE,
 		is_banned INTEGER,
-		warns_count INTEGER
+		warns_count INTEGER,
+		created_at INTEGER
 	  );
 	`
 	_, err = s.connection.Exec(query)

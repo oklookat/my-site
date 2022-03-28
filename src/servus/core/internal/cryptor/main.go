@@ -1,5 +1,7 @@
 package cryptor
 
+import "errors"
+
 type Config struct {
 	AES struct {
 		// 32 bytes length.
@@ -25,16 +27,19 @@ type Instance struct {
 	Argon  *Argon
 }
 
-func (e *Instance) New(config *Config) {
+func (e *Instance) New(config *Config) error {
+	var err error
 	if config == nil {
-		panic("[cryptor]: config nil pointer")
+		return errors.New("[cryptor]: config nil pointer")
 	}
 	e.config = config
+
 	// aes.
 	var aes = AES{}
 	var aesCfg = e.config.AES
 	aes.Secret = aesCfg.Secret
 	e.AES = &aes
+
 	// argon.
 	var argon = Argon{}
 	var argonCfg = e.config.Argon
@@ -44,9 +49,12 @@ func (e *Instance) New(config *Config) {
 	argon.SaltLength = argonCfg.SaltLength
 	argon.KeyLength = argonCfg.KeyLength
 	e.Argon = &argon
+
 	// bcrypt.
 	var bcrypt = BCrypt{}
 	var bcryptCfg = e.config.Bcrypt
 	bcrypt.New(bcryptCfg.Cost)
 	e.BCrypt = &bcrypt
+
+	return err
 }

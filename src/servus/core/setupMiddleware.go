@@ -2,14 +2,15 @@ package core
 
 import (
 	"net/http"
+	"servus/core/external/way"
 	"servus/core/internal/cors"
 	"servus/core/internal/limiter"
 	"servus/core/internal/middleware"
-
-	"github.com/gorilla/mux"
 )
 
-func (i *Instance) setupMiddleware() {
+func (i *Instance) setupMiddleware() error {
+	var err error
+
 	// cors.
 	var corsInstance = cors.New(i.Config.Security.CORS)
 
@@ -19,12 +20,15 @@ func (i *Instance) setupMiddleware() {
 	// http.
 	var httpHelp = &httpHelper{}
 	var variablesGetter httpParamsGetter = func(r *http.Request) map[string]string {
-		return mux.Vars(r)
+		return way.Vars(r)
 	}
 	httpHelp.new(i.Logger, i.Control, i.Config.Security.Cookie, variablesGetter)
 
 	// middleware.
 	var md = &middleware.Instance{}
-	md.New(corsInstance.Middleware, bodyLimiter.Middleware, httpHelp.middleware)
+	if err = md.New(corsInstance.Middleware, bodyLimiter.Middleware, httpHelp.middleware); err != nil {
+		return err
+	}
 	i.Middleware = md
+	return err
 }

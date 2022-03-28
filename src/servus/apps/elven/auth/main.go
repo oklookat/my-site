@@ -4,8 +4,7 @@ import (
 	"net/http"
 	"servus/apps/elven/base"
 	"servus/core"
-
-	"github.com/gorilla/mux"
+	"servus/core/external/way"
 )
 
 var call *core.Instance
@@ -28,14 +27,11 @@ func (a *Instance) Boot(
 	a.throw = _throw
 }
 
-func (a *Instance) BootRoutes(router *mux.Router) {
-
+func (a *Instance) BootRoutes(router *way.Router) {
 	// login
-	var login = router.PathPrefix("/auth").Subrouter()
-	login.HandleFunc("/login", a.login).Methods(http.MethodPost)
+	router.Route("/auth", a.login).Methods(http.MethodPost)
 
 	// logout
-	var logout = router.PathPrefix("/auth").Subrouter()
+	var logout = router.Route("/auth", a.logout).Methods(http.MethodPost)
 	logout.Use(a.middleware.AuthorizedOnly)
-	logout.HandleFunc("/logout", a.logout).Methods(http.MethodPost)
 }

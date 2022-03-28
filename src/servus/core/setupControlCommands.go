@@ -3,6 +3,15 @@ package core
 import "fmt"
 
 func (i *Instance) setupControlCommands() {
+	//////////// help.
+	i.Control.AddCommand("/help", func(args []string) {
+		var msg = `Servus Control Module commands:
+[/ban ip] - ban IP address
+[/unban ip] - unban IP address
+`
+		i.Control.SendMessage(msg)
+	})
+
 	//////////// banhammer.
 	// ban.
 	i.Control.AddCommand("/ban", func(args []string) {
@@ -33,6 +42,7 @@ func (i *Instance) setupControlCommands() {
 		var msg = fmt.Sprintf(`[#BAN] %v`, ip)
 		i.Control.SendMessage(msg)
 	})
+
 	i.Banhammer.OnUnbanned(func(ip string) {
 		var msg = fmt.Sprintf(`[#UNBAN] %v`, ip)
 		i.Control.SendMessage(msg)

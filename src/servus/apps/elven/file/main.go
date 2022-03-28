@@ -4,8 +4,7 @@ import (
 	"net/http"
 	"servus/apps/elven/base"
 	"servus/core"
-
-	"github.com/gorilla/mux"
+	"servus/core/external/way"
 )
 
 var call *core.Instance
@@ -28,10 +27,10 @@ func (f *Instance) Boot(
 	f.throw = _throw
 }
 
-func (f *Instance) BootRoutes(router *mux.Router) {
-	var fr = router.PathPrefix("/files").Subrouter()
-	fr.Use(f.middleware.AdminOnly)
-	fr.HandleFunc("", f.getAll).Methods(http.MethodGet)
-	fr.HandleFunc("", f.upload).Methods(http.MethodPost)
-	fr.HandleFunc("/{id}", f.deleteOne).Methods(http.MethodDelete)
+func (f *Instance) BootRoutes(router *way.Router) {
+	var root = router.Group("/files")
+	root.Use(f.middleware.AdminOnly)
+	root.Route("", f.getAll).Methods(http.MethodGet)
+	root.Route("", f.upload).Methods(http.MethodPost)
+	root.Route("/{id}", f.deleteOne).Methods(http.MethodDelete)
 }

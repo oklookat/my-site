@@ -10,8 +10,7 @@ import (
 	"servus/apps/elven/user"
 	"servus/core"
 	"servus/core/external/errorMan"
-
-	"github.com/gorilla/mux"
+	"servus/core/external/way"
 )
 
 var call *core.Instance
@@ -65,16 +64,18 @@ func (a *App) Boot(c *core.Instance) {
 }
 
 func (a *App) bootRoutes() {
-	router := mux.NewRouter().PathPrefix("/elven").Subrouter()
-	router.Use(call.Middleware.ProvideHTTP())
-	router.Use(call.Middleware.AsJson())
-	router.Use(a.Middleware.ProvideTokenPipe)
-	router.Use(a.Middleware.ProvideUserPipe)
-	//
-	a.Auth.BootRoutes(router)
-	a.Article.BootRoutes(router)
-	a.File.BootRoutes(router)
-	a.User.BootRoutes(router)
+	var router = way.New()
+	var root = router.Group("/elven")
+	// add global middleware.
+	root.Use(call.Middleware.ProvideHTTP())
+	root.Use(call.Middleware.AsJson())
+	root.Use(a.Middleware.ProvideTokenPipe)
+	root.Use(a.Middleware.ProvideUserPipe)
+	// provide routes..
+	a.Auth.BootRoutes(root)
+	a.Article.BootRoutes(root)
+	a.File.BootRoutes(root)
+	a.User.BootRoutes(root)
 	//
 	call.Banhammer.GetMiddleware()
 

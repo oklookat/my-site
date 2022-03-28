@@ -1,55 +1,80 @@
 package way
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
-type route struct {
-	path   string
-	points []*Point
+type Route struct {
+	// is route has prefix? (it means route under group)
+	isHasPrefix bool
+
+	// route prefix.
+	prefix string
+
+	// route path like: /hello/world.
+	path string
+
+	// route path slice like: [hello, world].
+	pathSlice []string
+
+	// allowed route methods.
+	allowedMethods []string
+
+	// route middleware chain.
+	middleware MiddlewareFunc
+
+	// route endpoint.
+	handler RouteHandler
 }
 
-func (r *route) new(path string, handler http.HandlerFunc, routes []*route) (notExists bool, p *Point) {
-	path = normalizePath(path)
-	var point = &Point{}
-	point.new(handler)
-	// find route.
-	var routeExists = false
-	for _, rRoute := range routes {
-		if rRoute.path != path {
-			continue
-		}
-		routeExists = true
-		rRoute.points = append(rRoute.points, point)
+func (r *Route) new(prefix string, to string, handler RouteHandler) {
+	// check prefix.
+	if len(prefix) > 0 {
+		r.isHasPrefix = true
+		r.prefix = prefix
 	}
-	if !routeExists {
-		r.path = path
-		r.points = make([]*Point, 0)
-		r.points = append(r.points, point)
-		return true, point
-	}
-	return false, point
+
+	// clean.
+	r.path = pathToStandart(to)
+
+	// split.
+	r.pathSlice = strings.Split(removeSlashStartEnd(r.path), "/")
+
+	// set.
+	r.handler = handler
 }
 
-// this route? If it is, get params.
-func (r *route) match(requestPath string) (matched bool, params map[string]string) {
-	matched = false
-	invalid, differ, params := verifyPaths(r.path, requestPath, true)
-	if invalid || differ {
+func (r *Route) ServeHTTP(response http.ResponseWriter, request *http.Request) {
+
+	// run middleware.
+	var isResponseSended = executeMiddleware(response, request, r.middleware)
+	if isResponseSended {
 		return
 	}
-	matched = true
+
+	r.handler(response, request)
 	return
 }
 
-func (r *route) findAndExecute(response http.ResponseWriter, request *http.Request, handler405 http.HandlerFunc) {
-	var rMethod = request.Method
-	for index := range r.points {
-		for _, method := range r.points[index].methods {
-			if method != rMethod {
-				continue
-			}
-			r.points[index].runMiddlewareAndEndpoint(response, request)
-			return
-		}
+// route trigger on this methods only.
+func (r *Route) Methods(methods ...string) *Route {
+	r.allowedMethods = processAllowedMethods(r.allowedMethods, methods...)
+	return r
+}
+
+// provide middleware.
+func (r *Route) Use(middleware ...MiddlewareFunc) {
+	var chained = make([]MiddlewareFunc, 0)
+	if r.middleware != nil {
+		chained = append(chained, r.middleware)
 	}
-	handler405.ServeHTTP(response, request)
+	for _, m := range middleware {
+		if m == nil {
+			continue
+		}
+		chained = append(chained, m)
+	}
+	var finalChain = middlewareChain(chained...)
+	r.middleware = finalChain
 }

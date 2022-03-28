@@ -4,8 +4,7 @@ import (
 	"net/http"
 	"servus/apps/elven/base"
 	"servus/core"
-
-	"github.com/gorilla/mux"
+	"servus/core/external/way"
 )
 
 var call *core.Instance
@@ -30,24 +29,24 @@ func (a *Instance) Boot(
 }
 
 // add routes to router.
-func (a *Instance) BootRoutes(router *mux.Router) {
-	var root = router.PathPrefix("/article").Subrouter()
+func (a *Instance) BootRoutes(router *way.Router) {
+	var root = router.Group("/article")
 
 	// articles | /article/articles
-	var articles = root.PathPrefix("/articles").Subrouter()
+	var articles = root.Group("/articles")
 	articles.Use(a.middleware.SafeMethodsOnly)
-	articles.HandleFunc("", a.getArticles).Methods(http.MethodGet)
-	articles.HandleFunc("", a.createArticle).Methods(http.MethodPost)
-	articles.HandleFunc("/{id}", a.getArticle).Methods(http.MethodGet)
-	articles.HandleFunc("/{id}", a.updateArticle).Methods(http.MethodPut, http.MethodPatch)
-	articles.HandleFunc("/{id}", a.deleteArticle).Methods(http.MethodDelete)
+	articles.Route("", a.getArticles).Methods(http.MethodGet)
+	articles.Route("", a.createArticle).Methods(http.MethodPost)
+	articles.Route("/{id}", a.getArticle).Methods(http.MethodGet)
+	articles.Route("/{id}", a.updateArticle).Methods(http.MethodPut, http.MethodPatch)
+	articles.Route("/{id}", a.deleteArticle).Methods(http.MethodDelete)
 
 	// categories | /article/categories
-	var categories = root.PathPrefix("/categories").Subrouter()
+	var categories = root.Group("/categories")
 	categories.Use(a.middleware.SafeMethodsOnly)
-	categories.HandleFunc("", a.getCategories).Methods(http.MethodGet)
-	categories.HandleFunc("", a.addCategory).Methods(http.MethodPost)
-	categories.HandleFunc("/{id}", a.getCategory).Methods(http.MethodGet)
-	categories.HandleFunc("/{id}", a.renameCategory).Methods(http.MethodPut, http.MethodPatch)
-	categories.HandleFunc("/{id}", a.deleteCategory).Methods(http.MethodDelete)
+	categories.Route("", a.getCategories).Methods(http.MethodGet)
+	categories.Route("", a.addCategory).Methods(http.MethodPost)
+	categories.Route("/{id}", a.getCategory).Methods(http.MethodGet)
+	categories.Route("/{id}", a.renameCategory).Methods(http.MethodPut, http.MethodPatch)
+	categories.Route("/{id}", a.deleteCategory).Methods(http.MethodDelete)
 }

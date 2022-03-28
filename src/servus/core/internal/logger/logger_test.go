@@ -1,18 +1,8 @@
 package logger
 
 import (
-	"os"
 	"testing"
 )
-
-// get server execution directory.
-func GetExecuteDir() string {
-	path, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	return path
-}
 
 func create() *Instance {
 	var cnf = &Config{Level: 1}

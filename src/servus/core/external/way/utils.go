@@ -1,84 +1,184 @@
 package way
 
 import (
-	"log"
+	"context"
 	"net/http"
-	"regexp"
+	"path"
 	"strings"
-	"unicode/utf8"
 )
 
-// default endpoint for 404 page.
-func defaultNotFound(response http.ResponseWriter, request *http.Request) {
-	response.WriteHeader(404)
-	if _, err := response.Write([]byte("not found")); err != nil {
-		log.Printf("way: default 404 endpoint, response send failed. Error: %v", err)
+// when ServeHTTP called, sets Executed to true.
+type dummyEndpoint struct {
+	Executed bool
+}
+
+func (d *dummyEndpoint) ServeHTTP(response http.ResponseWriter, request *http.Request) {
+	d.Executed = true
+}
+
+// run middlewares.
+func executeMiddleware(response http.ResponseWriter, request *http.Request, middleware MiddlewareFunc) (isResponseSended bool) {
+	if middleware == nil {
 		return
 	}
-}
 
-// default endpoint for 405 page.
-func defaultNotAllowed(response http.ResponseWriter, request *http.Request) {
-	response.WriteHeader(405)
-	if _, err := response.Write([]byte("method not allowed")); err != nil {
-		log.Printf("way: default 405 endpoint, response send failed. Error: %v", err)
-		return
-	}
-}
+	// set dummy as middleware endpoint.
+	var dummy = &dummyEndpoint{}
+	var handler = middleware(dummy)
+	handler.ServeHTTP(response, request)
 
-// get {params} from request.
-//
-// Example: if route /hello/{id} and request are /hello/12 - returns [id: 12].
-func GetParams(request *http.Request) map[string]string {
-	params, ok := request.Context().Value(ctxPathParams).(map[string]string)
-	if !ok {
-		return nil
-	}
-	return params
-}
+	// if dummy not executed
+	// it means middleware sended response / not called next.ServeHTTP()
+	isResponseSended = !dummy.Executed
 
-// from path like /hello or ///hello// make /hello/.
-func normalizePath(path string) string {
-	regex := regexp.MustCompile(`//+`)
-	path = regex.ReplaceAllString(path, "/")
-	return path
-}
-
-// make one map from maps (duplicates will be replaced).
-func mapsToMap(maps ...map[string]string) map[string]string {
-	concat := make(map[string]string, 0)
-	for index := range maps {
-		var _map = maps[index]
-		if _map == nil || len(_map) < 1 {
-			continue
-		}
-		for key := range _map {
-			concat[key] = _map[key]
-		}
-	}
-	return concat
-}
-
-// v len < 1.
-func isEmpty(v []string) bool {
-	return len(v) < 1
-}
-
-// check is str is param, and get param name.
-func getParamName(str string) (hasParam bool, name string) {
-	hasParam = strings.HasPrefix(str, paramOpen) && strings.HasSuffix(str, paramClose)
-	if !hasParam {
-		return
-	}
-	name = str
-	// remove first {
-	name = trimFirstRune(name)
-	// remove last }
-	name = name[:len(name)-1]
 	return
 }
 
-func trimFirstRune(s string) string {
-	_, i := utf8.DecodeRuneInString(s)
-	return s[i:]
+// https://gist.github.com/husobee/fd23681261a39699ee37?permalink_comment_id=3111569#gistcomment-3111569
+//
+// make one big middleware from middlewares.
+func middlewareChain(middlewares ...MiddlewareFunc) MiddlewareFunc {
+	if len(middlewares) < 1 {
+		return nil
+	}
+	return func(next http.Handler) http.Handler {
+		for i := len(middlewares) - 1; i >= 0; i-- {
+			if middlewares[i] == nil {
+				continue
+			}
+			next = middlewares[i](next)
+		}
+		return next
+	}
+}
+
+// https://blog.merovius.de/2017/06/18/how-not-to-use-an-http-router.html
+//
+// ShiftPath splits off the first component of p, which will be cleaned of
+// relative components before processing. head will never contain a slash and
+// tail will always be a rooted path without trailing slash.
+func shiftPath(p string) (head, tail string) {
+	p = path.Clean("/" + p)
+	i := strings.Index(p[1:], "/") + 1
+	if i <= 0 {
+		return p[1:], "/"
+	}
+	return p[1:i], p[i:]
+}
+
+// get path variables.
+func Vars(request *http.Request) map[string]string {
+	var ctx = request.Context()
+	var varsMap, ok = ctx.Value(CTX_VARS_NAME).(map[string]string)
+	if !ok {
+		return nil
+	}
+	return varsMap
+}
+
+// is route variable?
+func isRouteVar(path string) (isVar bool, varName string) {
+	isVar = strings.HasPrefix(path, "{") && strings.HasSuffix(path, "}")
+	if isVar {
+		var withoutBrackets = strings.ReplaceAll(path, "{", "")
+		withoutBrackets = strings.ReplaceAll(path, "}", "")
+		varName = withoutBrackets
+	}
+	return
+}
+
+// add route variable with value to request context.
+func addVarToContext(request *http.Request, name string, value string) {
+	var oldCtx = request.Context()
+	var varsMap, ok = oldCtx.Value(CTX_VARS_NAME).(map[string]string)
+	if !ok || varsMap == nil {
+		varsMap = make(map[string]string, 0)
+	}
+	varsMap[name] = value
+	var ctxWithVars = context.WithValue(oldCtx, CTX_VARS_NAME, varsMap)
+	request = request.WithContext(ctxWithVars)
+}
+
+// check is method allowed.
+func isMethodAllowed(methods []string, requestMethod string) bool {
+	if methods == nil {
+		return true
+	}
+	var isMethodAllowed = false
+	for _, method := range methods {
+		if requestMethod == method {
+			isMethodAllowed = true
+			break
+		}
+	}
+	return isMethodAllowed
+}
+
+// remove slash at start and end of str.
+func removeSlashStartEnd(str string) string {
+	str = removeSlashStart(str)
+	str = removeSlashEnd(str)
+	return str
+}
+
+// remove slash at start of str.
+func removeSlashStart(str string) string {
+	str = strings.TrimPrefix(str, "/")
+	return str
+}
+
+// remove slash at end of str.
+func removeSlashEnd(str string) string {
+	str = strings.TrimSuffix(str, "/")
+	return str
+}
+
+// default 405 sender.
+func send405(r http.ResponseWriter) {
+	r.WriteHeader(405)
+	r.Write([]byte("method not allowed"))
+}
+
+// default 404 sender.
+func send404(r http.ResponseWriter) {
+	r.WriteHeader(404)
+	r.Write([]byte("not found"))
+}
+
+// make path like: /hello/world
+func pathToStandart(to string) string {
+	to = "/" + removeSlashEnd(to)
+	return path.Clean(to)
+}
+
+// https://www.geeksforgeeks.org/how-to-remove-duplicate-values-from-slice-in-golang/
+//
+// remove duplicates from slice.
+func removeDuplicateValues[T comparable](slice []T) []T {
+	keys := make(map[T]bool)
+	list := []T{}
+
+	// If the key(values of the slice) is not equal
+	// to the already present value in new slice (list)
+	// then we append it. else we jump on another element.
+	for _, entry := range slice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+
+// format route allowed methods.
+func processAllowedMethods(slice []string, methods ...string) []string {
+	if slice == nil {
+		slice = make([]string, 0)
+	}
+	for _, method := range methods {
+		method = strings.ToUpper(method)
+		slice = append(slice, method)
+	}
+	slice = removeDuplicateValues(slice)
+	return slice
 }

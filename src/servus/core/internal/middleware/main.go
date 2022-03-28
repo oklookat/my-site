@@ -1,6 +1,9 @@
 package middleware
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
 
 type mFunc func(http.Handler) http.Handler
 
@@ -15,9 +18,10 @@ func (m *Instance) New(
 	cors mFunc,
 	limitBody mFunc,
 	httpHelper mFunc,
-) {
+) error {
+	var err error
 	if cors == nil || limitBody == nil || httpHelper == nil {
-		panic("[middleware]: one of args has nil pointer")
+		return errors.New("[middleware]: one of args has nil pointer")
 	}
 	m.cors = cors
 	m.limitBody = limitBody
@@ -28,6 +32,7 @@ func (m *Instance) New(
 			next.ServeHTTP(writer, request)
 		})
 	}
+	return err
 }
 
 func (i *Instance) AsJson() func(http.Handler) http.Handler {
