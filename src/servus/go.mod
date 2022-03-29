@@ -7,7 +7,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v4 v4.15.0
 	github.com/jmoiron/sqlx v1.3.4
-	github.com/mattn/go-sqlite3 v1.14.12
+	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/oklog/ulid/v2 v2.0.2
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 )
