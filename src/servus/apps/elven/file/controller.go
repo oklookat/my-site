@@ -20,8 +20,8 @@ func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// get pipe.
-	pipe := f.pipe.GetByContext(request)
-	isAdmin := pipe != nil && pipe.IsAdmin()
+	var pipe = f.pipe.GetByContext(request)
+	var isAdmin = pipe.IsAdmin()
 
 	// validate/filter.
 	body, err := ValidateGetParams(request.URL.Query(), isAdmin)
@@ -57,7 +57,7 @@ func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 // upload file (POST).
 func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
-	auth := f.pipe.GetByContext(request)
+	var auth = f.pipe.GetByContext(request)
 
 	// get from form.
 	var tempDir = call.Config.Uploads.Temp

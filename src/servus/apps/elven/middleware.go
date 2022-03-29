@@ -19,8 +19,7 @@ func (m *middleware) AuthorizedOnly(next http.Handler) http.Handler {
 		userPipe := user.GetByContext(request)
 
 		// check rights.
-		var isAuthorized = userPipe != nil
-		if !isAuthorized {
+		if !userPipe.IsAuthorized() {
 			h.Send(requestErrors.Forbidden(), 401, nil)
 			return
 		}
@@ -49,8 +48,7 @@ func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 		userPipe := user.GetByContext(request)
 
 		// allow if admin.
-		var isAuthorized = userPipe != nil
-		var isAdmin = isAuthorized && userPipe.IsAdmin()
+		var isAdmin = userPipe.IsAdmin()
 		if isAdmin {
 			next.ServeHTTP(response, request)
 			return
@@ -58,7 +56,7 @@ func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 
 		// access denied. Set status code.
 		var statusCode = 403 // 403 = authorized, but not admin.
-		if !isAuthorized {
+		if !userPipe.IsAuthorized() {
 			statusCode = 401 // 401 = not authorized
 		}
 		h.Send(requestErrors.Forbidden(), statusCode, nil)
@@ -75,8 +73,7 @@ func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 		// check rights.
 		var user = pipe.User{}
 		userPipe := user.GetByContext(request)
-		var isAuthorized = userPipe != nil
-		var isAdmin = isAuthorized && userPipe.IsAdmin()
+		var isAdmin = userPipe.IsAdmin()
 		if isAdmin {
 			next.ServeHTTP(response, request)
 			return
@@ -84,7 +81,7 @@ func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 
 		// access denied. Set status code.
 		var statusCode = 403 // 403 = authorized, but not admin.
-		if !isAuthorized {
+		if !userPipe.IsAuthorized() {
 			statusCode = 401 // 401 = not authorized
 		}
 		h.Send(requestErrors.Forbidden(), statusCode, nil)
@@ -113,18 +110,22 @@ func (m *middleware) ProvideTokenPipe(next http.Handler) http.Handler {
 func (m *middleware) ProvideUserPipe(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var ctx = request.Context()
+
 		// get token.
 		var token = pipe.Token{}
 		tokenPipe := token.GetByContext(request)
-		if tokenPipe != nil {
-			// get user.
-			var user = pipe.User{}
-			var userPipe, err = user.GetByID(tokenPipe.GetUserID())
-			var isHasUserPipe = !(userPipe == nil || err != nil)
-			if isHasUserPipe {
-				var userCtx = context.WithValue(ctx, pipe.CtxUser, userPipe)
-				*request = *request.WithContext(userCtx)
-			}
+		if !tokenPipe.IsExists() {
+			next.ServeHTTP(response, request)
+			return
+		}
+
+		// get user.
+		var user = pipe.User{}
+		var userPipe, err = user.GetByID(tokenPipe.GetUserID())
+		var isHasUserPipe = !(userPipe == nil || err != nil)
+		if isHasUserPipe {
+			var userCtx = context.WithValue(ctx, pipe.CtxUser, userPipe)
+			*request = *request.WithContext(userCtx)
 		}
 		next.ServeHTTP(response, request)
 	})

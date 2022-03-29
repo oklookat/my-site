@@ -81,7 +81,7 @@ func isRouteVar(path string) (isVar bool, varName string) {
 	isVar = strings.HasPrefix(path, "{") && strings.HasSuffix(path, "}")
 	if isVar {
 		var withoutBrackets = strings.ReplaceAll(path, "{", "")
-		withoutBrackets = strings.ReplaceAll(path, "}", "")
+		withoutBrackets = strings.ReplaceAll(withoutBrackets, "}", "")
 		varName = withoutBrackets
 	}
 	return
@@ -96,7 +96,7 @@ func addVarToContext(request *http.Request, name string, value string) {
 	}
 	varsMap[name] = value
 	var ctxWithVars = context.WithValue(oldCtx, CTX_VARS_NAME, varsMap)
-	request = request.WithContext(ctxWithVars)
+	*request = *request.WithContext(ctxWithVars)
 }
 
 // check is method allowed.
@@ -104,14 +104,12 @@ func isMethodAllowed(methods []string, requestMethod string) bool {
 	if methods == nil {
 		return true
 	}
-	var isMethodAllowed = false
 	for _, method := range methods {
 		if requestMethod == method {
-			isMethodAllowed = true
-			break
+			return true
 		}
 	}
-	return isMethodAllowed
+	return false
 }
 
 // remove slash at start and end of str.
@@ -147,6 +145,9 @@ func send404(r http.ResponseWriter) {
 
 // make path like: /hello/world
 func pathToStandart(to string) string {
+	if len(to) < 1 {
+		return to
+	}
 	to = "/" + removeSlashEnd(to)
 	return path.Clean(to)
 }

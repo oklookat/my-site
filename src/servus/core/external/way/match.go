@@ -23,14 +23,24 @@ func (r *routeMatcher) New(req *http.Request) {
 
 func (r *routeMatcher) Groups(routers []*Router) (matched *Router, statusCode int) {
 	statusCode = 200
-	for i := range routers {
+	var requestPath = r.requestPath
+	var requestPathSlice = r.requestPathSlice
 
-		// example: request /hello, prefix /hello/world. Not our group.
-		if len(r.requestPathSlice) < len(routers[i].prefixSlice) {
+	for i := range routers {
+		// check is route has parent prefix.
+		var isHasExcludePrefix = len(routers[i].excludePrefix) > 0
+		if isHasExcludePrefix {
+			// exclude parent prefix from request path (its already computed before).
+			requestPath = strings.TrimPrefix(requestPath, routers[i].excludePrefix)
+			requestPathSlice = strings.Split(removeSlashStartEnd(requestPath), "/")
+		}
+
+		// example: prefix /hello/world, request /hello. Not our group.
+		if len(routers[i].prefixSlice) > len(r.requestPathSlice) {
 			continue
 		}
 
-		var isPieceMatched = r.matchPathPieces(i, routers[i].prefixSlice, r.requestPathSlice)
+		var isPieceMatched = r.matchPathPieces(i, routers[i].prefixSlice, requestPathSlice)
 		if isPieceMatched {
 			matched = routers[i]
 		}
@@ -68,20 +78,18 @@ func (r *routeMatcher) Groups(routers []*Router) (matched *Router, statusCode in
 
 func (r *routeMatcher) Routes(routes []*Route) (matched *Route, statusCode int) {
 	statusCode = 200
+	var requestPath = r.requestPath
+	var requestPathSlice = r.requestPathSlice
 	for i := range routes {
-
-		var requestPath = r.requestPath
-		var requestPathSlice = r.requestPathSlice
-
 		// check is route under group (has prefix).
-		if routes[i].isHasPrefix {
+		if routes[i].isUnderGroup {
 			// remove prefix from request path (its already computed in group).
-			requestPath = strings.TrimPrefix(requestPath, routes[i].prefix)
+			requestPath = strings.TrimPrefix(requestPath, routes[i].excludePrefix)
 			requestPathSlice = strings.Split(removeSlashStartEnd(requestPath), "/")
 		}
 
-		// example: request /hello, route /hello/world. Not our route.
-		if len(requestPathSlice) != len(routes[i].pathSlice) {
+		// example: route /hello/world, request /hello. Not our route.
+		if len(routes[i].pathSlice) > len(requestPathSlice) {
 			continue
 		}
 
@@ -92,60 +100,63 @@ func (r *routeMatcher) Routes(routes []*Route) (matched *Route, statusCode int) 
 
 		var isLastRoute = i == len(routes)-1
 
-		// if last route and no match, set 404 code.
-		if matched == nil && isLastRoute {
-			// if we found route before, but with not allowed method
-			// then not change status code
+		// if we found route.
+		if matched != nil {
+			// check is method allowed.
+			var isAllowed = isMethodAllowed(matched.allowedMethods, r.method)
+			if isAllowed {
+				// it's our route.
+				return
+			} else {
+				// method not allowed.
+				if isLastRoute {
+					// method not allowed and no more routes.
+					matched = nil
+					statusCode = 405
+					return
+				}
+				// method not allowed, but maybe try other paths?
+				statusCode = 405
+			}
+		} else if isLastRoute {
+			// if we not found route and it's last path.
 			if statusCode != 405 {
 				statusCode = 404
 			}
 			matched = nil
 			return
-		} else if matched != nil {
-			// if we found route.
-			// check is method allowed.
-			var isAllowed = isMethodAllowed(routes[i].allowedMethods, r.method)
-			if isLastRoute && !isAllowed {
-				// if it last route and method not allowed, set 405 code.
-				statusCode = 405
-				matched = nil
-				return
-			} else if !isAllowed {
-				// not last route, but method not allowed, go next.
-				continue
-			}
-			// all checks passed, its our group.
-			return
 		}
+
 	}
 	return
 }
 
 func (r *routeMatcher) matchPathPieces(counter int, pathSlice []string, requestPathSlice []string) (matched bool) {
-	// check path pieces.
-	for j := range pathSlice {
-		// example: is req piece /hello, and prefix /hello
-		var isSame = pathSlice[j] == requestPathSlice[j]
+	// compare paths.
+	for pieceCounter := range pathSlice {
+		var pathPiece = pathSlice[pieceCounter]
+		var requestPathPiece = requestPathSlice[pieceCounter]
 
+		var isSame = pathPiece == requestPathPiece
 		// not same? maybe it's route variable?
 		if !isSame {
-			// example: is req piece /users/12, and prefix /users/{id}
-			var isVar, name = isRouteVar(pathSlice[j])
+			var isVar, name = isRouteVar(pathPiece)
 			if !isVar {
-				// summary: pieces not same, and it's not var. Not our group.
+				// summary: pieces not same, and it's not var. Not our path.
 				matched = false
 				break
 			}
 
-			// add var to request context.
-			addVarToContext(r.request, name, requestPathSlice[counter])
+			// if it's var, add it to context
+			addVarToContext(r.request, name, requestPathPiece)
 		}
 
 		// check is last piece.
-		var isLast = j == len(pathSlice)-1
+		var isLast = pieceCounter == len(pathSlice)-1
 		if isLast {
-			// maybe our group.
+			// pieces same, maybe it's our path.
 			matched = true
+			return
 		}
 	}
 	return

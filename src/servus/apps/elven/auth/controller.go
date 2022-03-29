@@ -77,7 +77,7 @@ func (a *Instance) logout(response http.ResponseWriter, request *http.Request) {
 
 	// get token from cookie or auth header.
 	var pipe = a.pipe.GetByContext(request)
-	if pipe == nil {
+	if !pipe.IsExists() {
 		h.Send("not authorized", 400, nil)
 		return
 	}

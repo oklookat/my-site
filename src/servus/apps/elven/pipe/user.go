@@ -6,55 +6,59 @@ import (
 	"servus/apps/elven/model"
 )
 
-type _ctx_user string
-
-const CtxUser _ctx_user = "ELVEN_USER_PIPE"
-const (
-	userRoleAdmin = "admin"
-	userRoleUser  = "user"
-)
-
 type User struct {
+	model *model.User
 }
 
-type UserPipe struct {
-	model *model.User
+// is pipe model not empty?
+func (u *User) IsAuthorized() bool {
+	return u.model != nil
 }
 
 // get pipe by request context.
 func (u *User) GetByContext(request *http.Request) base.UserPipe {
 	pipe, ok := request.Context().Value(CtxUser).(base.UserPipe)
 	if !ok {
-		return nil
+		var emptyPipe = &User{}
+		return emptyPipe
 	}
 	return pipe
 }
 
 // get pipe by user id.
-func (u *User) GetByID(id string) (*UserPipe, error) {
+func (u *User) GetByID(id string) (base.UserPipe, error) {
 	var user = &model.User{}
 	user.ID = id
 	found, err := user.FindByID()
 	if !found {
 		return nil, err
 	}
-	var pipe = &UserPipe{}
+	var pipe = &User{}
 	pipe.model = user
 	return pipe, err
 }
 
-func (u *UserPipe) IsAdmin() bool {
-	return u.model.Role == userRoleAdmin
+func (u *User) IsAdmin() bool {
+	return u.IsAuthorized() && u.model.Role == userRoleAdmin
 }
 
-func (u *UserPipe) GetID() string {
+func (u *User) GetID() string {
+	if !u.IsAuthorized() {
+		return ""
+	}
 	return u.model.ID
 }
 
-func (u *UserPipe) GetUsername() string {
+func (u *User) GetUsername() string {
+	if !u.IsAuthorized() {
+		return ""
+	}
 	return u.model.Username
 }
 
-func (u *UserPipe) GetPassword() string {
+func (u *User) GetPassword() string {
+	if !u.IsAuthorized() {
+		return ""
+	}
 	return u.model.Password
 }

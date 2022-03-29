@@ -6,11 +6,11 @@ import (
 )
 
 type Route struct {
-	// is route has prefix? (it means route under group)
-	isHasPrefix bool
+	// is route under group?
+	isUnderGroup bool
 
-	// route prefix.
-	prefix string
+	// exclude this prefix from request (if route under group).
+	excludePrefix string
 
 	// route path like: /hello/world.
 	path string
@@ -28,11 +28,11 @@ type Route struct {
 	handler RouteHandler
 }
 
-func (r *Route) new(prefix string, to string, handler RouteHandler) {
+func (r *Route) new(excludePrefix string, to string, handler RouteHandler) {
 	// check prefix.
-	if len(prefix) > 0 {
-		r.isHasPrefix = true
-		r.prefix = prefix
+	if len(excludePrefix) > 0 {
+		r.isUnderGroup = true
+		r.excludePrefix = excludePrefix
 	}
 
 	// clean.
@@ -46,7 +46,6 @@ func (r *Route) new(prefix string, to string, handler RouteHandler) {
 }
 
 func (r *Route) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-
 	// run middleware.
 	var isResponseSended = executeMiddleware(response, request, r.middleware)
 	if isResponseSended {

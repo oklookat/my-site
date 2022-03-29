@@ -13,17 +13,20 @@ const (
 )
 
 type Token struct {
+	model *model.Token
 }
 
-type TokenPipe struct {
-	model *model.Token
+// is pipe model exists?
+func (t *Token) IsExists() bool {
+	return t.model != nil
 }
 
 // get pipe by request context. Use only if you provided to request context.
 func (t *Token) GetByContext(request *http.Request) base.TokenPipe {
 	pipe, ok := request.Context().Value(CtxToken).(base.TokenPipe)
 	if !ok {
-		return nil
+		var emptyPipe = &Token{}
+		return emptyPipe
 	}
 	return pipe
 }
@@ -54,7 +57,7 @@ func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
 	_ = md.SetLastAgents(request)
 
 	// create pipe.
-	var pipe = &TokenPipe{}
+	var pipe = &Token{}
 	pipe.model = md
 	return pipe, err
 }
@@ -86,14 +89,23 @@ func (t *Token) getEncryptedByRequest(request *http.Request) (encrypted string, 
 	return
 }
 
-func (t *TokenPipe) GetID() string {
+func (t *Token) GetID() string {
+	if !t.IsExists() {
+		return ""
+	}
 	return t.model.ID
 }
 
-func (t *TokenPipe) GetUserID() string {
+func (t *Token) GetUserID() string {
+	if !t.IsExists() {
+		return ""
+	}
 	return t.model.UserID
 }
 
-func (t *TokenPipe) GetToken() string {
+func (t *Token) GetToken() string {
+	if !t.IsExists() {
+		return ""
+	}
 	return t.model.Token
 }

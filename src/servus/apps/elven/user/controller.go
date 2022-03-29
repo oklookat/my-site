@@ -10,7 +10,7 @@ import (
 // send some user data by token (GET).
 func (u *Instance) getMe(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
-	pipe := u.pipe.GetByContext(request)
+	var pipe = u.pipe.GetByContext(request)
 	var resp = Response{}
 	resp.IsAdmin = pipe.IsAdmin()
 	resp.Username = pipe.GetUsername()
@@ -34,7 +34,7 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// get pipe.
-	pipe := u.pipe.GetByContext(request)
+	var pipe = u.pipe.GetByContext(request)
 
 	// compare confirm password from body and original password from pipe.
 	match, err := call.Encryptor.Argon.Compare(body.Password, pipe.GetPassword())

@@ -11,14 +11,14 @@ var call *core.Instance
 
 type Instance struct {
 	middleware base.MiddlewareAuthorizedOnly
-	pipe       base.TokenPiper
+	pipe       base.TokenPipe
 	throw      base.RequestError
 }
 
 func (a *Instance) Boot(
 	_core *core.Instance,
 	_middleware base.MiddlewareAuthorizedOnly,
-	_pipe base.TokenPiper,
+	_pipe base.TokenPipe,
 	_throw base.RequestError,
 ) {
 	call = _core
@@ -28,10 +28,13 @@ func (a *Instance) Boot(
 }
 
 func (a *Instance) BootRoutes(router *way.Router) {
+
+	var authGroup = router.Group("/auth")
+
 	// login
-	router.Route("/auth", a.login).Methods(http.MethodPost)
+	authGroup.Route("/login", a.login).Methods(http.MethodPost)
 
 	// logout
-	var logout = router.Route("/auth", a.logout).Methods(http.MethodPost)
+	var logout = authGroup.Route("/logout", a.logout).Methods(http.MethodPost)
 	logout.Use(a.middleware.AuthorizedOnly)
 }

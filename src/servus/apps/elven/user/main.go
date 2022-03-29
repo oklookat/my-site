@@ -11,14 +11,14 @@ var call *core.Instance
 
 type Instance struct {
 	middleware base.MiddlewareAuthorizedOnly
-	pipe       base.UserPiper
+	pipe       base.UserPipe
 	throw      base.RequestError
 }
 
 func (u *Instance) Boot(
 	_core *core.Instance,
 	_middleware base.MiddlewareAuthorizedOnly,
-	_pipe base.UserPiper,
+	_pipe base.UserPipe,
 	_throw base.RequestError,
 ) {
 	call = _core

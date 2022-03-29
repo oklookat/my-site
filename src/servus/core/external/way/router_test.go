@@ -24,20 +24,11 @@ func TestBasicRouting(t *testing.T) {
 	var expectedResponse = map[int]string{
 		1: "HANDLER 1",
 		2: "HANDLER 2",
-		3: "GROUP HANDLER 1",
 	}
 
 	var singleMiddleware = func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 			t.Log("-- MIDDLEWARE HERE --")
-			next.ServeHTTP(response, request)
-			return
-		})
-	}
-
-	var groupMiddleware = func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-			t.Log("-- GROUP MIDDLEWARE HERE --")
 			next.ServeHTTP(response, request)
 			return
 		})
@@ -52,13 +43,6 @@ func TestBasicRouting(t *testing.T) {
 	root.Route(routeHello2+"//", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, expectedResponse[2])
 	}).Use(singleMiddleware)
-
-	// groups.
-	var group = root.Group(routeGroup1)
-	group.Use(groupMiddleware)
-	group.Route(routeHello1, func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, expectedResponse[3])
-	})
 
 	// init server.
 	var requestor = Requestor{}
@@ -84,16 +68,61 @@ func TestBasicRouting(t *testing.T) {
 	if body != expectedResponse[2] {
 		t.Fatalf("expected body: %v, got: %v", expectedResponse[2], body)
 	}
+}
 
-	// GET GROUP 1
-	t.Log("// TEST GET GROUP 1 //")
-	body, err = requestor.PrettySender(http.MethodGet, routeGroup1Full, nil)
+func TestTypicalRouting(t *testing.T) {
+	var rootMiddleware = func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+			t.Log("-- ROOT MIDDLEWARE --")
+			next.ServeHTTP(response, request)
+			return
+		})
+	}
+	var rootMiddleware2 = func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+			t.Log("-- ROOT MIDDLEWARE 2 --")
+			next.ServeHTTP(response, request)
+			return
+		})
+	}
+	var logoutMiddleware = func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+			t.Log("-- LOGOUT MIDDLEWARE --")
+			next.ServeHTTP(response, request)
+			return
+		})
+	}
+
+	var router = New()
+	var root = router.Group("/api")
+	root.Use(rootMiddleware, rootMiddleware2)
+
+	// auth.
+	var authGroup = root.Group("/auth")
+
+	// login
+	authGroup.Route("/login", func(w http.ResponseWriter, r *http.Request) {
+		t.Logf("/login route")
+	}).Methods(http.MethodPost)
+
+	// logout
+	var logout = authGroup.Route("/logout", func(w http.ResponseWriter, r *http.Request) {
+		t.Logf("/logout route")
+	}).Methods(http.MethodPost)
+	logout.Use(logoutMiddleware)
+
+	// init server.
+	var requestor = Requestor{}
+	requestor.New(router)
+	defer requestor.Server.Close()
+
+	// REQ 1
+	t.Log("// AUTH / LOGIN //")
+	var body, err = requestor.PrettySender(http.MethodPost, "/api/auth/login", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if body != expectedResponse[3] {
-		t.Fatalf("expected body: %v, got: %v", expectedResponse[3], body)
-	}
+	t.Logf(body)
 }
 
 ////////////////////////////

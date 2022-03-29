@@ -14,9 +14,8 @@ import (
 func (a *Instance) getArticles(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	var err error
-	var isAdmin = false
 	var pipe = a.pipe.GetByContext(request)
-	isAdmin = pipe != nil && pipe.IsAdmin()
+	var isAdmin = pipe.IsAdmin()
 
 	// validate.
 	validatedBody := &base.ArticleGetParams{}
@@ -53,8 +52,10 @@ func (a *Instance) getArticles(response http.ResponseWriter, request *http.Reque
 func (a *Instance) getArticle(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	var isAdmin = false
+
 	// get id from params.
 	var id = h.GetRouteArgs()["id"]
+
 	// find.
 	var article = model.Article{ID: id}
 	found, err := article.FindByID()
@@ -66,6 +67,7 @@ func (a *Instance) getArticle(response http.ResponseWriter, request *http.Reques
 		h.Send(a.throw.NotFound(), 404, err)
 		return
 	}
+
 	// if not published and user not admin, access denied.
 	var pAuth = a.pipe.GetByContext(request)
 	isAdmin = pAuth.IsAdmin()
@@ -73,6 +75,7 @@ func (a *Instance) getArticle(response http.ResponseWriter, request *http.Reques
 		h.Send(a.throw.Forbidden(), 403, err)
 		return
 	}
+
 	// send.
 	articleJson, err := json.Marshal(article)
 	if err != nil {
