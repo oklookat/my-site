@@ -1,4 +1,4 @@
-package way
+package goway
 
 import (
 	"context"
@@ -52,20 +52,6 @@ func middlewareChain(middlewares ...MiddlewareFunc) MiddlewareFunc {
 	}
 }
 
-// https://blog.merovius.de/2017/06/18/how-not-to-use-an-http-router.html
-//
-// ShiftPath splits off the first component of p, which will be cleaned of
-// relative components before processing. head will never contain a slash and
-// tail will always be a rooted path without trailing slash.
-func shiftPath(p string) (head, tail string) {
-	p = path.Clean("/" + p)
-	i := strings.Index(p[1:], "/") + 1
-	if i <= 0 {
-		return p[1:], "/"
-	}
-	return p[1:i], p[i:]
-}
-
 // get path variables.
 func Vars(request *http.Request) map[string]string {
 	var ctx = request.Context()
@@ -74,6 +60,16 @@ func Vars(request *http.Request) map[string]string {
 		return nil
 	}
 	return varsMap
+}
+
+// get status code (if it was setted in addStatusCodeToContext).
+func getStatusCode(request *http.Request) int {
+	var ctx = request.Context()
+	var code, ok = ctx.Value(CTX_VARS_CODE).(int)
+	if !ok {
+		return 0
+	}
+	return code
 }
 
 // is route variable?
@@ -99,6 +95,13 @@ func addVarToContext(request *http.Request, name string, value string) {
 	*request = *request.WithContext(ctxWithVars)
 }
 
+// add status code to request context.
+func addStatusCodeToContext(request *http.Request, statusCode int) {
+	var oldCtx = request.Context()
+	var ctxWithCode = context.WithValue(oldCtx, CTX_VARS_NAME, statusCode)
+	*request = *request.WithContext(ctxWithCode)
+}
+
 // check is method allowed.
 func isMethodAllowed(methods []string, requestMethod string) bool {
 	if methods == nil {
@@ -114,8 +117,12 @@ func isMethodAllowed(methods []string, requestMethod string) bool {
 
 // remove slash at start and end of str.
 func removeSlashStartEnd(str string) string {
+	if len(str) < 1 {
+		return str
+	}
 	str = removeSlashStart(str)
 	str = removeSlashEnd(str)
+	str = path.Clean(str)
 	return str
 }
 
@@ -131,16 +138,20 @@ func removeSlashEnd(str string) string {
 	return str
 }
 
-// default 405 sender.
-func send405(r http.ResponseWriter) {
-	r.WriteHeader(405)
-	r.Write([]byte("method not allowed"))
+// default 405 handler.
+func getDefaultHandler405() RouteHandler {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(405)
+		w.Write([]byte("method not allowed"))
+	}
 }
 
-// default 404 sender.
-func send404(r http.ResponseWriter) {
-	r.WriteHeader(404)
-	r.Write([]byte("not found"))
+// default 404 handler.
+func getDefaultHandler404() RouteHandler {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(404)
+		w.Write([]byte("not found"))
+	}
 }
 
 // make path like: /hello/world
@@ -182,4 +193,23 @@ func processAllowedMethods(slice []string, methods ...string) []string {
 	}
 	slice = removeDuplicateValues(slice)
 	return slice
+}
+
+func processMiddleware(old MiddlewareFunc, middlewares ...MiddlewareFunc) MiddlewareFunc {
+	var chained = make([]MiddlewareFunc, 0)
+	if old != nil {
+		chained = append(chained, old)
+	}
+	for _, m := range middlewares {
+		if m == nil {
+			continue
+		}
+		chained = append(chained, m)
+	}
+	var finalChain = middlewareChain(chained...)
+	return finalChain
+}
+
+func splitPath(path string) []string {
+	return strings.Split(removeSlashStartEnd(path), "/")
 }
