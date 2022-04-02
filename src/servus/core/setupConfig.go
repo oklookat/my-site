@@ -3,7 +3,6 @@ package core
 import (
 	"encoding/json"
 	"os"
-	"servus/core/external/argument"
 	"servus/core/external/database"
 	"servus/core/internal/controlTelegram"
 	"servus/core/internal/cors"
@@ -11,6 +10,8 @@ import (
 	"servus/core/internal/iHTTP"
 	"servus/core/internal/limiter"
 	"servus/core/internal/logger"
+
+	"github.com/oklookat/argument"
 )
 
 func (i *Instance) setupConfig() error {
@@ -31,18 +32,26 @@ func (i *Instance) setupConfig() error {
 		return get(path)
 	}
 
-	// is config path in args?
 	var err error
-	var configFlag = "-config"
-	var arg = argument.Get(configFlag)
-	var notInArgs = arg == nil || arg.Value == nil
-	if notInArgs {
+	var configPath = ""
+
+	var argumentus = argument.New()
+	argumentus.Add("config", "c", func(values []string) {
+		if values == nil || len(values) < 1 {
+			return
+		}
+		configPath = values[0]
+	})
+	argumentus.Start()
+
+	if len(configPath) > 0 {
+		// get by path in args.
+		err = get(configPath)
+	} else {
 		// get from current dir.
 		err = getFromDir()
-	} else {
-		// get by path in args.
-		err = get(*arg.Value)
 	}
+
 	i.Config = &config
 	return err
 }

@@ -4,13 +4,15 @@ import (
 	"net/http"
 	"servus/apps/elven/article"
 	"servus/apps/elven/auth"
+	"servus/apps/elven/cmd"
 	"servus/apps/elven/file"
 	"servus/apps/elven/model"
 	"servus/apps/elven/pipe"
 	"servus/apps/elven/user"
 	"servus/core"
 	"servus/core/external/errorMan"
-	"servus/core/external/way"
+
+	"github.com/oklookat/goway"
 )
 
 var call *core.Instance
@@ -18,10 +20,10 @@ var requestErrors = errorMan.RequestError{}
 
 type App struct {
 	Middleware *middleware
-	Auth       *auth.Instance
-	Article    *article.Instance
-	File       *file.Instance
-	User       *user.Instance
+	Auth       *auth.Starter
+	Article    *article.Starter
+	File       *file.Starter
+	User       *user.Starter
 }
 
 func (a *App) Boot(c *core.Instance) {
@@ -32,8 +34,10 @@ func (a *App) Boot(c *core.Instance) {
 	model.Boot(c)
 
 	// cmd.
-	var cmdArgs = &cmd{}
-	cmdArgs.boot(a)
+	var cmdConfig = &cmd.Config{
+		Logger: call.Logger,
+	}
+	cmd.Boot(cmdConfig)
 
 	// middleware.
 	a.Middleware = &middleware{}
@@ -44,47 +48,69 @@ func (a *App) Boot(c *core.Instance) {
 	var pipeUser = &pipe.User{}
 
 	// auth.
-	a.Auth = &auth.Instance{}
-	a.Auth.Boot(call, a.Middleware, pipeToken, requestErrors)
+	var auth = &auth.Starter{
+		Core:       call,
+		Middleware: a.Middleware,
+		Pipe:       pipeToken,
+		Throw:      requestErrors,
+	}
+	auth.Start()
+	a.Auth = auth
 
 	// article.
-	a.Article = &article.Instance{}
-	a.Article.Boot(call, a.Middleware, pipeUser, requestErrors)
+	var article = &article.Starter{
+		Core:       call,
+		Middleware: a.Middleware,
+		Pipe:       pipeUser,
+		Throw:      requestErrors,
+	}
+	article.Start()
+	a.Article = article
 
 	// file.
-	a.File = &file.Instance{}
-	a.File.Boot(call, a.Middleware, pipeUser, requestErrors)
+	var file = &file.Starter{
+		Core:       call,
+		Middleware: a.Middleware,
+		Pipe:       pipeUser,
+		Throw:      requestErrors,
+	}
+	file.Start()
+	a.File = file
 
 	// user.
-	a.User = &user.Instance{}
-	a.User.Boot(call, a.Middleware, pipeUser, requestErrors)
+	var user = &user.Starter{
+		Core:       call,
+		Middleware: a.Middleware,
+		Pipe:       pipeUser,
+		Throw:      requestErrors,
+	}
+	user.Start()
+	a.User = user
 
 	// routes.
 	a.bootRoutes()
 }
 
 func (a *App) bootRoutes() {
-	var router = way.New()
-	var root = router.Group("/elven")
+	var root = goway.New()
+	var elven = root.Group("/elven")
+
 	// add global middleware.
-	root.Use(call.Middleware.ProvideHTTP())
-	root.Use(call.Middleware.AsJson())
-	root.Use(a.Middleware.ProvideTokenPipe)
-	root.Use(a.Middleware.ProvideUserPipe)
-	// provide routes..
-	a.Auth.BootRoutes(root)
-	a.Article.BootRoutes(root)
-	a.File.BootRoutes(root)
-	a.User.BootRoutes(root)
-	//
-	call.Banhammer.GetMiddleware()
+	elven.Use(call.Middleware.ProvideHTTP())
+	elven.Use(call.Middleware.AsJson())
+	elven.Use(call.Middleware.LimitBody())
+	elven.Use(call.Banhammer.GetMiddleware())
+	elven.Use(a.Middleware.ProvideTokenPipe)
+	elven.Use(a.Middleware.ProvideUserPipe)
 
+	// start routes.
+	a.Auth.Routes(elven)
+	a.Article.Routes(elven)
+	a.File.Routes(elven)
+	a.User.Routes(elven)
+
+	// get before router global middlewares.
 	var corsMiddleware = call.Middleware.CORS()
-	var limitBodyMiddleware = call.Middleware.LimitBody()
-	var banhammerMiddleware = call.Banhammer.GetMiddleware()
-
-	var useBeforeRouter = corsMiddleware(
-		limitBodyMiddleware(banhammerMiddleware(router)),
-	)
+	var useBeforeRouter = corsMiddleware(root)
 	http.Handle("/", useBeforeRouter)
 }

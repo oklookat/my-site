@@ -30,10 +30,10 @@ func New() *ZipFile {
 // filename: filename with extension like 'myArchive.zip'
 func (z *ZipFile) AddFile(filename string, data io.Reader) error {
 	if !z.isInit || z.writer == nil {
-		return ERR_NOT_INIT
+		return ErrNotInit
 	}
 	if data == nil {
-		return ERR_NIL_POINTER
+		return ErrNilPointer
 	}
 
 	// add file.

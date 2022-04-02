@@ -10,14 +10,14 @@ import (
 // ALL HANDLERS PROTECTED BY SAFE METHODS MIDDLEWARE.
 
 // get all categories (GET)
-func (a *Instance) getCategories(response http.ResponseWriter, request *http.Request) {
+func getCategories(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// get all.
 	category := model.ArticleCategory{}
 	categories, err := category.GetAll()
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -31,7 +31,7 @@ func (a *Instance) getCategories(response http.ResponseWriter, request *http.Req
 	// send.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (a *Instance) getCategories(response http.ResponseWriter, request *http.Req
 }
 
 // get category by ID (GET)
-func (a *Instance) getCategory(response http.ResponseWriter, request *http.Request) {
+func getCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// get id from params.
@@ -49,25 +49,25 @@ func (a *Instance) getCategory(response http.ResponseWriter, request *http.Reque
 	var category = model.ArticleCategory{ID: id}
 	found, err := category.FindByID()
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if !found {
-		h.Send(a.throw.NotFound(), 404, err)
+		h.Send(throw.NotFound(), 404, err)
 		return
 	}
 
 	// send.
 	categoryJson, err := json.Marshal(category)
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(categoryJson), 200, err)
 }
 
 // add category (POST)
-func (a *Instance) addCategory(response http.ResponseWriter, request *http.Request) {
+func addCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// validate.
@@ -84,31 +84,31 @@ func (a *Instance) addCategory(response http.ResponseWriter, request *http.Reque
 	// exists?
 	found, err := category.FindByName()
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if found {
-		h.Send(a.throw.Exists(), 409, err)
+		h.Send(throw.Exists(), 409, err)
 		return
 	}
 
 	// create.
 	if err = category.Create(); err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
 	// send created.
 	categoryJson, err := json.Marshal(&category)
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(categoryJson), 200, err)
 }
 
 // rename category (PUT/PATCH)
-func (a *Instance) renameCategory(response http.ResponseWriter, request *http.Request) {
+func renameCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// validate.
@@ -126,32 +126,32 @@ func (a *Instance) renameCategory(response http.ResponseWriter, request *http.Re
 	category.ID = id
 	found, err := category.FindByID()
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if !found {
-		h.Send(a.throw.NotFound(), 404, err)
+		h.Send(throw.NotFound(), 404, err)
 		return
 	}
 
 	// update.
 	category.Name = body.Name
 	if err = category.ChangeNameByID(); err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
 	// send.
 	categoryJson, err := json.Marshal(&category)
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(categoryJson), 200, err)
 }
 
 // delete category by ID (DELETE)
-func (a *Instance) deleteCategory(response http.ResponseWriter, request *http.Request) {
+func deleteCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	// get name from params.
 	var id = h.GetRouteArgs()["id"]
@@ -160,16 +160,16 @@ func (a *Instance) deleteCategory(response http.ResponseWriter, request *http.Re
 	category.ID = id
 	found, err := category.FindByID()
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if !found {
-		h.Send(a.throw.NotFound(), 404, err)
+		h.Send(throw.NotFound(), 404, err)
 		return
 	}
 	// delete.
 	if err = category.DeleteByID(); err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send("", 200, err)

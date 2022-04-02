@@ -11,10 +11,10 @@ import (
 // ALL HANDLERS PROTECTED BY SAFE METHODS MIDDLEWARE.
 
 // get paginated articles (GET url/).
-func (a *Instance) getArticles(response http.ResponseWriter, request *http.Request) {
+func getArticles(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	var err error
-	var pipe = a.pipe.GetByContext(request)
+	var pipe = pipe.GetByContext(request)
 	var isAdmin = pipe.IsAdmin()
 
 	// validate.
@@ -28,7 +28,7 @@ func (a *Instance) getArticles(response http.ResponseWriter, request *http.Reque
 	article := model.Article{}
 	articles, totalPages, err := article.GetPaginated(validatedBody)
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -42,14 +42,14 @@ func (a *Instance) getArticles(response http.ResponseWriter, request *http.Reque
 	// send.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(jsonResponse), 200, err)
 }
 
 // get one article (GET url/id).
-func (a *Instance) getArticle(response http.ResponseWriter, request *http.Request) {
+func getArticle(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 	var isAdmin = false
 
@@ -60,33 +60,33 @@ func (a *Instance) getArticle(response http.ResponseWriter, request *http.Reques
 	var article = model.Article{ID: id}
 	found, err := article.FindByID()
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if !found {
-		h.Send(a.throw.NotFound(), 404, err)
+		h.Send(throw.NotFound(), 404, err)
 		return
 	}
 
 	// if not published and user not admin, access denied.
-	var pAuth = a.pipe.GetByContext(request)
+	var pAuth = pipe.GetByContext(request)
 	isAdmin = pAuth.IsAdmin()
 	if !article.IsPublished && !isAdmin {
-		h.Send(a.throw.Forbidden(), 403, err)
+		h.Send(throw.Forbidden(), 403, err)
 		return
 	}
 
 	// send.
 	articleJson, err := json.Marshal(article)
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(articleJson), 200, err)
 }
 
 // сreate new article (POST url/).
-func (a *Instance) createArticle(response http.ResponseWriter, request *http.Request) {
+func createArticle(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// validate.
@@ -94,7 +94,7 @@ func (a *Instance) createArticle(response http.ResponseWriter, request *http.Req
 	if err != nil {
 		switch err.(type) {
 		default:
-			h.Send(a.throw.Server(), 500, err)
+			h.Send(throw.Server(), 500, err)
 			return
 		case *base.ValidationError:
 			h.Send("bad request", 400, err)
@@ -102,30 +102,30 @@ func (a *Instance) createArticle(response http.ResponseWriter, request *http.Req
 		}
 	}
 
-	var pAuth = a.pipe.GetByContext(request)
+	var pAuth = pipe.GetByContext(request)
 	article.UserID = pAuth.GetID()
 
 	// create (get ID after creating).
 	if err = article.Create(); err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
 	// get created by id (we need to get category name which only available when we call find() method)
 	found, err := article.FindByID()
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if !found {
-		h.Send(a.throw.NotFound(), 404, err)
+		h.Send(throw.NotFound(), 404, err)
 		return
 	}
 
 	// send created.
 	articleJson, err := json.Marshal(&article)
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(articleJson), 200, err)
@@ -134,7 +134,7 @@ func (a *Instance) createArticle(response http.ResponseWriter, request *http.Req
 // update all fields (PUT url/id)
 //
 // update specific fields (PATCH url/id).
-func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Request) {
+func updateArticle(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// get id from params.
@@ -144,11 +144,11 @@ func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Req
 	var article = model.Article{ID: id}
 	found, err := article.FindByID()
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if !found {
-		h.Send(a.throw.NotFound(), 404, err)
+		h.Send(throw.NotFound(), 404, err)
 		return
 	}
 
@@ -161,7 +161,7 @@ func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Req
 			h.Send("bad request", 400, err)
 			return
 		} else {
-			h.Send(a.throw.Server(), 500, err)
+			h.Send(throw.Server(), 500, err)
 			return
 		}
 	}
@@ -169,21 +169,21 @@ func (a *Instance) updateArticle(response http.ResponseWriter, request *http.Req
 
 	// update.
 	if err = article.Update(); err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
 	// send updated.
 	jsonArticle, err := json.Marshal(article)
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(jsonArticle), 200, err)
 }
 
 // DELETE url/id. Deletes one article.
-func (a *Instance) deleteArticle(response http.ResponseWriter, request *http.Request) {
+func deleteArticle(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// get id from params.
@@ -193,17 +193,17 @@ func (a *Instance) deleteArticle(response http.ResponseWriter, request *http.Req
 	var article = model.Article{ID: id}
 	found, err := article.FindByID()
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if !found {
-		h.Send(a.throw.NotFound(), 404, err)
+		h.Send(throw.NotFound(), 404, err)
 		return
 	}
 
 	// delete.
 	if err = article.DeleteByID(); err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send("", 200, err)

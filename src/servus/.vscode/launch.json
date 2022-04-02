@@ -11,19 +11,8 @@
             "mode": "debug",
             "program": "${cwd}/main.go",
             "args": [
-                "-config=${cwd}/data/config.dev.json"
+                "-c=${cwd}/data/config.dev.json"
             ],
-        },
-        {
-            "name": "Rollback",
-            "type": "go",
-            "request": "launch",
-            "mode": "debug",
-            "program": "${cwd}/main.go",
-            "args": [
-                "-config=${cwd}/data/config.dev.json",
-                "el:rb", 
-            ]
         },
         {
             "name": "Migrate",
@@ -32,9 +21,19 @@
             "mode": "debug",
             "program": "${cwd}/main.go",
             "args": [
-                "-config=${cwd}/data/config.dev.json",
-                "-sql=${cwd}/data/elven.sql",
-                "el:mg", 
+                "-c=${cwd}/data/config.dev.json",
+                "-mg=${cwd}/data/elven.sql",  
+            ]
+        },
+        {
+            "name": "Rollback",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${cwd}/main.go",
+            "args": [
+                "-c=${cwd}/data/config.dev.json",
+                "-rb", 
             ]
         },
         {
@@ -44,8 +43,8 @@
             "mode": "debug",
             "program": "${cwd}/main.go",
             "args": [
-                "-config=${cwd}/data/config.dev.json",
-                "el:tu", "-username=rootroot", "-password=rootroot", "-die"
+                "-c=${cwd}/data/config.dev.json",
+                "-cu", "rootroot", "rootroot", "true"
             ]
         },
         {
@@ -55,8 +54,8 @@
             "mode": "debug",
             "program": "${cwd}/main.go",
             "args": [
-                "-config=${cwd}/data/config.dev.json", 
-                "el:su", "-username=rootroot", "-password=rootroot", "-die"
+                "-c=${cwd}/data/config.dev.json", 
+                "-csu", "rootroot", "rootroot", "true"
             ]
         }
     ]

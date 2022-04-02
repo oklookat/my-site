@@ -8,6 +8,8 @@ import (
 	"servus/core/internal/iHTTP"
 	"servus/core/internal/stacktracer"
 	"servus/core/internal/zipify"
+
+	"github.com/oklookat/goway"
 )
 
 // get request params.
@@ -22,9 +24,7 @@ type httpHelper struct {
 func (h *httpHelper) new(
 	l Logger,
 	c Controller,
-	cookie *iHTTP.ConfigCookie,
-	vars httpParamsGetter) {
-	iHTTP.RouteArgsGetter = (func(r *http.Request) map[string]string)(vars)
+	cookie *iHTTP.ConfigCookie) {
 	h.logger = l
 	h.control = c
 	h.cookie = cookie
@@ -80,9 +80,15 @@ func (h *httpHelper) getInstance(req *http.Request, res http.ResponseWriter) *iH
 
 	// create iHTTP.
 	_http = iHTTP.New(req, res, h.cookie)
+
+	_http.RouteArgsGetter(func(r *http.Request) map[string]string {
+		return goway.Vars(r)
+	})
+
 	_http.OnHTTPError(func(code int, err error) {
 		onHTTPError(code, err)
 	})
+
 	_http.OnSendError(func(code int, err error) {
 		onResponseSendError(code, err)
 	})

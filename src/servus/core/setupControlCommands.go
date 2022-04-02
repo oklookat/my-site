@@ -1,9 +1,12 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func (i *Instance) setupControlCommands() {
-	//////////// help.
+	// help.
 	i.Control.AddCommand("/help", func(args []string) {
 		var msg = `Servus Control Module commands:
 [/ban ip] - ban IP address
@@ -12,7 +15,14 @@ func (i *Instance) setupControlCommands() {
 		i.Control.SendMessage(msg)
 	})
 
-	//////////// banhammer.
+	// ping
+	i.Control.AddCommand("/ping", func(args []string) {
+		var currentTime = time.Now()
+		var date = fmt.Sprintf("pong | %v:%v:%v", currentTime.Hour(), currentTime.Minute(), currentTime.Second())
+		i.Control.SendMessage(date)
+	})
+
+	// banhammer.
 	// ban.
 	i.Control.AddCommand("/ban", func(args []string) {
 		if len(args) == 0 {

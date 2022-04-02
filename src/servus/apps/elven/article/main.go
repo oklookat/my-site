@@ -1,52 +1,80 @@
 package article
 
 import (
+	"errors"
 	"net/http"
 	"servus/apps/elven/base"
 	"servus/core"
-	"servus/core/external/way"
+
+	"github.com/oklookat/goway"
 )
 
+var isBooted = false
 var call *core.Instance
+var middleware base.MiddlewareSafeMethodsOnly
+var pipe base.UserPipe
+var throw base.RequestError
 
-type Instance struct {
-	middleware base.MiddlewareSafeMethodsOnly
-	pipe       base.UserPipe
-	throw      base.RequestError
+type Starter struct {
+	Core       *core.Instance
+	Middleware base.MiddlewareSafeMethodsOnly
+	Pipe       base.UserPipe
+	Throw      base.RequestError
 }
 
-func (a *Instance) Boot(
-	_core *core.Instance,
-	_middleware base.MiddlewareSafeMethodsOnly,
-	_pipe base.UserPipe,
-	_throw base.RequestError,
+func (s *Starter) Start() error {
+	// check.
+	if s == nil {
+		return errors.New("starter nil pointer")
+	}
+	if s.Core == nil {
+		return errors.New("core nil pointer")
+	}
+	if s.Middleware == nil {
+		return errors.New("middleware nil pointer")
+	}
+	if s.Pipe == nil {
+		return errors.New("pipe nil pointer")
+	}
+	if s.Throw == nil {
+		return errors.New("throw nil pointer")
+	}
 
-) {
-	call = _core
-	a.middleware = _middleware
-	a.pipe = _pipe
-	a.throw = _throw
+	// set.
+	call = s.Core
+	middleware = s.Middleware
+	pipe = s.Pipe
+	throw = s.Throw
+
+	// ok.
+	isBooted = true
+	return nil
 }
 
-// add routes to router.
-func (a *Instance) BootRoutes(router *way.Router) {
+func (s *Starter) Routes(router *goway.Router) error {
+	if !isBooted {
+		return errors.New("you must call Starter.Boot() before Starter.Routes()")
+	}
+
 	var root = router.Group("/article")
 
 	// articles | /article/articles
 	var articles = root.Group("/articles")
-	articles.Use(a.middleware.SafeMethodsOnly)
-	articles.Route("", a.getArticles).Methods(http.MethodGet)
-	articles.Route("", a.createArticle).Methods(http.MethodPost)
-	articles.Route("/{id}", a.getArticle).Methods(http.MethodGet)
-	articles.Route("/{id}", a.updateArticle).Methods(http.MethodPut, http.MethodPatch)
-	articles.Route("/{id}", a.deleteArticle).Methods(http.MethodDelete)
+	articles.Use(middleware.SafeMethodsOnly)
+	articles.Route("", getArticles).Methods(http.MethodGet)
+	articles.Route("", createArticle).Methods(http.MethodPost)
+	articles.Route("/{id}", getArticle).Methods(http.MethodGet)
+	articles.Route("/{id}", updateArticle).Methods(http.MethodPut, http.MethodPatch)
+	articles.Route("/{id}", deleteArticle).Methods(http.MethodDelete)
 
 	// categories | /article/categories
 	var categories = root.Group("/categories")
-	categories.Use(a.middleware.SafeMethodsOnly)
-	categories.Route("", a.getCategories).Methods(http.MethodGet)
-	categories.Route("", a.addCategory).Methods(http.MethodPost)
-	categories.Route("/{id}", a.getCategory).Methods(http.MethodGet)
-	categories.Route("/{id}", a.renameCategory).Methods(http.MethodPut, http.MethodPatch)
-	categories.Route("/{id}", a.deleteCategory).Methods(http.MethodDelete)
+	categories.Use(middleware.SafeMethodsOnly)
+	categories.Route("", getCategories).Methods(http.MethodGet)
+	categories.Route("", addCategory).Methods(http.MethodPost)
+	categories.Route("/{id}", getCategory).Methods(http.MethodGet)
+	categories.Route("/{id}", renameCategory).Methods(http.MethodPut, http.MethodPatch)
+	categories.Route("/{id}", deleteCategory).Methods(http.MethodDelete)
+
+	return nil
 }

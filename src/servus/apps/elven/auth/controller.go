@@ -7,7 +7,7 @@ import (
 )
 
 // generate token if username and password are correct.
-func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
+func login(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// validate credentials.
@@ -22,11 +22,11 @@ func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 	var user = model.User{Username: body.Username}
 	found, err := user.FindByUsername()
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if !found {
-		h.Send(a.throw.NotAuthorized(), 401, err)
+		h.Send(throw.NotAuthorized(), 401, err)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 			// warn IP.
 			call.Banhammer.Warn(ip.String())
 		}
-		h.Send(a.throw.NotAuthorized(), 401, err)
+		h.Send(throw.NotAuthorized(), 401, err)
 		return
 	}
 
@@ -47,11 +47,11 @@ func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 	var tokenModel = model.Token{}
 	encryptedToken, _, err := tokenModel.Generate(user.ID)
 	if err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if err = tokenModel.SetAuthAgents(request); err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -66,17 +66,17 @@ func (a *Instance) login(response http.ResponseWriter, request *http.Request) {
 		h.Send("", 200, err)
 		return
 	default:
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 }
 
 // get token from user and delete. | PROTECTED BY AUTHORIZED ONLY MIDDLEWARE.
-func (a *Instance) logout(response http.ResponseWriter, request *http.Request) {
+func logout(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// get token from cookie or auth header.
-	var pipe = a.pipe.GetByContext(request)
+	var pipe = pipe.GetByContext(request)
 	if !pipe.IsExists() {
 		h.Send("not authorized", 400, nil)
 		return
@@ -87,7 +87,7 @@ func (a *Instance) logout(response http.ResponseWriter, request *http.Request) {
 	token.ID = pipe.GetID()
 	var err error
 	if err = token.DeleteByID(); err != nil {
-		h.Send(a.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 

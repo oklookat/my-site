@@ -7,23 +7,28 @@ import (
 	"servus/apps/elven/model"
 )
 
+var (
+	ErrUserExists   = errors.New("username already exists")
+	ErrUserNotFound = errors.New("user not found")
+)
+
 // send some user data by token (GET).
-func (u *Instance) getMe(response http.ResponseWriter, request *http.Request) {
+func getMe(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
-	var pipe = u.pipe.GetByContext(request)
+	var pipe = pipe.GetByContext(request)
 	var resp = Response{}
 	resp.IsAdmin = pipe.IsAdmin()
 	resp.Username = pipe.GetUsername()
 	bytes, err := json.Marshal(resp)
 	if err != nil {
-		h.Send(u.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(bytes), 200, err)
 }
 
 // change username or password (POST).
-func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
+func change(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// validate body.
@@ -34,12 +39,12 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// get pipe.
-	var pipe = u.pipe.GetByContext(request)
+	var pipe = pipe.GetByContext(request)
 
 	// compare confirm password from body and original password from pipe.
 	match, err := call.Encryptor.Argon.Compare(body.Password, pipe.GetPassword())
 	if err != nil || !match {
-		h.Send(u.throw.NotAuthorized(), 401, err)
+		h.Send(throw.NotAuthorized(), 401, err)
 		return
 	}
 
@@ -63,7 +68,7 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 		// check is username in use.
 		isUsernameTaken, err := user.FindByUsername()
 		if err != nil {
-			h.Send(u.throw.Server(), 500, err)
+			h.Send(throw.Server(), 500, err)
 			return
 		}
 		if isUsernameTaken {
@@ -81,14 +86,14 @@ func (u *Instance) change(response http.ResponseWriter, request *http.Request) {
 
 	// update.
 	if err = user.Update(); err != nil {
-		h.Send(u.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send("", 200, err)
 }
 
 // create new user. THIS IS NOT A ROUTE.
-func (u *Instance) Create(username string, password string, isAdmin bool) (err error) {
+func Create(username string, password string, isAdmin bool) (err error) {
 
 	// validate.
 	if err = ValidateUsername(username); err != nil {
@@ -116,7 +121,7 @@ func (u *Instance) Create(username string, password string, isAdmin bool) (err e
 		return
 	}
 	if found {
-		return errors.New("user with this username already exists")
+		return ErrUserExists
 	}
 
 	// create
@@ -126,12 +131,12 @@ func (u *Instance) Create(username string, password string, isAdmin bool) (err e
 }
 
 // delete user. THIS IS NOT A ROUTE.
-func (u *Instance) DeleteByUsername(username string) (err error) {
+func DeleteByUsername(username string) (err error) {
 	var user = model.User{}
 	user.Username = username
 	found, err := user.FindByUsername()
 	if !found {
-		return errors.New("user not found")
+		return ErrUserNotFound
 	}
 	if err != nil {
 		return

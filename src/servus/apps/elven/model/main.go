@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"servus/core"
 	"servus/core/external/database"
 )
@@ -14,6 +15,10 @@ var fileAdapter = database.Adapter[File]{}
 var tokenAdapter = database.Adapter[Token]{}
 var userAdapter = database.Adapter[User]{}
 
-func Boot(c *core.Instance) {
-	call = c
+func Boot(core *core.Instance) error {
+	if core == nil {
+		return errors.New("core nil pointer")
+	}
+	call = core
+	return nil
 }

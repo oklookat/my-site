@@ -92,6 +92,10 @@ github.com/mattn/go-sqlite3 v2.0.3+incompatible h1:gXHsfypPkaMZrKbD5209QV9jbUTJK
 github.com/mattn/go-sqlite3 v2.0.3+incompatible/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
 github.com/oklog/ulid/v2 v2.0.2 h1:r4fFzBm+bv0wNKNh5eXTwU7i85y5x+uwkxCUTNVQqLc=
 github.com/oklog/ulid/v2 v2.0.2/go.mod h1:mtBL0Qe/0HAx6/a4Z30qxVIAL1eQDweXq5lxOEiwQ68=
+github.com/oklookat/argument v1.0.0 h1:d0YpiV1hJv/hP9kvi69Ggj2psmK3Y0M2kxIPJHurcKk=
+github.com/oklookat/argument v1.0.0/go.mod h1:u7VLlFdSYo2QxKDkWwhskf/f8BTycUiJdrj/AcReR3A=
+github.com/oklookat/goway v1.0.3 h1:eBq8DrcTVcjC2LiAJNpQjhoK0CC86sE6u7lFNg9qDEA=
+github.com/oklookat/goway v1.0.3/go.mod h1:EIiv6gI/ou85+v+RR0oXDUm7Dlrl970iz16WIk6BWA8=
 github.com/pborman/getopt v0.0.0-20170112200414-7148bc3a4c30/go.mod h1:85jBQOZwpVEaDAr341tbn15RS4fCAsIst0qp7i8ex1o=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=

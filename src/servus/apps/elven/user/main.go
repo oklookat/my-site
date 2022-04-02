@@ -1,36 +1,65 @@
 package user
 
 import (
+	"errors"
 	"net/http"
 	"servus/apps/elven/base"
 	"servus/core"
-	"servus/core/external/way"
+
+	"github.com/oklookat/goway"
 )
 
+var isBooted = false
 var call *core.Instance
+var middleware base.MiddlewareAuthorizedOnly
+var pipe base.UserPipe
+var throw base.RequestError
 
-type Instance struct {
-	middleware base.MiddlewareAuthorizedOnly
-	pipe       base.UserPipe
-	throw      base.RequestError
+type Starter struct {
+	Core       *core.Instance
+	Middleware base.MiddlewareAuthorizedOnly
+	Pipe       base.UserPipe
+	Throw      base.RequestError
 }
 
-func (u *Instance) Boot(
-	_core *core.Instance,
-	_middleware base.MiddlewareAuthorizedOnly,
-	_pipe base.UserPipe,
-	_throw base.RequestError,
-) {
-	call = _core
-	u.middleware = _middleware
-	u.pipe = _pipe
-	u.throw = _throw
+func (s *Starter) Start() error {
+	// check.
+	if s == nil {
+		return errors.New("starter nil pointer")
+	}
+	if s.Core == nil {
+		return errors.New("core nil pointer")
+	}
+	if s.Middleware == nil {
+		return errors.New("middleware nil pointer")
+	}
+	if s.Pipe == nil {
+		return errors.New("pipe nil pointer")
+	}
+	if s.Throw == nil {
+		return errors.New("throw nil pointer")
+	}
+
+	// set.
+	call = s.Core
+	middleware = s.Middleware
+	pipe = s.Pipe
+	throw = s.Throw
+
+	// ok.
+	isBooted = true
+	return nil
 }
 
-func (u *Instance) BootRoutes(router *way.Router) {
-	// current user
+func (s *Starter) Routes(router *goway.Router) error {
+	if !isBooted {
+		return errors.New("you must call Starter.Start() before Starter.Routes()")
+	}
+
 	var currentUser = router.Group("/users/me")
-	currentUser.Use(u.middleware.AuthorizedOnly)
-	currentUser.Route("", u.getMe).Methods(http.MethodGet)
-	currentUser.Route("/change", u.change).Methods(http.MethodPost)
+	currentUser.Use(middleware.AuthorizedOnly)
+	currentUser.Route("", getMe).Methods(http.MethodGet)
+	currentUser.Route("/change", change).Methods(http.MethodPost)
+
+	return nil
 }

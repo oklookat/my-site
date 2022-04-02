@@ -1,36 +1,66 @@
 package file
 
 import (
+	"errors"
 	"net/http"
 	"servus/apps/elven/base"
 	"servus/core"
-	"servus/core/external/way"
+
+	"github.com/oklookat/goway"
 )
 
+var isBooted = false
 var call *core.Instance
+var middleware base.MiddlewareAdminOnly
+var pipe base.UserPipe
+var throw base.RequestError
 
-type Instance struct {
-	middleware base.MiddlewareAdminOnly
-	pipe       base.UserPipe
-	throw      base.RequestError
+type Starter struct {
+	Core       *core.Instance
+	Middleware base.MiddlewareAdminOnly
+	Pipe       base.UserPipe
+	Throw      base.RequestError
 }
 
-func (f *Instance) Boot(
-	_core *core.Instance,
-	_middleware base.MiddlewareAdminOnly,
-	_pipe base.UserPipe,
-	_throw base.RequestError,
-) {
-	call = _core
-	f.middleware = _middleware
-	f.pipe = _pipe
-	f.throw = _throw
+func (s *Starter) Start() error {
+	// check.
+	if s == nil {
+		return errors.New("starter nil pointer")
+	}
+	if s.Core == nil {
+		return errors.New("core nil pointer")
+	}
+	if s.Middleware == nil {
+		return errors.New("middleware nil pointer")
+	}
+	if s.Pipe == nil {
+		return errors.New("pipe nil pointer")
+	}
+	if s.Throw == nil {
+		return errors.New("throw nil pointer")
+	}
+
+	// set.
+	call = s.Core
+	middleware = s.Middleware
+	pipe = s.Pipe
+	throw = s.Throw
+
+	// ok.
+	isBooted = true
+	return nil
 }
 
-func (f *Instance) BootRoutes(router *way.Router) {
+func (s *Starter) Routes(router *goway.Router) error {
+	if !isBooted {
+		return errors.New("you must call Starter.Start() before Starter.Routes()")
+	}
+
 	var root = router.Group("/files")
-	root.Use(f.middleware.AdminOnly)
-	root.Route("", f.getAll).Methods(http.MethodGet)
-	root.Route("", f.upload).Methods(http.MethodPost)
-	root.Route("/{id}", f.deleteOne).Methods(http.MethodDelete)
+	root.Use(middleware.AdminOnly)
+	root.Route("", getAll).Methods(http.MethodGet)
+	root.Route("", upload).Methods(http.MethodPost)
+	root.Route("/{id}", deleteOne).Methods(http.MethodDelete)
+
+	return nil
 }

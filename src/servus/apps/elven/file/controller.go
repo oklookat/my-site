@@ -16,11 +16,11 @@ import (
 // ALL ROUTES PROTECTED BY ADMIN ONLY MIDDLEWARE.
 
 // get paginated files (GET).
-func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
+func getAll(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// get pipe.
-	var pipe = f.pipe.GetByContext(request)
+	var pipe = pipe.GetByContext(request)
 	var isAdmin = pipe.IsAdmin()
 
 	// validate/filter.
@@ -34,7 +34,7 @@ func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	pag := model.File{}
 	files, totalPages, err := pag.GetPaginated(body)
 	if err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -48,16 +48,16 @@ func (f *Instance) getAll(response http.ResponseWriter, request *http.Request) {
 	// make json.
 	jsonResponse, err := json.Marshal(&responseContent)
 	if err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(jsonResponse), 200, err)
 }
 
 // upload file (POST).
-func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
+func upload(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
-	var auth = f.pipe.GetByContext(request)
+	var auth = pipe.GetByContext(request)
 
 	// get from form.
 	var tempDir = call.Config.Uploads.Temp
@@ -67,7 +67,7 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 			h.Send("bad file provided", 400, err)
 			return
 		}
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -76,7 +76,7 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	var fileInDB = model.File{Hash: hash}
 	found, err := fileInDB.FindByHash()
 	if err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -87,7 +87,7 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 		_ = os.Remove(processed.Temp.Name())
 		fileJSON, err := json.Marshal(fileInDB)
 		if err != nil {
-			h.Send(f.throw.Server(), 500, err)
+			h.Send(throw.Server(), 500, err)
 			return
 		}
 		h.Send(string(fileJSON), 200, err)
@@ -99,14 +99,14 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	// generate directories struct by hash.
 	dirsHash, err := filer.GenerateDirsByHash(hash)
 	if err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
 	// generate ULID filename.
 	filenameULID, err := call.Utils.GenerateULID()
 	if err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -140,7 +140,7 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 
 	// make dirs.
 	if err = os.MkdirAll(saveAt, os.ModePerm); err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -153,7 +153,7 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 
 	// move file from temp dir to created dir.
 	if err = os.Rename(processed.Temp.Name(), newFilePath); err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -179,7 +179,7 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 
 	// save to db.
 	if err = fileInDB.Create(); err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 
@@ -193,14 +193,14 @@ func (f *Instance) upload(response http.ResponseWriter, request *http.Request) {
 	// send to user.
 	fileJSON, err := json.Marshal(&fileInDB)
 	if err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send(string(fileJSON), 200, err)
 }
 
 // delete by ID (DELETE).
-func (f *Instance) deleteOne(response http.ResponseWriter, request *http.Request) {
+func deleteOne(response http.ResponseWriter, request *http.Request) {
 	var h = call.Utils.GetHTTP(request)
 
 	// get id from params.
@@ -210,11 +210,11 @@ func (f *Instance) deleteOne(response http.ResponseWriter, request *http.Request
 	var file = model.File{ID: id}
 	found, err := file.FindByID()
 	if err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	if !found {
-		h.Send(f.throw.NotFound(), 404, err)
+		h.Send(throw.NotFound(), 404, err)
 		return
 	}
 
@@ -229,7 +229,7 @@ func (f *Instance) deleteOne(response http.ResponseWriter, request *http.Request
 
 	// delete file from db.
 	if err = file.DeleteByID(); err != nil {
-		h.Send(f.throw.Server(), 500, err)
+		h.Send(throw.Server(), 500, err)
 		return
 	}
 	h.Send("", 200, err)

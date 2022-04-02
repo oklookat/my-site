@@ -9,11 +9,12 @@ import (
 
 // Instance - cool things for request/response.
 type Instance struct {
-	cookie      *ConfigCookie
-	request     *http.Request
-	response    http.ResponseWriter
-	onHTTPError func(code int, err error)
-	onSendError func(code int, err error)
+	cookie          *ConfigCookie
+	request         *http.Request
+	response        http.ResponseWriter
+	onHTTPError     func(code int, err error)
+	onSendError     func(code int, err error)
+	routeArgsGetter func(r *http.Request) map[string]string
 }
 
 // config for setting cookies.
@@ -26,9 +27,6 @@ type ConfigCookie struct {
 	SameSite string `json:"sameSite"`
 }
 
-// get route arguments.
-var RouteArgsGetter func(r *http.Request) map[string]string
-
 // creates new HTTP instance.
 func New(req *http.Request, res http.ResponseWriter, cookie *ConfigCookie) *Instance {
 	var i = &Instance{}
@@ -36,6 +34,11 @@ func New(req *http.Request, res http.ResponseWriter, cookie *ConfigCookie) *Inst
 	i.response = res
 	i.cookie = cookie
 	return i
+}
+
+// set route arguments getter.
+func (i Instance) RouteArgsGetter(f func(r *http.Request) map[string]string) {
+	i.routeArgsGetter = f
 }
 
 // when 399+ error.
@@ -63,20 +66,25 @@ func (i *Instance) Send(body string, statusCode int, err error) {
 
 // set cookie.
 func (i *Instance) SetCookie(name string, value string) error {
-	var maxAge, err = i.convertTimeWord(i.cookie.MaxAge)
+	var maxAge, err = convertTimeWord(i.cookie.MaxAge)
 	if err != nil {
-		return i.wrapError(err)
+		return wrapError(err)
 	}
-	maxAgeSeconds := int(maxAge.Seconds())
+
+	var maxAgeSeconds = int(maxAge.Seconds())
 	var domain = i.cookie.Domain
 	var path = i.cookie.Path
 	var httpOnly = i.cookie.HttpOnly
 	var secure = i.cookie.Secure
-	sameSite, err := i.convertCookieSameSite(i.cookie.SameSite)
+
+	sameSite, err := convertCookieSameSite(i.cookie.SameSite)
 	if err != nil {
-		return i.wrapError(err)
+		return wrapError(err)
 	}
-	var cookie = &http.Cookie{Name: name, Value: value, Path: path, Domain: domain, MaxAge: maxAgeSeconds, HttpOnly: httpOnly, Secure: secure, SameSite: sameSite}
+
+	var cookie = &http.Cookie{Name: name, Value: value, Path: path, Domain: domain,
+		MaxAge: maxAgeSeconds, HttpOnly: httpOnly,
+		Secure: secure, SameSite: sameSite}
 	http.SetCookie(i.response, cookie)
 	return err
 }
@@ -125,9 +133,9 @@ rawQuery: %v
 //
 // and map will be: [username: iam, id: 111]
 func (i *Instance) GetRouteArgs() map[string]string {
-	if RouteArgsGetter == nil {
-		fmt.Println("[iHTTP] warning: Instance.GetRouteArgs called, but iHTTP.RouteArgsGetter is nil")
+	if i.routeArgsGetter == nil {
+		fmt.Println("[iHTTP] warning: GetRouteArgs called, but RouteArgsGetter is nil")
 		return nil
 	}
-	return RouteArgsGetter(i.request)
+	return i.routeArgsGetter(i.request)
 }
