@@ -14,37 +14,35 @@ func (s *Service) New(db *SQLite) {
 	s.db = db
 }
 
-func (s *Service) GetMiddleware() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-			// get ip.
-			var ip = s.GetIpByRequest(request)
-			if ip == nil {
-				next.ServeHTTP(response, request)
-				return
-			}
-
-			// check ban.
-			var ipString = ip.String()
-			entry, err := s.db.GetEntry(ipString)
-			var isEntryInvalid = entry == nil || err != nil
-			if isEntryInvalid {
-				next.ServeHTTP(response, request)
-				return
-			}
-
-			// 403 if banned.
-			if entry.IsBanned {
-				response.WriteHeader(403)
-				response.Write(nil)
-				return
-			}
-
-			// continue if not.
+func (s *Service) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		// get ip.
+		var ip = s.GetIpByRequest(request)
+		if ip == nil {
 			next.ServeHTTP(response, request)
 			return
-		})
-	}
+		}
+
+		// check ban.
+		var ipString = ip.String()
+		entry, err := s.db.GetEntry(ipString)
+		var isEntryInvalid = entry == nil || err != nil
+		if isEntryInvalid {
+			next.ServeHTTP(response, request)
+			return
+		}
+
+		// 403 if banned.
+		if entry.IsBanned {
+			response.WriteHeader(403)
+			response.Write(nil)
+			return
+		}
+
+		// continue if not.
+		next.ServeHTTP(response, request)
+		return
+	})
 }
 
 // get IP by request by X-REAL-IP / X-FORWARDED-FOR

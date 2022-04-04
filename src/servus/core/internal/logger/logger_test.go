@@ -6,7 +6,8 @@ import (
 
 func create() *Instance {
 	var cnf = &Config{Level: 1}
-	return New(cnf)
+	var log, _ = New(cnf)
+	return log
 }
 
 func TestNew(t *testing.T) {

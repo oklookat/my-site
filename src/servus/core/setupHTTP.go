@@ -6,14 +6,25 @@ import (
 	"fmt"
 	"net/http"
 	"servus/core/internal/iHTTP"
-	"servus/core/internal/stacktracer"
 	"servus/core/internal/zipify"
+	"time"
 
 	"github.com/oklookat/goway"
 )
 
-// get request params.
-type httpParamsGetter func(r *http.Request) map[string]string
+type _ctxHTTP string
+
+const ctxHTTP _ctxHTTP = "SERVUS_HTTP_HELPER"
+
+func (i *Instance) setupHTTP() error {
+	var helper = httpHelper{}
+	var err = helper.new(i.Logger, i.Control, i.Config.Security.Cookie)
+	if err != nil {
+		return err
+	}
+	i.Http = helper
+	return nil
+}
 
 type httpHelper struct {
 	logger  Logger
@@ -22,80 +33,80 @@ type httpHelper struct {
 }
 
 func (h *httpHelper) new(
-	l Logger,
-	c Controller,
-	cookie *iHTTP.ConfigCookie) {
-	h.logger = l
-	h.control = c
+	log Logger,
+	control Controller,
+	cookie *iHTTP.ConfigCookie) error {
+
+	if log == nil {
+		return errors.New("[HTTP] logger nil pointer")
+	}
+	if control == nil {
+		return errors.New("[HTTP] controller nil pointer")
+	}
+	if cookie == nil {
+		return errors.New("[HTTP] cookie nil pointer")
+	}
+
+	h.logger = log
+	h.control = control
 	h.cookie = cookie
+
+	return nil
 }
 
 func (h *httpHelper) getInstance(req *http.Request, res http.ResponseWriter) *iHTTP.Instance {
-	var _http *iHTTP.Instance
-
-	// when http error.
-	var onHTTPError = func(code int, err error) {
-		if code != 500 {
-			return
-		}
-		if err == nil {
-			err = errors.New("*empty error*")
-		}
-
-		// log.
-		h.logger.Error("[core/http] error: " + err.Error())
-
-		// set trace.
-		var trace = stacktracer.Instance{}
-		trace.Set(err)
-
-		// create zip.
-		var zip = zipify.New()
-		err1 := zip.AddFile("stacktrace.txt", trace.GetReader())
-		err2 := zip.AddFile("request.txt", _http.GetDump())
-
-		// if zip error.
-		if err1 != nil || err2 != nil {
-			var message = fmt.Sprintf("[#ERROR #%v] HTTP error. Make dump also failed.", code)
-			if err1 != nil {
-				h.logger.Error("[core/http]: " + err1.Error())
-			}
-			if err2 != nil {
-				h.logger.Error("[core/http]: " + err2.Error())
-			}
-			h.control.SendMessage(message)
-			return
-		}
-
-		// send dump.
-		var message = fmt.Sprintf("[#ERROR #%v] HTTP error.", code)
-		h.control.SendFile(&message, trace.GetTimestamp()+".zip", zip.GetBytesAndClose())
+	return &iHTTP.Instance{
+		Request:         req,
+		Response:        res,
+		Cookie:          h.cookie,
+		OnHTTPError:     h.onHTTPError,
+		OnSendError:     h.onResponseSendError,
+		RouteArgsGetter: goway.Vars,
 	}
-
-	// when response sending error.
-	var onResponseSendError = func(code int, err error) {
-		h.logger.Error("[core/http]: failed to send response. Error:" + err.Error())
-		onHTTPError(500, err)
-	}
-
-	// create iHTTP.
-	_http = iHTTP.New(req, res, h.cookie)
-
-	_http.RouteArgsGetter(func(r *http.Request) map[string]string {
-		return goway.Vars(r)
-	})
-
-	_http.OnHTTPError(func(code int, err error) {
-		onHTTPError(code, err)
-	})
-
-	_http.OnSendError(func(code int, err error) {
-		onResponseSendError(code, err)
-	})
-	return _http
 }
 
-func (h *httpHelper) middleware(next http.Handler) http.Handler {
+func (h *httpHelper) Get(request *http.Request) HTTP {
+	var ctx = request.Context()
+	var theHttp, _ = ctx.Value(ctxHTTP).(HTTP)
+	return theHttp
+}
+
+func (h *httpHelper) onHTTPError(theHTTP *iHTTP.Instance, code int, err error) {
+	if code != 500 || theHTTP == nil {
+		return
+	}
+
+	if err == nil {
+		err = errors.New("*empty error*")
+	}
+
+	// log.
+	h.logger.Error("[core/http] " + err.Error())
+
+	// create zip.
+	var zip = zipify.New()
+	err = zip.AddFile("request.txt", theHTTP.GetDump())
+
+	// if zip error.
+	if err != nil {
+		var message = fmt.Sprintf("[#ERROR #%v] make .zip also failed.", code)
+		h.logger.Error("[core/http]: " + err.Error())
+		h.control.SendMessage(message)
+		return
+	}
+
+	// send dump.
+	var message = fmt.Sprintf("[#ERROR #%v]", code)
+	var timestamp = fmt.Sprint(time.Now().Unix())
+	h.control.SendFile(&message, timestamp+".zip", zip.GetBytesAndClose())
+}
+
+func (h *httpHelper) onResponseSendError(theHTTP *iHTTP.Instance, code int, err error) {
+	h.logger.Error("[core/http] failed to send response. Error:" + err.Error())
+	h.onHTTPError(theHTTP, 500, err)
+}
+
+func (h *httpHelper) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var _http = h.getInstance(request, response)
 		var ctx = context.WithValue(request.Context(), ctxHTTP, _http)

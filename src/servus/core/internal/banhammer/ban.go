@@ -3,7 +3,8 @@ package banhammer
 type Banner struct {
 	db       *SQLite
 	maxWarns int
-	// hook.
+
+	// hooks.
 	onBanned   func(ip string)
 	onUnbanned func(ip string)
 }

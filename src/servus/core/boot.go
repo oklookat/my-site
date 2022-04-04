@@ -1,23 +1,7 @@
 package core
 
-// Instance - servus kernel. Provides cool things.
-type Instance struct {
-	Utils      Utils
-	Dirs       Directories
-	Config     *Config
-	Logger     Logger
-	Banhammer  Banhammer
-	Middleware Middlewarer
-	Encryptor  *Encryptor
-	Control    Controller
-}
-
 // boot servus.
 func (i *Instance) Boot() {
-	// utils.
-	println("servus: setup utils")
-	i.setupUtils()
-
 	// dirs.
 	println("servus: setup directories")
 	if err := i.setupDirectories(); err != nil {
@@ -32,7 +16,17 @@ func (i *Instance) Boot() {
 
 	// logger.
 	println("servus: setup logger")
-	i.setupLogger()
+	if err := i.setupLogger(); err != nil {
+		i.Logger.Panic(err)
+		return
+	}
+
+	// database.
+	i.Logger.Info("servus: setup database")
+	if err := i.setupDatabase(); err != nil {
+		i.Logger.Panic(err)
+		return
+	}
 
 	// control.
 	i.Logger.Info("servus: setup control")
@@ -48,9 +42,16 @@ func (i *Instance) Boot() {
 		return
 	}
 
-	// middleware.
-	i.Logger.Info("servus: setup middleware")
-	if err := i.setupMiddleware(); err != nil {
+	// cors.
+	i.Logger.Info("servus: setup CORS")
+	if err := i.setupCors(); err != nil {
+		i.Logger.Panic(err)
+		return
+	}
+
+	// limiter.
+	i.Logger.Info("servus: setup limiter")
+	if err := i.setupLimiter(); err != nil {
 		i.Logger.Panic(err)
 		return
 	}
@@ -62,9 +63,9 @@ func (i *Instance) Boot() {
 		return
 	}
 
-	// database.
-	i.Logger.Info("servus: setup database")
-	if err := i.setupDatabase(); err != nil {
+	// http.
+	i.Logger.Info("servus: setup HTTP")
+	if err := i.setupHTTP(); err != nil {
 		i.Logger.Panic(err)
 		return
 	}

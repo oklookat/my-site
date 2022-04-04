@@ -12,7 +12,7 @@ type middleware struct {
 // only authorized user can access.
 func (m *middleware) AuthorizedOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		var h = call.Utils.GetHTTP(request)
+		var h = call.Http.Get(request)
 
 		// get pipe.
 		var user = pipe.User{}
@@ -33,7 +33,7 @@ func (m *middleware) AuthorizedOnly(next http.Handler) http.Handler {
 // https://developer.mozilla.org/en-US/docs/Glossary/Safe/HTTP
 func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		var h = call.Utils.GetHTTP(request)
+		var h = call.Http.Get(request)
 
 		// check method.
 		var method = request.Method
@@ -68,7 +68,7 @@ func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 // only admin can access.
 func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		var h = call.Utils.GetHTTP(request)
+		var h = call.Http.Get(request)
 
 		// check rights.
 		var user = pipe.User{}

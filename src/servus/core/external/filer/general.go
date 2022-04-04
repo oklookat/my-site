@@ -9,8 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"errors"
 )
 
 // delete empty dirs
@@ -24,9 +22,11 @@ func DeleteEmptyDirsRecursive(path string) (err error) {
 	if err != nil {
 		return
 	}
+
 	if !inf.IsDir() {
 		path, _ = filepath.Split(path)
 	}
+
 	var deleteDirIfEmpty = func(path string) (resume bool, err error) {
 		resume = false
 		entry, err := os.ReadDir(path)
@@ -36,6 +36,7 @@ func DeleteEmptyDirsRecursive(path string) (err error) {
 		}
 		return
 	}
+
 	var resume = true
 	for resume {
 		// delete dirs. Example:
@@ -55,10 +56,12 @@ func DeleteEmptyDirsRecursive(path string) (err error) {
 // generate folders struct from hash. Returns string like 1d/2c and error, if hash length less than 6 bytes.
 func GenerateDirsByHash(hash string) (result string, err error) {
 	if len(hash) < 6 {
-		return "", errors.New("generateDirByHash: hash min length 6 bytes")
+		return "", ErrWrongHash
 	}
+
 	var hashFirstTwo1 = hash[0:2]
 	var hashFirstTwo2 = hash[2:4]
+
 	result = fmt.Sprintf("%v/%v", hashFirstTwo1, hashFirstTwo2)
 	return
 }
@@ -116,8 +119,10 @@ func ProcessFromForm(request *http.Request, formKey string, tempDir string) (dat
 
 	// md5 buffer.
 	md5hr := md5.New()
+
 	// main buffer.
 	buf := make([]byte, 8192)
+
 	// generate hash and write data to temp file.
 	for {
 		var n int

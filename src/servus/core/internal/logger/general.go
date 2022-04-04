@@ -1,9 +1,14 @@
 package logger
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
+)
+
+var (
+	ErrConfigNil = errors.New("[logger]: config nil pointer")
 )
 
 // console colors.
@@ -28,12 +33,12 @@ type Config struct {
 }
 
 // create new Logger instance.
-func New(config *Config) *Instance {
+func New(config *Config) (*Instance, error) {
 	if config == nil {
-		panic("[logger]: config nil pointer")
+		return nil, ErrConfigNil
 	}
 	var logger = Instance{config: config}
-	return &logger
+	return &logger, nil
 }
 
 // calls when new log added. Writes log depending on settings.

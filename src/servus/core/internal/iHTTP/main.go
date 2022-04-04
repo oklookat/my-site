@@ -7,16 +7,6 @@ import (
 	"strings"
 )
 
-// Instance - cool things for request/response.
-type Instance struct {
-	cookie          *ConfigCookie
-	request         *http.Request
-	response        http.ResponseWriter
-	onHTTPError     func(code int, err error)
-	onSendError     func(code int, err error)
-	routeArgsGetter func(r *http.Request) map[string]string
-}
-
 // config for setting cookies.
 type ConfigCookie struct {
 	Domain   string `json:"domain"`
@@ -27,57 +17,59 @@ type ConfigCookie struct {
 	SameSite string `json:"sameSite"`
 }
 
-// creates new HTTP instance.
-func New(req *http.Request, res http.ResponseWriter, cookie *ConfigCookie) *Instance {
-	var i = &Instance{}
-	i.request = req
-	i.response = res
-	i.cookie = cookie
-	return i
-}
+// Instance - cool things for request/response.
+type Instance struct {
+	Request *http.Request
 
-// set route arguments getter.
-func (i Instance) RouteArgsGetter(f func(r *http.Request) map[string]string) {
-	i.routeArgsGetter = f
-}
+	Response http.ResponseWriter
 
-// when 399+ error.
-func (i *Instance) OnHTTPError(callback func(code int, err error)) {
-	i.onHTTPError = callback
-}
+	Cookie *ConfigCookie
 
-// response sending error.
-func (i *Instance) OnSendError(callback func(code int, err error)) {
-	i.onSendError = callback
+	// when 399+ error.
+	OnHTTPError func(i *Instance, code int, err error)
+
+	// response sending error.
+	OnSendError func(i *Instance, code int, err error)
+
+	// route arguments getter.
+	RouteArgsGetter func(r *http.Request) map[string]string
 }
 
 // sends response and log if error.
 func (i *Instance) Send(body string, statusCode int, err error) {
+	if i.Response == nil {
+		return
+	}
+
 	// is http error and http error callback not empty?
 	var isHTTPError = statusCode > 399
-	if isHTTPError && i.onHTTPError != nil {
-		go i.onHTTPError(statusCode, err)
+	if isHTTPError && i.OnHTTPError != nil {
+		go i.OnHTTPError(i, statusCode, err)
 	}
-	i.response.WriteHeader(statusCode)
-	if _, err = i.response.Write([]byte(body)); err != nil && i.onSendError != nil {
-		go i.onSendError(statusCode, err)
+	i.Response.WriteHeader(statusCode)
+	if _, err = i.Response.Write([]byte(body)); err != nil && i.OnSendError != nil {
+		go i.OnSendError(i, statusCode, err)
 	}
 }
 
 // set cookie.
 func (i *Instance) SetCookie(name string, value string) error {
-	var maxAge, err = convertTimeWord(i.cookie.MaxAge)
+	if i.Cookie == nil || i.Response == nil {
+		return nil
+	}
+
+	var maxAge, err = convertTimeWord(i.Cookie.MaxAge)
 	if err != nil {
 		return wrapError(err)
 	}
 
 	var maxAgeSeconds = int(maxAge.Seconds())
-	var domain = i.cookie.Domain
-	var path = i.cookie.Path
-	var httpOnly = i.cookie.HttpOnly
-	var secure = i.cookie.Secure
+	var domain = i.Cookie.Domain
+	var path = i.Cookie.Path
+	var httpOnly = i.Cookie.HttpOnly
+	var secure = i.Cookie.Secure
 
-	sameSite, err := convertCookieSameSite(i.cookie.SameSite)
+	sameSite, err := convertCookieSameSite(i.Cookie.SameSite)
 	if err != nil {
 		return wrapError(err)
 	}
@@ -85,14 +77,18 @@ func (i *Instance) SetCookie(name string, value string) error {
 	var cookie = &http.Cookie{Name: name, Value: value, Path: path, Domain: domain,
 		MaxAge: maxAgeSeconds, HttpOnly: httpOnly,
 		Secure: secure, SameSite: sameSite}
-	http.SetCookie(i.response, cookie)
+	http.SetCookie(i.Response, cookie)
 	return err
 }
 
 // get pretty HTTP request info in string/io.Reader.
 func (i *Instance) GetDump() io.Reader {
+	if i.Request == nil {
+		return nil
+	}
+
 	// cookies.
-	var cookies = i.request.Cookies()
+	var cookies = i.Request.Cookies()
 	var cookieString = ""
 	for _, cookie := range cookies {
 		var cook = fmt.Sprintf(`
@@ -117,7 +113,8 @@ path: %v
 rawPath: %v
 contentLength: %v
 rawQuery: %v
-`, i.request.Method, i.request.URL.Path, i.request.URL.RawPath, i.request.ContentLength, i.request.URL.RawQuery)
+`, i.Request.Method, i.Request.URL.Path, i.Request.URL.RawPath,
+		i.Request.ContentLength, i.Request.URL.RawQuery)
 	// total.
 	var dump = fmt.Sprintf(`----URL----%v
 
@@ -133,9 +130,12 @@ rawQuery: %v
 //
 // and map will be: [username: iam, id: 111]
 func (i *Instance) GetRouteArgs() map[string]string {
-	if i.routeArgsGetter == nil {
+	if i.Request == nil {
+		return nil
+	}
+	if i.RouteArgsGetter == nil {
 		fmt.Println("[iHTTP] warning: GetRouteArgs called, but RouteArgsGetter is nil")
 		return nil
 	}
-	return i.routeArgsGetter(i.request)
+	return i.RouteArgsGetter(i.Request)
 }

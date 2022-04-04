@@ -25,7 +25,7 @@ func New() *ZipFile {
 	return archive
 }
 
-// add file to archive. After you added all files you MUST call GetRAW() for closing archive.
+// add file to archive. After you added all files you must call GetBytesAndClose() for closing archive.
 //
 // filename: filename with extension like 'myArchive.zip'
 func (z *ZipFile) AddFile(filename string, data io.Reader) error {
@@ -33,7 +33,7 @@ func (z *ZipFile) AddFile(filename string, data io.Reader) error {
 		return ErrNotInit
 	}
 	if data == nil {
-		return ErrNilPointer
+		return ErrDataNil
 	}
 
 	// add file.
@@ -66,9 +66,11 @@ func (z *ZipFile) AddFile(filename string, data io.Reader) error {
 // get archive in bytes.Buffer. Also closes archive.
 func (z *ZipFile) GetBytesAndClose() *bytes.Buffer {
 	z.isInit = false
+
 	if z.writer == nil {
 		return nil
 	}
+
 	_ = z.writer.Close()
 	return z.buffer
 }

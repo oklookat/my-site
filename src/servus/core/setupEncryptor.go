@@ -1,21 +1,30 @@
 package core
 
-import "servus/core/internal/cryptor"
+import "github.com/oklookat/cryptor"
 
 func (i *Instance) setupEncryptor() error {
 	var err error
 
-	// create.
-	var cr = &cryptor.Instance{}
-	if err = cr.New(i.Config.Security.Encryption); err != nil {
+	var module = &Encryptor{}
+
+	var config = i.Config.Security.Encryption
+
+	// AES.
+	aes, err := cryptor.New_AES(config.AES.Secret)
+	if err != nil {
 		return err
 	}
+	module.AES = aes
+
+	// BCrypt.
+	var bcrypt = cryptor.New_BCrypt(config.BCrypt.Cost)
+	module.BCrypt = bcrypt
+
+	// Argon.
+	var argon = cryptor.New_Argon(config.Argon)
+	module.Argon = argon
 
 	// set.
-	var en = &Encryptor{}
-	en.AES = cr.AES
-	en.Argon = cr.Argon
-	en.BCrypt = cr.BCrypt
-	i.Encryptor = en
+	i.Encryptor = module
 	return err
 }

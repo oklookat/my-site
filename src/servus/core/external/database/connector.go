@@ -22,16 +22,15 @@ type Connector struct {
 // create new instance and connect.
 func (c *Connector) New(config *Config, logger Logger) error {
 	var err error
+
 	if config == nil {
-		err = errors.New("config nil pointer")
-		err = c.wrapError(err)
-		return err
+		return ErrConfigNil
 	}
+
 	if logger == nil {
-		err = errors.New("logger nil pointer")
-		err = c.wrapError(err)
-		return err
+		return ErrLoggerNil
 	}
+
 	// set
 	c.Config = config
 	c.Logger = logger
@@ -41,6 +40,7 @@ func (c *Connector) New(config *Config, logger Logger) error {
 	var pgPort = config.Postgres.Port
 	var pgDb = config.Postgres.DbName
 	var timeZone = config.Timezone
+
 	// connect
 	var connectionStr = fmt.Sprintf(`host=%s user=%s password=%s port=%s 
 	dbname=%s sslmode=disable TimeZone=%s`, pgHost, pgUser, pgPassword, pgPort, pgDb, timeZone)

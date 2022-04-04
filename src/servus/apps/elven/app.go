@@ -95,12 +95,27 @@ func (a *App) bootRoutes() {
 	var root = goway.New()
 	var elven = root.Group("/elven")
 
-	// add global middleware.
-	elven.Use(call.Middleware.ProvideHTTP())
-	elven.Use(call.Middleware.AsJson())
-	elven.Use(call.Middleware.LimitBody())
-	elven.Use(call.Banhammer.GetMiddleware())
+	// provide HTTP helper.
+	elven.Use(call.Http.Middleware)
+
+	// set content-type.
+	elven.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+			request.Header.Add("Content-Type", "application/json")
+			next.ServeHTTP(response, request)
+		})
+	})
+
+	// limit body.
+	elven.Use(call.Limiter.Body.Middleware)
+
+	// ip banner.
+	elven.Use(call.Banhammer.Middleware)
+
+	// user token.
 	elven.Use(a.Middleware.ProvideTokenPipe)
+
+	// user.
 	elven.Use(a.Middleware.ProvideUserPipe)
 
 	// start routes.
@@ -110,7 +125,6 @@ func (a *App) bootRoutes() {
 	a.User.Routes(elven)
 
 	// get before router global middlewares.
-	var corsMiddleware = call.Middleware.CORS()
-	var useBeforeRouter = corsMiddleware(root)
+	var useBeforeRouter = call.Cors.GetMiddleware(root)
 	http.Handle("/", useBeforeRouter)
 }

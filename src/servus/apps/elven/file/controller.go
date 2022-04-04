@@ -10,6 +10,7 @@ import (
 	"servus/apps/elven/base"
 	"servus/apps/elven/model"
 	"servus/core/external/filer"
+	"servus/core/external/utils"
 	"strings"
 )
 
@@ -17,7 +18,7 @@ import (
 
 // get paginated files (GET).
 func getAll(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// get pipe.
 	var pipe = pipe.GetByContext(request)
@@ -56,7 +57,7 @@ func getAll(response http.ResponseWriter, request *http.Request) {
 
 // upload file (POST).
 func upload(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 	var auth = pipe.GetByContext(request)
 
 	// get from form.
@@ -104,7 +105,7 @@ func upload(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// generate ULID filename.
-	filenameULID, err := call.Utils.GenerateULID()
+	filenameULID, err := utils.GenerateULID()
 	if err != nil {
 		h.Send(throw.Server(), 500, err)
 		return
@@ -201,7 +202,7 @@ func upload(response http.ResponseWriter, request *http.Request) {
 
 // delete by ID (DELETE).
 func deleteOne(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// get id from params.
 	var id = h.GetRouteArgs()["id"]

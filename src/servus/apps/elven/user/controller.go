@@ -14,7 +14,7 @@ var (
 
 // send some user data by token (GET).
 func getMe(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 	var pipe = pipe.GetByContext(request)
 	var resp = Response{}
 	resp.IsAdmin = pipe.IsAdmin()
@@ -29,7 +29,7 @@ func getMe(response http.ResponseWriter, request *http.Request) {
 
 // change username or password (POST).
 func change(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// validate body.
 	var body = Body{}

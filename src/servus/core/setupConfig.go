@@ -5,13 +5,13 @@ import (
 	"os"
 	"servus/core/external/database"
 	"servus/core/internal/controlTelegram"
-	"servus/core/internal/cors"
-	"servus/core/internal/cryptor"
 	"servus/core/internal/iHTTP"
 	"servus/core/internal/limiter"
 	"servus/core/internal/logger"
 
 	"github.com/oklookat/argument"
+	"github.com/oklookat/cryptor"
+	"github.com/oklookat/gocors"
 )
 
 func (i *Instance) setupConfig() error {
@@ -80,19 +80,19 @@ type Config struct {
 		// HTTPS connection.
 		HTTPS struct {
 			Active bool `json:"active"`
+
 			// absolute path to certificate file.
 			CertPath string `json:"certPath"`
+
 			// absolute path to key file.
 			KeyPath string `json:"keyPath"`
 		} `json:"https"`
 
-		// cookie.
-		//
-		// see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
 		Cookie *iHTTP.ConfigCookie `json:"cookie"`
 
-		// see: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-		CORS *cors.Config `json:"cors"`
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+		CORS *gocors.Config `json:"cors"`
 
 		// limit request things.
 		Limiter struct {
@@ -100,13 +100,18 @@ type Config struct {
 		} `json:"limiter"`
 
 		// data encryption.
-		Encryption *cryptor.Config `json:"encryption"`
+		Encryption struct {
+			AES    *cryptor.AES    `json:"aes"`
+			BCrypt *cryptor.BCrypt `json:"bcrypt"`
+			Argon  *cryptor.Argon  `json:"argon"`
+		} `json:"encryption"`
 	}
 
 	// files uploading.
 	Uploads struct {
 		// files will be saved here.
 		To string `json:"to"`
+
 		// temp folder before file saved.
 		Temp string `json:"temp"`
 	} `json:"uploads"`

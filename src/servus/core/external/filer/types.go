@@ -7,7 +7,10 @@ import (
 	"errors"
 )
 
-var ErrBadFileProvided = errors.New("bad file provided")
+var (
+	ErrBadFileProvided = errors.New("[filer] bad file provided")
+	ErrWrongHash       = errors.New("[filer] hash min length 6 bytes")
+)
 
 type processedFromForm struct {
 	Hash      string

@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"servus/apps/elven/base"
 	"servus/apps/elven/model"
+	"servus/core/external/utils"
 	"strconv"
 	"strings"
 )
@@ -164,7 +165,7 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 		if isNil {
 			return false, 0
 		}
-		var titleLength = call.Utils.LenRune(*bodyStruct.Title)
+		var titleLength = utils.LenRune(*bodyStruct.Title)
 		var isEmpty = titleLength < 1
 		return !isEmpty, titleLength
 	}
@@ -202,7 +203,7 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 		if isNil {
 			return false, 0
 		}
-		var contentLen = call.Utils.LenRune(*bodyStruct.Content)
+		var contentLen = utils.LenRune(*bodyStruct.Content)
 		var isEmpty = contentLen < 1
 		return !isEmpty, contentLen
 	}
@@ -356,7 +357,7 @@ func ValidateCategoryBody(c *base.CategoryBody, body io.ReadCloser) (err error) 
 	c.Name = strings.Trim(c.Name, " ")
 
 	// length?
-	var nameLen = call.Utils.LenRune(c.Name)
+	var nameLen = utils.LenRune(c.Name)
 	var notValid = nameLen < 1 || nameLen > 24
 	if notValid {
 		validationErr.New("name")("min length is 1 and max is 24")

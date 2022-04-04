@@ -32,7 +32,7 @@ func (i *Instance) GetExecution() (path string, err error) {
 	// go to symlinks.
 	path, err = filepath.EvalSymlinks(path)
 	if err != nil {
-		err = wrapError(err, "failed to get execution directory / symlink follow. Error")
+		err = wrapError(err, "failed symlink follow. Error")
 		return
 	}
 	path = filepath.ToSlash(path)

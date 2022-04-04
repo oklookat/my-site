@@ -8,7 +8,7 @@ import (
 
 // generate token if username and password are correct.
 func login(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// validate credentials.
 	body := Body{}
@@ -73,7 +73,7 @@ func login(response http.ResponseWriter, request *http.Request) {
 
 // get token from user and delete. | PROTECTED BY AUTHORIZED ONLY MIDDLEWARE.
 func logout(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// get token from cookie or auth header.
 	var pipe = pipe.GetByContext(request)

@@ -12,7 +12,7 @@ import (
 
 // get paginated articles (GET url/).
 func getArticles(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 	var err error
 	var pipe = pipe.GetByContext(request)
 	var isAdmin = pipe.IsAdmin()
@@ -50,7 +50,7 @@ func getArticles(response http.ResponseWriter, request *http.Request) {
 
 // get one article (GET url/id).
 func getArticle(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 	var isAdmin = false
 
 	// get id from params.
@@ -87,7 +87,7 @@ func getArticle(response http.ResponseWriter, request *http.Request) {
 
 // сreate new article (POST url/).
 func createArticle(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// validate.
 	var article, err = ValidateBody(request.Method, request.Body, nil)
@@ -135,7 +135,7 @@ func createArticle(response http.ResponseWriter, request *http.Request) {
 //
 // update specific fields (PATCH url/id).
 func updateArticle(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// get id from params.
 	var id = h.GetRouteArgs()["id"]
@@ -184,7 +184,7 @@ func updateArticle(response http.ResponseWriter, request *http.Request) {
 
 // DELETE url/id. Deletes one article.
 func deleteArticle(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// get id from params.
 	var id = h.GetRouteArgs()["id"]

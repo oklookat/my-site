@@ -4,14 +4,31 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"time"
 )
 
-type _ctxHTTP string
+// Instance - servus kernel. Provides cool things.
+type Instance struct {
+	Dirs      Directories
+	Config    *Config
+	Logger    Logger
+	Banhammer Banhammer
+	Encryptor *Encryptor
+	Control   Controller
+	Cors      Corser
+	Limiter   *Limiter
+	Http      httpHelper
+}
 
-const ctxHTTP _ctxHTTP = "CORE_HTTP_PIPE"
+// provides functions to get HTTP.
+type HttpHelper interface {
+	// provide HTTP funcs.
+	Middleware(next http.Handler) http.Handler
 
-// helper for request/response manipulations.
+	// get HTTP helper from request context.
+	Get(request *http.Request) HTTP
+}
+
+// request/response manipulations helper. Available after using middleware.
 type HTTP interface {
 	// send response.
 	Send(body string, statusCode int, err error)
@@ -30,7 +47,7 @@ type HTTP interface {
 	GetRouteArgs() map[string]string
 }
 
-// sends information/controls server via 3rd party services, like Telegram bot.
+// sends information/controls server via 3rd party services like Telegram bot.
 type Controller interface {
 	SendMessage(message string)
 	SendFile(caption *string, filename string, data io.Reader)
@@ -55,48 +72,6 @@ type Logger interface {
 	Panic(err error)
 }
 
-// useful utilities.
-type Utils interface {
-	// remove spaces from string.
-	RemoveSpaces(str string) string
-
-	// format path to system specific slashes.
-	FormatPath(path string) string
-
-	// get HTTP from request context.
-	GetHTTP(request *http.Request) HTTP
-
-	// returns unique string like 1GFGVSSRTHYWW52GVXZ.
-	GenerateULID() (ul string, err error)
-
-	// convert string to rune slice -> get len() of this slice
-	//
-	// example:
-	//
-	// with LenRune() "hello" and "вечер" will have the same length in 5
-	//
-	// with len(), result was be 5 and 10.
-	LenRune(val string) int
-
-	// limit function calls by interval.
-	Debounce(interval time.Duration) (debouncer func(callback func()))
-}
-
-// basic middlewares.
-type Middlewarer interface {
-	// set application/json header.
-	AsJson() func(http.Handler) http.Handler
-
-	// set CORS headers depending on config.
-	CORS() func(http.Handler) http.Handler
-
-	// limit request body size.
-	LimitBody() func(http.Handler) http.Handler
-
-	// get HTTP helper.
-	ProvideHTTP() func(http.Handler) http.Handler
-}
-
 // encrypt/hash values.
 type Encryptor struct {
 	AES    EncryptorCryptor
@@ -107,10 +82,10 @@ type Encryptor struct {
 // hash/compare value.
 type EncryptorHasher interface {
 	// make hash.
-	Hash(data string) (hash string, err error)
+	Hash(password string) (hash string, err error)
 
-	// compare value with hash.
-	Compare(what, with string) (match bool, err error)
+	// compare password with hash.
+	Compare(password, hash string) (match bool, err error)
 
 	// check is value a hash.
 	IsHash(data string) bool
@@ -142,7 +117,6 @@ type Banhammer interface {
 	// when IP unbanned.
 	OnUnbanned(hook func(ip string))
 
-	//// warn.
 	// add warn. 3 warns = ban.
 	Warn(ip string) error
 
@@ -152,12 +126,16 @@ type Banhammer interface {
 	// when IP warned.
 	OnWarned(hook func(ip string))
 
-	//// service.
 	// get ban checking middleware.
-	GetMiddleware() func(http.Handler) http.Handler
+	Middleware(next http.Handler) http.Handler
 
 	// get IP by request by X-REAL-IP / X-FORWARDED-FOR
 	//
 	// returns nil if failed to get IP.
 	GetIpByRequest(request *http.Request) net.IP
+}
+
+// CORS funcs.
+type Corser interface {
+	GetMiddleware(next http.Handler) http.Handler
 }

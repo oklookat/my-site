@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"io"
+	"servus/core/external/utils"
 	"servus/core/internal/controlTelegram"
 	"time"
 )
@@ -13,7 +14,7 @@ func (i *Instance) setupControl() error {
 
 	// create parent controller.
 	var parent = &parentController{}
-	parent.new(i.Utils)
+	parent.new()
 
 	// add Telegram bot.
 	var tgEnabled = i.Config.Control.Telegram.Enabled
@@ -34,16 +35,13 @@ func (i *Instance) setupControl() error {
 
 // control controllers / ops on all controllers.
 type parentController struct {
-	utils       Utils
 	debouncer   func(callback func())
 	controllers []Controller
 }
 
-func (c *parentController) new(u Utils) {
-	c.utils = u
-
+func (c *parentController) new() {
 	// create 5-second debouncer to avoid controllers spam.
-	c.debouncer = u.Debounce(5 * time.Second)
+	c.debouncer = utils.Debounce(5*time.Second, true)
 }
 
 // add controller.

@@ -14,6 +14,7 @@ func (a *Adapter[T]) Get(dest *T, query string, args ...any) (err error) {
 	if dest == nil {
 		dest = new(T)
 	}
+
 	// if result empty, keep dest in original state, no overwrite
 	var destCopy T
 	destCopy = *dest
@@ -33,14 +34,17 @@ func (a *Adapter[T]) Get(dest *T, query string, args ...any) (err error) {
 // execute query with args and get rows in array (many rows).
 func (a *Adapter[T]) GetRows(query string, args ...any) (result map[int]*T, err error) {
 	rows, err := con.Connection.Queryx(query, args...)
+
 	defer func() {
 		if rows != nil {
 			_ = rows.Close()
 		}
 	}()
+
 	if err = con.checkError(err); err != nil {
 		return
 	}
+
 	var mapCounter = 0
 	result = make(map[int]*T, 0)
 	for rows.Next() {
@@ -69,6 +73,7 @@ func (a *Adapter[T]) Find(query string, args ...any) (found *T, err error) {
 		found = nil
 		return
 	}
+
 	var emptySomething = new(T)
 	var isEmpty = *emptySomething == *found
 	if isEmpty {

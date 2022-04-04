@@ -11,7 +11,7 @@ import (
 
 // get all categories (GET)
 func getCategories(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// get all.
 	category := model.ArticleCategory{}
@@ -40,7 +40,7 @@ func getCategories(response http.ResponseWriter, request *http.Request) {
 
 // get category by ID (GET)
 func getCategory(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// get id from params.
 	var id = h.GetRouteArgs()["id"]
@@ -68,7 +68,7 @@ func getCategory(response http.ResponseWriter, request *http.Request) {
 
 // add category (POST)
 func addCategory(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// validate.
 	body := &base.CategoryBody{}
@@ -109,7 +109,7 @@ func addCategory(response http.ResponseWriter, request *http.Request) {
 
 // rename category (PUT/PATCH)
 func renameCategory(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 
 	// validate.
 	body := &base.CategoryBody{}
@@ -152,7 +152,7 @@ func renameCategory(response http.ResponseWriter, request *http.Request) {
 
 // delete category by ID (DELETE)
 func deleteCategory(response http.ResponseWriter, request *http.Request) {
-	var h = call.Utils.GetHTTP(request)
+	var h = call.Http.Get(request)
 	// get name from params.
 	var id = h.GetRouteArgs()["id"]
 	// find.
