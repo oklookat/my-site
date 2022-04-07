@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"servus/apps/elven/model"
 )
@@ -58,8 +58,16 @@ func login(response http.ResponseWriter, request *http.Request) {
 	// send token depending on auth type.
 	switch body.Type {
 	case "direct":
-		var tokenJSON = fmt.Sprintf(`{token: "%v"}`, encryptedToken)
-		h.Send(tokenJSON, 200, err)
+		type tokend struct {
+			Token string `json:"token"`
+		}
+		var tokened = tokend{Token: encryptedToken}
+		var tokenBytes, err = json.Marshal(tokened)
+		if err != nil {
+			h.Send(throw.Server(), 500, err)
+			return
+		}
+		h.Send(string(tokenBytes), 200, err)
 		return
 	case "cookie":
 		h.SetCookie("token", encryptedToken)

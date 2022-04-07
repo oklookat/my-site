@@ -13,16 +13,14 @@ import (
 // get paginated articles (GET url/).
 func getArticles(response http.ResponseWriter, request *http.Request) {
 	var h = call.Http.Get(request)
-	var err error
+
 	var pipe = pipe.GetByContext(request)
+
 	var isAdmin = pipe.IsAdmin()
 
 	// validate.
 	validatedBody := &base.ArticleGetParams{}
-	if err = ValidateGetParams(validatedBody, request.URL.Query(), isAdmin); err != nil {
-		h.Send("bad request", 400, err)
-		return
-	}
+	ValidateGetParams(validatedBody, request.URL.Query(), isAdmin)
 
 	// get.
 	article := model.Article{}

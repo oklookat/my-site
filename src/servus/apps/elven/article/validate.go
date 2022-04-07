@@ -14,111 +14,71 @@ import (
 )
 
 // validate params to get paginated articles.
-func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool) (err error) {
-	var validationErr = base.ValidationError{}
-
+func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool) {
 	// "show" param
 	var show = params.Get("show")
-	if len(show) == 0 {
-		show = "published"
-	}
-	var isShowPublished = show == "published"
-	var isShowDrafts = show == "drafts"
+	var isShowPublished = strings.EqualFold(show, "published")
+	var isShowDrafts = strings.EqualFold(show, "drafts")
 	var isShowInvalid = !isShowPublished && !isShowDrafts
 	var isShowForbidden = isShowDrafts && !isAdmin
-	if isShowInvalid || isShowForbidden {
-		if isShowInvalid {
-			validationErr.New("show")("invalid value")
-		} else {
-			validationErr.New("show")("not allowed")
-		}
-		err = &validationErr
-		return
+	if isShowPublished || isShowInvalid || isShowForbidden {
+		show = "published"
 	}
 	a.Show = show
 
 	// "by" param.
 	var by = params.Get("by")
-	if len(by) == 0 {
+	var isByUpdated = strings.EqualFold(by, "updated")
+	var isByCreated = strings.EqualFold(by, "created")
+	var isByPublished = strings.EqualFold(by, "published")
+	var isByInvalid = !isByUpdated && !isByCreated && !isByPublished
+	var isByForbidden = !isAdmin && (isByCreated || isByUpdated)
+	if isByPublished || isByInvalid || isByForbidden {
 		by = "published"
-	}
-	switch by {
-	default:
-		validationErr.New("by")("invalid value")
-		err = &validationErr
-		return
-	case "created", "updated":
-		if !isAdmin {
-			validationErr.New("by")("not allowed")
-			err = &validationErr
-			return
-		}
-	case "published":
-		break
 	}
 	by = by + "_at"
 	a.By = by
 
 	// "start" param.
 	var start = params.Get("start")
-	if len(start) == 0 {
-		start = "newest"
-	}
 	var isNewest = strings.EqualFold(start, "newest")
 	var isOldest = strings.EqualFold(start, "oldest")
 	var isStartInvalid = !isNewest && !isOldest
-	if isStartInvalid {
-		validationErr.New("start")("invalid value")
-		err = &validationErr
-		return
-	} else {
-		if isNewest {
-			start = "DESC"
-		} else if isOldest {
-			start = "ASC"
-		}
+	if isNewest || isStartInvalid {
+		start = "DESC"
+	} else if isOldest {
+		start = "ASC"
 	}
 	a.Start = start
 
 	// "preview" param.
-	var preview = params.Get("preview")
-	if len(preview) == 0 {
-		preview = "true"
-	}
-	var previewBool bool
-	previewBool, err = strconv.ParseBool(preview)
+	preview, err := strconv.ParseBool(params.Get("preview"))
 	if err != nil {
-		validationErr.New("preview")("not a boolean")
-		err = &validationErr
-		return
+		preview = true
 	}
-	a.Preview = previewBool
+	a.Preview = preview
 
 	// "page" param
-	var pageStr = params.Get("page")
-	if len(pageStr) == 0 {
-		pageStr = "1"
-	}
-	var page = 0
-	page, err = strconv.Atoi(pageStr)
+	page, err := strconv.Atoi(params.Get("page"))
 	if err != nil || page <= 0 {
-		validationErr.New("page")("invalid value")
-		err = &validationErr
-		return
+		page = 1
 	}
 	a.Page = page
 
 	// "without category" param
-	var withoutCategory = params.Get("without_category")
-	a.WithoutCategory = len(withoutCategory) > 0 && withoutCategory == "true"
+	a.WithoutCategory, err = strconv.ParseBool(params.Get("without_category"))
+	if err != nil {
+		a.WithoutCategory = true
+	}
 	if !a.WithoutCategory {
 		// "category name" param
 		var categoryName = params.Get("category_name")
 		if len(categoryName) > 0 {
 			a.CategoryName = &categoryName
+		} else {
+			a.WithoutCategory = true
 		}
 	}
-	return
 }
 
 // validate/filter body to change/create article.
