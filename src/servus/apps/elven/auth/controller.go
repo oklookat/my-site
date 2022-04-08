@@ -58,7 +58,7 @@ func login(response http.ResponseWriter, request *http.Request) {
 	// send token depending on auth type.
 	switch body.Type {
 	case "direct":
-		var tokenJSON = fmt.Sprintf(`{token: "%v"}`, encryptedToken)
+		var tokenJSON = fmt.Sprintf(`{"token": "%v"}`, encryptedToken)
 		h.Send(tokenJSON, 200, err)
 		return
 	case "cookie":

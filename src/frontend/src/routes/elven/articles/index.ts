@@ -3,11 +3,9 @@ import type { RequestEvent } from "@sveltejs/kit/types/private";
 //
 import NetworkArticle from "$lib/network/network_article";
 import { getDefaultParams, type Params } from "$lib/types/articles";
-import { Show, By, Start } from "$lib/types/articles";
 import Utils from "$lib/tools";
 
 
-/** @type {import('./index').RequestHandler} */
 export async function get(event: RequestEvent): Promise<RequestHandlerOutput> {
     const requestParams = getDefaultParams()
     //

@@ -30,8 +30,13 @@ export async function post(event: RequestEvent): Promise<RequestHandlerOutput> {
             }
             return toClient
         }
+
+        // we need to get { token: string }
+        // json parsing not work idk why
         const data = await resp.json()
         const token = data.token
+
+        // send token cookie
         toClient.headers['Set-Cookie'] = cookie.serialize('token', token, {
             httpOnly: true,
             secure: true,
@@ -41,7 +46,7 @@ export async function post(event: RequestEvent): Promise<RequestHandlerOutput> {
             domain: '.oklookat.ru'
         })
     } catch (err) {
-        toClient.status = -1
+        toClient.status = 400
         toClient.body.loginErr = "Network error. Check your connection."
     }
     return toClient

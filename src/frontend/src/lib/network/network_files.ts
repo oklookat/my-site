@@ -1,3 +1,5 @@
+import { FormData } from "formdata-node"
+//
 import Fetchd from '$lib/network'
 import type { File as TFile, Params } from '$lib/types/files'
 import type { Data } from '$lib/types'
@@ -56,13 +58,11 @@ export default class NetworkFile {
 
     /** upload one file */
     public async upload(file: File) {
-        if (!(file instanceof File)) {
-            return
-        }
-        const formData = new FormData()
-        formData.append("file", file)
+        const form = new FormData()
+        //
+        form.append("file", file)
         try {
-            await Fetchd.send({ method: "POST", url: 'files', body: formData, headers: this.headers })
+            const resp = await Fetchd.send({ method: "POST", url: 'files', body: form, headers: this.headers })
             return
         } catch (err) {
             return Promise.reject(err)

@@ -2,8 +2,7 @@ import type { GetSession, Handle } from '@sveltejs/kit'
 //
 import NetworkUser from '$lib/network/network_user';
 import { StorageAuth } from '$lib/tools/storage';
-import Validator from '$lib/validators';
-
+import type { User } from '$lib/types/user';
 
 export const handle: Handle = async ({ event, resolve }) => {
     let isExists = false
@@ -19,9 +18,16 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     // get user auth token
     token = StorageAuth.getToken(event.request.headers)
+    let isErr = false
+
     if (token) {
         const networkUser = new NetworkUser(token)
-        const user = await networkUser.getMe()
+        let user: User
+        try {
+            user = await networkUser.getMe()
+        } catch(err) {
+            isErr = true
+        }
         if (user && user.is_admin && user.username) {
             isExists = true
             isAdmin = user.is_admin
@@ -36,8 +42,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     const isElvenPage = StorageAuth.isAdminPanelPage(event.url)
     const isElvenLoginPage = StorageAuth.isAdminPanelLoginPage(event.url)
-    if (isElvenPage && !isElvenLoginPage && !isAdmin) {
-        const resp = Response.redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ', 302)
+    if (!isErr && isElvenPage && !isElvenLoginPage && !isAdmin) {
+        //const resp = Response.redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ', 302)
+        const resp = Response.redirect('https://oklookat.ru/elven/login', 302)
         return resp
     }
 

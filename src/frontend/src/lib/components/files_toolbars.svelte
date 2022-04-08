@@ -13,29 +13,29 @@
 
     const dispatch = createEventDispatcher<{
         /** on request param changed */
-        paramChanged: void;
+        paramChanged: {name: string, val: string};
+        upload: void
     }>();
 
     /** set 'start' param */
     function setStart(start: Start = Start.newest) {
         params.start = start;
-        params.page = 1;
-        dispatch("paramChanged");
+        dispatch("paramChanged", {name: 'start', val: start});
     }
 
     /** search by filename */
     function search(val: string) {
         params.filename = val;
-        dispatch("paramChanged");
+        dispatch("paramChanged", {name: 'filename', val: val});
     }
 
-    function onUploaded() {
-        dispatch("paramChanged");
+    function onUpload() {
+        dispatch("upload");
     }
 </script>
 
 <div class="toolbars">
-    <FilesUploader on:uploaded={onUploaded} />
+    <FilesUploader on:uploaded={onUpload} />
 
     <div class="oneline">
         <div class="sort">

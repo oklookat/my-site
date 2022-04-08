@@ -1,10 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import NetworkAuth from "$lib/network/network_auth";
-  import { goto } from "$app/navigation"; 
+  import { goto } from "$app/navigation";
 
   onMount(async () => {
-    await NetworkAuth.logout();
+    //await NetworkAuth.logout();
     await goto("/elven/login")
   });
 </script>

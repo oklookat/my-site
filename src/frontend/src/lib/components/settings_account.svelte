@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     // user
-    import UserAdapter from "$lib/network/network_user";
+    import UserAdapter from "$lib/network_fetch/network_userk_user";
     import type { User, UserChange } from "$lib/types/user";
     import { usernameValidate, passwordValidate } from "$lib/types/user";
 

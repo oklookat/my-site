@@ -12,7 +12,7 @@ export default class NetworkAuth {
         this.headers = headers
     }
 
-    public async login(username: string, password: string): Promise<Response> {
+    public static async login(username: string, password: string): Promise<Response> {
         const data: body = {
             username: username,
             password: password,

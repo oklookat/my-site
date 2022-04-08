@@ -4,13 +4,14 @@
 	import { page } from '$app/stores';
 	// ui
 	import Pagination from '$lib/components/pagination.svelte';
+	// utils
+	import Utils from '$lib/tools';
 	// article
 	import { getDefaultParams, type Article, type Params } from '$lib/types/articles';
 	import type { Data, Meta } from '$lib/types';
 	import CArticle from '$lib/components/article.svelte';
 	import ArticleActions from '$lib/components/article_actions.svelte';
 	import ArticlesToolbars from '$lib/components/articles_toolbars.svelte';
-import Utils from '$lib/tools';
 
 	/** is article selected? */
 	let isSelected = false;
@@ -22,13 +23,18 @@ import Utils from '$lib/tools';
 		mouseEvent: MouseEvent;
 	} = { counter: null, article: null, mouseEvent: null };
 
+	/** articles data */
 	export let items: Data<Article>;
+
+	/** request params */	
 	export let params: Params;
 
+	/** url searchparams */
 	const urlParams = $page.url.searchParams;
+
 	onMount(async () => {
-    // @ts-ignore
-    Utils.searchParamsByObject($page.url.searchParams, getDefaultParams())
+		// @ts-ignore
+		Utils.searchParamsByObject($page.url.searchParams, getDefaultParams());
 		await goto(`?${urlParams.toString()}`, { replaceState: true });
 	});
 

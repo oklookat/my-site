@@ -83,7 +83,7 @@ func (t *Token) getEncryptedByRequest(request *http.Request) (encrypted string, 
 	}
 
 	// remove 6 symbols (Elven and space) to get only token.
-	encrypted = authHeader[:len(authHeader)-6]
+	encrypted = authHeader[6:]
 
 	found = true
 	return

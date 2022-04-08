@@ -3,7 +3,6 @@
     // ui
     import Select from "$lib/components/select.svelte";
     // category
-    import NetworkCategories from "$lib/network/network_categories";
     import type { Category } from "$lib/types/articles/categories";
 
     /** initial id */

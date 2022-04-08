@@ -6,8 +6,7 @@
     // utils
     import Utils from "$lib/tools";
     import { Env } from "$lib/tools/paths";
-    // file
-    import NetworkFile from "$lib/network/network_files";
+    // file$lib/network_fetch/network_filesom "$lib/network_fetch/network_files";
     import type { File } from "$lib/types/files";
 
     /** add 'select' option to actions */

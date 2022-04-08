@@ -23,6 +23,15 @@ export type Params = {
     extensionsSelector?: FileTypeSelector
 }
 
+/** get default files request params */
+export function getDefaultParams() {
+    return {
+        page: 1,
+        start: Start.newest,
+        by: By.created,
+    }
+}
+
 /** file */
 export type File = {
     id: string

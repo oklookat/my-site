@@ -12,7 +12,6 @@
 
 	// article
 	import type { Article } from '$lib/types/articles';
-	import NetworkArticle from '$lib/network/network_article';
 	import ValidatorArticle from '$lib/validators/validator_article';
 	import CategoriesSelector from '$lib/components/categories_selector.svelte';
 	import type { Category } from '$lib/types/articles/categories';
@@ -120,8 +119,7 @@
 		try {
 			const result = await fetch(``, {
 				method: 'POST',
-				body: JSON.stringify(article),
-				headers: { Accept: 'application/json' }
+				body: JSON.stringify(article)
 			});
 			const newArticle: Article = await result.json();
 			article.id = newArticle.id;
@@ -218,7 +216,7 @@
 </script>
 
 <svelte:head>
-  <title>{`elven: ${article.id ? article.title : 'create article'}`}</title>
+	<title>{`elven: ${article.id ? article.title : 'create article'}`}</title>
 </svelte:head>
 
 <div class="create base__container" bind:this={createContainer}>

@@ -1,3 +1,5 @@
+import {FormData} from "formdata-node"
+//
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 export type Body = string | number | object | Blob | BufferSource | FormData | URLSearchParams | ReadableStream
 export interface Stringer {
@@ -27,7 +29,6 @@ export default class FetchDriver {
         } else {
             endpoint = config.url
         }
-
         const url = new URL(endpoint)
         if(config.params) {
             for(const key in config.params) {
@@ -40,8 +41,15 @@ export default class FetchDriver {
             }
         }
 
+        // TODO: if formdata, auto-set content-type/boundary headers not work. Need fix
         var headers = new Headers();
+        headers.append('Accept', 'application/json');
         headers.append('Content-Type', 'application/json');
+        const isFormData = config.body && config.body instanceof FormData
+        if(isFormData) {
+            headers.delete('Content-Type');
+        }
+
         if(config.headers) {
             config.headers.forEach((val, key) => {
                 headers.append(key, val)

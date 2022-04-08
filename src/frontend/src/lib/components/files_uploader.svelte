@@ -1,8 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
     // files
-    import NetworkFiles from "$lib/network/network_files";
-
     const dispatch = createEventDispatcher<{ 
         /** on file uploaded */
         uploaded: void 
@@ -101,7 +99,7 @@
         }
         isUploadingNow = true;
         try {
-            await NetworkFiles.upload(file);
+            await fetch("/elven/files", {method: "POST", body: JSON.stringify(file)})
             dispatch("uploaded")
         } catch (err) {
         } finally {

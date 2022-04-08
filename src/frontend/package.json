@@ -35,9 +35,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@oklookat/duck": "^2.0.2",
     "@oklookat/jmarkd": "^1.0.7",
     "byte-size": "^8.1.0",
-    "cookie": "^0.4.2"
+    "cookie": "^0.4.2",
+    "formdata-node": "^4.3.2"
   }
 }
