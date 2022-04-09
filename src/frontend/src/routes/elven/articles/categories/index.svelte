@@ -6,15 +6,15 @@
 	import CompCategory from '$lib/components/category.svelte';
 	import CategoryNew from '$lib/components/category_new.svelte';
 	import type { Data } from '$lib/types';
+	import NetworkCategory from '$lib/network/network_category';
 
 	export let items: Data<Category>;
-
-	/** add or cancel adding cat? */
-	let addText: 'add' | 'cancel' = 'add';
 
 	/** create new cat? */
 	let createNew = false;
 
+	/** add or cancel adding cat? */
+	let addText: 'add' | 'cancel' = 'add';
 	$: createNew, onCreateNewChanged();
 	const onCreateNewChanged = () => {
 		addText = createNew ? 'cancel' : 'add';
@@ -46,12 +46,12 @@
 
 	async function addNew(cat: Category) {
 		try {
-            await fetch('', {method: "POST", body: JSON.stringify(cat)})
+			await NetworkCategory.create(cat);
 		} catch (err) {}
 	}
 
 	async function deleteCat(counter: number) {
-		const sure = await window.$choose.confirm('delete category');
+		const sure = await window.$choose.confirm('Delete category');
 		if (!sure) {
 			return;
 		}
@@ -60,7 +60,7 @@
 			return;
 		}
 		try {
-            await fetch('', {method: "DELETE", body: id})
+			await NetworkCategory.delete(id);
 			delete items.data[counter];
 			items = items;
 		} catch (err) {}
@@ -76,7 +76,7 @@
 			name: newName
 		};
 		try {
-			await fetch('', {method: "PATCH", body: JSON.stringify(cat)})
+			await NetworkCategory.rename(cat);
 			items = items;
 		} catch (err) {
 			// revert name
@@ -86,7 +86,7 @@
 </script>
 
 <svelte:head>
-  <title>elven: article categories</title>
+	<title>elven: article categories</title>
 </svelte:head>
 
 <div class="categories base__container">

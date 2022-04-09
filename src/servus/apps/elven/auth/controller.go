@@ -77,10 +77,6 @@ func logout(response http.ResponseWriter, request *http.Request) {
 
 	// get token from cookie or auth header.
 	var pipe = pipe.GetByContext(request)
-	if !pipe.IsExists() {
-		h.Send("not authorized", 400, nil)
-		return
-	}
 
 	// delete token.
 	var token = model.Token{}
@@ -90,6 +86,6 @@ func logout(response http.ResponseWriter, request *http.Request) {
 		h.Send(throw.Server(), 500, err)
 		return
 	}
-
+	_ = h.UnsetCookie("token")
 	h.Send("", 200, err)
 }

@@ -32,7 +32,7 @@ export default class Utils {
     while (true) {
       const dataLength = this.getRecordLength(data)
       const isNoData = dataLength > 0 || page < 2
-      if(isNoData) {
+      if (isNoData) {
         break
       }
       page--
@@ -45,31 +45,45 @@ export default class Utils {
     }
   }
 
-  // https://stackoverflow.com/a/52539264
+  /** convert URLSearchParams to object */
   public static searchParamsToObject(params: URLSearchParams): Object {
-    const result = {}
-    for(const [key, value] of params) { // each 'entry' is a [key, value] tupple
-      result[key] = value;
+    if (!(params instanceof URLSearchParams)) {
+      return
     }
+
+    const result = {}
+
+    params.forEach((value, key) => {
+      result[key] = value;
+    })
+
     return result;
   }
 
+  /** add params to URLSearchParams by object */
   public static searchParamsByObject(params: URLSearchParams, data: Record<string, string>) {
-    for(const key in data) {
-      if(params.has("key")) {
-        continue
+    if (!(params instanceof URLSearchParams)) {
+      return
+    }
+
+    for (const key in data) {
+      // no add param if it exists in params
+      if (params.has(key)) {
+        params.delete(key)
       }
+      
       const value = data[key]
-      if(!value) {
+      if (!value) {
         continue
       }
       params.append(key, value)
     }
-    
+
     const result = {}
-    for(const [key, value] of params) { // each 'entry' is a [key, value] tupple
+    params.forEach((value, key) => {
       result[key] = value;
-    }
+    })
+
     return result;
   }
 

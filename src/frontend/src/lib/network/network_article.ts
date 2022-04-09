@@ -3,6 +3,10 @@ import { StorageAuth } from '$lib/tools/storage'
 import type { Data } from '$lib/types'
 import type { Article, Params } from '$lib/types/articles'
 
+/** Use with SSR by passing token / or in components by passing empty token.
+ * 
+ * Static methods = not for SSR, use only on components side
+ */
 export default class NetworkArticle {
 
     private static prefix = "article/articles"
@@ -41,25 +45,23 @@ export default class NetworkArticle {
         }
     }
 
-    public async delete(id: string): Promise<void> {
+    public static async delete(id: string): Promise<Response> {
         try {
-            await Fetchd.send({
+            const resp = await Fetchd.send({
                 method: "DELETE",
-                url: `${NetworkArticle.prefix}/${id}`, headers: this.headers
-            })
-            return
+                url: `${this.prefix}/${id}`})
+            return resp
         } catch (err) {
             return Promise.reject(err)
         }
     }
 
-    public async create(article: Article): Promise<Article> {
+    public static async create(article: Article): Promise<Article> {
         NetworkArticle.beforeCRUD(article)
         try {
             const response = await Fetchd.send({
                 method: "POST",
-                url: `${NetworkArticle.prefix}`, body: article, headers: this.headers
-            })
+                url: `${this.prefix}`, body: article})
             const jsond = await response.json()
             return jsond as Article
         } catch (err) {
@@ -67,14 +69,13 @@ export default class NetworkArticle {
         }
     }
 
-    public async update(article: Article): Promise<Article> {
+    public static async update(article: Article): Promise<Article> {
         NetworkArticle.beforeCRUD(article)
         try {
             const response = await Fetchd.send({
                 // PATCH OR POST?
-                method: "PATCH", url: `${NetworkArticle.prefix}/${article.id}`,
-                body: article, headers: this.headers
-            })
+                method: "PATCH", url: `${this.prefix}/${article.id}`,
+                body: article})
             const jsond = await response.json()
             return jsond as Article
         } catch (err) {

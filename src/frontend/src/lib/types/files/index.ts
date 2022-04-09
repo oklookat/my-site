@@ -16,19 +16,22 @@ export type Params = {
     page?: number
     start?: Start
     by?: By
+
     /** find files with this extensions. Format like: 'jpg,gif,png' */
     extensions?: string
+
+    /** search by filename */
     filename?: string
-    // not in model
-    extensionsSelector?: FileTypeSelector
 }
 
 /** get default files request params */
-export function getDefaultParams() {
+export function getDefaultParams(): Params {
     return {
         page: 1,
         start: Start.newest,
         by: By.created,
+        extensions: undefined,
+        filename: undefined
     }
 }
 
@@ -44,6 +47,7 @@ export type File = {
     size: number
     created_at: string
     updated_at: string
+    
     // not in model
     pathConverted?: URL
     sizeConverted?: string

@@ -88,11 +88,12 @@
 
 <style lang="scss">
     .popup {
+        font-size: 1rem;
         display: block;
         position: absolute;
         background-color: var(--color-level-1);
         border-radius: var(--border-radius);
-        width: 124px;
+        width: 104px;
         height: max-content;
     }
 </style>

@@ -8,6 +8,7 @@
 	import Validator from '$lib/validators';
 	// article
 	import type { Article } from '$lib/types/articles';
+	import NetworkArticle from '$lib/network/network_article';
 
 	/** file itself */
 	export let article: Article;
@@ -22,7 +23,7 @@
 	export let onDisabled: () => void;
 
 	/** is device with touchscreen? */
-	const isTouchDevice = Validator.isTouchDevice();
+	let isTouchDevice = false;
 
 	/** component to render */
 	let render: {
@@ -32,6 +33,7 @@
 	} = { isOverlay: true, component: null, props: null };
 
 	onMount(() => {
+		isTouchDevice = Validator.isTouchDevice();
 		if (isTouchDevice) {
 			render.component = Overlay;
 			render.props = {
@@ -47,17 +49,14 @@
 		};
 	});
 
-	async function publishUnpublish(isPublished: boolean): Promise<Response> {
+	async function publishUnpublish(isPublished: boolean): Promise<Article> {
 		// @ts-ignore
 		const toEdit: Article = {
 			id: article.id,
 			is_published: isPublished
 		};
 		try {
-			const resp = await fetch('/elven/articles/create', {
-				method: 'PATCH',
-				body: JSON.stringify(toEdit)
-			});
+			const resp = await NetworkArticle.update(toEdit)
 			return Promise.resolve(resp);
 		} catch (err) {
 			return Promise.reject(err);
@@ -81,15 +80,12 @@
 
 	/** delete article */
 	async function deleteArticle() {
-		const isDelete = await window.$choose.confirm('delete article');
+		const isDelete = await window.$choose.confirm('Delete article');
 		if (!isDelete) {
 			return;
 		}
 		try {
-			await fetch('/elven/articles/create', {
-				method: 'DELETE',
-				body: article.id
-			});
+			await NetworkArticle.delete(article.id)
 			onDeleted();
 		} catch (err) {}
 	}
@@ -98,11 +94,11 @@
 <svelte:component this={render.component} {...render.props}>
 	<div class="base__items {render.isOverlay ? 'extended' : ''}">
 		{#if article.is_published}
-			<div on:click={() => unpublish()}>unpublish</div>
+			<div on:click={() => unpublish()}>Unpublish</div>
 		{:else}
-			<div on:click={() => publish()}>publish</div>
+			<div on:click={() => publish()}>Publish</div>
 		{/if}
-		<div on:click={() => edit()}>edit</div>
-		<div on:click={() => deleteArticle()}>delete</div>
+		<div on:click={() => edit()}>Edit</div>
+		<div on:click={() => deleteArticle()}>Delete</div>
 	</div>
 </svelte:component>

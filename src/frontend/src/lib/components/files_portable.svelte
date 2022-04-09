@@ -4,7 +4,7 @@
     import Animation from "$lib/tools/animation";
     // files
     import type { File, Params } from "$lib/types/files";
-    //import Files from "$lib/views/files/index.svelte";
+    import Files from "$lib/views/files/index.svelte";
 
     const dispatch = createEventDispatcher<{ 
         /** on 'select' option clicked on file */
@@ -44,11 +44,11 @@
             >
         </div>
         <div class="files">
-            <!-- <Files
-                withSelect={true}
+            <Files
+                isSelectMode={true}
                 {params}
                 on:selected={(e) => onSelected(e.detail)}
-            /> -->
+            />
         </div>
     </div>
 </div>

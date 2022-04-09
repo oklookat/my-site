@@ -35,6 +35,10 @@ type HTTP interface {
 
 	// set cookie.
 	SetCookie(name string, value string) error
+
+	// unset cookie.
+	UnsetCookie(name string) error
+
 	// get route args [name: value].
 	//
 	// ----example:----

@@ -1,4 +1,4 @@
-/** wtf is going on here:
+/** wtf is going on:
  * 1. We need to search files by extensions / or after getting file from server we need readable extension
  * 2. API recieves param for searching extensions in format like: 'jpg,png,mp4' etc
  * 3. To easily manipulate this we need fileTypeSelector
@@ -8,16 +8,36 @@
 
 
 /** generate file type selector by file type and extensions */
-export function generateFileTypeSelector(readable: FileExtensionReadable | FileExtensionReadable[], 
+export function generateFileTypeSelector(readable: FileExtensionReadable | FileExtensionReadable[],
     extensions: FileExtensions = FileExtensionsDefault): FileTypeSelector {
+    if (readable instanceof Array) {
+        // remove dups
+        readable = [...new Set(readable)]
+    }
     const select: FileTypeSelector = {
         selected: readable,
-        extensions: extensions
+        extensions: extensions,
+        selectedToString: () => { return selectedToString(readable, extensions) }
     }
     return select
 }
 
+function selectedToString(readable: Readable, extensions: FileExtensions = FileExtensionsDefault): string {
+    if (!(readable instanceof Array)) {
+        return extensions[readable].join(',')
+    }
+    const extsStrings = []
+    for (const read of readable) {
+        const exts = extensions[read]
+        extsStrings.push(exts.join(','))
+    }
+    return extsStrings.join(',')
+}
+
+export type Readable = FileExtensionReadable | FileExtensionReadable[]
+
 export type FileExtensionReadable = 'UNKNOWN' | 'IMAGE' | 'VIDEO' | 'AUDIO'
+
 export const FileExtensionsDefault: FileExtensions = {
     UNKNOWN: [],
     IMAGE: ['jpeg', 'jpg', 'gif', 'png', 'svg', 'bmp', 'webp'],
@@ -28,6 +48,10 @@ export const FileExtensionsDefault: FileExtensions = {
 export interface FileTypeSelector {
     /** file type */
     selected: FileExtensionReadable | FileExtensionReadable[]
+
+    /** selected file extension(s) to string */
+    selectedToString: () => string
+
     /** file extensions by types */
     get extensions(): FileExtensions
 }

@@ -81,6 +81,29 @@ func (i *Instance) SetCookie(name string, value string) error {
 	return err
 }
 
+func (i *Instance) UnsetCookie(name string) error {
+	if i.Cookie == nil || i.Response == nil {
+		return nil
+	}
+
+	var maxAgeSeconds = 1
+	var domain = i.Cookie.Domain
+	var path = i.Cookie.Path
+	var httpOnly = i.Cookie.HttpOnly
+	var secure = i.Cookie.Secure
+
+	sameSite, err := convertCookieSameSite(i.Cookie.SameSite)
+	if err != nil {
+		return wrapError(err)
+	}
+
+	var cookie = &http.Cookie{Name: name, Value: "", Path: path, Domain: domain,
+		MaxAge: maxAgeSeconds, HttpOnly: httpOnly,
+		Secure: secure, SameSite: sameSite}
+	http.SetCookie(i.Response, cookie)
+	return err
+}
+
 // get pretty HTTP request info in string/io.Reader.
 func (i *Instance) GetDump() io.Reader {
 	if i.Request == nil {

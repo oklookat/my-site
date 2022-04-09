@@ -2,6 +2,11 @@ import Fetchd from '$lib/network'
 import { StorageAuth } from '$lib/tools/storage'
 import type { User, UserChange } from '../types/user'
 
+
+/** Use with SSR by passing token / or in components by passing empty token.
+ * 
+ * Static methods = not for SSR, use only on components side
+ */
 export default class NetworkUser {
 
     private headers: Headers
@@ -24,10 +29,10 @@ export default class NetworkUser {
     }
 
     /** change username or password */
-    public async change(body: UserChange) {
+    public static async change(body: UserChange) {
         try {
-            await Fetchd.send({ method: "POST", url: 'users/me/change', body: body, headers: this.headers })
-            return
+            const resp = await Fetchd.send({ method: "POST", url: 'users/me/change', body: body})
+            return resp
         } catch (err) {
             return Promise.reject(err)
         }

@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { browser } from '$app/env';
 	// editor
 	import type { config } from '@oklookat/jmarkd';
 
 	// utils
 	import Animation from '$lib/tools/animation';
 	import TextareaResizer from '$lib/tools/textarea_resizer';
+	import { generateFileTypeSelector } from '$lib/tools/extension';
 
 	// ui
 	import Toolbar from '$lib/components/toolbar.svelte';
@@ -16,12 +18,11 @@
 	import CategoriesSelector from '$lib/components/categories_selector.svelte';
 	import type { Category } from '$lib/types/articles/categories';
 	import ArticleCover from '$lib/components/article_cover.svelte';
+	import NetworkArticle from '$lib/network/network_article';
 
 	// file
 	import FilesPortable from '$lib/components/files_portable.svelte';
 	import type { File } from '$lib/types/files';
-	import { generateFileTypeSelector } from '$lib/tools/extension';
-	import { browser } from '$app/env';
 
 	/** creating / editing this article */
 	export let article: Article;
@@ -38,10 +39,6 @@
 	/** title resizer */
 	let textareaResizer: TextareaResizer;
 
-	/** text editor */
-	let jmarkdClass;
-	let editor;
-
 	/** text editor element */
 	let editorEL: HTMLDivElement;
 
@@ -56,8 +53,14 @@
 		isCoverExists = !!(article.cover_id && article.cover_path && article.cover_extension);
 	}
 
+	/** md editor */
+	let jmarkdClass;
+
+	/** md editor instance */
+	let editor;
+
 	onMount(async () => {
-		// import jmarkd
+		// import markdown editor
 		const jmarkdModule = await import('@oklookat/jmarkd');
 		jmarkdClass = jmarkdModule.default;
 		// @ts-ignore
@@ -77,9 +80,11 @@
 		if (!browser) {
 			return;
 		}
+
 		if (editor) {
 			editor.destroy();
 		}
+
 		if (textareaResizer) {
 			textareaResizer.destroy();
 		}
@@ -96,17 +101,6 @@
 		editor = new jmarkdClass(config);
 	}
 
-	/** get article */
-	async function getArticle(id: string) {
-		try {
-			const result = await fetch(`?id=${id}`, { method: 'GET' });
-			const article = await result.json();
-		} catch (err) {
-			return Promise.reject();
-		}
-		return Promise.resolve();
-	}
-
 	/** create new article */
 	async function createArticle() {
 		const notValid =
@@ -117,11 +111,7 @@
 			return;
 		}
 		try {
-			const result = await fetch(``, {
-				method: 'POST',
-				body: JSON.stringify(article)
-			});
-			const newArticle: Article = await result.json();
+			const newArticle = await NetworkArticle.create(article);
 			article.id = newArticle.id;
 		} catch (err) {
 			return Promise.reject(err);
@@ -138,8 +128,8 @@
 		if (notValid) {
 			return;
 		}
-		const result = await fetch(``, { method: 'PATCH', body: JSON.stringify(article) });
-		return await result.json();
+		const updated = await NetworkArticle.update(article);
+		return updated;
 	}
 
 	/** create save func */
@@ -219,6 +209,18 @@
 	<title>{`elven: ${article.id ? article.title : 'create article'}`}</title>
 </svelte:head>
 
+{#if isChooseCover}
+	<FilesPortable
+		params={{
+			extensions: generateFileTypeSelector(['IMAGE', 'VIDEO']).selectedToString()
+		}}
+		on:closed={() => (isChooseCover = false)}
+		on:selected={(e) => {
+			onCoverSelected(e.detail);
+		}}
+	/>
+{/if}
+
 <div class="create base__container" bind:this={createContainer}>
 	<div class="toolbars">
 		<Toolbar>
@@ -276,18 +278,6 @@
 		/>
 		<div class="editor" bind:this={editorEL} on:input={() => save()} />
 	</div>
-
-	{#if isChooseCover}
-		<FilesPortable
-			params={{
-				extensionsSelector: generateFileTypeSelector(['IMAGE', 'VIDEO'])
-			}}
-			on:closed={() => (isChooseCover = false)}
-			on:selected={(e) => {
-				onCoverSelected(e.detail);
-			}}
-		/>
-	{/if}
 </div>
 
 <style lang="scss">

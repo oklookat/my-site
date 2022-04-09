@@ -2,6 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
+	import NetworkAuth from '$lib/network/network_auth';
 
 	let username = '';
 	let password = '';
@@ -9,27 +10,31 @@
 
 	let loginErr: null | string = null;
 
-	$: onUP(username), onUP(password);
-	function onUP(v) {
-		if (loginErr) {
-			loginErr = null;
+	$: onTyping(username), onTyping(password);
+	// clean login error if user typing
+	function onTyping(v) {
+		if(!loginErr) {
+			return
 		}
+		loginErr = null;
 	}
 
 	async function makeLogin() {
-		const jsond = JSON.stringify({ username: username, password: password });
 		try {
-			const resp = await fetch('/elven/login', {
-				method: 'POST',
-				body: jsond
-			});
-			const respJson = await resp.json();
-			loginErr = respJson.loginErr;
+			const resp = await NetworkAuth.login(username, password);
+			if (!resp.ok) {
+				if (resp.status === 401 || resp.status === 403) {
+					loginErr = 'Incorrect username or password.';
+				} else if (resp.status > 499) {
+					loginErr = 'Server error. Try later.';
+				} else {
+					loginErr = 'Unknown error.';
+				}
+			} else {
+				await goto('/elven');
+			}
 		} catch (err) {
-			loginErr = err;
-		}
-		if (!loginErr) {
-			await goto('/elven');
+			loginErr = 'Network or server error. Try check your connection.';
 		}
 	}
 
@@ -49,8 +54,8 @@
 		if (event.target === loginButton) {
 			return;
 		}
-		const byEnterAndValid = event.code === 'Enter' && username.length > 0 && password.length > 0;
-		if (byEnterAndValid) {
+		const isByEnterAndValid = event.code === 'Enter' && username.length > 0 && password.length > 0;
+		if (isByEnterAndValid) {
 			makeLogin();
 		}
 	}

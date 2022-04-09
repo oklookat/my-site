@@ -10,7 +10,7 @@
     /** when clicked on file */
     export let onSelected: (e: MouseEvent) => void;
 
-    convert(file);
+    $: convert(file)
 
     /** convert file path, extension etc */
     // TODO: split converter functions(?)
@@ -39,7 +39,7 @@
         <div class="meta__item">{file.sizeConverted}</div>
     </div>
     <div class="main">
-        {#if file.extensionsSelector.selected === "IMAGE"}
+        {#if file.extensionsSelector && file.extensionsSelector.selected === "IMAGE"}
             <div class="file__preview">
                 <img
                     decoding="async"
@@ -48,7 +48,7 @@
                     alt=""
                 />
             </div>
-        {:else if file.extensionsSelector.selected === "VIDEO"}
+        {:else if file.extensionsSelector && file.extensionsSelector.selected === "VIDEO"}
             <div class="file__preview" on:click|stopPropagation>
                 <video controls src={file.pathConverted.href}>
                     <track default kind="captions" srclang="en" src="" />

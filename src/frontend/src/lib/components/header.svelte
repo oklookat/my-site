@@ -1,18 +1,39 @@
 <script lang="ts">
-import ElvenLink from "$lib/components/elven_link.svelte";
+  import { page } from "$app/stores"
+  //
+  import ElvenLink from "$lib/components/elven_link.svelte";
 
+
+  let isUnknown = false
+  let isArticles = false
+  let isFiles = false
+  
+  $: onPathChanged($page.url.pathname);
+  function onPathChanged(path: string) {
+    isFiles = path.includes("/elven/files")
+    isArticles = path.includes("/elven/articles")
+    isUnknown = !isFiles && !isArticles
+  }
 </script>
 
 <nav class="header">
   <div class="header__items">
-    <ElvenLink path="">elven</ElvenLink>
-    <ElvenLink path="/articles">articles</ElvenLink>
-    <ElvenLink path="/files">files</ElvenLink>
+    <ElvenLink path="">
+      <div class={isUnknown ? 'route-active' : ''}>elven</div>
+    </ElvenLink>
+
+    <ElvenLink path="/articles">
+      <div class={isArticles ? 'route-active' : ''}>articles</div>
+    </ElvenLink>
+
+    <ElvenLink path="/files">
+      <div class={isFiles ? 'route-active' : ''}>files</div>
+    </ElvenLink>
   </div>
 </nav>
 
 <style lang="scss">
-  :global(a.route-active) {
+  :global(.route-active) {
     text-decoration: underline 1px;
   }
 

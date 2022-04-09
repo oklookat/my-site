@@ -82,7 +82,6 @@ func ProcessFromForm(request *http.Request, formKey string, tempDir string) (dat
 	// get and validate.
 	fileFromForm, header, err := request.FormFile(formKey)
 	if err != nil {
-		println(err.Error())
 		err = ErrBadFileProvided
 		return
 	}

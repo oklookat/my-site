@@ -13,7 +13,7 @@ export class StorageGlobal {
 /** auth storage */
 export class StorageAuth {
 
-    /** get token from request headers */
+    /** get token from request headers (cookie) */
     public static getToken(headers: Headers): string | null {
         if (!headers || !(headers instanceof Headers)) {
             return null
@@ -35,7 +35,7 @@ export class StorageAuth {
         }
         headers.append('Authorization', `Elven ${token}`)
     }
-    
+
     public static isAdminPanelPage(url: URL): boolean {
         if (!(url instanceof URL)) {
             return false

@@ -26,28 +26,3 @@ export async function get(event: RequestEvent): Promise<RequestHandlerOutput> {
         body: { article: article }
     }
 }
-
-export async function post(event: RequestEvent): Promise<RequestHandlerOutput> {
-    const article = await event.request.json()
-    const networkArticle = new NetworkArticle(event.locals.user.token)
-    const newArticle = await networkArticle.create(article)
-    return {
-        body: { newArticle }
-    }
-}
-
-export async function patch(event: RequestEvent): Promise<RequestHandlerOutput> {
-    const article = await event.request.json()
-    const networkArticle = new NetworkArticle(event.locals.user.token)
-    const updatedArticle = await networkArticle.update(article)
-    return {
-        body: { updatedArticle }
-    }
-}
-
-export async function del(event: RequestEvent): Promise<RequestHandlerOutput> {
-    const articleID = await event.request.text()
-    const networkArticle = new NetworkArticle(event.locals.user.token)
-    await networkArticle.delete(articleID)
-    return {}
-}

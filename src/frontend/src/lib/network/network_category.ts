@@ -3,7 +3,11 @@ import { StorageAuth } from '$lib/tools/storage'
 import type { Data } from '$lib/types'
 import type { Category } from '$lib/types/articles/categories'
 
-export default class NetworkCategories {
+/** Use with SSR by passing token / or in components by passing empty token.
+ * 
+ * Static methods = not for SSR, use only on components side
+ */
+export default class NetworkCategory {
 
     private static prefix = "article/categories"
     private headers: Headers
@@ -16,7 +20,7 @@ export default class NetworkCategories {
 
     public async getAll() {
         try {
-            const response = await Fetchd.send({ method: "GET", url: NetworkCategories.prefix, headers: this.headers})
+            const response = await Fetchd.send({ method: "GET", url: NetworkCategory.prefix, headers: this.headers})
             const jsond = await response.json()
             return jsond as Data<Category>
         } catch (err) {
@@ -24,12 +28,10 @@ export default class NetworkCategories {
         }
     }
 
-    public async create(cat: Category) {
+    public static async create(cat: Category) {
         try {
             const response = await Fetchd.send({ 
-                method: "POST", url: NetworkCategories.prefix, body: cat,
-                headers: this.headers
-            })
+                method: "POST", url: this.prefix, body: cat})
             const jsond = await response.json()
             return jsond as Category
         } catch (err) {
@@ -37,13 +39,11 @@ export default class NetworkCategories {
         }
     }
 
-    public async rename(cat: Category) {
+    public static async rename(cat: Category) {
         try {
             const response = await Fetchd.send({ 
-                method: "PATCH", url: `${NetworkCategories.prefix}/${cat.id}`, 
-                body: { name: cat.name },
-                headers: this.headers
-            })
+                method: "PATCH", url: `${this.prefix}/${cat.id}`, 
+                body: { name: cat.name }})
             const jsond = await response.json()
             return jsond as Category
         } catch (err) {
@@ -51,13 +51,11 @@ export default class NetworkCategories {
         }
     }
 
-    public async delete(id: string) {
+    public static async delete(id: string) {
         try {
             const response = await Fetchd.send({ 
-                method: "DELETE", url: `${NetworkCategories.prefix}/${id}`,
-                headers: this.headers
-            })
-            return
+                method: "DELETE", url: `${this.prefix}/${id}`})
+            return response
         } catch (err) {
             throw err
         }

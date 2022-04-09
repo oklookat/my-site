@@ -4,6 +4,7 @@
     import Select from "$lib/components/select.svelte";
     // category
     import type { Category } from "$lib/types/articles/categories";
+import NetworkCategory from "$lib/network/network_category";
 
     /** initial id */
     export let selectedID: string | null | undefined = undefined;
@@ -40,11 +41,9 @@
     async function getCategories() {
         // get categories
         try {
-            const result = await fetch("/elven/articles/categories", {
-                method: "GET", headers: {'Accept': 'application/json'}
-            });
-            const items = await result.json()
-            categories = items.items.data;
+            const networkCategory = new NetworkCategory('')
+            const items = await networkCategory.getAll()
+            categories = items.data
         } catch (err) {
             return Promise.reject();
         }

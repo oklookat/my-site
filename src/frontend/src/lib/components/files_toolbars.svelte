@@ -41,7 +41,7 @@
         <div class="sort">
             <Toolbar>
                 <div class="sort-by-old">
-                    {#if params.start === Start.newest}
+                    {#if params && params.start === Start.newest}
                         <div
                             class="item"
                             on:click={() => setStart(Start.oldest)}
@@ -49,7 +49,7 @@
                             newest
                         </div>
                     {/if}
-                    {#if params.start === Start.oldest}
+                    {#if params && params.start === Start.oldest}
                         <div
                             class="item"
                             on:click={() => setStart(Start.newest)}

@@ -1,22 +1,14 @@
 import Fetchd from '$lib/network'
 import type { body } from '$lib/types/auth';
-import { StorageAuth } from "$lib/tools/storage"
 
+/** Not for SSR, use only on components side */
 export default class NetworkAuth {
-
-    private headers: Headers
-
-    constructor(token: string) {
-        const headers = new Headers()
-        StorageAuth.addTokenToHeaders(headers, token)
-        this.headers = headers
-    }
 
     public static async login(username: string, password: string): Promise<Response> {
         const data: body = {
             username: username,
             password: password,
-            type: 'direct',
+            type: 'cookie',
         }
         try {
             return await Fetchd.send({ method: "POST", url: 'auth/login', body: data})
@@ -25,11 +17,10 @@ export default class NetworkAuth {
         }
     }
 
-    public async logout() {
+    public static async logout(): Promise<Response> {
         try {
-            await Fetchd.send({ method: "POST", url: 'auth/logout', headers: this.headers})
-            //AuthStorage.set(true)
-            return
+            const resp = await Fetchd.send({ method: "POST", url: 'auth/logout'})
+            return resp
         } catch (err) {
             return Promise.reject(err)
         }

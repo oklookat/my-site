@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	// tools
-	import type { Data, Meta } from '$lib/types';
+	import type { Data } from '$lib/types';
 	import Utils from '$lib/tools';
 	// ui
 	import Pagination from '$lib/components/pagination.svelte';
@@ -10,25 +12,16 @@
 	import CFile from '$lib/components/file.svelte';
 	import FileActions from '$lib/components/file_actions.svelte';
 	import FilesToolbars from '$lib/components/files_toolbars.svelte';
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
+	import NetworkFile from '$lib/network/network_file';
 
-	/** add "select" option to selection overlay and dispatch event if this button clicked */
-	export let withSelect: boolean = false;
+	const networkFile = new NetworkFile('');
+
+	export let isSelectMode = false;
 
 	const dispatch = createEventDispatcher<{
 		/** on 'select' option clicked on file */
 		selected: File;
 	}>();
-
-	/** files loaded? */
-	let loaded = false;
-
-	/** response information */
-	let meta: Meta;
-
-	/** is file selected? */
-	let isSelected = false;
 
 	/** selected file */
 	let selected: {
@@ -38,22 +31,37 @@
 	} = { counter: null, file: null, mouseEvent: null };
 
 	/** files data */
-	export let items: Data<File>;
+	export let items: Data<File> | undefined = undefined;
 
 	/** request params */
 	export let params: Params;
 
 	/** url searchparams */
-	const urlParams = $page.url.searchParams;
+	let urlParams = $page.url.searchParams;
 
 	onMount(async () => {
 		// @ts-ignore
-		Utils.searchParamsByObject($page.url.searchParams, getDefaultParams());
+		Utils.searchParamsByObject(urlParams, getDefaultParams());
+		if (!items) {
+			await getAll();
+			return;
+		}
 		await goto(`?${urlParams.toString()}`, { replaceState: true });
 	});
 
+	/** get files without SSR */
+	async function getAll(requestParams = params) {
+		items = await networkFile.getAll(requestParams);
+	}
+
 	/** on request param changed */
 	async function onParamChanged(event: { name: string; val: string }) {
+		if (isSelectMode) {
+			params.page = 1;
+			params[event.name] = event.val;
+			await getAll();
+			return;
+		}
 		urlParams.set('page', '1');
 		urlParams.set(event.name, event.val);
 		await goto(`?${urlParams.toString()}`);
@@ -61,9 +69,17 @@
 
 	/** when page changed */
 	async function onPageChanged(page: number) {
+		if (isSelectMode) {
+			params.page = page;
+			await getAll();
+			return;
+		}
 		urlParams.set('page', page.toString());
 		await goto(`?${urlParams.toString()}`);
 	}
+
+	/** is file selected? */
+	let isSelected = false;
 
 	/** on selected file deleted */
 	function onDeleted() {
@@ -72,7 +88,7 @@
 	}
 
 	/** select file */
-	function select(file: File, mouseEvent: MouseEvent, counter: number) {
+	function select(mouseEvent: MouseEvent, counter: number) {
 		selected.counter = counter;
 		selected.mouseEvent = mouseEvent;
 		selected.file = items.data[counter];
@@ -81,12 +97,12 @@
 
 	/** refresh files */
 	async function refresh() {
-		// const getData = async () => {
-		//   await getAll();
-		//   return files;
-		// };
-		// const setPage = (val: number) => (requestParams.page = val);
-		// await Utils.refresh(requestParams.page, setPage, getData);
+		const getData = async () => {
+			await onPageChanged(params.page);
+			return items.data;
+		};
+		const setPage = (val: number) => (params.page = val);
+		await Utils.refresh(params.page, setPage, getData);
 	}
 
 	/** delete file from files array */
@@ -98,7 +114,7 @@
 
 	/** on 'select' button clicked on selected file */
 	function onSelectClicked() {
-		if (!withSelect) {
+		if (!isSelectMode) {
 			return;
 		}
 		dispatch('selected', selected.file);
@@ -111,7 +127,6 @@
 
 {#if isSelected}
 	<FileActions
-		{withSelect}
 		file={selected.file}
 		mouseEvent={selected.mouseEvent}
 		onDisabled={() => (isSelected = false)}
@@ -124,18 +139,18 @@
 	<FilesToolbars bind:params on:paramChanged={async (e) => onParamChanged(e.detail)} />
 
 	<div class="list">
-		{#if loaded && Utils.getRecordLength(items.data) > 0}
+		{#if items && items.data}
 			{#each Object.entries(items.data) as [counter, file]}
-				<CFile {file} onSelected={(e) => select(file, e, parseInt(counter, 10))} />
+				<CFile {file} onSelected={(e) => select(e, parseInt(counter, 10))} />
 			{/each}
 		{/if}
 	</div>
 
 	<div class="pages">
-		{#if loaded && meta && meta.total_pages && meta.current_page}
+		{#if items && items.meta}
 			<Pagination
-				total={meta.total_pages}
-				current={meta.current_page}
+				total={items.meta.total_pages}
+				current={items.meta.current_page}
 				on:changed={(e) => onPageChanged(e.detail)}
 			/>
 		{/if}

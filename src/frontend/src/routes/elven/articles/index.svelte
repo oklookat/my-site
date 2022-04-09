@@ -7,11 +7,14 @@
 	// utils
 	import Utils from '$lib/tools';
 	// article
+	import NetworkArticle from '$lib/network/network_article';
 	import { getDefaultParams, type Article, type Params } from '$lib/types/articles';
 	import type { Data, Meta } from '$lib/types';
 	import CArticle from '$lib/components/article.svelte';
 	import ArticleActions from '$lib/components/article_actions.svelte';
 	import ArticlesToolbars from '$lib/components/articles_toolbars.svelte';
+
+	const networkArticle = new NetworkArticle('')
 
 	/** is article selected? */
 	let isSelected = false;
@@ -57,7 +60,7 @@
 	}
 
 	/** select article */
-	function select(article: Article, mouseEvent: MouseEvent, counter: number) {
+	function select(mouseEvent: MouseEvent, counter: number) {
 		selected.counter = counter;
 		selected.mouseEvent = mouseEvent;
 		selected.article = items.data[counter];
@@ -73,12 +76,12 @@
 
 	/** refresh articles */
 	async function refresh() {
-		// const getData = async () => {
-		//   await getAll()
-		//   return articles
-		// }
-		// const setPage = (val: number) => (requestParams.page = val);
-		// await Utils.refresh(requestParams.page, setPage, getData);
+		const getData = async () => {
+		  await onPageChanged(params.page)
+		  return items.data
+		}
+		const setPage = (val: number) => (params.page = val);
+		await Utils.refresh(params.page, setPage, getData);
 	}
 </script>
 
@@ -103,7 +106,7 @@
 			{#each Object.entries(items.data) as [counter, article]}
 				<CArticle
 					{article}
-					onSelected={(article, event) => select(article, event, parseInt(counter, 10))}
+					onSelected={(article, event) => select(event, parseInt(counter, 10))}
 				/>
 			{/each}
 		{/if}

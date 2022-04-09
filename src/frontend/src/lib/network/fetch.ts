@@ -1,20 +1,17 @@
-import {FormData} from "formdata-node"
-//
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-export type Body = string | number | object | Blob | BufferSource | FormData | URLSearchParams | ReadableStream
 export interface Stringer {
     toString: () => string
 }
 export type RequestConfig = {
     method: RequestMethod,
     url: string,
-    body?: Body
+    body?: BodyInit | Object
     params?: Record<string | number, Stringer>
     headers?: Headers
 }
 
 export default class FetchDriver {
-    
+
     private baseURL: string
 
     constructor(baseURL: string) {
@@ -24,16 +21,18 @@ export default class FetchDriver {
     public async send(config: RequestConfig): Promise<Response> {
         let endpoint = ""
 
-        if(this.baseURL) {
+        // set request url
+        if (this.baseURL) {
             endpoint = `${this.baseURL}/${config.url}`
         } else {
             endpoint = config.url
         }
         const url = new URL(endpoint)
-        if(config.params) {
-            for(const key in config.params) {
+        if (config.params) {
+            // add searchparams to url
+            for (const key in config.params) {
                 const val = config.params[key]
-                if(!val) {
+                if (!val) {
                     continue
                 }
                 // @ts-ignore
@@ -41,17 +40,25 @@ export default class FetchDriver {
             }
         }
 
-        // TODO: if formdata, auto-set content-type/boundary headers not work. Need fix
-        var headers = new Headers();
-        headers.append('Accept', 'application/json');
-        headers.append('Content-Type', 'application/json');
-        const isFormData = config.body && config.body instanceof FormData
-        if(isFormData) {
-            headers.delete('Content-Type');
+        const headers = new Headers()
+        headers.append('Accept', 'application/json')
+        headers.append('Content-Type', 'application/json')
+
+        // actions depend on request body type
+        if (config.body) {
+            const isFormData = typeof FormData !== "undefined" && config.body instanceof FormData
+            if (isFormData) {
+                headers.delete('Content-Type');
+            } else {
+                config.body = JSON.stringify(config.body || {})
+            }
         }
 
-        if(config.headers) {
+        if (config.headers) {
             config.headers.forEach((val, key) => {
+                if (key.toUpperCase() == 'CONTENT-TYPE') {
+                    return
+                }
                 headers.append(key, val)
             })
         }
@@ -60,17 +67,18 @@ export default class FetchDriver {
             method: config.method,
             credentials: 'include',
             headers: headers,
-            body: JSON.stringify(config.body || {})
+            // @ts-ignore
+            body: config.body
         }
 
         if (config.method == "GET") {
             delete fetchConfig.body
         }
-        
+
         try {
             const result = await fetch(url.toString(), fetchConfig)
             return result
-        } catch(err) {
+        } catch (err) {
             return Promise.reject(err)
         }
     }
