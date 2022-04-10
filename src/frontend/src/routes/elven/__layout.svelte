@@ -2,12 +2,12 @@
 	import { browser } from '$app/env';
 	import { page } from '$app/stores';
 	// main style
-	import '$lib/assets/global.scss';
+	import '$lib_elven/assets/global.scss';
 	// plugins
-	import Progress from '$lib/plugins/elvenProgress/progress.svelte';
+	import Progress from '$lib_elven/plugins/elvenProgress/progress.svelte';
 	// components
-	import Header from '$lib/components/header.svelte';
-	import ServiceWrapper from '$lib/components/service_wrapper.svelte';
+	import Header from '$lib_elven/components/header.svelte';
+	import ServiceWrapper from '$lib_elven/components/service_wrapper.svelte';
 
 	// TODO: handle auth on endpoint. Like send auth request in endpoint, and if 403, not send html.
 	// state

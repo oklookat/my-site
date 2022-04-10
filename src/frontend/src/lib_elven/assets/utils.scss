@@ -1,0 +1,11 @@
+$desktop-width: 1023px;
+$desktop-max-card-width: 394px;
+$mobile-max-card-width: 494px;
+$paginator-height: 160px;
+
+@mixin relativeWidth {
+    max-width: $desktop-max-card-width;
+    @media screen and(max-width: $desktop-width) {
+        max-width: $mobile-max-card-width;
+    }
+}

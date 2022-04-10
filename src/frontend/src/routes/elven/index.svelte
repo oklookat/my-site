@@ -1,5 +1,5 @@
 <script lang="ts">
-import ElvenLink from "$lib/components/elven_link.svelte";
+import ElvenLink from "$lib_elven/components/elven_link.svelte";
 </script>
 
 <svelte:head>

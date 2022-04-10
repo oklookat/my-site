@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
-	import NetworkAuth from '$lib/network/network_auth';
+	import NetworkAuth from '$lib_elven/network/network_auth';
 
 	let username = '';
 	let password = '';

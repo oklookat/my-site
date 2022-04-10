@@ -1,3 +1,4 @@
+import * as path from 'path';
 import adapter from '@sveltejs/adapter-node';
 import preprocess from 'svelte-preprocess';
 
@@ -7,21 +8,24 @@ const expose = false
 const viteBase = {
 	optimizeDeps: { exclude: [] },
 	resolve: {
-	  // include .d.ts
-	  extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.d.ts']
+		alias: {
+			'$lib_elven': path.resolve('./src/lib_elven')
+		},
+		// include .d.ts
+		extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.d.ts']
 	},
 	server: {
-	  // prevent auto browser opening, because node throws error in container
-	  host: true,
-	  open: openBrowser,
-	  host: expose,
-	  port: 3000,
-	  strictPort: true,
-	  hmr: {
-		// vite HMR WebSocket (SSL) -> nginx -> site. 
-		protocol: 'wss',
-		clientPort: 443,
-	  }
+		// prevent auto browser opening, because node throws error in container
+		host: true,
+		open: openBrowser,
+		host: expose,
+		port: 3000,
+		strictPort: true,
+		hmr: {
+			// vite HMR WebSocket (SSL) -> nginx -> site. 
+			protocol: 'wss',
+			clientPort: 443,
+		}
 	}
 }
 

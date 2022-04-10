@@ -1,8 +1,8 @@
 import type { GetSession, Handle } from '@sveltejs/kit'
 //
-import NetworkUser from '$lib/network/network_user';
-import { StorageAuth } from '$lib/tools/storage';
-import type { User } from '$lib/types/user';
+import NetworkUser from '$lib_elven/network/network_user';
+import type { User } from '$lib_elven/types/user';
+import Utils from '$lib_elven/tools';
 
 export const handle: Handle = async ({ event, resolve }) => {
     let isExists = false
@@ -17,7 +17,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
 
     // get user auth token
-    token = StorageAuth.getToken(event.request.headers)
+    token = Utils.getToken(event.request.headers)
     let isErr = false
 
     if (token) {
@@ -40,8 +40,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.user.username = username
     event.locals.user.token = token
 
-    const isElvenPage = StorageAuth.isAdminPanelPage(event.url)
-    const isElvenLoginPage = StorageAuth.isAdminPanelLoginPage(event.url)
+    const isElvenPage = Utils.isAdminPanelPage(event.url)
+    const isElvenLoginPage = Utils.isAdminPanelLoginPage(event.url)
     if (!isErr && isElvenPage && !isElvenLoginPage && !isAdmin) {
         //const resp = Response.redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ', 302)
         const resp = Response.redirect('https://oklookat.ru/elven/login', 302)

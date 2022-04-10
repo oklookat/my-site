@@ -1,12 +1,12 @@
 <script lang="ts">
 	// ui
-	import ToolbarBig from '$lib/components/toolbar_big.svelte';
+	import ToolbarBig from '$lib_elven/components/toolbar_big.svelte';
 	// categories
-	import type { Category } from '$lib/types/articles/categories';
-	import CompCategory from '$lib/components/category.svelte';
-	import CategoryNew from '$lib/components/category_new.svelte';
-	import type { Data } from '$lib/types';
-	import NetworkCategory from '$lib/network/network_category';
+	import type { Category } from '$lib_elven/types/articles/categories';
+	import CompCategory from '$lib_elven/components/category.svelte';
+	import CategoryNew from '$lib_elven/components/category_new.svelte';
+	import type { Data } from '$lib_elven/types';
+	import NetworkCategory from '$lib_elven/network/network_category';
 
 	export let items: Data<Category>;
 

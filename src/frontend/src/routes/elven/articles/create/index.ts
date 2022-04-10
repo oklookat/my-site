@@ -1,5 +1,5 @@
-import NetworkArticle from "$lib/network/network_article";
-import type { Article } from "$lib/types/articles";
+import NetworkArticle from "$lib_elven/network/network_article";
+import type { Article } from "$lib_elven/types/articles";
 import type { RequestHandlerOutput } from "@sveltejs/kit";
 import type { RequestEvent } from "@sveltejs/kit/types/private";
 

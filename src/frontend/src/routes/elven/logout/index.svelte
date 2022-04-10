@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	//
-	import NetworkAuth from '$lib/network/network_auth';
+	import NetworkAuth from '$lib_elven/network/network_auth';
 
 	onMount(async () => {
 		let isError = false;
@@ -14,7 +14,6 @@
 			isError = true;
 		}
 		if (isError) {
-			window.$notify.add({ message: 'Failed to logout. Try later.' });
 			await goto('/elven');
 			return;
 		}

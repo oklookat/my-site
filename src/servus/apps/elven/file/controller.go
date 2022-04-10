@@ -91,7 +91,7 @@ func upload(response http.ResponseWriter, request *http.Request) {
 			h.Send(throw.Server(), 500, err)
 			return
 		}
-		h.Send(string(fileJSON), 200, err)
+		h.Send(string(fileJSON), 409, err)
 		return
 	}
 

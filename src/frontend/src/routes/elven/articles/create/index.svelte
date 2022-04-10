@@ -5,24 +5,24 @@
 	import type { config } from '@oklookat/jmarkd';
 
 	// utils
-	import Animation from '$lib/tools/animation';
-	import TextareaResizer from '$lib/tools/textarea_resizer';
-	import { generateFileTypeSelector } from '$lib/tools/extension';
+	import Animation from '$lib_elven/tools/animation';
+	import TextareaResizer from '$lib_elven/tools/textarea_resizer';
+	import { generateFileTypeSelector } from '$lib_elven/tools/extension';
 
 	// ui
-	import Toolbar from '$lib/components/toolbar.svelte';
+	import Toolbar from '$lib_elven/components/toolbar.svelte';
 
 	// article
-	import type { Article } from '$lib/types/articles';
-	import ValidatorArticle from '$lib/validators/validator_article';
-	import CategoriesSelector from '$lib/components/categories_selector.svelte';
-	import type { Category } from '$lib/types/articles/categories';
-	import ArticleCover from '$lib/components/article_cover.svelte';
-	import NetworkArticle from '$lib/network/network_article';
+	import type { Article } from '$lib_elven/types/articles';
+	import ValidatorArticle from '$lib_elven/validators/validator_article';
+	import CategoriesSelector from '$lib_elven/components/categories_selector.svelte';
+	import type { Category } from '$lib_elven/types/articles/categories';
+	import ArticleCover from '$lib_elven/components/article_cover.svelte';
+	import NetworkArticle from '$lib_elven/network/network_article';
 
 	// file
-	import FilesPortable from '$lib/components/files_portable.svelte';
-	import type { File } from '$lib/types/files';
+	import FilesPortable from '$lib_elven/components/files_portable.svelte';
+	import type { File } from '$lib_elven/types/files';
 
 	/** creating / editing this article */
 	export let article: Article;

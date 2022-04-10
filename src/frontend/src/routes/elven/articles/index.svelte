@@ -1,20 +1,17 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	// ui
-	import Pagination from '$lib/components/pagination.svelte';
+	import Pagination from '$lib_elven/components/pagination.svelte';
 	// utils
-	import Utils from '$lib/tools';
+	import Utils from '$lib_elven/tools';
 	// article
-	import NetworkArticle from '$lib/network/network_article';
-	import { getDefaultParams, type Article, type Params } from '$lib/types/articles';
-	import type { Data, Meta } from '$lib/types';
-	import CArticle from '$lib/components/article.svelte';
-	import ArticleActions from '$lib/components/article_actions.svelte';
-	import ArticlesToolbars from '$lib/components/articles_toolbars.svelte';
-
-	const networkArticle = new NetworkArticle('')
+	import type { Article, Params } from '$lib_elven/types/articles';
+	import type { Data } from '$lib_elven/types';
+	import CArticle from '$lib_elven/components/article.svelte';
+	import ArticleActions from '$lib_elven/components/article_actions.svelte';
+	import ArticlesToolbars from '$lib_elven/components/articles_toolbars.svelte';
 
 	/** is article selected? */
 	let isSelected = false;
@@ -29,7 +26,7 @@
 	/** articles data */
 	export let items: Data<Article>;
 
-	/** request params */	
+	/** request params */
 	export let params: Params;
 
 	/** url searchparams */
@@ -37,7 +34,6 @@
 
 	onMount(async () => {
 		// @ts-ignore
-		Utils.searchParamsByObject($page.url.searchParams, getDefaultParams());
 		await goto(`?${urlParams.toString()}`, { replaceState: true });
 	});
 
@@ -49,14 +45,14 @@
 	/** when page changed */
 	async function onPageChanged(page: number) {
 		urlParams.set('page', page.toString());
-		await goto(`?${urlParams.toString()}`);
+		await goto(`?${urlParams.toString()}`, { keepfocus: true });
 	}
 
 	/** on request param changed */
 	async function onParamChanged(event: { name: string; val: string }) {
 		urlParams.set('page', '1');
 		urlParams.set(event.name, event.val);
-		await goto(`?${urlParams.toString()}`);
+		await goto(`?${urlParams.toString()}`, { keepfocus: true });
 	}
 
 	/** select article */
@@ -77,9 +73,9 @@
 	/** refresh articles */
 	async function refresh() {
 		const getData = async () => {
-		  await onPageChanged(params.page)
-		  return items.data
-		}
+			await onPageChanged(params.page);
+			return items.data;
+		};
 		const setPage = (val: number) => (params.page = val);
 		await Utils.refresh(params.page, setPage, getData);
 	}
@@ -104,10 +100,7 @@
 	<div class="list">
 		{#if items.data}
 			{#each Object.entries(items.data) as [counter, article]}
-				<CArticle
-					{article}
-					onSelected={(article, event) => select(event, parseInt(counter, 10))}
-				/>
+				<CArticle {article} onSelected={(article, event) => select(event, parseInt(counter, 10))} />
 			{/each}
 		{/if}
 	</div>

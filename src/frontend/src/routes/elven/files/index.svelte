@@ -1,27 +1,17 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 	// tools
-	import type { Data } from '$lib/types';
-	import Utils from '$lib/tools';
+	import type { Data } from '$lib_elven/types';
+	import Utils from '$lib_elven/tools';
 	// ui
-	import Pagination from '$lib/components/pagination.svelte';
+	import Pagination from '$lib_elven/components/pagination.svelte';
 	// file
-	import { getDefaultParams, type File, type Params } from '$lib/types/files';
-	import CFile from '$lib/components/file.svelte';
-	import FileActions from '$lib/components/file_actions.svelte';
-	import FilesToolbars from '$lib/components/files_toolbars.svelte';
-	import NetworkFile from '$lib/network/network_file';
-
-	const networkFile = new NetworkFile('');
-
-	export let isSelectMode = false;
-
-	const dispatch = createEventDispatcher<{
-		/** on 'select' option clicked on file */
-		selected: File;
-	}>();
+	import type { File, Params } from '$lib_elven/types/files';
+	import FileActions from '$lib_elven/components/file_actions.svelte';
+	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
+	import FilesList from '$lib_elven/components/files_list.svelte';
 
 	/** selected file */
 	let selected: {
@@ -41,50 +31,43 @@
 
 	onMount(async () => {
 		// @ts-ignore
-		Utils.searchParamsByObject(urlParams, getDefaultParams());
-		if (!items) {
-			await getAll();
-			return;
-		}
 		await goto(`?${urlParams.toString()}`, { replaceState: true });
 	});
 
-	/** get files without SSR */
-	async function getAll(requestParams = params) {
-		items = await networkFile.getAll(requestParams);
-	}
-
 	/** on request param changed */
 	async function onParamChanged(event: { name: string; val: string }) {
-		if (isSelectMode) {
-			params.page = 1;
-			params[event.name] = event.val;
-			await getAll();
-			return;
-		}
 		urlParams.set('page', '1');
 		urlParams.set(event.name, event.val);
-		await goto(`?${urlParams.toString()}`);
+
+		// remove filename param if empty
+		if (urlParams.has('filename') && !urlParams.get('filename')) {
+			urlParams.delete('filename');
+		}
+
+		// keepfocus for search/page input
+		await goto(`?${urlParams.toString()}`, { keepfocus: true });
 	}
 
 	/** when page changed */
 	async function onPageChanged(page: number) {
-		if (isSelectMode) {
-			params.page = page;
-			await getAll();
-			return;
-		}
 		urlParams.set('page', page.toString());
-		await goto(`?${urlParams.toString()}`);
+		await goto(`?${urlParams.toString()}`, { keepfocus: true });
 	}
 
 	/** is file selected? */
 	let isSelected = false;
 
 	/** on selected file deleted */
-	function onDeleted() {
+	async function onDeleted() {
 		isSelected = false;
 		deleteFromArray(selected.counter);
+		await refresh();
+	}
+
+	/** delete file from files array */
+	function deleteFromArray(counter: number) {
+		delete items.data[counter];
+		items = items;
 	}
 
 	/** select file */
@@ -96,28 +79,38 @@
 	}
 
 	/** refresh files */
-	async function refresh() {
+	const refresh = getRefresher()
+	function getRefresher() {
+		let force = false
+		let prevPage = params.page
+		let isFirstCall = true
 		const getData = async () => {
+			if(isFirstCall && !force) {
+				isFirstCall = false
+				return items.data
+			}
+			if(prevPage < 2 && params.page < 2) {
+				params.page = 1
+				await invalidate("");
+				return items.data
+			}
 			await onPageChanged(params.page);
 			return items.data;
 		};
-		const setPage = (val: number) => (params.page = val);
-		await Utils.refresh(params.page, setPage, getData);
-	}
-
-	/** delete file from files array */
-	async function deleteFromArray(counter: number) {
-		delete items.data[counter];
-		items = items;
-		await refresh();
-	}
-
-	/** on 'select' button clicked on selected file */
-	function onSelectClicked() {
-		if (!isSelectMode) {
-			return;
+		const setPage = (val: number) => {
+			prevPage = params.page
+			params.page = val
+		};
+		return async (isForce = false) => {
+			force = isForce
+			await Utils.refresh(params.page, setPage, getData);
 		}
-		dispatch('selected', selected.file);
+	}
+
+	/** on file uploaded */
+	async function onUploaded() {
+		params.page = 1;
+		await refresh(true);
 	}
 </script>
 
@@ -130,21 +123,18 @@
 		file={selected.file}
 		mouseEvent={selected.mouseEvent}
 		onDisabled={() => (isSelected = false)}
-		onDeleted={() => onDeleted()}
-		{onSelectClicked}
+		onDeleted={async () => await onDeleted()}
 	/>
 {/if}
 
 <div class="files base__container">
-	<FilesToolbars bind:params on:paramChanged={async (e) => onParamChanged(e.detail)} />
+	<FilesToolbars
+		bind:params
+		on:uploaded={async () => await onUploaded()}
+		on:paramChanged={async (e) => onParamChanged(e.detail)}
+	/>
 
-	<div class="list">
-		{#if items && items.data}
-			{#each Object.entries(items.data) as [counter, file]}
-				<CFile {file} onSelected={(e) => select(e, parseInt(counter, 10))} />
-			{/each}
-		{/if}
-	</div>
+	<FilesList {items} onSelected={(file, counter, e) => select(e, counter)} />
 
 	<div class="pages">
 		{#if items && items.meta}
