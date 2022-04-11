@@ -1,13 +1,10 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import Animation from "$lib_elven/tools/animation";
 
-  let container: HTMLDivElement;
   export let onClose: () => void;
 
   onMount(() => {
     document.body.classList.add("no-scroll");
-    Animation.fadeIn(container, 10);
   });
 
   onDestroy(() => {
@@ -15,7 +12,7 @@
   });
 </script>
 
-<div class="overlay base__overlay" bind:this={container} on:click|self={onClose}>
+<div class="overlay base__overlay" on:click|self={onClose}>
   <div class="overlay__main">
     <div class="overlay__content">
       <slot />

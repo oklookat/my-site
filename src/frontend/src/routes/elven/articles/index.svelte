@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 	import { page } from '$app/stores';
 	// ui
 	import Pagination from '$lib_elven/components/pagination.svelte';
@@ -9,19 +9,8 @@
 	// article
 	import type { Article, Params } from '$lib_elven/types/articles';
 	import type { Data } from '$lib_elven/types';
-	import CArticle from '$lib_elven/components/article.svelte';
-	import ArticleActions from '$lib_elven/components/article_actions.svelte';
 	import ArticlesToolbars from '$lib_elven/components/articles_toolbars.svelte';
-
-	/** is article selected? */
-	let isSelected = false;
-
-	/** selected article */
-	let selected: {
-		counter: number | null;
-		article: Article | null;
-		mouseEvent: MouseEvent;
-	} = { counter: null, article: null, mouseEvent: null };
+	import ArticlesList from '$lib_elven/components/articles_list.svelte';
 
 	/** articles data */
 	export let items: Data<Article>;
@@ -37,11 +26,6 @@
 		await goto(`?${urlParams.toString()}`, { replaceState: true });
 	});
 
-	function onDeleted() {
-		isSelected = false;
-		deleteFromArray(selected.counter);
-	}
-
 	/** when page changed */
 	async function onPageChanged(page: number) {
 		urlParams.set('page', page.toString());
@@ -55,29 +39,34 @@
 		await goto(`?${urlParams.toString()}`, { keepfocus: true });
 	}
 
-	/** select article */
-	function select(mouseEvent: MouseEvent, counter: number) {
-		selected.counter = counter;
-		selected.mouseEvent = mouseEvent;
-		selected.article = items.data[counter];
-		isSelected = true;
-	}
 
-	/** delete article from articles array and refresh articles */
-	async function deleteFromArray(counter: number) {
-		delete items.data[counter];
-		items = items;
-		await refresh();
-	}
-
-	/** refresh articles */
-	async function refresh() {
+	/** refresh files */
+	const refresh = getRefresher();
+	function getRefresher() {
+		let force = false;
+		let prevPage = params.page;
+		let isFirstCall = true;
 		const getData = async () => {
+			if (isFirstCall && !force) {
+				isFirstCall = false;
+				return items.data;
+			}
+			if (prevPage < 2 && params.page < 2) {
+				params.page = 1;
+				await invalidate('');
+				return items.data;
+			}
 			await onPageChanged(params.page);
 			return items.data;
 		};
-		const setPage = (val: number) => (params.page = val);
-		await Utils.refresh(params.page, setPage, getData);
+		const setPage = (val: number) => {
+			prevPage = params.page;
+			params.page = val;
+		};
+		return async (isForce = false) => {
+			force = isForce;
+			await Utils.refresh(params.page, setPage, getData);
+		};
 	}
 </script>
 
@@ -85,25 +74,10 @@
 	<title>elven: articles</title>
 </svelte:head>
 
-{#if isSelected}
-	<ArticleActions
-		article={selected.article}
-		mouseEvent={selected.mouseEvent}
-		onDisabled={() => (isSelected = false)}
-		onDeleted={() => onDeleted()}
-	/>
-{/if}
-
 <div class="articles base__container">
 	<ArticlesToolbars bind:params on:paramChanged={async (e) => await onParamChanged(e.detail)} />
 
-	<div class="list">
-		{#if items.data}
-			{#each Object.entries(items.data) as [counter, article]}
-				<CArticle {article} onSelected={(article, event) => select(event, parseInt(counter, 10))} />
-			{/each}
-		{/if}
-	</div>
+	<ArticlesList {items} onDeleted={async () => await refresh()} />
 
 	<div class="pages">
 		{#if items.meta}

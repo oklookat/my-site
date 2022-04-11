@@ -48,9 +48,20 @@ export type File = {
     created_at: string
     updated_at: string
     
-    // not in model
+    ///////////////////// not in model
+
+    /** short original name like: 'longlongnamehellowo...' */
+    original_name_short?: string
+
+    /** like path, but with absolute URL to static */
     pathConverted?: URL
+
+    /** readable size like: '1.1 MB' */
     sizeConverted?: string
+
+    /** readable created data like: '11 seconds ago' */
     createdAtConverted?: string
-    extensionsSelector: FileTypeSelector
+
+    /** readable extension */
+    extensionsSelector?: FileTypeSelector
 }

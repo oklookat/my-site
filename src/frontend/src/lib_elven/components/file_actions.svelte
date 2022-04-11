@@ -9,6 +9,7 @@
 	// file
 	import type { File } from '$lib_elven/types/files';
 	import NetworkFile from '$lib_elven/network/network_file';
+	import Preview from '$lib_elven/components/preview.svelte';
 
 	/** add 'select' option to actions */
 	export let withSelect = false;
@@ -71,13 +72,6 @@
 		} catch (err) {}
 	}
 
-	/** play audio by url */
-	function playAudio() {
-		const url = file.pathConverted.href;
-		window.$player.playlist = { position: 0, sources: [url] };
-		window.$player.play();
-	}
-
 	/** copy link to clipboard */
 	async function copyLink() {
 		let message = '';
@@ -92,28 +86,49 @@
 		window.$notify.add({ message });
 		onDisabled();
 	}
+
+	/** is preview active */
+	let isPreview = false;
+
+	/** preview image/video/etc */
+	function onPreview(enabled: boolean) {
+		if(enabled) {
+			isPreview = true;
+			return
+		}
+		isPreview = false
+		onDisabled()
+	}
 </script>
 
-<svelte:component this={render.component} {...render.props}>
-	<div class="base__items {render.isOverlay ? 'extended' : ''}">
-		{#if withSelect}
-			<div
-				on:click={() => {
-					onSelectClicked();
-				}}
-			>
-				select
-			</div>
-		{/if}
+{#if isPreview}
+	<Preview
+		onClose={() => (onPreview(false))}
+		url={file.pathConverted}
+		extension={file.extensionsSelector}
+	/>
+{/if}
 
-		{#if file.extensionsSelector.selected === 'AUDIO'}
-			<div on:click={() => playAudio()}>play</div>
-		{/if}
+{#if !isPreview}
+	<svelte:component this={render.component} {...render.props}>
+		<div class="base__items {render.isOverlay ? 'extended' : ''}">
+			{#if withSelect}
+				<div
+					on:click={() => {
+						onSelectClicked();
+					}}
+				>
+					select
+				</div>
+			{/if}
 
-		<div on:click={() => copyLink()}>copy link</div>
+			<div on:click={() => onPreview(true)}>preview</div>
+			
+			<div on:click={() => copyLink()}>copy link</div>
 
-		{#if onDeleted}
-			<div on:click={() => deleteFile()}>delete</div>
-		{/if}
-	</div>
-</svelte:component>
+			{#if onDeleted}
+				<div on:click={() => deleteFile()}>delete</div>
+			{/if}
+		</div>
+	</svelte:component>
+{/if}

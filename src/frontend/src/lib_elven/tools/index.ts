@@ -2,6 +2,15 @@ import * as cookie from 'cookie';
 
 export default class Utils {
 
+  /** if string > 31 length = cut it and add '...' */
+  public static cutString(str: string): string {
+    const maxLength = 31;
+    if (str.length < maxLength) {
+      return str;
+    }
+    return str.substring(0, maxLength) + '...';
+  }
+
   /** get Record keys length */
   public static getRecordLength<T>(record: Record<any, T>): number {
     const isObject = typeof record === 'object' && record !== null
@@ -94,23 +103,27 @@ export default class Utils {
   }
 
   /** get token from request headers (cookie) */
-  public static getToken(headers: Headers): string | null {
-    if (!headers || !(headers instanceof Headers)) {
-      return null
-    }
-    if (!headers.has('cookie')) {
+  public static getTokenFromRequestHeaders(headers: Headers): string | null {
+    const isValid = !!(headers) && headers instanceof Headers && headers.has('cookie')
+    if (!isValid) {
       return null
     }
     const cookiesStr = headers.get('cookie')
-    const cookiesJson = cookie.parse(cookiesStr)
-    if (!cookiesJson || !cookiesJson.token) {
+    let token = ''
+    try {
+      const parsed = cookie.parse(cookiesStr)
+      if (!parsed || !parsed.token) {
+        return null
+      }
+      token = parsed.token
+    } catch (err) {
       return null
     }
-    return cookiesJson.token
+    return token
   }
 
-  public static addTokenToHeaders(headers: Headers, token: string) {
-    if (!(headers instanceof Headers) || !token) {
+  public static addTokenToHeaders(token: string, headers: Headers) {
+    if (!token || !(headers instanceof Headers)) {
       return
     }
     headers.append('Authorization', `Elven ${token}`)
@@ -120,16 +133,14 @@ export default class Utils {
     if (!(url instanceof URL)) {
       return false
     }
-    const pathname = url.pathname
-    return pathname.startsWith("/elven")
+    return url.pathname.startsWith("/elven")
   }
 
   public static isAdminPanelLoginPage(url: URL): boolean {
     if (!(url instanceof URL)) {
       return false
     }
-    const pathname = url.pathname
-    return pathname.startsWith("/elven/login")
+    return url.pathname.startsWith("/elven/login")
   }
 
 }

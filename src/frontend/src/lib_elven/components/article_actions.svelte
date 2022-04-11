@@ -56,7 +56,7 @@
 			is_published: isPublished
 		};
 		try {
-			const resp = await NetworkArticle.update(toEdit)
+			const resp = await NetworkArticle.update(toEdit);
 			return Promise.resolve(resp);
 		} catch (err) {
 			return Promise.reject(err);
@@ -85,7 +85,7 @@
 			return;
 		}
 		try {
-			await NetworkArticle.delete(article.id)
+			await NetworkArticle.delete(article.id);
 			onDeleted();
 		} catch (err) {}
 	}
@@ -94,11 +94,11 @@
 <svelte:component this={render.component} {...render.props}>
 	<div class="base__items {render.isOverlay ? 'extended' : ''}">
 		{#if article.is_published}
-			<div on:click={() => unpublish()}>Unpublish</div>
+			<div on:click={() => unpublish()}>unpublish</div>
 		{:else}
-			<div on:click={() => publish()}>Publish</div>
+			<div on:click={() => publish()}>publish</div>
 		{/if}
-		<div on:click={() => edit()}>Edit</div>
-		<div on:click={() => deleteArticle()}>Delete</div>
+		<div on:click={() => edit()}>edit</div>
+		<div on:click={() => deleteArticle()}>delete</div>
 	</div>
 </svelte:component>

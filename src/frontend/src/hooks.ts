@@ -17,7 +17,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
 
     // get user auth token
-    token = Utils.getToken(event.request.headers)
+    token = Utils.getTokenFromRequestHeaders(event.request.headers)
     let isErr = false
 
     if (token) {

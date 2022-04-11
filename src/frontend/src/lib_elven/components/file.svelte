@@ -1,73 +1,127 @@
 <script lang="ts">
-    import { PathTools } from "$lib_elven/tools/paths";
-    import Dates from "$lib_elven/tools/dates";
-    import Size from "$lib_elven/tools/size";
-    import Extension from "$lib_elven/tools/extension";
-    import type { File } from "$lib_elven/types/files";
+	// utils
+	import Utils from '$lib_elven/tools';
+	import { PathTools } from '$lib_elven/tools/paths';
+	import Dates from '$lib_elven/tools/dates';
+	import Size from '$lib_elven/tools/size';
+	import Extension from '$lib_elven/tools/extension';
+	// file
+	import type { File } from '$lib_elven/types/files';
+	import FileActions from '$lib_elven/components/file_actions.svelte';
 
-    export let file: File;
+	export let file: File;
+	$: convert(file);
 
-    /** when clicked on file */
-    export let onSelected: (e: MouseEvent) => void;
+	/** on file deleted */
+	export let onDeleted: () => void;
 
-    $: convert(file)
+	/** convert file path, extension etc */
+	function convert(file: File) {
+		if (!file) {
+			return;
+		}
+		if (!(file.pathConverted instanceof URL)) {
+			file.pathConverted = PathTools.getUploadsWith(file.path);
+		}
+		if (!file.extensionsSelector) {
+			file.extensionsSelector = Extension.getSelector(file.extension);
+		}
+		if (!file.sizeConverted) {
+			file.sizeConverted = Size.convert(file.size);
+		}
+		if (!file.createdAtConverted) {
+			file.createdAtConverted = Dates.convert(file.created_at);
+		}
+		if (!file.original_name_short) {
+			file.original_name_short = Utils.cutString(file.original_name);
+		}
+	}
 
-    /** convert file path, extension etc */
-    // TODO: split converter functions(?)
-    function convert(file: File) {
-        let isNeedPath = !(file.pathConverted instanceof URL);
-        if (isNeedPath) {
-            file.pathConverted = PathTools.getUploadsWith(file.path);
-        }
-        if (!file.extensionsSelector) {
-            file.extensionsSelector = Extension.getSelector(file.extension);
-        }
-        if (!file.sizeConverted) {
-            file.sizeConverted = Size.convert(file.size);
-        }
-        if (!file.createdAtConverted) {
-            file.createdAtConverted = Dates.convert(file.created_at);
-        }
-    }
+	/** is file selected? (actions menu/overlay opened) */
+	let isSelected = false;
+	let selectedMouseEvent: MouseEvent;
+	function onSelected(e: MouseEvent) {
+		selectedMouseEvent = e;
+		isSelected = true;
+	}
 </script>
 
-<div class="file base__card" on:click={onSelected}>
-    <div class="meta">
-        <div class="meta__item">
-            {file.createdAtConverted}
-        </div>
-        <div class="meta__item">{file.sizeConverted}</div>
-    </div>
-    <div class="main">
-        {#if file.extensionsSelector && file.extensionsSelector.selected === "IMAGE"}
-            <div class="file__preview">
-                <img
-                    decoding="async"
-                    loading="lazy"
-                    src={file.pathConverted.href}
-                    alt=""
-                />
-            </div>
-        {:else if file.extensionsSelector && file.extensionsSelector.selected === "VIDEO"}
-            <div class="file__preview" on:click|stopPropagation>
-                <video controls src={file.pathConverted.href}>
-                    <track default kind="captions" srclang="en" src="" />
-                </video>
-            </div>
-        {/if}
-        <div class="title">{file.original_name}</div>
-    </div>
+{#if isSelected}
+	<FileActions
+		{file}
+		mouseEvent={selectedMouseEvent}
+		onDisabled={() => (isSelected = false)}
+		onDeleted={() => onDeleted()}
+	/>
+{/if}
+
+<div class="file" on:click={(e) => onSelected(e)}>
+	{#if file.extensionsSelector && file.extensionsSelector.selected === 'IMAGE'}
+		<div class="preview">
+			<img decoding="async" loading="lazy" src={file.pathConverted.href} alt="" />
+		</div>
+	{:else}
+		<div class="preview unknown">{file.extension.toUpperCase()}</div>
+	{/if}
+
+	<div class="meta">
+		<div class="title">{file.original_name_short}</div>
+		<div class="info">
+			<div class="created">{file.createdAtConverted}</div>
+			<div class="size">{file.sizeConverted}</div>
+		</div>
+	</div>
 </div>
 
 <style lang="scss">
-    .file {
-        &__preview {
-            :global(img),
-            :global(video) {
-                width: 100%;
-                max-height: 320px;
-                object-fit: contain;
-            }
-        }
-    }
+	.file {
+		cursor: pointer;
+		border-radius: var(--border-radius);
+		background-color: var(--color-level-1);
+		font-size: 1rem;
+		padding: 12px;
+		width: 100%;
+		min-height: 54px;
+		display: flex;
+		flex-direction: row;
+		gap: 12px;
+
+		.preview {
+			height: 50px;
+			width: 50px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+
+			* {
+				height: 100%;
+				width: 50px;
+				object-fit: cover;
+			}
+
+			&.unknown {
+				background-color: var(--color-level-2);
+				border-radius: var(--border-radius);
+				padding: 8px;
+			}
+		}
+
+		.meta {
+			display: flex;
+			flex-direction: column;
+			gap: 12px;
+
+			.title {
+				width: 100%;
+			}
+
+			.info {
+				color: var(--color-text-inactive);
+				display: flex;
+				flex-direction: row;
+				gap: 14px;
+				margin-top: auto;
+			}
+		}
+	}
 </style>

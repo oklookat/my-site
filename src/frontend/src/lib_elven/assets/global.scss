@@ -1,4 +1,5 @@
 @import "./themes.scss";
+@import "./base.scss";
 @import "./ui.scss";
 
 :root {
@@ -25,10 +26,6 @@
   :hover {
     background: var(--color-scrollbar-hover);
   }
-}
-
-::selection {
-  background: var(--color-text-selection);
 }
 
 * {

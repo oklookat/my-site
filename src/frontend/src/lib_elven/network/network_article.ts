@@ -14,7 +14,7 @@ export default class NetworkArticle {
 
     constructor(token: string) {
         const headers = new Headers()
-        Utils.addTokenToHeaders(headers, token)
+        Utils.addTokenToHeaders(token, headers)
         this.headers = headers
     }
 

@@ -14,7 +14,7 @@ export default class NetworkCategory {
 
     constructor(token: string) {
         const headers = new Headers()
-        Utils.addTokenToHeaders(headers, token)
+        Utils.addTokenToHeaders(token, headers)
         this.headers = headers
     }
 

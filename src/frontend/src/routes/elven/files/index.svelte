@@ -9,16 +9,8 @@
 	import Pagination from '$lib_elven/components/pagination.svelte';
 	// file
 	import type { File, Params } from '$lib_elven/types/files';
-	import FileActions from '$lib_elven/components/file_actions.svelte';
 	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
 	import FilesList from '$lib_elven/components/files_list.svelte';
-
-	/** selected file */
-	let selected: {
-		counter: number | null;
-		file: File | null;
-		mouseEvent: MouseEvent;
-	} = { counter: null, file: null, mouseEvent: null };
 
 	/** files data */
 	export let items: Data<File> | undefined = undefined;
@@ -54,57 +46,33 @@
 		await goto(`?${urlParams.toString()}`, { keepfocus: true });
 	}
 
-	/** is file selected? */
-	let isSelected = false;
-
-	/** on selected file deleted */
-	async function onDeleted() {
-		isSelected = false;
-		deleteFromArray(selected.counter);
-		await refresh();
-	}
-
-	/** delete file from files array */
-	function deleteFromArray(counter: number) {
-		delete items.data[counter];
-		items = items;
-	}
-
-	/** select file */
-	function select(mouseEvent: MouseEvent, counter: number) {
-		selected.counter = counter;
-		selected.mouseEvent = mouseEvent;
-		selected.file = items.data[counter];
-		isSelected = true;
-	}
-
 	/** refresh files */
-	const refresh = getRefresher()
+	const refresh = getRefresher();
 	function getRefresher() {
-		let force = false
-		let prevPage = params.page
-		let isFirstCall = true
+		let force = false;
+		let prevPage = params.page;
+		let isFirstCall = true;
 		const getData = async () => {
-			if(isFirstCall && !force) {
-				isFirstCall = false
-				return items.data
+			if (isFirstCall && !force) {
+				isFirstCall = false;
+				return items.data;
 			}
-			if(prevPage < 2 && params.page < 2) {
-				params.page = 1
-				await invalidate("");
-				return items.data
+			if (prevPage < 2 && params.page < 2) {
+				params.page = 1;
+				await invalidate('');
+				return items.data;
 			}
 			await onPageChanged(params.page);
 			return items.data;
 		};
 		const setPage = (val: number) => {
-			prevPage = params.page
-			params.page = val
+			prevPage = params.page;
+			params.page = val;
 		};
 		return async (isForce = false) => {
-			force = isForce
+			force = isForce;
 			await Utils.refresh(params.page, setPage, getData);
-		}
+		};
 	}
 
 	/** on file uploaded */
@@ -118,15 +86,6 @@
 	<title>elven: files</title>
 </svelte:head>
 
-{#if isSelected}
-	<FileActions
-		file={selected.file}
-		mouseEvent={selected.mouseEvent}
-		onDisabled={() => (isSelected = false)}
-		onDeleted={async () => await onDeleted()}
-	/>
-{/if}
-
 <div class="files base__container">
 	<FilesToolbars
 		bind:params
@@ -134,7 +93,7 @@
 		on:paramChanged={async (e) => onParamChanged(e.detail)}
 	/>
 
-	<FilesList {items} onSelected={(file, counter, e) => select(e, counter)} />
+	<FilesList {items} onDeleted={async () => await refresh()} />
 
 	<div class="pages">
 		{#if items && items.meta}

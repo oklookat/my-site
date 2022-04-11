@@ -1,10 +1,9 @@
 <script lang="ts">
-	import CFile from '$lib_elven/components/file.svelte';
-
 	import type { Data } from '$lib_elven/types';
-	import type { File } from '$lib_elven/types/files';
+	import type { Article } from '$lib_elven/types/articles';
+	import CArticle from './article.svelte';
 
-	export let items: Data<File>;
+	export let items: Data<Article>;
 	export let onDeleted: () => void;
 
 	/** delete file from files array */
@@ -21,8 +20,8 @@
 
 <div class="list">
 	{#if items && items.data}
-		{#each Object.entries(items.data) as [counter, file]}
-			<CFile {file} onDeleted={() => whenDeleted(parseInt(counter, 10))} />
+		{#each Object.entries(items.data) as [counter, article]}
+			<CArticle {article} onDeleted={() => whenDeleted(parseInt(counter, 10))} />
 		{/each}
 	{/if}
 </div>

@@ -38,6 +38,7 @@
 
 	.header {
 		font-weight: bold;
+		background-color: var(--color-level-1);
 		color: var(--color-header-text);
 		border-bottom: var(--color-border) 1px solid;
 		height: max-content;
@@ -51,14 +52,8 @@
 			display: flex;
 			align-items: center;
 			flex-wrap: wrap;
+			justify-content: center;
 			gap: 42px;
-			margin-left: 2vw;
-			margin-right: 2vw;
-			@media screen and (max-width: 1023px) {
-				justify-content: center;
-				margin-left: 0;
-				margin-right: 0;
-			}
 		}
 	}
 </style>
