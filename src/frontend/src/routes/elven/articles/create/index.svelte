@@ -2,10 +2,12 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
 	// editor
-	import type { config } from '@oklookat/jmarkd';
+	import { marked } from 'marked';
+	import hljs from "highlight.js";
+	import '../../../../lib_elven/assets/highlight.scss'
+	import type { Config } from '@oklookat/jmarkd';
 
 	// utils
-	import Animation from '$lib_elven/tools/animation';
 	import TextareaResizer from '$lib_elven/tools/textarea_resizer';
 	import { generateFileTypeSelector } from '$lib_elven/tools/extension';
 
@@ -29,9 +31,6 @@
 
 	/** save all data */
 	const save = saver();
-
-	/** main container */
-	let createContainer: HTMLDivElement;
 
 	/** title element */
 	let articleTitleEL: HTMLTextAreaElement;
@@ -70,33 +69,49 @@
 		textareaResizer = new TextareaResizer(articleTitleEL, 54);
 		articleTitleEL.value = article.title;
 		initEditor(article.content);
-
-		// all loaded - set opacity
-		// (not display, because it brokes title resizing on init)
-		await Animation.fadeIn(createContainer);
 	});
 
 	onDestroy(() => {
 		if (!browser) {
 			return;
 		}
-
-		if (editor) {
-			editor.destroy();
-		}
-
-		if (textareaResizer) {
-			textareaResizer.destroy();
-		}
+		editor?.destroy();
+		textareaResizer?.destroy();
 	});
 
 	/** start text editor */
 	function initEditor(data?: string) {
-		// TODO: add sanitizer
-		const config: config = {
+		marked.setOptions({
+			renderer: new marked.Renderer(),
+			highlight: function (code, lang) {
+				const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+				return hljs.highlight(code, { language }).value;
+			},
+			// highlight.js css expects a top-level 'hljs' class.
+			langPrefix: 'hljs language-',
+			pedantic: false,
+			gfm: true,
+			breaks: false,
+			sanitize: false,
+			smartLists: true,
+			smartypants: false,
+			xhtml: false
+		});
+		const config: Config = {
 			container: editorEL,
 			placeholder: `It's a long story...`,
-			input: data
+			input: data,
+			toolbar: {
+				elements: {
+					config: {
+						preview: {
+							parse: (data) => {
+								return marked.parse(data);
+							}
+						}
+					}
+				}
+			}
 		};
 		editor = new jmarkdClass(config);
 	}
@@ -114,13 +129,13 @@
 			const newArticle = await NetworkArticle.create(article);
 			article.id = newArticle.id;
 		} catch (err) {
-			return Promise.reject(err);
+			throw err;
 		}
-		return Promise.resolve();
+		return;
 	}
 
 	/** update existing article */
-	async function updateArticle() {
+	async function updateArticle(): Promise<Article> {
 		const notValid =
 			!article.id ||
 			!ValidatorArticle.title(article.title) ||
@@ -128,8 +143,11 @@
 		if (notValid) {
 			return;
 		}
-		const updated = await NetworkArticle.update(article);
-		return updated;
+		const resp = await NetworkArticle.update(article);
+		if (resp.status === 200) {
+			return await resp.json();
+		}
+		throw Error(resp.statusText);
 	}
 
 	/** create save func */
@@ -221,7 +239,7 @@
 	/>
 {/if}
 
-<div class="create base__container" bind:this={createContainer}>
+<div class="create base__container">
 	<div class="toolbars">
 		<Toolbar>
 			<CategoriesSelector
@@ -235,7 +253,7 @@
 	</div>
 
 	<div
-		class="cover pointer"
+		class="cover pointer with-border"
 		on:click={() => {
 			isChooseCover = !isChooseCover;
 		}}
@@ -245,7 +263,7 @@
 				<ArticleCover bind:article />
 			</div>
 		{:else}
-			<div class="cover__upload item with-border">
+			<div class="cover__upload item">
 				<svg
 					version="1.1"
 					xmlns="http://www.w3.org/2000/svg"
@@ -282,8 +300,6 @@
 
 <style lang="scss">
 	.create {
-		// after data loaded - opacity = 1
-		opacity: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -291,6 +307,7 @@
 		.toolbars,
 		.editable {
 			width: 100%;
+			max-width: 744px;
 			display: flex;
 			flex-direction: column;
 			gap: 12px;
@@ -322,12 +339,7 @@
 				width: 40px;
 				height: 40px;
 				opacity: 0.5;
-				@media screen and(prefers-color-scheme: light) {
-					fill: black;
-				}
-				@media screen and(prefers-color-scheme: dark) {
-					fill: white;
-				}
+				fill: var(--color-text);
 			}
 		}
 		&__itself {
@@ -345,8 +357,8 @@
 	}
 
 	.title {
-		background-color: white;
-		color: black;
+		background-color: var(--color-level-1);
+		color: var(--color-text);
 		font-size: 1.6rem;
 		font-weight: bold;
 		min-height: 54px;

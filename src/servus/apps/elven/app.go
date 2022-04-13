@@ -1,6 +1,7 @@
 package elven
 
 import (
+	"fmt"
 	"net/http"
 	"servus/apps/elven/article"
 	"servus/apps/elven/auth"
@@ -87,11 +88,20 @@ func (a *App) Boot(c *core.Instance) {
 	user.Start()
 	a.User = user
 
+	a.setupHooks()
+
 	// routes.
-	a.bootRoutes()
+	a.setupRoutes()
 }
 
-func (a *App) bootRoutes() {
+func (a *App) setupHooks() {
+	call.Banhammer.OnBanned(func(ip string) {
+		var msg = fmt.Sprintf("[#BAN] %v", ip)
+		call.Control.SendMessage(msg)
+	})
+}
+
+func (a *App) setupRoutes() {
 	var root = goway.New()
 	var elven = root.Group("/elven")
 

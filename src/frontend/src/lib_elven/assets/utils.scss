@@ -1,7 +1,7 @@
 $desktop-width: 1023px;
 $desktop-max-card-width: 394px;
 $mobile-max-card-width: 494px;
-$paginator-height: 160px;
+$paginator-height: 140px;
 
 @mixin relativeWidth {
     max-width: $desktop-max-card-width;

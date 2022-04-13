@@ -20,20 +20,19 @@ func login(response http.ResponseWriter, request *http.Request) {
 
 	// find user.
 	var user = model.User{Username: body.Username}
-	found, err := user.FindByUsername()
+	isUserFound, err := user.FindByUsername()
 	if err != nil {
 		h.Send(throw.Server(), 500, err)
 		return
 	}
-	if !found {
-		h.Send(throw.NotAuthorized(), 401, err)
-		return
+	var isPasswordCorrect = false
+	if isUserFound {
+		// compare found user password and provided password.
+		isPasswordCorrect, _ = call.Encryptor.Argon.Compare(body.Password, user.Password)
 	}
 
-	// compare found user and provided password.
-	var isPassword, _ = call.Encryptor.Argon.Compare(body.Password, user.Password)
-	if !isPassword {
-		// wrong password.
+	if !isUserFound || !isPasswordCorrect {
+		// warn wrong cases to avoid bruteforce
 		var ip = call.Banhammer.GetIpByRequest(request)
 		if ip != nil {
 			// warn IP.

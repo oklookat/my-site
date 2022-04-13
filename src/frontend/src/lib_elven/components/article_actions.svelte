@@ -57,7 +57,11 @@
 		};
 		try {
 			const resp = await NetworkArticle.update(toEdit);
-			return Promise.resolve(resp);
+			if(resp.status === 200) {
+				onDeleted()
+				return Promise.resolve(await resp.json());
+			}
+			return Promise.reject(resp.statusText);
 		} catch (err) {
 			return Promise.reject(err);
 		}

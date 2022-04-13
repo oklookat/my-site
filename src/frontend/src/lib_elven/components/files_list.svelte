@@ -5,6 +5,8 @@
 	import type { File } from '$lib_elven/types/files';
 
 	export let items: Data<File>;
+
+	/** on file deleted */
 	export let onDeleted: () => void;
 
 	/** delete file from files array */

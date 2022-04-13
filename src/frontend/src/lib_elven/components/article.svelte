@@ -1,14 +1,14 @@
 <script lang="ts">
-    // utils
+	// utils
 	import Dates from '$lib_elven/tools/dates';
-    // article
-    import type { Article } from '$lib_elven/types/articles';
+	// article
+	import type { Article } from '$lib_elven/types/articles';
 	import ArticleCover from './article_cover.svelte';
-    import ArticleActions from '$lib_elven/components/article_actions.svelte';
+	import ArticleActions from '$lib_elven/components/article_actions.svelte';
 
 	export let article: Article;
 
-    /** on article deleted */
+	/** on article deleted */
 	export let onDeleted: () => void;
 
 	function convertDate(date: string | number | Date): string {
@@ -25,10 +25,12 @@
 </script>
 
 {#if isSelected}
-    <ArticleActions {article} 
-    mouseEvent={selectedMouseEvent} 
-    onDisabled={() => (isSelected = false)}
-    onDeleted={() => onDeleted()}></ArticleActions>
+	<ArticleActions
+		{article}
+		mouseEvent={selectedMouseEvent}
+		onDisabled={() => (isSelected = false)}
+		onDeleted={() => onDeleted()}
+	/>
 {/if}
 
 <article class="article" on:click={(e) => onSelected(e)}>
@@ -42,10 +44,10 @@
 		</div>
 
 		<div class="meta__item">
-			{#if !article.is_published}
-				draft
-			{:else}
+			{#if article.is_published}
 				published
+			{:else}
+				draft
 			{/if}
 		</div>
 

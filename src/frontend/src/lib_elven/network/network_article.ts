@@ -28,7 +28,7 @@ export default class NetworkArticle {
             const jsond = await response.json()
             return jsond as Data<Article>
         } catch (err) {
-            return Promise.reject(err)
+            throw err
         }
     }
 
@@ -41,7 +41,7 @@ export default class NetworkArticle {
             const jsond = await response.json()
             return jsond as Article
         } catch (err) {
-            return Promise.reject(err)
+            throw err
         }
     }
 
@@ -52,7 +52,7 @@ export default class NetworkArticle {
                 url: `${this.prefix}/${id}`})
             return resp
         } catch (err) {
-            return Promise.reject(err)
+            throw err
         }
     }
 
@@ -69,15 +69,13 @@ export default class NetworkArticle {
         }
     }
 
-    public static async update(article: Article): Promise<Article> {
+    public static async update(article: Article): Promise<Response> {
         NetworkArticle.beforeCRUD(article)
         try {
             const response = await Fetchd.send({
-                // PATCH OR POST?
                 method: "PATCH", url: `${this.prefix}/${article.id}`,
                 body: article})
-            const jsond = await response.json()
-            return jsond as Article
+            return response
         } catch (err) {
             throw err
         }

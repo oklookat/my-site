@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	// ui
-	import Animation from '$lib_elven/tools/animation';
 	// files
 	import type { Data } from '$lib_elven/types';
 	import type { File, Params } from '$lib_elven/types/files';
 	import NetworkFile from '$lib_elven/network/network_file';
 	import Pagination from '$lib_elven/components/pagination.svelte';
-	import FileActions from '$lib_elven/components/file_actions.svelte';
 	import FilesList from '$lib_elven/components/files_list.svelte';
+	import Store from '$lib_elven/tools/store';
+	import { browser } from '$app/env';
 
 	const dispatch = createEventDispatcher<{
 		/** on 'select' option clicked on file */
@@ -22,30 +21,43 @@
 	/** request params from portable mode */
 	export let params: Params = undefined;
 
-	/** files loaded? */
-	let loaded = false;
-
 	/** response data */
 	let items: Data<File>;
 
 	let container: HTMLDivElement;
 
-	/** is file selected? */
-	let isSelected = false;
+	/** store unsubs */
+	let unsub = {
+		onSelected: undefined
+	};
 
-	/** selected file */
-	let selected: {
-		file: File;
-		mouseEvent: MouseEvent;
-	} = { file: null, mouseEvent: null };
+	function initStore() {
+		Store.file.withSelectOption.set(true);
+		unsub.onSelected = Store.file.selected.subscribe((v) => {
+			if (!v) {
+				return;
+			}
+			onSelect(v);
+		});
+	}
+
+	function destroyStore() {
+		unsub.onSelected();
+		Store.file.withSelectOption.set(false);
+		Store.file.selected.set(null);
+	}
 
 	onMount(async () => {
+		initStore();
 		document.body.classList.add('no-scroll');
-		Animation.fadeIn(container, 10);
 		await getAll();
 	});
 
 	onDestroy(() => {
+		destroyStore();
+		if (!browser) {
+			return;
+		}
 		document.body.classList.remove('no-scroll');
 	});
 
@@ -55,11 +67,9 @@
 		if (p.page < 1) {
 			p.page = 1;
 		}
-		loaded = false;
 		try {
 			const result = await networkFile.getAll(p);
 			items = result;
-			loaded = true;
 		} catch (err) {}
 	}
 
@@ -69,33 +79,15 @@
 		await getAll();
 	}
 
-	/** select file */
-	function select(file: File, event: MouseEvent) {
-		selected.file = file;
-		selected.mouseEvent = event;
-		isSelected = true;
-	}
-
 	/** on select button clicked in actions */
 	function onSelect(file: File) {
 		dispatch('selected', file);
 	}
 
 	function onClosed() {
-		isSelected = false;
 		dispatch('closed');
 	}
 </script>
-
-{#if isSelected}
-	<FileActions
-		file={selected.file}
-		mouseEvent={selected.mouseEvent}
-		withSelect={true}
-		onDisabled={() => (isSelected = false)}
-		onSelectClicked={() => onSelect(selected.file)}
-	/>
-{/if}
 
 <div class="overlay base__overlay" bind:this={container}>
 	<div class="overlay__main">
@@ -109,7 +101,7 @@
 
 		<div class="base__container">
 			<div class="files">
-				<FilesList {items} onSelected={(file, counter, e) => select(file, e)} />
+				<FilesList {items} onDeleted={() => {}} />
 			</div>
 
 			<div class="pages">

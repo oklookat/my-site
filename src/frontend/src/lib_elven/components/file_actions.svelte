@@ -6,13 +6,11 @@
 	// utils
 	import { Env } from '$lib_elven/tools/paths';
 	import Validator from '$lib_elven/validators';
+	import Store from '$lib_elven/tools/store';
 	// file
 	import type { File } from '$lib_elven/types/files';
 	import NetworkFile from '$lib_elven/network/network_file';
 	import Preview from '$lib_elven/components/preview.svelte';
-
-	/** add 'select' option to actions */
-	export let withSelect = false;
 
 	/** file itself */
 	export let file: File;
@@ -26,11 +24,9 @@
 	/** on actions closed */
 	export let onDisabled: () => void;
 
-	/** on 'select' option clicked */
-	export let onSelectClicked: () => void = undefined;
-
-	/** is device with touchscreen? */
-	let isTouchDevice = false;
+	/** add 'select' option to actions? */
+	let withSelectOption = false;
+	Store.file.withSelectOption.subscribe((v) => (withSelectOption = v))();
 
 	/** choose component to render: overlay / popup */
 	let render: {
@@ -38,6 +34,9 @@
 		component: any;
 		props: any;
 	} = { isOverlay: true, component: null, props: null };
+
+	/** is device with touchscreen? */
+	let isTouchDevice = false;
 
 	onMount(() => {
 		isTouchDevice = Validator.isTouchDevice();
@@ -92,18 +91,18 @@
 
 	/** preview image/video/etc */
 	function onPreview(enabled: boolean) {
-		if(enabled) {
+		if (enabled) {
 			isPreview = true;
-			return
+			return;
 		}
-		isPreview = false
-		onDisabled()
+		isPreview = false;
+		onDisabled();
 	}
 </script>
 
 {#if isPreview}
 	<Preview
-		onClose={() => (onPreview(false))}
+		onClose={() => onPreview(false)}
 		url={file.pathConverted}
 		extension={file.extensionsSelector}
 	/>
@@ -112,10 +111,10 @@
 {#if !isPreview}
 	<svelte:component this={render.component} {...render.props}>
 		<div class="base__items {render.isOverlay ? 'extended' : ''}">
-			{#if withSelect}
+			{#if withSelectOption}
 				<div
 					on:click={() => {
-						onSelectClicked();
+						Store.file.selected.set(file);
 					}}
 				>
 					select
@@ -123,7 +122,7 @@
 			{/if}
 
 			<div on:click={() => onPreview(true)}>preview</div>
-			
+
 			<div on:click={() => copyLink()}>copy link</div>
 
 			{#if onDeleted}

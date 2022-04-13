@@ -19,6 +19,7 @@
     "@sveltejs/adapter-node": "^1.0.0-next.73",
     "@sveltejs/kit": "next",
     "@types/cookie": "^0.4.1",
+    "@types/marked": "^4.0.3",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
     "eslint": "^7.32.0",
@@ -27,6 +28,7 @@
     "node-sass": "^7.0.1",
     "prettier": "^2.5.1",
     "prettier-plugin-svelte": "^2.5.0",
+    "sass": "^1.50.0",
     "svelte": "^3.44.0",
     "svelte-check": "^2.2.6",
     "svelte-preprocess": "^4.10.1",
@@ -35,8 +37,10 @@
   },
   "type": "module",
   "dependencies": {
-    "@oklookat/jmarkd": "^1.0.7",
+    "@oklookat/jmarkd": "^2.0.0",
     "byte-size": "^8.1.0",
-    "cookie": "^0.4.2"
+    "cookie": "^0.4.2",
+    "highlight.js": "^11.5.1",
+    "marked": "^4.0.14"
   }
 }

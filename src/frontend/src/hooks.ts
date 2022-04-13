@@ -5,6 +5,7 @@ import type { User } from '$lib_elven/types/user';
 import Utils from '$lib_elven/tools';
 
 export const handle: Handle = async ({ event, resolve }) => {
+    console.log('vvvvvvvvvvvvvvvvvvv')
     let isExists = false
     let isAdmin = false
     let username = ''

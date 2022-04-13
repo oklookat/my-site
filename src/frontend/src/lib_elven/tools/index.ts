@@ -143,4 +143,27 @@ export default class Utils {
     return url.pathname.startsWith("/elven/login")
   }
 
+  /** check is element not out of screen, and if it is, correct position */
+  public static correctElementOverflow(el: HTMLElement, evt: MouseEvent): { x: number; y: number } {
+    let x = evt.clientX;
+    let y = evt.clientY;
+    const moveOffset = 10;
+
+    // left-right (X)
+    const popupWidth = el.offsetWidth;
+    const overflowDifferenceX = x + popupWidth - window.screen.width;
+    if (overflowDifferenceX > 0) {
+      x = x - overflowDifferenceX - moveOffset;
+    }
+
+    // top-bottom (Y)
+    const popupHeight = el.offsetHeight;
+    const overflowDifferenceY = y + popupHeight - window.screen.height;
+    if (overflowDifferenceY > 0) {
+      y = y - overflowDifferenceY - moveOffset;
+    }
+
+    return { x, y };
+  }
+
 }

@@ -32,6 +32,15 @@ func (w *Warner) Warn(ip string) error {
 		entry.WarnsCount++
 	}
 
+	// notify banner if max warns count reached.
+	if entry.WarnsCount >= w.maxWarns {
+		entry.WarnsCount = w.maxWarns
+		err = w.banner.Ban(ip)
+		if err != nil {
+			return err
+		}
+	}
+
 	err = w.db.AddOrUpdateEntry(ip, *entry)
 
 	// run hook.

@@ -1,4 +1,6 @@
 <script lang="ts">
+import Utils from "$lib_elven/tools";
+
     import { onMount } from "svelte";
 
     export let mouseEvent: MouseEvent;
@@ -16,33 +18,10 @@
         if (!evt) {
             return;
         }
-        const { x, y } = correctOverflow(evt);
+        const { x, y } = Utils.correctElementOverflow(popupEL, evt);
         // set styles
         popupEL.style.left = `${x}px`;
         popupEL.style.top = `${y}px`;
-    }
-
-    /** check is popup not out of screen, and if it is, correct position */
-    function correctOverflow(evt: MouseEvent): { x: number; y: number } {
-        let x = evt.clientX;
-        let y = evt.clientY;
-        const moveOffset = 10;
-
-        // left-right (X)
-        const popupWidth = popupEL.offsetWidth;
-        const overflowDifferenceX = x + popupWidth - window.screen.width;
-        if (overflowDifferenceX > 0) {
-            x = x - overflowDifferenceX - moveOffset;
-        }
-
-        // top-bottom (Y)
-        const popupHeight = popupEL.offsetHeight;
-        const overflowDifferenceY = y + popupHeight - window.screen.height;
-        if (overflowDifferenceY > 0) {
-            y = y - overflowDifferenceY - moveOffset;
-        }
-
-        return { x, y };
     }
 
     function watchClick(e: MouseEvent) {

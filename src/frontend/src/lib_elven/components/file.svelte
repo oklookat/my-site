@@ -61,7 +61,7 @@
 			<img decoding="async" loading="lazy" src={file.pathConverted.href} alt="" />
 		</div>
 	{:else}
-		<div class="preview unknown">{file.extension.toUpperCase()}</div>
+		<div class="preview unknown" />
 	{/if}
 
 	<div class="meta">
@@ -87,7 +87,7 @@
 		gap: 12px;
 
 		.preview {
-			height: 50px;
+			max-height: 54px;
 			width: 50px;
 			display: flex;
 			justify-content: center;

@@ -3,6 +3,7 @@
 
   /** total pages */
   export let total: number;
+  
   /** current page */
   export let current: number;
 
@@ -106,8 +107,9 @@
   .pagination {
     width: 100%;
     height: $paginator-height;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 50% 1fr;
     gap: 12px;
     .paginator,
     .total {
@@ -117,7 +119,6 @@
       border: var(--color-border) 1px solid;
     }
     .paginator {
-      height: 50%;
       display: grid;
       grid-template-rows: 1fr;
       grid-template-columns: repeat(3, 1fr);
@@ -157,7 +158,6 @@
       }
     }
     .total {
-      min-height: 54px;
       font-size: 1.3rem;
       padding: 12px;
     }
