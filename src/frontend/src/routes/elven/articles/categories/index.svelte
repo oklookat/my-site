@@ -60,9 +60,11 @@
 			return;
 		}
 		try {
-			await NetworkCategory.delete(id);
-			delete items.data[counter];
-			items = items;
+			const resp = await NetworkCategory.delete(id);
+			if (resp.status === 200) {
+				delete items.data[counter];
+				items = items;
+			}
 		} catch (err) {}
 	}
 
@@ -75,13 +77,19 @@
 			id: getIDByCounter(counter),
 			name: newName
 		};
+		let isErr = false;
 		try {
-			await NetworkCategory.rename(cat);
-			items = items;
+			const resp = await NetworkCategory.rename(cat);
+			isErr = resp.status !== 200;
 		} catch (err) {
+			isErr = true;
+		}
+		if (isErr) {
 			// revert name
 			items.data[counter].name = oldName;
+			return;
 		}
+		items = items;
 	}
 </script>
 

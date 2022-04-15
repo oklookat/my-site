@@ -3,6 +3,9 @@ import type { ElvenNotify } from "$lib_elven/plugins/elvenNotify/types"
 import type { ElvenProgress } from "$lib_elven/plugins/elvenProgress/types"
 import type { IElvenChoose } from "../plugins/elvenChoose"
 
+/** request param */
+export type Page = number
+
 /** response with multiple entities */
 export type Data<T> = {
     meta: Meta
@@ -11,9 +14,9 @@ export type Data<T> = {
 
 /** information about requested data */
 export type Meta = {
-    per_page: number
-    total_pages: number
-    current_page: number
+    per_page: Page
+    total_pages: Page
+    current_page: Page
 }
 
 declare global {

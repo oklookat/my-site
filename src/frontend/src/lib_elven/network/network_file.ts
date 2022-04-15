@@ -19,14 +19,13 @@ export default class NetworkFile {
     }
 
     /** get files list */
-    public async getAll(params: Params): Promise<Data<TFile>> {
+    public async getAll(params: Params): Promise<Response> {
         // send
         try {
             const response = await Fetchd.send({ method: "GET", url: 'files', params: params, headers: this.headers })
-            const jsond = await response.json()
-            return jsond as Data<TFile>
+            return response
         } catch (err) {
-            return Promise.reject(err)
+            throw err
         }
     }
 

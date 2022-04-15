@@ -18,13 +18,12 @@ export default class NetworkUser {
     }
 
     /** get information about current authorized user */
-    public async getMe(): Promise<User> {
+    public async getMe(): Promise<Response> {
         try {
             const response = await Fetchd.send({ method: "GET", url: 'users/me', headers: this.headers })
-            const jsond = await response.json()
-            return jsond as User
+            return response
         } catch (err) {
-            return Promise.reject(err)
+            throw err
         }
     }
 

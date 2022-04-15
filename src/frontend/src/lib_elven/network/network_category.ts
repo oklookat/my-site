@@ -20,7 +20,7 @@ export default class NetworkCategory {
 
     public async getAll() {
         try {
-            const response = await Fetchd.send({ method: "GET", url: NetworkCategory.prefix, headers: this.headers})
+            const response = await Fetchd.send({ method: "GET", url: NetworkCategory.prefix, headers: this.headers })
             const jsond = await response.json()
             return jsond as Data<Category>
         } catch (err) {
@@ -30,8 +30,9 @@ export default class NetworkCategory {
 
     public static async create(cat: Category) {
         try {
-            const response = await Fetchd.send({ 
-                method: "POST", url: this.prefix, body: cat})
+            const response = await Fetchd.send({
+                method: "POST", url: this.prefix, body: cat
+            })
             const jsond = await response.json()
             return jsond as Category
         } catch (err) {
@@ -39,22 +40,23 @@ export default class NetworkCategory {
         }
     }
 
-    public static async rename(cat: Category) {
+    public static async rename(cat: Category): Promise<Response> {
         try {
-            const response = await Fetchd.send({ 
-                method: "PATCH", url: `${this.prefix}/${cat.id}`, 
-                body: { name: cat.name }})
-            const jsond = await response.json()
-            return jsond as Category
+            const response = await Fetchd.send({
+                method: "PATCH", url: `${this.prefix}/${cat.id}`,
+                body: { name: cat.name }
+            })
+            return response
         } catch (err) {
-            return Promise.reject(err)
+            throw err
         }
     }
 
     public static async delete(id: string) {
         try {
-            const response = await Fetchd.send({ 
-                method: "DELETE", url: `${this.prefix}/${id}`})
+            const response = await Fetchd.send({
+                method: "DELETE", url: `${this.prefix}/${id}`
+            })
             return response
         } catch (err) {
             throw err

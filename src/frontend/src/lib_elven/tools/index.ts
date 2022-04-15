@@ -1,3 +1,5 @@
+import { invalidate } from '$app/navigation';
+import type { Data } from '$lib_elven/types';
 import * as cookie from 'cookie';
 
 export default class Utils {
@@ -15,49 +17,73 @@ export default class Utils {
   public static getRecordLength<T>(record: Record<any, T>): number {
     const isObject = typeof record === 'object' && record !== null
     if (!isObject) {
-      return 0
+      throw Error("not a object")
     }
     return Object.keys(record).length
   }
 
   public static debounce(f: Function, ms: number) {
-    let isCooldown = false;
+    let isCooldown = false
     return function () {
-      if (isCooldown) return;
+      if (isCooldown) {
+        return
+      }
 
-      f.apply(this, arguments);
+      f.apply(this, arguments)
 
-      isCooldown = true;
+      isCooldown = true
 
-      setTimeout(() => isCooldown = false, ms);
-    };
+      setTimeout(() => {
+        isCooldown = false
+      }, ms)
+    }
   }
 
-  /** refresh data. Used for pagination */
-  public static async refresh<T>(page: number,
-    setPage: (val: number) => void, fetchData: () => Promise<Record<number, T>>) {
+  /** refresh data. Used for pagination
+   * 
+   * @param fetchItems func to fetch items. if **isInitial = true** you must return items what you have now.
+   */
+  public static async refresh<T>(getPage: () => Promise<number>,
+    setPage: (newPage: number) => Promise<void>, fetchItems: (isInitial: boolean) => Promise<Data<T>>) {
     //
-    let data = await fetchData()
+    let page = await getPage()
 
+    // if page === 1 - just refresh
     if (page < 2) {
+      await fetchItems(false)
       return
     }
 
-    while (true) {
-      const dataLength = this.getRecordLength(data)
-      const isNoData = dataLength > 0 || page < 2
-      if (isNoData) {
+    let items = await fetchItems(true)
+    let dataLength = 0
+
+    try {
+      dataLength = this.getRecordLength(items.data)
+    } catch (err) {
+      return
+    }
+
+    if (dataLength > 0) {
+      return
+    }
+
+    while (page > 1 && dataLength < 1) {
+      page = await getPage()
+      page--
+      await setPage(page)
+
+      try {
+        items = await fetchItems(false)
+      } catch (err) {
         break
       }
-      page--
-      setPage(page)
+      console.log(items)
       try {
-        data = await fetchData()
+        dataLength = this.getRecordLength(items.data)
       } catch (err) {
         break
       }
     }
-
   }
 
   /** convert URLSearchParams to object */
@@ -127,20 +153,6 @@ export default class Utils {
       return
     }
     headers.append('Authorization', `Elven ${token}`)
-  }
-
-  public static isAdminPanelPage(url: URL): boolean {
-    if (!(url instanceof URL)) {
-      return false
-    }
-    return url.pathname.startsWith("/elven")
-  }
-
-  public static isAdminPanelLoginPage(url: URL): boolean {
-    if (!(url instanceof URL)) {
-      return false
-    }
-    return url.pathname.startsWith("/elven/login")
   }
 
   /** check is element not out of screen, and if it is, correct position */

@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { goto, invalidate } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	// tools
 	import type { Data } from '$lib_elven/types';
-	import Utils from '$lib_elven/tools';
 	// ui
 	import Pagination from '$lib_elven/components/pagination.svelte';
 	// file
 	import type { File, Params } from '$lib_elven/types/files';
 	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
 	import FilesList from '$lib_elven/components/files_list.svelte';
+	import Utils from '$lib_elven/tools';
+	import NetworkFile from '$lib_elven/network/network_file';
+
+	const networkFile = new NetworkFile('');
 
 	/** files data */
 	export let items: Data<File> | undefined = undefined;
@@ -22,7 +25,6 @@
 	let urlParams = $page.url.searchParams;
 
 	onMount(async () => {
-		// @ts-ignore
 		await goto(`?${urlParams.toString()}`, { replaceState: true });
 	});
 
@@ -42,43 +44,34 @@
 
 	/** when page changed */
 	async function onPageChanged(page: number) {
+		// refresh if page not changed
+		if (page === params.page) {
+			const resp = await networkFile.getAll(params);
+			if (resp.status === 200) {
+				items = await resp.json();
+			}
+			return;
+		}
+		params.page = page;
 		urlParams.set('page', page.toString());
 		await goto(`?${urlParams.toString()}`, { keepfocus: true });
 	}
 
-	/** refresh files */
-	const refresh = getRefresher();
-	function getRefresher() {
-		let force = false;
-		let prevPage = params.page;
-		let isFirstCall = true;
-		const getData = async () => {
-			if (isFirstCall && !force) {
-				isFirstCall = false;
-				return items.data;
+	async function refresh() {
+		const getPage = async () => {
+			return params.page;
+		};
+		const setPage = async (newPage: number) => {
+			params.page = newPage;
+		};
+		const fetchItems = async (initial: boolean) => {
+			if (initial) {
+				return items;
 			}
-			if (prevPage < 2 && params.page < 2) {
-				params.page = 1;
-				await invalidate('');
-				return items.data;
-			}
-			await onPageChanged(params.page);
-			return items.data;
+			await onPageChanged(await getPage());
+			return items;
 		};
-		const setPage = (val: number) => {
-			prevPage = params.page;
-			params.page = val;
-		};
-		return async (isForce = false) => {
-			force = isForce;
-			await Utils.refresh(params.page, setPage, getData);
-		};
-	}
-
-	/** on file uploaded */
-	async function onUploaded() {
-		params.page = 1;
-		await refresh(true);
+		await Utils.refresh(getPage, setPage, fetchItems);
 	}
 </script>
 
@@ -87,11 +80,7 @@
 </svelte:head>
 
 <div class="files base__container">
-	<FilesToolbars
-		bind:params
-		on:uploaded={async () => await onUploaded()}
-		on:paramChanged={async (e) => onParamChanged(e.detail)}
-	/>
+	<FilesToolbars bind:params {refresh} on:paramChanged={async (e) => onParamChanged(e.detail)} />
 
 	<FilesList {items} onDeleted={async () => await refresh()} />
 

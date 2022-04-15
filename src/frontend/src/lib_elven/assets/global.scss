@@ -23,6 +23,7 @@
 ::-webkit-scrollbar-thumb {
   background: var(--color-scrollbar);
   border-radius: 4px;
+
   :hover {
     background: var(--color-scrollbar-hover);
   }
@@ -50,7 +51,6 @@ body {
   min-height: 100%;
 }
 
-
 a {
   color: inherit;
   text-decoration: none;
@@ -70,9 +70,11 @@ input {
   min-height: 24px;
   border-radius: 4px;
   text-indent: 6px;
+
   &::placeholder {
     opacity: 75%;
   }
+
   &:focus::placeholder {
     color: transparent;
   }
@@ -86,6 +88,7 @@ button {
   background-color: var(--color-level-2);
   color: var(--color-text);
   min-height: 24px;
+
   &:disabled,
   [disabled] {
     display: none;
@@ -96,8 +99,4 @@ img,
 video {
   width: 100%;
   height: 100%;
-}
-
-.jmarkd__toolbar {
-  font-size: 0.8rem;
 }

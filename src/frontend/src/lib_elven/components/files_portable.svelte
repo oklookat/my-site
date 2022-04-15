@@ -1,17 +1,24 @@
 <script lang="ts">
+	import { browser } from '$app/env';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+	// utils
+	import Store from '$lib_elven/tools/store';
+	// ui
+	import Pagination from '$lib_elven/components/pagination.svelte';
 	// files
 	import type { Data } from '$lib_elven/types';
 	import type { File, Params } from '$lib_elven/types/files';
 	import NetworkFile from '$lib_elven/network/network_file';
-	import Pagination from '$lib_elven/components/pagination.svelte';
 	import FilesList from '$lib_elven/components/files_list.svelte';
-	import Store from '$lib_elven/tools/store';
-	import { browser } from '$app/env';
+	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
+	import ToolsFiles from '$lib_elven/tools/files';
+	import Utils from '$lib_elven/tools';
+	import { invalidate } from '$app/navigation';
 
 	const dispatch = createEventDispatcher<{
 		/** on 'select' option clicked on file */
 		selected: File;
+
 		/** on files closed */
 		closed: void;
 	}>();
@@ -24,8 +31,6 @@
 	/** response data */
 	let items: Data<File>;
 
-	let container: HTMLDivElement;
-
 	/** store unsubs */
 	let unsub = {
 		onSelected: undefined
@@ -33,11 +38,11 @@
 
 	function initStore() {
 		Store.file.withSelectOption.set(true);
-		unsub.onSelected = Store.file.selected.subscribe((v) => {
-			if (!v) {
+		unsub.onSelected = Store.file.selected.subscribe((file) => {
+			if (!file) {
 				return;
 			}
-			onSelect(v);
+			dispatch('selected', file);
 		});
 	}
 
@@ -48,6 +53,12 @@
 	}
 
 	onMount(async () => {
+		const defaultParams = ToolsFiles.getDefaultParams();
+		if (!params) {
+			params = defaultParams;
+		} else {
+			params = Object.assign(defaultParams, params);
+		}
 		initStore();
 		document.body.classList.add('no-scroll');
 		await getAll();
@@ -64,13 +75,25 @@
 	/** get all files */
 	async function getAll(p: Params = params) {
 		params = params;
+		const backupPage = p.page;
 		if (p.page < 1) {
 			p.page = 1;
 		}
+		let isError = false;
 		try {
-			const result = await networkFile.getAll(p);
-			items = result;
-		} catch (err) {}
+			const resp = await networkFile.getAll(p);
+			if (resp.status === 200) {
+				items = await resp.json();
+				return;
+			}
+			isError = true;
+		} catch (err) {
+			isError = true;
+		}
+		if (isError) {
+			// revert page change
+			p.page = backupPage;
+		}
 	}
 
 	/** when page changed */
@@ -79,30 +102,57 @@
 		await getAll();
 	}
 
-	/** on select button clicked in actions */
-	function onSelect(file: File) {
-		dispatch('selected', file);
+	async function refresh() {
+		const getPage = async () => {
+			return params.page;
+		};
+		const setPage = async (newPage: number) => {
+			params.page = newPage;
+		};
+		const fetchItems = async (initial: boolean) => {
+			if(initial) {
+				return items
+			}
+			await onPageChanged(await getPage());
+			return items;
+		};
+		await Utils.refresh(getPage, setPage, fetchItems);
 	}
 
-	function onClosed() {
-		dispatch('closed');
+	async function onParamChanged(event: { name: string; val: string }) {
+		params.page = 1;
+		params[event.name] = event.val;
+		await getAll();
 	}
 </script>
 
-<div class="overlay base__overlay" bind:this={container}>
+<div class="overlay base__overlay">
 	<div class="overlay__main">
-		<div class="close pointer" on:click={onClosed}>
-			<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"
-				><path
-					d="M289.94,256l95-95A24,24,0,0,0,351,127l-95,95-95-95A24,24,0,0,0,127,161l95,95-95,95A24,24,0,1,0,161,385l95-95,95,95A24,24,0,0,0,385,351Z"
-				/></svg
-			>
+		<div
+			class="back"
+			on:click={() => {
+				dispatch('closed');
+			}}
+		>
+			<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+				<rect id="view-box" width="24" height="24" fill="none" />
+				<path
+					d="M.22,10.22A.75.75,0,0,0,1.28,11.28l5-5a.75.75,0,0,0,0-1.061l-5-5A.75.75,0,0,0,.22,1.28l4.47,4.47Z"
+					transform="translate(14.75 17.75) rotate(180)"
+				/>
+			</svg>
+
+			<slot name="back-title" />
 		</div>
 
 		<div class="base__container">
-			<div class="files">
-				<FilesList {items} onDeleted={() => {}} />
-			</div>
+			<FilesToolbars
+				bind:params
+				{refresh}
+				on:paramChanged={async (e) => onParamChanged(e.detail)}
+			/>
+
+			<FilesList {items} onDeleted={async () => await refresh()} />
 
 			<div class="pages">
 				{#if items && items.meta}
@@ -132,29 +182,17 @@
 			grid-template-rows: max-content 1fr auto;
 			gap: 12px;
 
-			.close {
+			.back {
 				width: 100%;
 				height: 48px;
 				background-color: var(--color-level-1);
 				display: flex;
-				justify-content: center;
 				align-items: center;
 				svg {
-					fill: red;
 					width: 30px;
 					height: 30px;
+					fill: var(--color-text);
 				}
-			}
-			.files {
-				height: 100%;
-			}
-			.files,
-			.pages {
-				width: 96%;
-				margin: auto;
-			}
-			.pages {
-				padding-top: 14px;
 			}
 		}
 	}

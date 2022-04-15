@@ -18,15 +18,14 @@ export default class NetworkArticle {
         this.headers = headers
     }
 
-    public async getAll(params: Params): Promise<Data<Article>> {
+    public async getAll(params: Params): Promise<Response> {
 
         try {
             const response = await Fetchd.send({
                 method: "GET",
                 url: NetworkArticle.prefix, params: params, headers: this.headers
             })
-            const jsond = await response.json()
-            return jsond as Data<Article>
+            return response
         } catch (err) {
             throw err
         }

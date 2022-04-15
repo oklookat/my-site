@@ -1,3 +1,5 @@
+import type { Page } from "$lib_elven/types"
+
 /** request param */
 export enum Show {
     published = 'published',
@@ -19,7 +21,7 @@ export enum Start {
 
 /** request params */
 export type Params = {
-    page?: number
+    page?: Page
     show?: Show
     by?: By
     start?: Start
@@ -29,18 +31,6 @@ export type Params = {
     category_name?: string
     /** show articles without category? */
     without_category?: boolean
-}
-
-export function getDefaultParams(): Params {
-    return {
-        page: 1,
-        show: Show.published,
-        by: By.published,
-        start: Start.newest,
-        preview: true,
-        category_name: null,
-        without_category: false,
-    }
 }
 
 /** article */
@@ -54,6 +44,7 @@ export type Article = {
     content: string
     published_at?: string
     updated_at?: string
+    
     // joined (GET-only)
     category_name?: string
     cover_path?: string

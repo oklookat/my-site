@@ -28,6 +28,9 @@
 				clearTimeout(timer);
 			}
 			timer = setTimeout(() => {
+				if(!inputEL) {
+					return
+				}
 				dipatch('search', inputEL.value);
 			}, 1000);
 		};

@@ -1,3 +1,19 @@
+<script context="module">
+	export const load = async (event) => {
+		if (Validator.isAdminPanelLoginPage(event.url)) {
+			return {};
+		}
+		const isAdmin = !!event.session.user && !!event.session.user.isAdmin;
+		if (!isAdmin) {
+			return {
+				status: 302,
+				redirect: '/elven/login'
+			};
+		}
+		return {};
+	};
+</script>
+
 <script lang="ts">
 	import { browser } from '$app/env';
 	import { page } from '$app/stores';
@@ -8,6 +24,8 @@
 	// components
 	import Header from '$lib_elven/components/header.svelte';
 	import ServiceWrapper from '$lib_elven/components/service_wrapper.svelte';
+	import Validator from '$lib_elven/validators';
+	import Utils from '$lib_elven/tools';
 
 	// TODO: handle auth on endpoint. Like send auth request in endpoint, and if 403, not send html.
 	// state

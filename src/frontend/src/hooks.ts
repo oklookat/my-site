@@ -3,9 +3,9 @@ import type { GetSession, Handle } from '@sveltejs/kit'
 import NetworkUser from '$lib_elven/network/network_user';
 import type { User } from '$lib_elven/types/user';
 import Utils from '$lib_elven/tools';
+import Validator from '$lib_elven/validators';
 
 export const handle: Handle = async ({ event, resolve }) => {
-    console.log('vvvvvvvvvvvvvvvvvvv')
     let isExists = false
     let isAdmin = false
     let username = ''
@@ -25,8 +25,11 @@ export const handle: Handle = async ({ event, resolve }) => {
         const networkUser = new NetworkUser(token)
         let user: User
         try {
-            user = await networkUser.getMe()
-        } catch(err) {
+            const resp = await networkUser.getMe()
+            if (resp.status === 200) {
+                user = await resp.json()
+            }
+        } catch (err) {
             isErr = true
         }
         if (user && user.is_admin && user.username) {
@@ -41,12 +44,19 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.user.username = username
     event.locals.user.token = token
 
-    const isElvenPage = Utils.isAdminPanelPage(event.url)
-    const isElvenLoginPage = Utils.isAdminPanelLoginPage(event.url)
-    if (!isErr && isElvenPage && !isElvenLoginPage && !isAdmin) {
-        //const resp = Response.redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ', 302)
-        const resp = Response.redirect('https://oklookat.ru/elven/login', 302)
-        return resp
+    const isElvenPage = Validator.isAdminPanelPage(event.url)
+    const isElvenLoginPage = Validator.isAdminPanelLoginPage(event.url)
+    let redirectURL = `https://${event.url.hostname}`
+    if (isElvenPage) {
+        if (isErr) {
+            const resp = Response.redirect(redirectURL, 302)
+            return resp
+        }
+        if (!isElvenLoginPage && !isAdmin) {
+            redirectURL = redirectURL + `/elven/login`
+            const resp = Response.redirect(redirectURL, 302)
+            return resp
+        }
     }
 
     const response = await resolve(event)

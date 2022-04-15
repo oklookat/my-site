@@ -3,8 +3,8 @@
 	import { browser } from '$app/env';
 	// editor
 	import { marked } from 'marked';
-	import hljs from "highlight.js";
-	import '../../../../lib_elven/assets/highlight.scss'
+	import hljs from 'highlight.js';
+	import '../../../../lib_elven/assets/highlight.scss';
 	import type { Config } from '@oklookat/jmarkd';
 
 	// utils
@@ -60,10 +60,12 @@
 
 	onMount(async () => {
 		// import markdown editor
-		const jmarkdModule = await import('@oklookat/jmarkd');
-		jmarkdClass = jmarkdModule.default;
+		// styles
 		// @ts-ignore
 		await import('@oklookat/jmarkd/styles');
+		// editor class
+		const jmarkdModule = await import('@oklookat/jmarkd');
+		jmarkdClass = jmarkdModule.default;
 
 		// manually add title before creating TextareaResizer, for correct height in start
 		textareaResizer = new TextareaResizer(articleTitleEL, 54);
@@ -236,7 +238,9 @@
 		on:selected={(e) => {
 			onCoverSelected(e.detail);
 		}}
-	/>
+	>
+		<div slot="back-title">article</div>
+	</FilesPortable>
 {/if}
 
 <div class="create base__container">

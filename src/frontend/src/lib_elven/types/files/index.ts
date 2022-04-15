@@ -1,3 +1,4 @@
+import type { Page } from '$lib_elven/types'
 import type { FileTypeSelector } from '../../tools/extension'
 
 /** request param */
@@ -13,7 +14,7 @@ export enum By {
 
 /** request params */
 export type Params = {
-    page?: number
+    page?: Page
     start?: Start
     by?: By
 
@@ -22,17 +23,6 @@ export type Params = {
 
     /** search by filename */
     filename?: string
-}
-
-/** get default files request params */
-export function getDefaultParams(): Params {
-    return {
-        page: 1,
-        start: Start.newest,
-        by: By.created,
-        extensions: undefined,
-        filename: undefined
-    }
 }
 
 /** file */
@@ -47,7 +37,7 @@ export type File = {
     size: number
     created_at: string
     updated_at: string
-    
+
     ///////////////////// not in model
 
     /** short original name like: 'longlongnamehellowo...' */
