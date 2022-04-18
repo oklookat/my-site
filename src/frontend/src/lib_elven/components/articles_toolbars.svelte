@@ -1,66 +1,111 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	// ui
 	import Toolbar from '$lib_elven/components/toolbar.svelte';
 	import ToolbarBig from '$lib_elven/components/toolbar_big.svelte';
 	import ElvenLink from '$lib_elven/components/elven_link.svelte';
 	// article
-	import { Show, By, Start } from '$lib_elven/types/articles';
+	import { By } from '$lib_elven/types/articles';
 	import type { Params } from '$lib_elven/types/articles';
 	import type { Category } from '$lib_elven/types/articles/categories';
 	import CategoriesSelector from '$lib_elven/components/categories_selector.svelte';
+	import type { Counter, Items } from '$lib_elven/types';
+	import NetworkCategory from '$lib_elven/network/network_category';
+import { ToolsCategories } from '$lib_elven/tools/categories';
 
 	export let params: Params;
 
 	const dispatch = createEventDispatcher<{
 		/** on request param changed */
-		paramChanged: { name: string; val: string };
+		paramChanged: { name: string; val: string | boolean };
 	}>();
 
+	const ALL_CATEGORIES = '-1';
+	const WITHOUT_CATEGORY = '-2';
+
 	/** custom categories for searching by category */
-	const customCategories: Record<number, Category> = {
-		'-1': {
-			id: '-1',
-			name: 'All'
-		}
+	const customCategories: Record<number, Category> = {};
+	customCategories[ALL_CATEGORIES] = {
+		id: ALL_CATEGORIES,
+		name: 'All'
 	};
+	customCategories[WITHOUT_CATEGORY] = {
+		id: WITHOUT_CATEGORY,
+		name: 'Without category'
+	};
+
+	/** default selected */
+	let selected = ALL_CATEGORIES;
+
+	/** is ready to display toolbars? */
+	let isLoaded = false;
+
+	onMount(async () => {
+		if(!params.without_category) {
+			selected = ALL_CATEGORIES
+		} else {
+			selected = WITHOUT_CATEGORY
+			isLoaded = true;
+			return;
+		}
+		
+		if (!params.category_name) {
+			isLoaded = true;
+			return;
+		}
+
+		// if we have category name in params, we need to get id of this category
+		try {
+			const counter = await ToolsCategories.getCounterByName('', params.category_name)
+			selected = counter
+		} catch(err) {
+		}
+
+		isLoaded = true;
+	});
 
 	/** set 'by' param and get articles */
 	function setBy(by: By = By.published) {
-		params.by = by;
-		params.page = 1;
 		dispatch('paramChanged', { name: 'by', val: by });
 	}
 
 	/** set 'start' param and get articles */
-	function setStart(start: Start = Start.newest) {
-		params.start = start;
-		params.page = 1;
-		dispatch('paramChanged', { name: 'start', val: start });
+	function toggleNewest() {
+		dispatch('paramChanged', { name: 'newest', val: !params.newest });
 	}
 
 	/** set 'show' param and get articles */
-	function setShow(show: Show) {
-		params.show = show;
-		params.page = 1;
-		dispatch('paramChanged', { name: 'show', val: show });
+	function togglePublished() {
+		if (typeof params.published !== 'boolean') {
+			console.error(
+				'params.published not a boolean, possibly toolbar strange behavior. Recheck your type conversion'
+			);
+		}
+		dispatch('paramChanged', { name: 'published', val: !params.published });
 	}
 
 	/** sort by category */
-	function onCategoryChanged(cat: Category | null) {
-		params.page = 1;
-        
-		// no categories
-		params.without_category = cat === null;
-		let catName = null;
+	function onCategoryChanged(selected: { counter: Counter; category: Category }) {
+		if (selected.counter === ALL_CATEGORIES || selected.counter === WITHOUT_CATEGORY) {
+			// if we search without category
+			// category_name a priori should be false/undefined
+			params.category_name = undefined;
+			dispatch('paramChanged', { name: 'category_name', val: params.category_name });
 
-		// not all categories / not 'No category'
-		const isRealCategory = !!(cat && cat['name'] && cat.id !== '-1');
-		if (isRealCategory) {
-			catName = cat.name;
+			// set
+			params.without_category = selected.counter === WITHOUT_CATEGORY;
+			dispatch('paramChanged', { name: 'without_category', val: params.without_category });
+			return;
 		}
-		params.category_name = catName;
-		dispatch('paramChanged', { name: 'category_name', val: catName });
+
+		// if we search by category name
+		// without_category a priori should be false/undefined
+		params.without_category = undefined;
+		dispatch('paramChanged', { name: 'without_category', val: params.without_category });
+
+		// set
+		params.category_name = selected.category.name;
+		dispatch('paramChanged', { name: 'category_name', val: params.category_name });
 	}
 </script>
 
@@ -70,39 +115,33 @@
 		<ElvenLink path="/articles/categories">categories</ElvenLink>
 	</ToolbarBig>
 
-	<Toolbar>
-		<CategoriesSelector
-			{customCategories}
-			selectedID={'-1'}
-			on:changed={(e) => onCategoryChanged(e.detail)}
-		/>
-	</Toolbar>
+	{#if isLoaded}
+		<Toolbar>
+			<CategoriesSelector
+				{customCategories}
+				{selected}
+				on:selected={(e) => onCategoryChanged(e.detail)}
+			/>
+		</Toolbar>
+	{/if}
 
 	<Toolbar>
 		<div>
-			{#if params.show === Show.published}
-				<div class="pointer" on:click={() => setShow(Show.drafts)}>published</div>
-			{/if}
-			{#if params.show === Show.drafts}
-				<div class="pointer" on:click={() => setShow(Show.published)}>drafts</div>
-			{/if}
+			<div class="pointer" on:click={() => togglePublished()}>
+				{params.published ? 'published' : 'drafts'}
+			</div>
 		</div>
 		<div>
-			{#if params.start === Start.newest}
-				<div class="pointer" on:click={() => setStart(Start.oldest)}>newest</div>
-			{/if}
-			{#if params.start === Start.oldest}
-				<div class="pointer" on:click={() => setStart(Start.newest)}>oldest</div>
-			{/if}
+			<div class="pointer" on:click={() => toggleNewest()}>
+				{params.newest ? 'newest' : 'oldest'}
+			</div>
 		</div>
 		<div>
 			{#if params.by === By.updated}
 				<div class="pointer" on:click={() => setBy(By.published)}>by updated date</div>
-			{/if}
-			{#if params.by === By.published}
+			{:else if params.by === By.published}
 				<div class="pointer" on:click={() => setBy(By.created)}>by published date</div>
-			{/if}
-			{#if params.by === By.created}
+			{:else if params.by === By.created}
 				<div class="pointer" on:click={() => setBy(By.updated)}>by created date</div>
 			{/if}
 		</div>

@@ -1,124 +1,78 @@
 <script lang="ts">
-    import { createEventDispatcher, onMount } from "svelte";
-    // ui
-    import Select from "$lib_elven/components/select.svelte";
-    // category
-    import type { Category } from "$lib_elven/types/articles/categories";
-import NetworkCategory from "$lib_elven/network/network_category";
+	import { createEventDispatcher, onMount } from 'svelte';
+	// ui
+	import Select from '$lib_elven/components/select.svelte';
+	// category
+	import type { Category } from '$lib_elven/types/articles/categories';
+	import NetworkCategory from '$lib_elven/network/network_category';
+	import type { Counter, Items } from '$lib_elven/types';
 
-    /** initial id */
-    export let selectedID: string | null | undefined = undefined;
+	const dispatch = createEventDispatcher<{
+		/** when new category selected */
+		selected: { counter: Counter; category: Category };
+	}>();
 
-    /** custom categories. Puts before server categories */
-    export let customCategories: Record<number, Category> = {};
+	/** currently selected category counter */
+	export let selected: Counter | null = null;
 
-    const dispatch = createEventDispatcher<{
-        /** dispatch new category when changed */
-        changed: Category | null;
-    }>();
+	/** custom categories (adds before server categories) */
+	export let customCategories: Record<Counter, Category> = undefined;
 
-    /** categories from server */
-    let categories: Record<number, Category> = {};
+	/** categories from server */
+	let serverCategories: Record<Counter, Category> = undefined;
 
-    /** fetched categories for select element */
-    let selectData: {
-        value: string;
-        text: string;
-    }[] = [];
+	/** custom + server categories */
+	let combinedCategories: Record<Counter, Category> = undefined;
 
-    /** currently selected category value (counter) */
-    let selectedValue: string | undefined;
+	onMount(async () => {
+		await getCategories();
+		combine();
+	});
 
-    onMount(async () => {
-        await getCategories();
-    });
+	/** get categories from server */
+	async function getCategories() {
+		try {
+			const networkCategory = new NetworkCategory('');
+			const resp = await networkCategory.getAll();
+			if (resp.status === 200) {
+				const items: Items<Category> = await resp.json();
+				serverCategories = items.data;
+				return;
+			}
+		} catch (err) {}
+		serverCategories = undefined;
+	}
 
-    $: onSelectedIDChanged(selectedID);
-    function onSelectedIDChanged(newVal?: string) {
-        makeCategoriesSelectable();
-    }
+	/** categories for <select/> component */
+	let selectable: Record<string, string> = {};
 
-    async function getCategories() {
-        // get categories
-        try {
-            const networkCategory = new NetworkCategory('')
-            const items = await networkCategory.getAll()
-            categories = items.data
-        } catch (err) {
-            return Promise.reject();
-        }
-        makeCategoriesSelectable();
-        return Promise.resolve();
-    }
+	/** combine categories */
+	function combine() {
+		combinedCategories = {};
 
-    /** format categories from server and put result in catsSelectData */
-    function makeCategoriesSelectable() {
-        selectData = [];
+		// combine cats
+		if (customCategories) {
+			combinedCategories = Object.assign({}, customCategories);
+		}
+		if (serverCategories) {
+			combinedCategories = Object.assign(combinedCategories, serverCategories);
+		}
 
-        // format custom categories for select element
-        fetchCategories(customCategories);
+		// make selectable from them
+		selectable = {};
+		for (const counter in combinedCategories) {
+			const cat = combinedCategories[counter];
+			selectable[counter] = cat.name;
+		}
+		selectable = selectable;
+	}
 
-        // create "no category" item
-        const noCategory = { value: "", text: "No category" };
-        selectData.push(noCategory)
-
-        // format categories for select element
-        fetchCategories(categories);
-    }
-
-    /** format & add categories to select */
-    function fetchCategories(items: Record<number, Category>) {
-        // if without selected category id - set "no category" as default
-        const initialID = selectedID;
-        if (!initialID) {
-            selectedValue = "";
-        }
-        // format custom categories for select element
-        for (const [counter, _category] of Object.entries(items)) {
-            const option = {
-                value: counter,
-                text: _category.name,
-            };
-            // same categories?
-            const sameCats = initialID === _category.id;
-            if (sameCats) {
-                selectedValue = counter;
-            }
-            selectData.push(option);
-        }
-        // render
-        selectData = selectData;
-
-    }
-
-    /** when category on select element changed */
-    function onCategoryChanged(counter?: string) {
-        // no counter = no category
-        let newCat: Category | null = null;
-        if (counter) {
-            newCat = getCategoryByCounter(counter);
-        }
-        dispatch("changed", newCat);
-    }
-
-    /** get category by categories counter */
-    function getCategoryByCounter(counter?: string | number): Category | null {
-        let cat: Category | null = null;
-        if (!counter) {
-            return cat;
-        }
-        try {
-            const isString = typeof counter === "string";
-            const counterInt = isString ? parseInt(counter, 10) : counter;
-            cat =
-                categories[counterInt] || customCategories[counterInt] || null;
-        } catch (err) {}
-        return cat;
-    }
+	function onCategoryChanged(counter: string) {
+		dispatch('selected', {
+			counter: counter,
+			category: combinedCategories[counter]
+		});
+	}
 </script>
 
-<Select
-    bind:options={selectData}
-    bind:selected={selectedValue}
-    on:selected={(e) => onCategoryChanged(e.detail)}
-/>
+<Select bind:selectable bind:selected on:selected={(e) => onCategoryChanged(e.detail)} />

@@ -5,10 +5,11 @@
 	import type { Category } from '$lib_elven/types/articles/categories';
 	import CompCategory from '$lib_elven/components/category.svelte';
 	import CategoryNew from '$lib_elven/components/category_new.svelte';
-	import type { Data } from '$lib_elven/types';
+	import type { Items } from '$lib_elven/types';
 	import NetworkCategory from '$lib_elven/network/network_category';
+	import Utils from '$lib_elven/tools';
 
-	export let items: Data<Category>;
+	export let items: Items<Category>;
 
 	/** create new cat? */
 	let createNew = false;
@@ -72,29 +73,32 @@
 		// store old and set new name
 		const oldName = items.data[counter].name;
 		items.data[counter].name = newName;
-		//
+
 		const cat: Category = {
 			id: getIDByCounter(counter),
 			name: newName
 		};
 		let isErr = false;
+
 		try {
 			const resp = await NetworkCategory.rename(cat);
 			isErr = resp.status !== 200;
 		} catch (err) {
 			isErr = true;
 		}
+
 		if (isErr) {
 			// revert name
 			items.data[counter].name = oldName;
 			return;
 		}
+
 		items = items;
 	}
 </script>
 
 <svelte:head>
-	<title>elven: article categories</title>
+	<title>{Utils.setTitleElven("article categories")}</title>
 </svelte:head>
 
 <div class="categories base__container">

@@ -75,12 +75,12 @@
 	async function copyLink() {
 		let message = '';
 		const path = file.path;
-		const formattedPath = Env.getUploads() + '/' + path;
+		const formattedPath = Env.getUploads().toString() + `/${path}`
 		try {
 			await navigator.clipboard.writeText(formattedPath);
 			message = 'Link copied to clipboard.';
 		} catch (err) {
-			message = 'Error: clipboard access denied.';
+			message = 'Error: clipboard not have permission.';
 		}
 		window.$notify.add({ message });
 		onDisabled();

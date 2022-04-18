@@ -94,9 +94,17 @@ export default class Utils {
 
     const result = {}
 
-    params.forEach((value, key) => {
+    for (const [key, value] of params) {
+      // convert if needed.
+      try {
+        const valNormal = this.stringToNormal(value)
+        result[key] = valNormal;
+        continue
+      } catch (err) {
+      }
+
       result[key] = value;
-    })
+    }
 
     return result;
   }
@@ -114,7 +122,7 @@ export default class Utils {
       }
 
       const value = data[key]
-      if (!value) {
+      if (value === undefined || value === null) {
         continue
       }
       params.append(key, value)
@@ -178,4 +186,65 @@ export default class Utils {
     return { x, y };
   }
 
+  /** convert string to value depend on type */
+  public static stringToNormal(value: any): boolean | number {
+    // try to bool
+    try {
+      const converted = this.stringToBool(value)
+      return converted
+    } catch (err) { }
+
+    // try to number
+    try {
+      const converted = this.stringToNumber(value)
+      return converted
+    } catch (err) { }
+
+    throw Error('value is not convertible')
+  }
+
+  /** convert string to boolean. Throws error if convert failed */
+  public static stringToBool(value: any): boolean {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+
+    if (typeof value !== 'string') {
+      throw Error('value is not a string');
+    }
+
+    value = value.toUpperCase();
+
+    const trueVals = ['T', 'TRUE', 'YES', 'Y', 'ON'];
+    if (trueVals.includes(value)) {
+      return true;
+    }
+
+    const falseVals = ['F', 'FALSE', 'N', 'NO', 'OFF'];
+    if (falseVals.includes(value)) {
+      return false;
+    }
+
+    throw Error('value is not convertible');
+  }
+
+  /** convert string to number. Throws error if convert failed */
+  public static stringToNumber(value: any): number {
+    if (typeof value === 'number') {
+      return value
+    }
+    if (typeof value !== 'string') {
+      throw Error('value is not a string')
+    }
+    const converted = parseInt(value, 10)
+    if (isNaN(converted)) {
+      throw Error('value is not convertible')
+    }
+    return converted
+  }
+
+  /** set title with elven prefix */
+  public static setTitleElven(title: string): string {
+    return `${title} - elven`
+  }
 }

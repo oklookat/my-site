@@ -2,10 +2,11 @@
 	import ElvenLink from '$lib_elven/components/elven_link.svelte';
 	import AccountSettings from '$lib_elven/components/settings_account.svelte';
 	import ToolbarBig from '$lib_elven/components/toolbar_big.svelte';
+	import Utils from '$lib_elven/tools';
 </script>
 
 <svelte:head>
-	<title>elven: settings</title>
+	<title>{Utils.setTitleElven('settings')}</title>
 </svelte:head>
 
 <div class="settings">

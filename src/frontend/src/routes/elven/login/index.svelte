@@ -3,6 +3,7 @@
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
 	import NetworkAuth from '$lib_elven/network/network_auth';
+	import Utils from '$lib_elven/tools';
 
 	let username = '';
 	let password = '';
@@ -62,7 +63,7 @@
 </script>
 
 <svelte:head>
-	<title>elven: login</title>
+	<title>{Utils.setTitleElven('login')}</title>
 </svelte:head>
 
 <div class="login">

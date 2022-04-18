@@ -8,15 +8,15 @@
 	import Utils from '$lib_elven/tools';
 	// article
 	import type { Article, Params } from '$lib_elven/types/articles';
-	import type { Data } from '$lib_elven/types';
+	import type { Items } from '$lib_elven/types';
 	import ArticlesToolbars from '$lib_elven/components/articles_toolbars.svelte';
 	import ArticlesList from '$lib_elven/components/articles_list.svelte';
 	import NetworkArticle from '$lib_elven/network/network_article';
 
-	const networkArticle = new NetworkArticle('')
+	const networkArticle = new NetworkArticle('');
 
 	/** articles data */
-	export let items: Data<Article>;
+	export let items: Items<Article>;
 
 	/** request params */
 	export let params: Params;
@@ -25,7 +25,6 @@
 	const urlParams = $page.url.searchParams;
 
 	onMount(async () => {
-		// @ts-ignore
 		await goto(`?${urlParams.toString()}`, { replaceState: true });
 	});
 
@@ -45,10 +44,15 @@
 	}
 
 	/** on request param changed */
-	async function onParamChanged(event: { name: string; val: string }) {
-		urlParams.set('page', '1');
-		urlParams.set(event.name, event.val);
-		await goto(`?${urlParams.toString()}`, { keepfocus: true });
+	async function onParamChanged(event: { name: string; val: string | boolean }) {
+		params[event.name] = event.val;
+		params.page = 1;
+		if (event.val === undefined || event === null) {
+			urlParams.delete(event.name);
+		} else {
+			urlParams.set(event.name, event.val?.toString());
+		}
+		await goto(`?${urlParams.toString()}`, { replaceState: true, keepfocus: true });
 	}
 
 	async function refresh() {
@@ -59,8 +63,8 @@
 			params.page = newPage;
 		};
 		const fetchItems = async (initial: boolean) => {
-			if(initial) {
-				return items
+			if (initial) {
+				return items;
 			}
 			await onPageChanged(await getPage());
 			return items;
@@ -70,7 +74,7 @@
 </script>
 
 <svelte:head>
-	<title>elven: articles</title>
+	<title>{Utils.setTitleElven('articles')}</title>
 </svelte:head>
 
 <div class="articles base__container">
@@ -88,6 +92,3 @@
 		{/if}
 	</div>
 </div>
-
-<style lang="scss">
-</style>

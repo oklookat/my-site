@@ -1,6 +1,6 @@
 import Fetchd from '$lib_elven/network'
 import Utils from '$lib_elven/tools'
-import type { User, UserChange } from '../types/user'
+import type { UserChange } from '../types/user'
 
 
 /** Use with SSR by passing token / or in components by passing empty token.

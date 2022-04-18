@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	// tools
-	import type { Data } from '$lib_elven/types';
+	import type { Items } from '$lib_elven/types';
 	// ui
 	import Pagination from '$lib_elven/components/pagination.svelte';
 	// file
@@ -16,7 +16,7 @@
 	const networkFile = new NetworkFile('');
 
 	/** files data */
-	export let items: Data<File> | undefined = undefined;
+	export let items: Items<File> | undefined = undefined;
 
 	/** request params */
 	export let params: Params;
@@ -76,7 +76,7 @@
 </script>
 
 <svelte:head>
-	<title>elven: files</title>
+	<title>{Utils.setTitleElven('files')}</title>
 </svelte:head>
 
 <div class="files base__container">

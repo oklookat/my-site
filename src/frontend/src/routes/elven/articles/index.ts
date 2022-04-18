@@ -7,10 +7,9 @@ import ToolsArticles from "$lib_elven/tools/articles";
 
 
 export async function get(event: RequestEvent): Promise<RequestHandlerOutput> {
-    const requestParams = ToolsArticles.getDefaultParams()
-    //
-    const paramsObj = Utils.searchParamsToObject(event.url.searchParams)
-    Object.assign(requestParams, paramsObj)
+    const defaultParams = ToolsArticles.getDefaultParams()
+    let requestParams = Utils.searchParamsToObject(event.url.searchParams)
+    requestParams = Object.assign(defaultParams, requestParams)
 
     const networkArticle = new NetworkArticle(event.locals.user.token)
     const resp = await networkArticle.getAll(requestParams)
@@ -19,6 +18,7 @@ export async function get(event: RequestEvent): Promise<RequestHandlerOutput> {
         items = await resp.json()
     }
     return {
+        // @ts-ignore
         body: {
             items: items,
             params: requestParams

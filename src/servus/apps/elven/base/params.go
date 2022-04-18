@@ -4,19 +4,26 @@ package base
 type ArticleGetParams struct {
 	// number of page.
 	Page int
-	// published; drafts.
-	Show string
+
+	// show published or drafts?
+	Published bool
+
+	// start from newest? true == DESC; false == ASC.
+	Newest bool
+
+	// true = empty content; false = full content.
+	Preview bool
+
+	// show only without category?
+	WithoutCategory bool
+
 	// created; updated; published.
 	By string
-	// newest (DESC); oldest (ASC).
-	Start string
-	// true (with content); false (gives you empty content).
-	Preview bool
-	// category name.
+
+	// search by category name.
 	CategoryName *string
-	// show articles only without category?
-	WithoutCategory bool
-	// find articles with this title.
+
+	// search by title.
 	Title *string
 }
 
@@ -39,12 +46,16 @@ type CategoryBody struct {
 type FileGetParams struct {
 	// number of page.
 	Page int
+
 	// newest (DESC); oldest (ASC).
 	Start string
+
 	// created (by creation date).
 	By string
+
 	// extensions without dot.
 	Extensions []string
+
 	// filename.
 	Filename *string
 }

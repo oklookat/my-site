@@ -17,100 +17,81 @@ import (
 func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool) (err error) {
 	var validationErr = base.ValidationError{}
 
-	// "show" param
-	var show = params.Get("show")
-	if len(show) == 0 {
-		show = "published"
-	}
-	var isShowPublished = show == "published"
-	var isShowDrafts = show == "drafts"
-	var isShowInvalid = !isShowPublished && !isShowDrafts
-	var isShowForbidden = isShowDrafts && !isAdmin
-	if isShowInvalid || isShowForbidden {
-		if isShowInvalid {
-			validationErr.New("show")("invalid value")
-		} else {
-			validationErr.New("show")("not allowed")
+	// "published" param
+	var published = params.Get("published")
+	if len(published) < 1 {
+		a.Published = true
+	} else {
+		a.Published, err = strconv.ParseBool(published)
+		if err != nil {
+			a.Published = true
 		}
+	}
+	if !a.Published && !isAdmin {
+		validationErr.New("published")("invalid value")
 		err = &validationErr
 		return
 	}
-	a.Show = show
 
 	// "by" param.
 	var by = params.Get("by")
-	if len(by) == 0 {
-		by = "published"
-	}
-	switch by {
-	default:
-		validationErr.New("by")("invalid value")
-		err = &validationErr
-		return
-	case "created", "updated":
+	if by == "created" || by == "updated" {
 		if !isAdmin {
-			validationErr.New("by")("not allowed")
+			validationErr.New("by")("invalid value")
 			err = &validationErr
 			return
 		}
-	case "published":
-		break
+	} else {
+		by = "published"
 	}
-	by = by + "_at"
+	by += "_at"
 	a.By = by
 
-	// "start" param.
-	var start = params.Get("start")
-	if len(start) == 0 {
-		start = "newest"
-	}
-	var isNewest = strings.EqualFold(start, "newest")
-	var isOldest = strings.EqualFold(start, "oldest")
-	var isStartInvalid = !isNewest && !isOldest
-	if isStartInvalid {
-		validationErr.New("start")("invalid value")
-		err = &validationErr
-		return
+	// "newest" param.
+	var newest = params.Get("newest")
+	if len(newest) < 1 {
+		a.Newest = true
 	} else {
-		if isNewest {
-			start = "DESC"
-		} else if isOldest {
-			start = "ASC"
+		a.Newest, err = strconv.ParseBool(newest)
+		if err != nil {
+			a.Newest = true
 		}
 	}
-	a.Start = start
 
 	// "preview" param.
 	var preview = params.Get("preview")
-	if len(preview) == 0 {
-		preview = "true"
+	if len(preview) < 1 {
+		a.Preview = true
+	} else {
+		a.Preview, err = strconv.ParseBool(preview)
+		if err != nil {
+			a.Preview = true
+		}
 	}
-	var previewBool bool
-	previewBool, err = strconv.ParseBool(preview)
-	if err != nil {
-		validationErr.New("preview")("not a boolean")
-		err = &validationErr
-		return
-	}
-	a.Preview = previewBool
 
 	// "page" param
 	var pageStr = params.Get("page")
-	if len(pageStr) == 0 {
-		pageStr = "1"
+	if len(pageStr) < 1 {
+		a.Page = 1
+	} else {
+		var page = 0
+		page, err = strconv.Atoi(pageStr)
+		if err != nil || page <= 0 {
+			page = 1
+		}
+		a.Page = page
 	}
-	var page = 0
-	page, err = strconv.Atoi(pageStr)
-	if err != nil || page <= 0 {
-		validationErr.New("page")("invalid value")
-		err = &validationErr
-		return
-	}
-	a.Page = page
 
 	// "without category" param
 	var withoutCategory = params.Get("without_category")
-	a.WithoutCategory = len(withoutCategory) > 0 && withoutCategory == "true"
+	if len(withoutCategory) < 1 {
+		a.WithoutCategory = true
+	} else {
+		a.WithoutCategory, err = strconv.ParseBool(withoutCategory)
+		if err != nil {
+			a.WithoutCategory = true
+		}
+	}
 	if !a.WithoutCategory {
 		// "category name" param
 		var categoryName = params.Get("category_name")

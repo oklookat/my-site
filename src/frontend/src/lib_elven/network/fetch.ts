@@ -34,7 +34,7 @@ export default class FetchDriver {
             // add searchparams to url
             for (const key in config.params) {
                 const val = config.params[key]
-                if (!val) {
+                if (!val && typeof val !== 'boolean') {
                     continue
                 }
                 // @ts-ignore

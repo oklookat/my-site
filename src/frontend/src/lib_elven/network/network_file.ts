@@ -1,7 +1,6 @@
 //
 import Fetchd from '$lib_elven/network'
-import type { File as TFile, Params } from '$lib_elven/types/files'
-import type { Data } from '$lib_elven/types'
+import type { Params } from '$lib_elven/types/files'
 import Utils from '$lib_elven/tools'
 
 /** Use with SSR by passing token / or in components by passing empty token.

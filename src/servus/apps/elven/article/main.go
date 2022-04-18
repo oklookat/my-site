@@ -72,7 +72,7 @@ func (s *Starter) Routes(router *goway.Router) error {
 	categories.Use(middleware.SafeMethodsOnly)
 	categories.Route("", getCategories).Methods(http.MethodGet)
 	categories.Route("", addCategory).Methods(http.MethodPost)
-	categories.Route("/{id}", getCategory).Methods(http.MethodGet)
+	categories.Route("/{name}", getCategory).Methods(http.MethodGet)
 	categories.Route("/{id}", renameCategory).Methods(http.MethodPut, http.MethodPatch)
 	categories.Route("/{id}", deleteCategory).Methods(http.MethodDelete)
 

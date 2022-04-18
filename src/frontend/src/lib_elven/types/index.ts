@@ -3,13 +3,13 @@ import type { ElvenNotify } from "$lib_elven/plugins/elvenNotify/types"
 import type { ElvenProgress } from "$lib_elven/plugins/elvenProgress/types"
 import type { IElvenChoose } from "../plugins/elvenChoose"
 
-/** request param */
 export type Page = number
+export type Counter = number | string
 
 /** response with multiple entities */
-export type Data<T> = {
+export type Items<T> = {
     meta: Meta
-    data: Record<number, T>
+    data: Record<Counter, T>
 }
 
 /** information about requested data */

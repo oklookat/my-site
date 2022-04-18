@@ -1,6 +1,6 @@
 import Fetchd from '$lib_elven/network'
 import Utils from '$lib_elven/tools'
-import type { Data } from '$lib_elven/types'
+import type { Items } from '$lib_elven/types'
 import type { Category } from '$lib_elven/types/articles/categories'
 
 /** Use with SSR by passing token / or in components by passing empty token.
@@ -18,13 +18,22 @@ export default class NetworkCategory {
         this.headers = headers
     }
 
-    public async getAll() {
+    public async getAll(): Promise<Response> {
         try {
             const response = await Fetchd.send({ method: "GET", url: NetworkCategory.prefix, headers: this.headers })
-            const jsond = await response.json()
-            return jsond as Data<Category>
+            return response
         } catch (err) {
-            return Promise.reject(err)
+            throw err
+        }
+    }
+
+    /** get category by name */
+    public async get(name: string): Promise<Response> {
+        try {
+            const response = await Fetchd.send({ method: "GET", url: NetworkCategory.prefix + `/${name}`, headers: this.headers })
+            return response
+        } catch (err) {
+            throw err
         }
     }
 

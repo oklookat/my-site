@@ -1,10 +1,10 @@
 package model
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"servus/apps/elven/base"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -24,14 +24,14 @@ type Article struct {
 	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
 
-	// available only when we get article(s).
+	// available only when we get article(s) (JOIN).
 	CategoryName   *string `json:"category_name" db:"category_name"`
 	CoverPath      *string `json:"cover_path" db:"cover_path"`
 	CoverExtension *string `json:"cover_extension" db:"cover_extension"`
 }
 
-// get query what gets articles + categories names (join)
-func (a *Article) getQueryGetterWithCatsNames() string {
+// get query what gets articles + categories names (JOIN)
+func (a *Article) queryGetWithCats() string {
 	var withCats = `
 	SELECT art.*, cats.name as category_name
 	FROM articles as art
@@ -49,72 +49,76 @@ func (a *Article) getQueryGetterWithCatsNames() string {
 }
 
 // get query to get article(s) with join category name
-func (a *Article) getQueryGetter() string {
-	return "SELECT * FROM (" + a.getQueryGetterWithCatsNames() + ") as tentacles\n"
+func (a *Article) queryGetSelectAll() string {
+	return "SELECT * FROM (" + a.queryGetWithCats() + ") as tentacles\n"
 }
 
 // get query to get rows count
-func (a *Article) getQueryRowsCount() string {
-	return "SELECT count(*) FROM (" + a.getQueryGetterWithCatsNames() + ") as tentacles\n"
+func (a *Article) queryGetCount() string {
+	return "SELECT count(*) FROM (" + a.queryGetWithCats() + ") as tentacles\n"
 }
 
 // get paginated.
 func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]*Article, totalPages int, err error) {
+	// preapare.
+	var getAllDollars = make([]string, 0)
+	var getAllArgs = make([]any, 0)
+	var addGetAllArg = func(arg any) (insertedDollar string) {
+		// add dollar.
+		var dollar = "$" + strconv.Itoa(len(getAllDollars)+1)
+		getAllDollars = append(getAllDollars, dollar)
 
-	// convert 'show' param to bool.
-	var isPublished bool
-	if params.Show == "published" {
-		isPublished = true
-	} else if params.Show == "drafts" {
-		isPublished = false
-	} else {
-		err = errors.New("Wrong 'show' parameter")
-		return
+		// add arg.
+		getAllArgs = append(getAllArgs, arg)
+		return getAllDollars[len(getAllDollars)-1]
 	}
-	var isCategoryNameExists = params.CategoryName != nil
 
-	// queries. //
-	var queryWhereIsPublished = "WHERE is_published = $1 "
-	var queryAndCategoryName = "AND category_name = $2 "
-	var queryAndCategoryIDnull = "AND category_id IS NULL "
+	var query = a.queryGetSelectAll()
 
-	// get pages count depend on category name. //
-	var queryGetCount = a.getQueryRowsCount() + queryWhereIsPublished
-	var getPagesCountArgsArr = []any{isPublished}
-	if params.WithoutCategory {
-		queryGetCount += queryAndCategoryIDnull
-	} else if isCategoryNameExists {
-		getPagesCountArgsArr = append(getPagesCountArgsArr, *params.CategoryName)
-		queryGetCount += queryAndCategoryName
+	// is published.
+	query += "WHERE is_published = " + addGetAllArg(params.Published) + " "
+
+	// category name.
+	if params.CategoryName != nil {
+		query += "AND category_name = " + addGetAllArg(params.CategoryName) + " "
+	} else if params.WithoutCategory {
+		query += "AND category_id IS NULL "
 	}
+
+	// title.
+	if params.Title != nil {
+		*params.Title = strings.ToLower(*params.Title)
+		var dollar = addGetAllArg(*params.Title)
+		query += "AND LOWER(title) LIKE '%'||" + dollar + "||'%' "
+	}
+
+	// get pages count.
+	var queryCount = "SELECT count(*) FROM (" + query + ") as tentacles"
 	totalPages = 1
-	if err = IntAdapter.Get(&totalPages, queryGetCount, getPagesCountArgsArr...); err != nil {
+	if err = IntAdapter.Get(&totalPages, queryCount, getAllArgs...); err != nil {
 		return
 	}
-	totalPages = int(math.Round(float64(totalPages) / float64(ArticlePageSize)))
+	totalPages = int(math.Round(float64(totalPages) / float64(FilePageSize)))
 	if params.Page > totalPages {
 		return
 	}
 
-	// get articles depend on category name (prepare). //
-	var queryGetArticles = a.getQueryGetter() + queryWhereIsPublished
-	var getArticlesArgsArr = []any{isPublished}
-	var getArticlesArgsLimitOffset = [2]string{"$2", "$3"}
-	if params.WithoutCategory {
-		queryGetArticles += queryAndCategoryIDnull
-	} else if isCategoryNameExists {
-		queryGetArticles += queryAndCategoryName
-		getArticlesArgsLimitOffset[0] = "$3"
-		getArticlesArgsLimitOffset[1] = "$4"
-		getArticlesArgsArr = append(getArticlesArgsArr, *params.CategoryName)
+	// WARNING: potential 'ORDER BY' SQL injection, be careful and validate 'params.By'.
+	var start = "DESC"
+	if !params.Newest {
+		start = "ASC"
 	}
+	query += fmt.Sprintf(`ORDER BY %s %s, id %s `, params.By, start, start)
 
-	// get articles & paginate. //
-	// attention: potential sql injection - check values in validator before use it
-	queryGetArticles += fmt.Sprintf("ORDER BY %v %v, id %v LIMIT %v OFFSET %v", params.By, params.Start, params.Start,
-		getArticlesArgsLimitOffset[0], getArticlesArgsLimitOffset[1])
-	getArticlesArgsArr = append(getArticlesArgsArr, ArticlePageSize, (params.Page-1)*ArticlePageSize)
-	articles, err = articleAdapter.GetRows(queryGetArticles, getArticlesArgsArr...)
+	// add limit offset args (paginate).
+	var limitOffsetDollars = [2]int{1, 2}
+	limitOffsetDollars[0] = len(getAllDollars) + 1
+	limitOffsetDollars[1] = len(getAllDollars) + 2
+	query += fmt.Sprintf("LIMIT $%v OFFSET $%v ", limitOffsetDollars[0], limitOffsetDollars[1])
+	getAllArgs = append(getAllArgs, ArticlePageSize, (params.Page-1)*ArticlePageSize)
+
+	// get all.
+	articles, err = articleAdapter.GetRows(query, getAllArgs...)
 	return
 }
 
@@ -152,7 +156,7 @@ func (a *Article) Update() (err error) {
 // find article in database by id field.
 func (a *Article) FindByID() (found bool, err error) {
 	found = false
-	var query = a.getQueryGetter() + "WHERE id=$1 LIMIT 1"
+	var query = a.queryGetSelectAll() + "WHERE id=$1 LIMIT 1"
 	founded, err := articleAdapter.Find(query, a.ID)
 	if err != nil {
 		return

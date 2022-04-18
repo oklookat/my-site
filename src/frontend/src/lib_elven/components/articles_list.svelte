@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { Data } from '$lib_elven/types';
+	import type { Items } from '$lib_elven/types';
 	import type { Article } from '$lib_elven/types/articles';
 	import CArticle from './article.svelte';
 
-	export let items: Data<Article>;
+	export let items: Items<Article>;
 	export let onDeleted: () => void;
 
 	/** delete file from files array */

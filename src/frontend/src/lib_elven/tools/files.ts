@@ -5,7 +5,7 @@ import { By, Start, type File, type Params } from "$lib_elven/types/files";
 
 export default class ToolsFiles {
 
-    /** get default files request params */
+    /** get default request params */
     public static getDefaultParams(): Params {
         return {
             page: 1,

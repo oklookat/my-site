@@ -1,6 +1,5 @@
 import Fetchd from '$lib_elven/network'
 import Utils from '$lib_elven/tools'
-import type { Data } from '$lib_elven/types'
 import type { Article, Params } from '$lib_elven/types/articles'
 
 /** Use with SSR by passing token / or in components by passing empty token.
@@ -55,14 +54,13 @@ export default class NetworkArticle {
         }
     }
 
-    public static async create(article: Article): Promise<Article> {
+    public static async create(article: Article): Promise<Response> {
         NetworkArticle.beforeCRUD(article)
         try {
             const response = await Fetchd.send({
                 method: "POST",
                 url: `${this.prefix}`, body: article})
-            const jsond = await response.json()
-            return jsond as Article
+            return response
         } catch (err) {
             throw err
         }

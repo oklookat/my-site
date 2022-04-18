@@ -2,7 +2,7 @@ import FetchDriver from "$lib_elven/network/fetch"
 import { Env } from "$lib_elven/tools/paths"
 
 const apiURL = Env.getAPI()
-const Fetchd = new FetchDriver(apiURL)
+const Fetchd = new FetchDriver(apiURL.toString())
 export default Fetchd
 
 /**

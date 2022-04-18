@@ -8,8 +8,8 @@ export class NetworkError {
     }
 
     public static handle(output: Response | Error): string {
-        const isWindowExists = window && window.$notify
-        if(!isWindowExists) {
+        const isWindowExists = typeof window !== 'undefined' && window.$notify
+        if (!isWindowExists) {
             return
         }
         const message = this.sort(output)
@@ -24,7 +24,7 @@ export class NetworkError {
         if (!(output instanceof Response)) {
             return 'Unknown error.'
         }
-        if(output.ok) {
+        if (output.ok) {
             this.logStrange(output.status, output.statusText)
             return 'Not error. But why i displayed this message?'
         }

@@ -38,16 +38,16 @@ func getCategories(response http.ResponseWriter, request *http.Request) {
 	h.Send(string(jsonResponse), 200, err)
 }
 
-// get category by ID (GET)
+// get category by name (GET)
 func getCategory(response http.ResponseWriter, request *http.Request) {
 	var h = call.Http.Get(request)
 
 	// get id from params.
-	var id = h.GetRouteArgs()["id"]
+	var name = h.GetRouteArgs()["name"]
 
 	// find.
-	var category = model.ArticleCategory{ID: id}
-	found, err := category.FindByID()
+	var category = model.ArticleCategory{Name: name}
+	found, err := category.FindByName()
 	if err != nil {
 		h.Send(throw.Server(), 500, err)
 		return

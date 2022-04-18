@@ -25,6 +25,9 @@
 	// file
 	import FilesPortable from '$lib_elven/components/files_portable.svelte';
 	import type { File } from '$lib_elven/types/files';
+	import Utils from '$lib_elven/tools';
+	import type { Counter } from '$lib_elven/types';
+	import { ToolsCategories } from '$lib_elven/tools/categories';
 
 	/** creating / editing this article */
 	export let article: Article;
@@ -58,7 +61,21 @@
 	/** md editor instance */
 	let editor;
 
+	// article category
+	const WITHOUT_CATEGORY = '-1';
+	const customCategories: Record<number, Category> = {};
+	customCategories[WITHOUT_CATEGORY] = {
+		id: WITHOUT_CATEGORY,
+		name: 'Without category'
+	};
+	let selectedCategory = WITHOUT_CATEGORY;
+
 	onMount(async () => {
+		if (article.category_name) {
+			const counter = await ToolsCategories.getCounterByName('', article.category_name);
+			selectedCategory = counter;
+		}
+
 		// import markdown editor
 		// styles
 		// @ts-ignore
@@ -119,7 +136,7 @@
 	}
 
 	/** create new article */
-	async function createArticle() {
+	async function createArticle(): Promise<Article> {
 		const notValid =
 			article.id ||
 			!ValidatorArticle.title(article.title) ||
@@ -128,12 +145,16 @@
 			return;
 		}
 		try {
-			const newArticle = await NetworkArticle.create(article);
-			article.id = newArticle.id;
+			const resp = await NetworkArticle.create(article);
+			if (resp.status === 200) {
+				const newArticle = await resp.json();
+				article.id = newArticle.id;
+				return newArticle;
+			}
+			throw resp.statusText;
 		} catch (err) {
 			throw err;
 		}
-		return;
 	}
 
 	/** update existing article */
@@ -186,21 +207,15 @@
 		};
 	}
 
-	function onCategoryChanged(newCat: Category | null) {
-		// category not changed?
-		const newCatNotEmpty = newCat && newCat.id;
-		const notChanged =
-			(!article.category_id && !newCat) || (newCatNotEmpty && article.category_id === newCat.id);
-		if (notChanged) {
-			return;
-		}
+	function onCategoryChanged(selected: { counter: Counter; category: Category }) {
 		const oldCatID = article.category_id;
-		if (newCatNotEmpty) {
-			article.category_id = newCat.id;
+
+		if (selected.counter === WITHOUT_CATEGORY) {
+			delete article.category_id;
 		} else {
-			// no category
-			article.category_id = null;
+			article.category_id = selected.category.id;
 		}
+
 		save().catch(() => {
 			// revert changes
 			article.category_id = oldCatID;
@@ -226,7 +241,7 @@
 </script>
 
 <svelte:head>
-	<title>{`elven: ${article.id ? article.title : 'create article'}`}</title>
+	<title>{Utils.setTitleElven(`${article.id ? article.title : 'create article'}`)}</title>
 </svelte:head>
 
 {#if isChooseCover}
@@ -247,8 +262,9 @@
 	<div class="toolbars">
 		<Toolbar>
 			<CategoriesSelector
-				bind:selectedID={article.category_id}
-				on:changed={(e) => onCategoryChanged(e.detail)}
+				{customCategories}
+				bind:selected={selectedCategory}
+				on:selected={(e) => onCategoryChanged(e.detail)}
 			/>
 			{#if isCoverExists}
 				<div class="remove-cover button" on:click={() => removeCover()}>remove cover</div>

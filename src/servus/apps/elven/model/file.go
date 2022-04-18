@@ -1,10 +1,8 @@
 package model
 
 import (
-	"errors"
 	"fmt"
 	"math"
-	"regexp"
 	"servus/apps/elven/base"
 	"strconv"
 	"strings"
@@ -30,34 +28,23 @@ func (f *File) queryGetSelectAll() string {
 	return "SELECT * FROM files "
 }
 
-func (f *File) queryGetCount() string {
-	return "SELECT count(*) FROM files "
-}
-
 func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, totalPages int, err error) {
-
-	// validate 'by' and 'start' params.
-	orderGuard := regexp.MustCompile("^[A-Za-z0-9_]+$")
-	var orderByValid = orderGuard.MatchString(params.By) && orderGuard.MatchString(params.Start)
-	if !orderByValid {
-		err = errors.New("Potential SQL injection: invalid 'by' or 'start' param")
-		return
-	}
-
-	// preapare query.
-	var query = f.queryGetSelectAll()
+	// preapare.
 	var getAllDollars = make([]string, 0)
 	var getAllArgs = make([]any, 0)
 	var addGetAllArg = func(arg any) (insertedDollar string) {
 		// add dollar.
 		var dollar = "$" + strconv.Itoa(len(getAllDollars)+1)
 		getAllDollars = append(getAllDollars, dollar)
+
 		// add arg.
 		getAllArgs = append(getAllArgs, arg)
 		return getAllDollars[len(getAllDollars)-1]
 	}
 
 	// args to get paginated files.
+
+	var query = f.queryGetSelectAll()
 
 	// extensions.
 	var isExtensionsExists = params.Extensions != nil && len(params.Extensions) > 0
@@ -97,7 +84,7 @@ func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, to
 	// sort. WARNING: potential SQL injection, be careful and validate this params.
 	query += fmt.Sprintf(`ORDER BY %s %s, id %s `, params.By, params.Start, params.Start)
 
-	// add limit offset args.
+	// add limit offset args (paginate).
 	var limitOffsetDollars = [2]int{1, 2}
 	limitOffsetDollars[0] = len(getAllDollars) + 1
 	limitOffsetDollars[1] = len(getAllDollars) + 2

@@ -6,14 +6,13 @@
 	// ui
 	import Pagination from '$lib_elven/components/pagination.svelte';
 	// files
-	import type { Data } from '$lib_elven/types';
+	import type { Items } from '$lib_elven/types';
 	import type { File, Params } from '$lib_elven/types/files';
 	import NetworkFile from '$lib_elven/network/network_file';
 	import FilesList from '$lib_elven/components/files_list.svelte';
 	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
 	import ToolsFiles from '$lib_elven/tools/files';
 	import Utils from '$lib_elven/tools';
-	import { invalidate } from '$app/navigation';
 
 	const dispatch = createEventDispatcher<{
 		/** on 'select' option clicked on file */
@@ -29,7 +28,7 @@
 	export let params: Params = undefined;
 
 	/** response data */
-	let items: Data<File>;
+	let items: Items<File>;
 
 	/** store unsubs */
 	let unsub = {
@@ -183,6 +182,7 @@
 			gap: 12px;
 
 			.back {
+				cursor: pointer;
 				width: 100%;
 				height: 48px;
 				background-color: var(--color-level-1);

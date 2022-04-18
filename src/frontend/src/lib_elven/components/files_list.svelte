@@ -1,10 +1,10 @@
 <script lang="ts">
 	import CFile from '$lib_elven/components/file.svelte';
 
-	import type { Data } from '$lib_elven/types';
+	import type { Items } from '$lib_elven/types';
 	import type { File } from '$lib_elven/types/files';
 
-	export let items: Data<File>;
+	export let items: Items<File>;
 
 	/** on file deleted */
 	export let onDeleted: () => void;

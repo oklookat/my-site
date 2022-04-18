@@ -8,11 +8,9 @@ import ToolsFiles from "$lib_elven/tools/files";
 
 /** get files */
 export async function get(event: RequestEvent): Promise<RequestHandlerOutput> {
-    const requestParams = ToolsFiles.getDefaultParams()
-    //
-
-    const paramsObj = Utils.searchParamsToObject(event.url.searchParams)
-    Object.assign(requestParams, paramsObj)
+    const defaultParams = ToolsFiles.getDefaultParams()
+    let requestParams = Utils.searchParamsToObject(event.url.searchParams)
+    requestParams = Object.assign(defaultParams, requestParams)
 
     const networkFile = new NetworkFile(event.locals.user.token)
     const resp = await networkFile.getAll(requestParams)

@@ -42,6 +42,7 @@
 
 	/** set 'start' param */
 	function setStart(start: Start = Start.newest) {
+		params.page = 1
 		params.start = start;
 		dispatch('paramChanged', { name: 'start', val: start });
 	}
