@@ -47,11 +47,7 @@
 	async function onParamChanged(event: { name: string; val: string | boolean }) {
 		params[event.name] = event.val;
 		params.page = 1;
-		if (event.val === undefined || event === null) {
-			urlParams.delete(event.name);
-		} else {
-			urlParams.set(event.name, event.val?.toString());
-		}
+		Utils.setSearchParam(urlParams, event.name, event.val);
 		await goto(`?${urlParams.toString()}`, { replaceState: true, keepfocus: true });
 	}
 

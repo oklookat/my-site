@@ -9,11 +9,18 @@
 	import type { Params } from '$lib_elven/types/articles';
 	import type { Category } from '$lib_elven/types/articles/categories';
 	import CategoriesSelector from '$lib_elven/components/categories_selector.svelte';
-	import type { Counter, Items } from '$lib_elven/types';
-	import NetworkCategory from '$lib_elven/network/network_category';
-import { ToolsCategories } from '$lib_elven/tools/categories';
+	import type { Counter } from '$lib_elven/types';
+	import { ToolsCategories } from '$lib_elven/tools/categories';
+	import SearchBar from '$lib_elven/components/search_bar.svelte';
 
 	export let params: Params;
+
+	let searchValue = '';
+
+	$: onTitleParamChanged(params.title);
+	function onTitleParamChanged(value: string | undefined) {
+		searchValue = value;
+	}
 
 	const dispatch = createEventDispatcher<{
 		/** on request param changed */
@@ -41,14 +48,14 @@ import { ToolsCategories } from '$lib_elven/tools/categories';
 	let isLoaded = false;
 
 	onMount(async () => {
-		if(!params.without_category) {
-			selected = ALL_CATEGORIES
+		if (!params.without_category) {
+			selected = ALL_CATEGORIES;
 		} else {
-			selected = WITHOUT_CATEGORY
+			selected = WITHOUT_CATEGORY;
 			isLoaded = true;
 			return;
 		}
-		
+
 		if (!params.category_name) {
 			isLoaded = true;
 			return;
@@ -56,10 +63,9 @@ import { ToolsCategories } from '$lib_elven/tools/categories';
 
 		// if we have category name in params, we need to get id of this category
 		try {
-			const counter = await ToolsCategories.getCounterByName('', params.category_name)
-			selected = counter
-		} catch(err) {
-		}
+			const counter = await ToolsCategories.getCounterByName('', params.category_name);
+			selected = counter;
+		} catch (err) {}
 
 		isLoaded = true;
 	});
@@ -107,6 +113,12 @@ import { ToolsCategories } from '$lib_elven/tools/categories';
 		params.category_name = selected.category.name;
 		dispatch('paramChanged', { name: 'category_name', val: params.category_name });
 	}
+
+	/** search by filename */
+	function search(val: string) {
+		params.title = val;
+		dispatch('paramChanged', { name: 'title', val: val });
+	}
 </script>
 
 <div class="toolbars">
@@ -116,13 +128,24 @@ import { ToolsCategories } from '$lib_elven/tools/categories';
 	</ToolbarBig>
 
 	{#if isLoaded}
-		<Toolbar>
-			<CategoriesSelector
-				{customCategories}
-				{selected}
-				on:selected={(e) => onCategoryChanged(e.detail)}
-			/>
-		</Toolbar>
+		<div class="oneline">
+			<div class="one">
+				<Toolbar>
+					<CategoriesSelector
+						{customCategories}
+						{selected}
+						on:selected={(e) => onCategoryChanged(e.detail)}
+					/>
+				</Toolbar>
+			</div>
+			<div class="two">
+				<SearchBar
+					bind:value={searchValue}
+					on:search={(e) => search(e.detail)}
+					placeholder="search"
+				/>
+			</div>
+		</div>
 	{/if}
 
 	<Toolbar>
@@ -153,5 +176,15 @@ import { ToolsCategories } from '$lib_elven/tools/categories';
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
+		width: 100%;
+		.oneline {
+			display: grid;
+			grid-template-rows: 1fr;
+			grid-template-columns: repeat(auto-fit, minmax(49%, 1fr));
+			gap: 14px;
+			.two {
+				min-height: 52px;
+			}
+		}
 	}
 </style>

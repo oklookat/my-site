@@ -29,17 +29,11 @@
 	});
 
 	/** on request param changed */
-	async function onParamChanged(event: { name: string; val: string }) {
-		urlParams.set('page', '1');
-		urlParams.set(event.name, event.val);
-
-		// remove filename param if empty
-		if (urlParams.has('filename') && !urlParams.get('filename')) {
-			urlParams.delete('filename');
-		}
-
-		// keepfocus for search/page input
-		await goto(`?${urlParams.toString()}`, { keepfocus: true });
+	async function onParamChanged(event: { name: string; val: string | boolean }) {
+		params[event.name] = event.val;
+		params.page = 1;
+		Utils.setSearchParam(urlParams, event.name, event.val)
+		await goto(`?${urlParams.toString()}`, { replaceState: true, keepfocus: true });
 	}
 
 	/** when page changed */

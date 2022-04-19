@@ -99,6 +99,13 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 			a.CategoryName = &categoryName
 		}
 	}
+
+	// "title" param
+	var title = params.Get("title")
+	if len(title) > 0 {
+		a.Title = &title
+	}
+
 	return
 }
 

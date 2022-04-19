@@ -1,5 +1,4 @@
-import { invalidate } from '$app/navigation';
-import type { Data } from '$lib_elven/types';
+import type { Items } from '$lib_elven/types';
 import * as cookie from 'cookie';
 
 export default class Utils {
@@ -44,7 +43,7 @@ export default class Utils {
    * @param fetchItems func to fetch items. if **isInitial = true** you must return items what you have now.
    */
   public static async refresh<T>(getPage: () => Promise<number>,
-    setPage: (newPage: number) => Promise<void>, fetchItems: (isInitial: boolean) => Promise<Data<T>>) {
+    setPage: (newPage: number) => Promise<void>, fetchItems: (isInitial: boolean) => Promise<Items<T>>) {
     //
     let page = await getPage()
 
@@ -246,5 +245,28 @@ export default class Utils {
   /** set title with elven prefix */
   public static setTitleElven(title: string): string {
     return `${title} - elven`
+  }
+
+  /** set searchparam to URL */
+  public static setSearchParam(params: URLSearchParams, name: string, value: any) {
+    const isString = typeof value === 'string'
+
+    let finalValue = value
+
+    const isInvalid = (finalValue === undefined || finalValue === null) || (isString && finalValue.length < 1)
+    if (isInvalid) {
+      params.delete(name);
+      return
+    }
+
+    if (!isString) {
+      if (typeof finalValue === 'object' && 'toString' in finalValue) {
+        finalValue = finalValue.toString()
+      } else {
+        finalValue = `${finalValue}`
+      }
+    }
+
+    params.set(name, value);
   }
 }

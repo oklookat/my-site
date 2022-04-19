@@ -8,6 +8,7 @@
 	import type { Items } from '$lib_elven/types';
 	import NetworkCategory from '$lib_elven/network/network_category';
 	import Utils from '$lib_elven/tools';
+	import { goto } from '$app/navigation';
 
 	export let items: Items<Category>;
 
@@ -20,6 +21,10 @@
 	const onCreateNewChanged = () => {
 		addText = createNew ? 'cancel' : 'add';
 	};
+
+	async function refresh() {
+		await goto('', { replaceState: true });
+	}
 
 	function onAddClicked() {
 		createNew = !createNew;
@@ -47,7 +52,11 @@
 
 	async function addNew(cat: Category) {
 		try {
-			await NetworkCategory.create(cat);
+			const resp = await NetworkCategory.create(cat);
+			if (resp.status !== 200) {
+				return;
+			}
+			await refresh();
 		} catch (err) {}
 	}
 
@@ -98,7 +107,7 @@
 </script>
 
 <svelte:head>
-	<title>{Utils.setTitleElven("article categories")}</title>
+	<title>{Utils.setTitleElven('article categories')}</title>
 </svelte:head>
 
 <div class="categories base__container">

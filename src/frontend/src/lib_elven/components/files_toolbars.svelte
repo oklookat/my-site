@@ -13,6 +13,12 @@
 	/** request params */
 	export let params: Params;
 
+	let searchValue = '';
+	$: onFilenameParamChanged(params.filename);
+	function onFilenameParamChanged(value: string | undefined) {
+		searchValue = value;
+	}
+
 	/** refresh files */
 	export let refresh: () => Promise<void>;
 
@@ -21,28 +27,20 @@
 		paramChanged: { name: string; val: string };
 	}>();
 
-	let existsSearchValue = undefined;
 	const onUploadedExistsUnsub = Store.onUploadedFileExists.subscribe((v) => {
 		if (!v) {
 			return;
 		}
-		existsSearchValue = v.original_name;
+		searchValue = v.original_name;
 	});
 
 	onDestroy(() => {
 		onUploadedExistsUnsub();
 	});
 
-	onMount(() => {
-		// if we have initial filename param, set it to searchbar
-		if (params.filename) {
-			existsSearchValue = params.filename;
-		}
-	});
-
 	/** set 'start' param */
 	function setStart(start: Start = Start.newest) {
-		params.page = 1
+		params.page = 1;
 		params.start = start;
 		dispatch('paramChanged', { name: 'start', val: start });
 	}
@@ -64,21 +62,20 @@
 	<FilesUploader on:uploaded={async () => await onUploaded()} />
 
 	<div class="oneline">
-		<div class="sort">
+		<div class="one">
 			<Toolbar>
-				<div class="sort-by-old">
-					{#if params && params.start === Start.newest}
+				{#if params}
+					{#if params.start === Start.newest}
 						<div class="item" on:click={() => setStart(Start.oldest)}>newest</div>
-					{/if}
-					{#if params && params.start === Start.oldest}
+					{:else if params.start === Start.oldest}
 						<div class="item" on:click={() => setStart(Start.newest)}>oldest</div>
 					{/if}
-				</div>
+				{/if}
 			</Toolbar>
 		</div>
-		<div class="search">
+		<div class="two">
 			<SearchBar
-				value={existsSearchValue}
+				bind:value={searchValue}
 				on:search={(e) => search(e.detail)}
 				placeholder="search"
 			/>
@@ -93,15 +90,12 @@
 		gap: 12px;
 		width: 100%;
 		.oneline {
-			display: flex;
+			display: grid;
+			grid-template-rows: 1fr;
+			grid-template-columns: repeat(auto-fit, minmax(49%, 1fr));
 			gap: 14px;
-			width: 100%;
-			.sort {
-				width: 50%;
-			}
-			.search {
-				height: 54px;
-				width: 50%;
+			.two {
+				min-height: 52px;
 			}
 		}
 	}

@@ -5,14 +5,10 @@
 
 	export let value = undefined;
 	$: onValueChanged(value);
-	function onValueChanged(v) {
-		if (!inputEL) {
-			return;
+	function onValueChanged(val) {
+		if (!val) {
+			val = '';
 		}
-		if (!value) {
-			v = '';
-		}
-		inputEL.value = v;
 		save();
 	}
 
@@ -42,6 +38,7 @@
 		class="search__input"
 		type="text"
 		{placeholder}
+		bind:value={value}
 		bind:this={inputEL}
 		on:input={() => save()}
 	/>

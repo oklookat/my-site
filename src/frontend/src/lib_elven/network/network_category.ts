@@ -37,13 +37,12 @@ export default class NetworkCategory {
         }
     }
 
-    public static async create(cat: Category) {
+    public static async create(cat: Category): Promise<Response> {
         try {
             const response = await Fetchd.send({
                 method: "POST", url: this.prefix, body: cat
             })
-            const jsond = await response.json()
-            return jsond as Category
+            return response
         } catch (err) {
             return Promise.reject(err)
         }
