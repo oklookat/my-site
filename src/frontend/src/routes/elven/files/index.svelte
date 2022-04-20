@@ -41,7 +41,7 @@
 		// refresh if page not changed
 		if (page === params.page) {
 			const resp = await networkFile.getAll(params);
-			if (resp.status === 200) {
+			if (resp.ok) {
 				items = await resp.json();
 			}
 			return;

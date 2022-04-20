@@ -18,6 +18,12 @@ declare namespace App {
 	}
 	// interface Platform {}
 	interface Session {
+		user: {
+			isExists: boolean
+			isAdmin: boolean
+			username: string
+			token: string | null
+		}
 	}
 	// interface Stuff {}
 }

@@ -19,4 +19,11 @@ export default class Validator {
         return url.pathname.startsWith("/elven/login")
     }
 
+    public static isAdminPanelLogoutPage(url: URL): boolean {
+        if (!(url instanceof URL)) {
+            return false
+        }
+        return url.pathname.startsWith("/elven/logout")
+    }
+
 }

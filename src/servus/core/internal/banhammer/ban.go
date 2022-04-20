@@ -1,22 +1,24 @@
 package banhammer
 
 type Banner struct {
-	db       *SQLite
-	maxWarns int
+	hammer *Instance
 
 	// hooks.
 	onBanned   func(ip string)
 	onUnbanned func(ip string)
 }
 
-func (b *Banner) New(db *SQLite, maxWarns int) {
-	b.db = db
-	b.maxWarns = maxWarns
+func (b *Banner) New(i *Instance) {
+	b.hammer = i
 }
 
 func (b *Banner) Ban(ip string) error {
+	if !b.hammer.active {
+		return nil
+	}
+
 	// get entry.
-	var entry, err = b.db.GetEntry(ip)
+	var entry, err = b.hammer.db.GetEntry(ip)
 	if err != nil {
 		return err
 	}
@@ -29,7 +31,7 @@ func (b *Banner) Ban(ip string) error {
 
 	// ban.
 	entry.IsBanned = true
-	err = b.db.AddOrUpdateEntry(ip, *entry)
+	err = b.hammer.db.AddOrUpdateEntry(ip, *entry)
 
 	// run hook.
 	if err == nil && b.onBanned != nil {
@@ -44,8 +46,12 @@ func (b *Banner) OnBanned(hook func(ip string)) {
 }
 
 func (b *Banner) Unban(ip string) error {
+	if !b.hammer.active {
+		return nil
+	}
+
 	// get entry.
-	var entry, err = b.db.GetEntry(ip)
+	var entry, err = b.hammer.db.GetEntry(ip)
 	if err != nil || entry == nil || !entry.IsBanned {
 		err = createError(ip + " not banned")
 		return err
@@ -54,7 +60,7 @@ func (b *Banner) Unban(ip string) error {
 	// unban.
 	entry.IsBanned = false
 	entry.WarnsCount = 0
-	err = b.db.AddOrUpdateEntry(ip, *entry)
+	err = b.hammer.db.AddOrUpdateEntry(ip, *entry)
 
 	// run hook.
 	if err == nil && b.onUnbanned != nil {
@@ -69,7 +75,11 @@ func (b *Banner) OnUnbanned(hook func(ip string)) {
 }
 
 func (b *Banner) IsBanned(ip string) (bool, error) {
-	var entry, err = b.db.GetEntry(ip)
+	if !b.hammer.active {
+		return false, nil
+	}
+
+	var entry, err = b.hammer.db.GetEntry(ip)
 	if err != nil || entry == nil {
 		return false, err
 	}

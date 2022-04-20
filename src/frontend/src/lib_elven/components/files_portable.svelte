@@ -81,7 +81,7 @@
 		let isError = false;
 		try {
 			const resp = await networkFile.getAll(p);
-			if (resp.status === 200) {
+			if (resp.ok) {
 				items = await resp.json();
 				return;
 			}

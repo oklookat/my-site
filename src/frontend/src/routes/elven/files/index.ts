@@ -15,7 +15,7 @@ export async function get(event: RequestEvent): Promise<RequestHandlerOutput> {
     const networkFile = new NetworkFile(event.locals.user.token)
     const resp = await networkFile.getAll(requestParams)
     let items = {}
-    if(resp.status === 200) {
+    if(resp.ok) {
         items = await resp.json()
     }
     return {

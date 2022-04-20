@@ -20,7 +20,7 @@ func (m *middleware) AuthorizedOnly(next http.Handler) http.Handler {
 
 		// check rights.
 		if !userPipe.IsAuthorized() {
-			h.Send(requestErrors.Forbidden(), 401, nil)
+			h.Send("", 401, nil)
 			return
 		}
 
@@ -59,7 +59,7 @@ func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 		if !userPipe.IsAuthorized() {
 			statusCode = 401 // 401 = not authorized
 		}
-		h.Send(requestErrors.Forbidden(), statusCode, nil)
+		h.Send("", statusCode, nil)
 		return
 
 	})
@@ -84,7 +84,7 @@ func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 		if !userPipe.IsAuthorized() {
 			statusCode = 401 // 401 = not authorized
 		}
-		h.Send(requestErrors.Forbidden(), statusCode, nil)
+		h.Send("", statusCode, nil)
 		return
 
 	})

@@ -61,26 +61,19 @@
 <div class="toolbars">
 	<FilesUploader on:uploaded={async () => await onUploaded()} />
 
-	<div class="oneline">
-		<div class="one">
-			<Toolbar>
-				{#if params}
-					{#if params.start === Start.newest}
-						<div class="item" on:click={() => setStart(Start.oldest)}>newest</div>
-					{:else if params.start === Start.oldest}
-						<div class="item" on:click={() => setStart(Start.newest)}>oldest</div>
-					{/if}
-				{/if}
-			</Toolbar>
-		</div>
-		<div class="two">
-			<SearchBar
-				bind:value={searchValue}
-				on:search={(e) => search(e.detail)}
-				placeholder="search"
-			/>
-		</div>
+	<div class="search">
+		<SearchBar bind:value={searchValue} on:search={(e) => search(e.detail)} placeholder="search" />
 	</div>
+
+	<Toolbar>
+		{#if params}
+			{#if params.start === Start.newest}
+				<div class="item" on:click={() => setStart(Start.oldest)}>newest</div>
+			{:else if params.start === Start.oldest}
+				<div class="item" on:click={() => setStart(Start.newest)}>oldest</div>
+			{/if}
+		{/if}
+	</Toolbar>
 </div>
 
 <style lang="scss">
@@ -89,14 +82,8 @@
 		flex-direction: column;
 		gap: 12px;
 		width: 100%;
-		.oneline {
-			display: grid;
-			grid-template-rows: 1fr;
-			grid-template-columns: repeat(auto-fit, minmax(49%, 1fr));
-			gap: 14px;
-			.two {
-				min-height: 52px;
-			}
+		.search {
+			height: 54px;
 		}
 	}
 </style>

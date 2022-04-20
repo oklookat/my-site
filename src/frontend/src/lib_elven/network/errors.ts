@@ -8,11 +8,12 @@ export class NetworkError {
     }
 
     public static handle(output: Response | Error): string {
+        const message = this.sort(output)
         const isWindowExists = typeof window !== 'undefined' && window.$notify
         if (!isWindowExists) {
-            return
+            console.error(message)
+            return message
         }
-        const message = this.sort(output)
         window.$notify.add({ message })
         return message
     }
@@ -21,33 +22,38 @@ export class NetworkError {
         if (output instanceof Error) {
             return 'Network error.'
         }
+
         if (!(output instanceof Response)) {
             return 'Unknown error.'
         }
+
         if (output.ok) {
             this.logStrange(output.status, output.statusText)
             return 'Not error. But why i displayed this message?'
         }
+
         let statusCode = output.status
         switch (statusCode) {
             case 400:
+                return 'Bad request.'
             case 401:
+                return 'Authorization failed.'
             case 403:
-                return 'Wrong request or credentials.'
+                return 'Authentication failed.'
             case 404:
                 return 'Not found.'
             case 409:
                 return 'Already exists.'
             case 413:
-                return 'Upload size too big.'
+                return 'Body size too big.'
             default:
-                const str = statusCode.toString()
                 // 5**
                 const is5xx = statusCode > 499 && statusCode < 600
                 if (is5xx) {
                     return 'Server error. Try later.'
                 }
         }
+
         // ***
         this.logStrange(output.status, output.statusText)
         return 'Very unknown error.'

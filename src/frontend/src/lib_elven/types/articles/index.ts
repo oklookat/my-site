@@ -17,13 +17,7 @@ export type Params = {
 
     preview?: boolean
 
-    /** show only without categories */
-    without_category?: boolean
-
     by?: By
-
-    /** search by category name */
-    category_name?: string
 
     /** search by title */
     title?: string
@@ -33,7 +27,6 @@ export type Params = {
 export type Article = {
     id?: string
     user_id?: string
-    category_id?: string | "nope"
     cover_id?: string
     is_published?: boolean
     title: string
@@ -42,7 +35,6 @@ export type Article = {
     updated_at?: string
 
     // joined (GET-only)
-    category_name?: string
     cover_path?: string
     cover_extension?: string
 }

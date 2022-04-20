@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
-	import { goto } from '$app/navigation';
 	import NetworkAuth from '$lib_elven/network/network_auth';
 	import Utils from '$lib_elven/tools';
 
@@ -9,34 +8,13 @@
 	let password = '';
 	let loginButton: HTMLButtonElement;
 
-	let loginErr: null | string = null;
-
-	$: onTyping(username), onTyping(password);
-	// clean login error if user typing
-	function onTyping(v) {
-		if(!loginErr) {
-			return
-		}
-		loginErr = null;
-	}
-
 	async function makeLogin() {
 		try {
 			const resp = await NetworkAuth.login(username, password);
-			if (!resp.ok) {
-				if (resp.status === 401 || resp.status === 403) {
-					loginErr = 'Incorrect username or password.';
-				} else if (resp.status > 499) {
-					loginErr = 'Server error. Try later.';
-				} else {
-					loginErr = 'Unknown error.';
-				}
-			} else {
-				await goto('/elven');
+			if (resp.ok) {
+				location.reload();
 			}
-		} catch (err) {
-			loginErr = 'Network or server error. Try check your connection.';
-		}
+		} catch (err) {}
 	}
 
 	onMount(() => {
@@ -80,9 +58,6 @@
 	>
 		ok
 	</button>
-	{#if loginErr}
-		{loginErr}
-	{/if}
 </div>
 
 <style lang="scss">

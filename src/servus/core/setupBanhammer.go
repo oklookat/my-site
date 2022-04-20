@@ -3,19 +3,32 @@ package core
 import "servus/core/internal/banhammer"
 
 func (i *Instance) setupBanhammer() error {
-	// get dir.
-	var dataDir, err = i.Dirs.GetData()
+	var err error
+
+	var cfg = i.Config.Security.Banhammer
+	if !cfg.Active {
+		i.Banhammer, _ = banhammer.New(false, "", 0)
+		return nil
+	}
+
+	var dbPath = cfg.Database
+	if dbPath == nil {
+		dbPath = new(string)
+
+		// get dir.
+		*dbPath, err = i.Dirs.GetData()
+		if err != nil {
+			return err
+		}
+	}
+
+	var maxWarns = cfg.MaxWarns
+
+	// boot banhammer.
+	i.Banhammer, err = banhammer.New(true, *dbPath, maxWarns)
 	if err != nil {
 		return err
 	}
 
-	// boot banhammer.
-	var hammer = banhammer.Instance{}
-	if err = hammer.Boot(dataDir, 3); err != nil {
-		return err
-	}
-
-	// set.
-	i.Banhammer = hammer
 	return err
 }

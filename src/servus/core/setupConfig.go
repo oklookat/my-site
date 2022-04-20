@@ -105,6 +105,17 @@ type Config struct {
 			BCrypt *cryptor.BCrypt `json:"bcrypt"`
 			Argon  *cryptor.Argon  `json:"argon"`
 		} `json:"encryption"`
+
+		// IP banner.
+		Banhammer struct {
+			Active bool `json:"active"`
+
+			// database dir. If empty, uses ./data dir.
+			Database *string `json:"database"`
+
+			// max warns to ban IP.
+			MaxWarns int `json:"maxWarns"`
+		} `json:"banhammer"`
 	}
 
 	// files uploading.

@@ -57,7 +57,7 @@
 		};
 		try {
 			const resp = await NetworkArticle.update(toEdit);
-			if(resp.status === 200) {
+			if(resp.ok) {
 				onDeleted()
 				return Promise.resolve(await resp.json());
 			}

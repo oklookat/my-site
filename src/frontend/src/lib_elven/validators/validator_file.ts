@@ -1,5 +1,5 @@
 import type { Params } from "../types/files";
-import { By, Start } ../types/filesrom ".";
+import { Start, By } from "../types/files";
 
 export default class ValidatorFile {
 

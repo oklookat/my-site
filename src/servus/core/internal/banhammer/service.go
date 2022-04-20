@@ -7,15 +7,20 @@ import (
 )
 
 type Service struct {
-	db *SQLite
+	hammer *Instance
 }
 
-func (s *Service) New(db *SQLite) {
-	s.db = db
+func (s *Service) New(i *Instance) {
+	s.hammer = i
 }
 
 func (s *Service) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		if !s.hammer.active {
+			next.ServeHTTP(response, request)
+			return
+		}
+
 		// get ip.
 		var ip = s.GetIpByRequest(request)
 		if ip == nil {
@@ -25,7 +30,7 @@ func (s *Service) Middleware(next http.Handler) http.Handler {
 
 		// check ban.
 		var ipString = ip.String()
-		entry, err := s.db.GetEntry(ipString)
+		entry, err := s.hammer.db.GetEntry(ipString)
 		var isEntryInvalid = entry == nil || err != nil
 		if isEntryInvalid {
 			next.ServeHTTP(response, request)

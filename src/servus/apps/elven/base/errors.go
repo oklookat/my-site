@@ -4,19 +4,6 @@ import (
 	"fmt"
 )
 
-type RequestError interface {
-	// 500 error.
-	Server() string
-	// 401 error.
-	NotAuthorized() string
-	// 403 error.
-	Forbidden() string
-	// 404 error.
-	NotFound() string
-	// 409 error.
-	Exists() string
-}
-
 type ValidationError struct {
 	Issuer  string
 	Message string

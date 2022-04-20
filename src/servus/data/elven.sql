@@ -192,22 +192,6 @@ EXECUTE PROCEDURE before_insert();
 CREATE TRIGGER token_before_update BEFORE UPDATE ON tokens FOR EACH ROW
 EXECUTE PROCEDURE before_update();
 
----- ARTICLE CATEGORIES ----
-CREATE TABLE article_categories
-(
-    id ulid PRIMARY KEY,
-    name varchar(24) UNIQUE,
-    created_at created,
-    updated_at timestamp with time zone
-) TABLESPACE pg_default;
-ALTER TABLE article_categories OWNER to postgres;
-CREATE TRIGGER article_cats_before_insert_or_update BEFORE INSERT OR UPDATE ON article_categories FOR EACH ROW
-EXECUTE PROCEDURE before_insert_or_update();
-CREATE TRIGGER article_cats_before_insert BEFORE INSERT ON article_categories FOR EACH ROW
-EXECUTE PROCEDURE before_insert();
-CREATE TRIGGER article_cats_before_update BEFORE UPDATE ON article_categories FOR EACH ROW
-EXECUTE PROCEDURE before_update();
-
 ---- FILES ----
 CREATE TABLE files
 (
@@ -237,8 +221,6 @@ CREATE TABLE articles
     id ulid  PRIMARY KEY,
     user_id ulid NOT NULL
     REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    category_id ulid DEFAULT NULL
-    REFERENCES article_categories(id) ON UPDATE CASCADE ON DELETE SET NULL,
     cover_id ulid DEFAULT NULL
     REFERENCES files(id) ON UPDATE CASCADE ON DELETE SET NULL,
     is_published boolean DEFAULT false,

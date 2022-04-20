@@ -15,7 +15,6 @@ const ArticlePageSize = 2
 type Article struct {
 	ID          string     `json:"id" db:"id"`
 	UserID      string     `json:"user_id" db:"user_id"`
-	CategoryID  *string    `json:"category_id" db:"category_id"`
 	CoverID     *string    `json:"cover_id" db:"cover_id"`
 	IsPublished bool       `json:"is_published" db:"is_published"`
 	Title       string     `json:"title" db:"title"`
@@ -25,35 +24,28 @@ type Article struct {
 	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
 
 	// available only when we get article(s) (JOIN).
-	CategoryName   *string `json:"category_name" db:"category_name"`
 	CoverPath      *string `json:"cover_path" db:"cover_path"`
 	CoverExtension *string `json:"cover_extension" db:"cover_extension"`
 }
 
-// get query what gets articles + categories names (JOIN)
+// get query what gets articles + article cover (JOIN).
 func (a *Article) queryGetWithCats() string {
-	var withCats = `
-	SELECT art.*, cats.name as category_name
-	FROM articles as art
-	LEFT JOIN article_categories as cats
-	ON art.category_id = cats.id
-	`
 	var withFile = `
-	SELECT with_cat.*, 
+	SELECT art.*, 
 	file.path as cover_path, file.extension as cover_extension
-	FROM (` + withCats + `) as with_cat
+	FROM articles as art
 	LEFT JOIN files as file
-	ON with_cat.cover_id = file.id
+	ON art.cover_id = file.id
 	`
 	return withFile
 }
 
-// get query to get article(s) with join category name
+// get query to get article(s) with join additional fields.
 func (a *Article) queryGetSelectAll() string {
 	return "SELECT * FROM (" + a.queryGetWithCats() + ") as tentacles\n"
 }
 
-// get query to get rows count
+// get query to get rows count.
 func (a *Article) queryGetCount() string {
 	return "SELECT count(*) FROM (" + a.queryGetWithCats() + ") as tentacles\n"
 }
@@ -77,13 +69,6 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 
 	// is published.
 	query += "WHERE is_published = " + addGetAllArg(params.Published) + " "
-
-	// category name.
-	if params.CategoryName != nil {
-		query += "AND category_name = " + addGetAllArg(params.CategoryName) + " "
-	} else if params.WithoutCategory {
-		query += "AND category_id IS NULL "
-	}
 
 	// title.
 	if params.Title != nil {
@@ -127,10 +112,10 @@ func (a *Article) Create() (err error) {
 	a.hookBeforeChange()
 	var query = `
 	INSERT INTO articles 
-	(user_id, category_id, cover_id, is_published, title, content) 
-	VALUES ($1, $2, $3, $4, $5, $6) 
+	(user_id, cover_id, is_published, title, content) 
+	VALUES ($1, $2, $3, $4, $5) 
 	RETURNING id`
-	err = articleAdapter.Get(a, query, a.UserID, a.CategoryID, a.CoverID, a.IsPublished, a.Title, a.Content)
+	err = articleAdapter.Get(a, query, a.UserID, a.CoverID, a.IsPublished, a.Title, a.Content)
 	if err != nil {
 		return
 	}
@@ -141,11 +126,11 @@ func (a *Article) Create() (err error) {
 func (a *Article) Update() (err error) {
 	a.hookBeforeChange()
 	var query = `UPDATE articles SET 
-	user_id=$1, category_id=$2, cover_id=$3,
-	is_published=$4, title=$5, content=$6, 
-	published_at=$7 
-	WHERE id=$8 RETURNING *`
-	if err = articleAdapter.Get(a, query, a.UserID, a.CategoryID,
+	user_id=$1, cover_id=$2,
+	is_published=$3, title=$4, content=$5, 
+	published_at=$6 
+	WHERE id=$7 RETURNING *`
+	if err = articleAdapter.Get(a, query, a.UserID,
 		a.CoverID, a.IsPublished, a.Title,
 		a.Content, a.PublishedAt, a.ID); err != nil {
 		return

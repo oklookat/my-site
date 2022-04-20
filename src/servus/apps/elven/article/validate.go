@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"regexp"
 	"servus/apps/elven/base"
 	"servus/apps/elven/model"
 	"servus/core/external/utils"
@@ -82,24 +81,6 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 		a.Page = page
 	}
 
-	// "without category" param
-	var withoutCategory = params.Get("without_category")
-	if len(withoutCategory) < 1 {
-		a.WithoutCategory = true
-	} else {
-		a.WithoutCategory, err = strconv.ParseBool(withoutCategory)
-		if err != nil {
-			a.WithoutCategory = true
-		}
-	}
-	if !a.WithoutCategory {
-		// "category name" param
-		var categoryName = params.Get("category_name")
-		if len(categoryName) > 0 {
-			a.CategoryName = &categoryName
-		}
-	}
-
 	// "title" param
 	var title = params.Get("title")
 	if len(title) > 0 {
@@ -173,11 +154,6 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 		return bodyStruct.IsPublished != nil
 	}
 
-	// FUNC category id.
-	var checkCategoryID = func() bool {
-		return bodyStruct.CategoryID != nil
-	}
-
 	// FUNC cover id.
 	var checkCoverID = func() bool {
 		return bodyStruct.CoverID != nil
@@ -208,8 +184,6 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 
 	// body has is_published field?
 	var isPublished = checkIsPublished()
-	// body has category_id field?
-	var isCategoryID = checkCategoryID()
 	// body has cover_id field?
 	var isCoverID = checkCoverID()
 
@@ -229,7 +203,7 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 		}
 	// PUT (update full) = need full body.
 	case http.MethodPut:
-		var invalid = !isPublished || !isCategoryID || !isCoverID || !isTitle || !isContent
+		var invalid = !isPublished || !isCoverID || !isTitle || !isContent
 		if invalid {
 			validationErr.New("request method")("for PUT method expected all fields")
 			err = &validationErr
@@ -237,7 +211,7 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 		}
 	// PATCH (update) = need at least one field.
 	case http.MethodPatch:
-		var invalid = !isPublished && !isCategoryID && !isCoverID && !isTitle && !isContent
+		var invalid = !isPublished && !isCoverID && !isTitle && !isContent
 		if invalid {
 			validationErr.New("request method")("for PATCH method expected at least one field")
 			err = &validationErr
@@ -260,13 +234,6 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 		filtered.IsPublished = false
 	}
 
-	if isCategoryID {
-		if *bodyStruct.CategoryID == "nope" {
-			bodyStruct.CategoryID = nil
-		}
-		filtered.CategoryID = bodyStruct.CategoryID
-	}
-
 	if isCoverID {
 		filtered.CoverID = bodyStruct.CoverID
 	}
@@ -280,18 +247,6 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 	}
 
 	// check filtered fields / filter filtered (¯\_(ツ)_/¯).
-
-	// category.
-	if filtered.CategoryID != nil {
-		var cat = model.ArticleCategory{}
-		cat.ID = *filtered.CategoryID
-		found, err := cat.FindByID()
-		// validation error: fake category or DB error.
-		if err != nil || !found {
-			// reset category.
-			filtered.CategoryID = nil
-		}
-	}
 
 	// cover.
 	if filtered.CoverID != nil {
@@ -320,37 +275,6 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 		if resetCover {
 			filtered.CoverID = nil
 		}
-	}
-
-	return
-}
-
-func ValidateCategoryBody(c *base.CategoryBody, body io.ReadCloser) (err error) {
-	var validationErr = base.ValidationError{}
-
-	// body.
-	if err = json.NewDecoder(body).Decode(c); err != nil {
-		return
-	}
-
-	// replace new lines with one space
-	reg, _ := regexp.Compile(`[\r\n]`)
-	c.Name = reg.ReplaceAllString(c.Name, " ")
-
-	// replace 2+ spaces with one space
-	reg, _ = regexp.Compile(`[^\S]{2,}`)
-	c.Name = reg.ReplaceAllString(c.Name, "")
-
-	// remove spaces at start and end
-	c.Name = strings.Trim(c.Name, " ")
-
-	// length?
-	var nameLen = utils.LenRune(c.Name)
-	var notValid = nameLen < 1 || nameLen > 24
-	if notValid {
-		validationErr.New("name")("min length is 1 and max is 24")
-		err = &validationErr
-		return
 	}
 
 	return

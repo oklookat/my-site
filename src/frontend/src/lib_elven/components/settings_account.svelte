@@ -31,7 +31,7 @@
 	async function getMe() {
 		try {
 			const resp = await networkUser.getMe();
-			if (resp.status === 200) {
+			if (resp.ok) {
 				user = await resp.json();
 				isUserDataLoaded = true;
 			}

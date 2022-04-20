@@ -11,13 +11,11 @@ import (
 	"servus/apps/elven/pipe"
 	"servus/apps/elven/user"
 	"servus/core"
-	"servus/core/external/errorMan"
 
 	"github.com/oklookat/goway"
 )
 
 var call *core.Instance
-var requestErrors = errorMan.RequestError{}
 
 type App struct {
 	Middleware *middleware
@@ -53,7 +51,6 @@ func (a *App) Boot(c *core.Instance) {
 		Core:       call,
 		Middleware: a.Middleware,
 		Pipe:       pipeToken,
-		Throw:      requestErrors,
 	}
 	auth.Start()
 	a.Auth = auth
@@ -63,7 +60,6 @@ func (a *App) Boot(c *core.Instance) {
 		Core:       call,
 		Middleware: a.Middleware,
 		Pipe:       pipeUser,
-		Throw:      requestErrors,
 	}
 	article.Start()
 	a.Article = article
@@ -73,7 +69,6 @@ func (a *App) Boot(c *core.Instance) {
 		Core:       call,
 		Middleware: a.Middleware,
 		Pipe:       pipeUser,
-		Throw:      requestErrors,
 	}
 	file.Start()
 	a.File = file
@@ -83,7 +78,6 @@ func (a *App) Boot(c *core.Instance) {
 		Core:       call,
 		Middleware: a.Middleware,
 		Pipe:       pipeUser,
-		Throw:      requestErrors,
 	}
 	user.Start()
 	a.User = user
@@ -119,7 +113,7 @@ func (a *App) setupRoutes() {
 	// limit body.
 	elven.Use(call.Limiter.Body.Middleware)
 
-	// ip banner.
+	// ip ban checking.
 	elven.Use(call.Banhammer.Middleware)
 
 	// user token.

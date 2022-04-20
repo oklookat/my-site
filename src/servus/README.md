@@ -53,13 +53,6 @@
 - **PATCH "/id"** = update specific fields
 - **DELETE "/id"** = delete
 
-### /article/categories - manage article categories
-- **GET "/"** = get all
-- **POST "/"** = create
-- **GET "/name"** = get one
-- **PUT/PATCH "/id"** = rename
-- **DELETE "/id"** = delete
-
 ## files
 ### /files - manage files
 - **GET "/"** = get paginated

@@ -13,13 +13,11 @@ var isBooted = false
 var call *core.Instance
 var middleware base.MiddlewareSafeMethodsOnly
 var pipe base.UserPipe
-var throw base.RequestError
 
 type Starter struct {
 	Core       *core.Instance
 	Middleware base.MiddlewareSafeMethodsOnly
 	Pipe       base.UserPipe
-	Throw      base.RequestError
 }
 
 func (s *Starter) Start() error {
@@ -36,15 +34,11 @@ func (s *Starter) Start() error {
 	if s.Pipe == nil {
 		return errors.New("pipe nil pointer")
 	}
-	if s.Throw == nil {
-		return errors.New("throw nil pointer")
-	}
 
 	// set.
 	call = s.Core
 	middleware = s.Middleware
 	pipe = s.Pipe
-	throw = s.Throw
 
 	// ok.
 	isBooted = true
@@ -66,15 +60,6 @@ func (s *Starter) Routes(router *goway.Router) error {
 	articles.Route("/{id}", getArticle).Methods(http.MethodGet)
 	articles.Route("/{id}", updateArticle).Methods(http.MethodPut, http.MethodPatch)
 	articles.Route("/{id}", deleteArticle).Methods(http.MethodDelete)
-
-	// categories | /article/categories
-	var categories = root.Group("/categories")
-	categories.Use(middleware.SafeMethodsOnly)
-	categories.Route("", getCategories).Methods(http.MethodGet)
-	categories.Route("", addCategory).Methods(http.MethodPost)
-	categories.Route("/{name}", getCategory).Methods(http.MethodGet)
-	categories.Route("/{id}", renameCategory).Methods(http.MethodPut, http.MethodPatch)
-	categories.Route("/{id}", deleteCategory).Methods(http.MethodDelete)
 
 	return nil
 }

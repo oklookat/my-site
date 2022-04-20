@@ -14,14 +14,8 @@ type ArticleGetParams struct {
 	// true = empty content; false = full content.
 	Preview bool
 
-	// show only without category?
-	WithoutCategory bool
-
 	// created; updated; published.
 	By string
-
-	// search by category name.
-	CategoryName *string
 
 	// search by title.
 	Title *string
@@ -29,17 +23,10 @@ type ArticleGetParams struct {
 
 // article request body that user should send to create/update article.
 type ArticleBody struct {
-	CategoryID  *string `json:"category_id"`
 	CoverID     *string `json:"cover_id"`
 	IsPublished *bool   `json:"is_published"`
 	Title       *string `json:"title"`
 	Content     *string `json:"content"`
-}
-
-// category request body that user should send to create/update category.
-type CategoryBody struct {
-	// category name.
-	Name string `json:"name"`
 }
 
 // get paginated files by params.

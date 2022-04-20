@@ -1,34 +1,50 @@
 package banhammer
 
+// active: if false bypass all future calls.
+//
+// workPath: dir where banhammer.db will be.
+//
+// maxWarns: max warns to ban.
+func New(active bool, workPath string, maxWarns int) (*Instance, error) {
+	var hammer = &Instance{}
+	var err = hammer.boot(active, workPath, maxWarns)
+	return hammer, err
+}
+
 type Instance struct {
-	db *SQLite
+	active bool
+	db     *SQLite
 	*Banner
 	*Warner
 	*Service
 }
 
-func (i *Instance) Boot(workPath string, maxWarns int) error {
+func (i *Instance) boot(active bool, workPath string, maxWarns int) error {
+	i.active = active
+
 	var err error
 
-	// database.
-	var db = &SQLite{}
-	if err = db.Boot(workPath, maxWarns); err != nil {
-		return err
+	if i.active {
+		// database.
+		var db = &SQLite{}
+		if err = db.Boot(workPath, maxWarns); err != nil {
+			return err
+		}
+		i.db = db
 	}
-	i.db = db
 
 	// service.
 	i.Service = &Service{}
-	i.Service.New(i.db)
+	i.Service.New(i)
 
 	// ban.
 	var ban = &Banner{}
-	ban.New(i.db, maxWarns)
+	ban.New(i)
 	i.Banner = ban
 
 	// warn.
 	var warn = &Warner{}
-	warn.New(i.db, i.Banner, maxWarns)
+	warn.New(i)
 	i.Warner = warn
 
 	return err

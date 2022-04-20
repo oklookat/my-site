@@ -21,7 +21,7 @@ func getMe(response http.ResponseWriter, request *http.Request) {
 	resp.Username = pipe.GetUsername()
 	bytes, err := json.Marshal(resp)
 	if err != nil {
-		h.Send(throw.Server(), 500, err)
+		h.Send("", 500, err)
 		return
 	}
 	h.Send(string(bytes), 200, err)
@@ -44,7 +44,7 @@ func change(response http.ResponseWriter, request *http.Request) {
 	// compare confirm password from body and original password from pipe.
 	match, err := call.Encryptor.Argon.Compare(body.Password, pipe.GetPassword())
 	if err != nil || !match {
-		h.Send(throw.NotAuthorized(), 401, err)
+		h.Send("", 401, err)
 		return
 	}
 
@@ -68,7 +68,7 @@ func change(response http.ResponseWriter, request *http.Request) {
 		// check is username in use.
 		isUsernameTaken, err := user.FindByUsername()
 		if err != nil {
-			h.Send(throw.Server(), 500, err)
+			h.Send("", 500, err)
 			return
 		}
 		if isUsernameTaken {
@@ -86,7 +86,7 @@ func change(response http.ResponseWriter, request *http.Request) {
 
 	// update.
 	if err = user.Update(); err != nil {
-		h.Send(throw.Server(), 500, err)
+		h.Send("", 500, err)
 		return
 	}
 	h.Send("", 200, err)

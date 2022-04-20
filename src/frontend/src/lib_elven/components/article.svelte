@@ -50,12 +50,6 @@
 				draft
 			{/if}
 		</div>
-
-		{#if article.category_name}
-			<div class="meta__item">
-				{article.category_name}
-			</div>
-		{/if}
 	</div>
 	<div class="main">
 		{#if article.cover_id && article.cover_path && article.cover_extension}

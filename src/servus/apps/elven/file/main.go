@@ -13,13 +13,11 @@ var isBooted = false
 var call *core.Instance
 var middleware base.MiddlewareAdminOnly
 var pipe base.UserPipe
-var throw base.RequestError
 
 type Starter struct {
 	Core       *core.Instance
 	Middleware base.MiddlewareAdminOnly
 	Pipe       base.UserPipe
-	Throw      base.RequestError
 }
 
 func (s *Starter) Start() error {
@@ -36,15 +34,11 @@ func (s *Starter) Start() error {
 	if s.Pipe == nil {
 		return errors.New("pipe nil pointer")
 	}
-	if s.Throw == nil {
-		return errors.New("throw nil pointer")
-	}
 
 	// set.
 	call = s.Core
 	middleware = s.Middleware
 	pipe = s.Pipe
-	throw = s.Throw
 
 	// ok.
 	isBooted = true

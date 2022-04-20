@@ -17,9 +17,9 @@
   },
   "security": {
     "https": {
-      "active": true,
-      "certPath": "cert.pem",
-      "keyPath": "key.pem"
+      "active": false,
+      "certPath": "",
+      "keyPath": ""
     },
     "cookie": {
       "domain": "example.com",
@@ -75,6 +75,11 @@
         "saltLength": 16,
         "keyLength": 32
       }
+    },
+    "banhammer": {
+      "active": true,
+      "database": null,
+      "maxWarns": 3
     }
   },
   "uploads": {

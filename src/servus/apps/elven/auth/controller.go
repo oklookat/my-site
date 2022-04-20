@@ -22,7 +22,7 @@ func login(response http.ResponseWriter, request *http.Request) {
 	var user = model.User{Username: body.Username}
 	isUserFound, err := user.FindByUsername()
 	if err != nil {
-		h.Send(throw.Server(), 500, err)
+		h.Send("", 500, err)
 		return
 	}
 	var isPasswordCorrect = false
@@ -38,7 +38,7 @@ func login(response http.ResponseWriter, request *http.Request) {
 			// warn IP.
 			call.Banhammer.Warn(ip.String())
 		}
-		h.Send(throw.NotAuthorized(), 401, err)
+		h.Send("", 401, err)
 		return
 	}
 
@@ -46,11 +46,11 @@ func login(response http.ResponseWriter, request *http.Request) {
 	var tokenModel = model.Token{}
 	encryptedToken, _, err := tokenModel.Generate(user.ID)
 	if err != nil {
-		h.Send(throw.Server(), 500, err)
+		h.Send("", 500, err)
 		return
 	}
 	if err = tokenModel.SetAuthAgents(request); err != nil {
-		h.Send(throw.Server(), 500, err)
+		h.Send("", 500, err)
 		return
 	}
 
@@ -65,7 +65,7 @@ func login(response http.ResponseWriter, request *http.Request) {
 		h.Send("", 200, err)
 		return
 	default:
-		h.Send(throw.Server(), 500, err)
+		h.Send("", 500, err)
 		return
 	}
 }
@@ -82,7 +82,7 @@ func logout(response http.ResponseWriter, request *http.Request) {
 	token.ID = pipe.GetID()
 	var err error
 	if err = token.DeleteByID(); err != nil {
-		h.Send(throw.Server(), 500, err)
+		h.Send("", 500, err)
 		return
 	}
 	_ = h.UnsetCookie("token")

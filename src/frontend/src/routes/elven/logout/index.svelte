@@ -18,7 +18,8 @@
 			await goto('/elven');
 			return;
 		}
-		await goto('/elven/login');
+
+		location.reload();
 	});
 </script>
 

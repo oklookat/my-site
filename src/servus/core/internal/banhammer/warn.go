@@ -1,25 +1,30 @@
 package banhammer
 
 type Warner struct {
-	db       *SQLite
-	banner   *Banner
-	maxWarns int
+	hammer *Instance
+
 	// hook.
 	onWarned func(ip string)
 }
 
-func (w *Warner) New(db *SQLite, b *Banner, maxWarns int) {
-	w.db = db
-	w.banner = b
-	if maxWarns < 1 {
-		maxWarns = 1
+func (w *Warner) New(i *Instance) {
+	w.hammer = i
+	if !w.hammer.active {
+		return
 	}
-	w.maxWarns = maxWarns
+
+	if w.hammer.db.maxWarns < 1 {
+		w.hammer.db.maxWarns = 1
+	}
 }
 
 func (w *Warner) Warn(ip string) error {
+	if !w.hammer.active {
+		return nil
+	}
+
 	// get entry.
-	var entry, err = w.db.GetEntry(ip)
+	var entry, err = w.hammer.db.GetEntry(ip)
 	if err != nil {
 		return err
 	}
@@ -28,20 +33,20 @@ func (w *Warner) Warn(ip string) error {
 	}
 
 	// add warn.
-	if entry.WarnsCount < w.maxWarns {
+	if entry.WarnsCount < w.hammer.db.maxWarns {
 		entry.WarnsCount++
 	}
 
 	// notify banner if max warns count reached.
-	if entry.WarnsCount >= w.maxWarns {
-		entry.WarnsCount = w.maxWarns
-		err = w.banner.Ban(ip)
+	if entry.WarnsCount >= w.hammer.db.maxWarns {
+		entry.WarnsCount = w.hammer.db.maxWarns
+		err = w.hammer.Ban(ip)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = w.db.AddOrUpdateEntry(ip, *entry)
+	err = w.hammer.db.AddOrUpdateEntry(ip, *entry)
 
 	// run hook.
 	if err == nil && w.onWarned != nil {
@@ -51,19 +56,23 @@ func (w *Warner) Warn(ip string) error {
 }
 
 func (w *Warner) Unwarn(ip string) error {
+	if !w.hammer.active {
+		return nil
+	}
+
 	// get entry.
-	var entry, err = w.db.GetEntry(ip)
+	var entry, err = w.hammer.db.GetEntry(ip)
 	if err != nil || entry == nil || entry.WarnsCount < 1 {
 		return err
 	}
 
 	// remove warn.
 	entry.WarnsCount--
-	if entry.WarnsCount < w.maxWarns {
+	if entry.WarnsCount < w.hammer.db.maxWarns {
 		// unban.
-		w.banner.Unban(ip)
+		w.hammer.Unban(ip)
 	}
-	err = w.db.AddOrUpdateEntry(ip, *entry)
+	err = w.hammer.db.AddOrUpdateEntry(ip, *entry)
 	return err
 }
 
