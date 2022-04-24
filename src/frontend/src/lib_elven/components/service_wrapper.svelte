@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import Notify from '$lib_elven/plugins/elvenNotify/notify.svelte';
-	// player
 	import Player from '$lib_elven/plugins/elvenPlayer/components/index.svelte';
 
 	export let isAdmin = false;
 
 	let isPlayerReady = false;
 	let playerCore;
-	//
+
 	onMount(async () => {
 		const ElvenPlayer = await import('$lib_elven/plugins/elvenPlayer');
 		const { ElvenChoose } = await import('$lib_elven/plugins/elvenChoose');

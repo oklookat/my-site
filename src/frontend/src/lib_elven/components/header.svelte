@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	//
 	import ElvenLink from '$lib_elven/components/elven_link.svelte';
 
 	let isUnknown = false;

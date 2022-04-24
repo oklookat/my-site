@@ -10,6 +10,7 @@
 declare namespace App {
 	interface Locals {
 		user: {
+			isError: boolean
 			isExists: boolean
 			isAdmin: boolean
 			username: string
@@ -19,6 +20,7 @@ declare namespace App {
 	// interface Platform {}
 	interface Session {
 		user: {
+			isError: boolean
 			isExists: boolean
 			isAdmin: boolean
 			username: string

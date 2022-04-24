@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
-	// ui
+	import { createEventDispatcher } from 'svelte';
 	import Toolbar from '$lib_elven/components/toolbar.svelte';
 	import ToolbarBig from '$lib_elven/components/toolbar_big.svelte';
 	import ElvenLink from '$lib_elven/components/elven_link.svelte';
-	// article
 	import { By } from '$lib_elven/types/articles';
 	import type { Params } from '$lib_elven/types/articles';
 	import SearchBar from '$lib_elven/components/search_bar.svelte';
@@ -45,7 +43,6 @@
 
 	/** search by filename */
 	function search(val: string) {
-		params.title = val;
 		dispatch('paramChanged', { name: 'title', val: val });
 	}
 </script>

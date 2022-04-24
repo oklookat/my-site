@@ -18,6 +18,7 @@ import (
 
 // get paginated files (GET).
 func getAll(response http.ResponseWriter, request *http.Request) {
+	var err error
 	var h = call.Http.Get(request)
 
 	// get pipe.
@@ -25,15 +26,15 @@ func getAll(response http.ResponseWriter, request *http.Request) {
 	var isAdmin = pipe.IsAdmin()
 
 	// validate/filter.
-	body, err := ValidateGetParams(request.URL.Query(), isAdmin)
-	if err != nil {
+	validatedBody := &base.FileGetParams{}
+	if err = ValidateGetParams(validatedBody, request.URL.Query(), isAdmin); err != nil {
 		h.Send("bad request", 400, nil)
 		return
 	}
 
 	// get paginated.
 	pag := model.File{}
-	files, totalPages, err := pag.GetPaginated(body)
+	files, totalPages, err := pag.GetPaginated(validatedBody)
 	if err != nil {
 		h.Send("", 500, err)
 		return
@@ -41,7 +42,7 @@ func getAll(response http.ResponseWriter, request *http.Request) {
 
 	// generate response with pagination.
 	var responseContent = base.ResponseContent{}
-	responseContent.Meta.CurrentPage = body.Page
+	responseContent.Meta.CurrentPage = validatedBody.Page
 	responseContent.Meta.TotalPages = totalPages
 	responseContent.Meta.PerPage = model.FilePageSize
 	responseContent.Data = files

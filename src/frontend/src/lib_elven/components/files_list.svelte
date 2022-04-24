@@ -1,6 +1,5 @@
 <script lang="ts">
 	import CFile from '$lib_elven/components/file.svelte';
-
 	import type { Items } from '$lib_elven/types';
 	import type { File } from '$lib_elven/types/files';
 
@@ -24,7 +23,7 @@
 <div class="list">
 	{#if items && items.data}
 		{#each Object.entries(items.data) as [counter, file]}
-			<CFile {file} onDeleted={() => whenDeleted(parseInt(counter, 10))} />
+			<CFile bind:file onDeleted={() => whenDeleted(parseInt(counter, 10))} />
 		{/each}
 	{/if}
 </div>

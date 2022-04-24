@@ -1,7 +1,7 @@
 //
 import Fetchd from '$lib_elven/network'
+import { addTokenToHeaders } from '$lib_elven/tools'
 import type { Params } from '$lib_elven/types/files'
-import Utils from '$lib_elven/tools'
 
 /** Use with SSR by passing token / or in components by passing empty token.
  * 
@@ -13,7 +13,7 @@ export default class NetworkFile {
 
     constructor(token: string) {
         const headers = new Headers()
-        Utils.addTokenToHeaders(token, headers)
+        addTokenToHeaders(token, headers)
         this.headers = headers
     }
 

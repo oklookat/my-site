@@ -7,79 +7,51 @@ import (
 	"strings"
 )
 
-func ValidateGetParams(params url.Values, isAdmin bool) (bodyParams *base.FileGetParams, err error) {
-
-	var validationErr = base.ValidationError{}
-
+func ValidateGetParams(f *base.FileGetParams, params url.Values, isAdmin bool) (err error) {
 	// "start" param.
 	var start = params.Get("start")
-	if len(start) == 0 {
+	if start != "newest" && start != "oldest" {
 		start = "newest"
 	}
-	var isNewest = strings.EqualFold(start, "newest")
-	var isOldest = strings.EqualFold(start, "oldest")
-	var isStartInvalid = !isNewest && !isOldest
-	if isStartInvalid {
-		validationErr.New("start")("invalid value")
-		err = &validationErr
-		return
-	}
-	if isNewest {
+	if start == "newest" {
 		start = "DESC"
-	} else if isOldest {
+	} else {
 		start = "ASC"
 	}
-	bodyParams = &base.FileGetParams{}
-	bodyParams.Start = start
+	f.Start = start
 
 	// "by" param.
 	var by = params.Get("by")
-	if len(by) == 0 {
+	if by != "created" {
 		by = "created"
 	}
-	var isByCreated = strings.EqualFold(by, "created")
-	var isByInvalid = !isByCreated
-	var isByForbidden = (isByCreated) && !isAdmin
-	if isByInvalid || isByForbidden {
-		if isByInvalid {
-			validationErr.New("by")("invalid value")
-			err = &validationErr
-		} else {
-			validationErr.New("by")("not allowed")
-			err = &validationErr
-		}
-		return
-	}
-	switch by {
-	case "created":
-		by = "created_at"
-	}
-	bodyParams.By = by
+	by += "_at"
+	f.By = by
 
-	// "page" param.
+	// "page" param
 	var pageStr = params.Get("page")
-	if len(pageStr) == 0 {
-		pageStr = "1"
+	if len(pageStr) < 1 {
+		f.Page = 1
+	} else {
+		var page = 0
+		page, err = strconv.Atoi(pageStr)
+		if err != nil || page <= 0 {
+			page = 1
+		}
+		f.Page = page
 	}
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page <= 0 {
-		validationErr.New("page")("invalid value")
-		err = &validationErr
-		return
-	}
-	bodyParams.Page = page
 
 	// "extensions" param.
 	var extensions = params.Get("extensions")
 	if len(extensions) > 0 {
 		var extensionsSlice = strings.Split(extensions, ",")
-		bodyParams.Extensions = extensionsSlice
+		f.Extensions = extensionsSlice
 	}
 
 	// "filename" param.
 	var filename = params.Get("filename")
 	if len(filename) > 0 {
-		bodyParams.Filename = &filename
+		f.Filename = &filename
 	}
 
 	return

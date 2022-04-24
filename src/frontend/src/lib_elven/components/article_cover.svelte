@@ -1,71 +1,60 @@
 <script lang="ts">
-    // file
-    import Extension, { type FileTypeSelector } from "$lib_elven/tools/extension";
-    import { PathTools } from "$lib_elven/tools/paths";
-    // article
-    import type { Article } from "$lib_elven/types/articles";
+	import { getUploadsWith } from '$lib_elven/tools';
+	import Extension, { type FileTypeSelector } from '$lib_elven/tools/extension';
+	import type { Article } from '$lib_elven/types/articles';
 
-    export let article: Article;
-    $: onArticle(article);
+	export let article: Article;
+	$: onArticle(article);
 
-    let coverExists = false;
-    let extensionSelector: FileTypeSelector;
-    let fullPath: string;
-    function onArticle(val: Article) {
-        if (!val) {
-            return;
-        }
-        coverExists = !!(
-            article.cover_id &&
-            article.cover_path &&
-            article.cover_extension
-        );
-        if (!coverExists) {
-            return;
-        }
-        extensionSelector = Extension.getSelector(article.cover_extension);
-        fullPath = PathTools.getUploadsWith(article.cover_path).toString();
-    }
+	let coverExists = false;
+	let extensionSelector: FileTypeSelector;
+	let fullPath: string;
+	function onArticle(val: Article) {
+		if (!val) {
+			return;
+		}
+		coverExists = !!(article.cover_id && article.cover_path && article.cover_extension);
+		if (!coverExists) {
+			return;
+		}
+		extensionSelector = Extension.getSelector(article.cover_extension);
+		fullPath = getUploadsWith(article.cover_path).toString();
+	}
 </script>
 
 <div class="cover">
-    {#if coverExists}
-        {#if extensionSelector.selected === "IMAGE"}
-            <div class="cover__image">
-                <img
-                    decoding="async"
-                    loading="lazy"
-                    alt="article cover"
-                    src={fullPath}
-                />
-            </div>
-        {:else if extensionSelector.selected === "VIDEO"}
-            <div class="cover__video">
-                <video autoplay muted src={fullPath} />
-            </div>
-        {/if}
-    {/if}
+	{#if coverExists}
+		{#if extensionSelector.selected === 'IMAGE'}
+			<div class="cover__image">
+				<img decoding="async" loading="lazy" alt="article cover" src={fullPath} />
+			</div>
+		{:else if extensionSelector.selected === 'VIDEO'}
+			<div class="cover__video">
+				<video autoplay muted src={fullPath} />
+			</div>
+		{/if}
+	{/if}
 </div>
 
 <style lang="scss">
-    @import "../assets/utils";
+	@import '../assets/utils';
 
-    .cover {
-        width: 100%;
-        height: 100%;
-        &__image,
-        &__video {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            :global(img),
-            :global(video) {
-                object-fit: fill;
-                width: 100%;
-                max-height: 224px;
-                max-width: $desktop-max-card-width;
-            }
-        }
-    }
+	.cover {
+		width: 100%;
+		height: 100%;
+		&__image,
+		&__video {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			justify-content: center;
+			:global(img),
+			:global(video) {
+				object-fit: fill;
+				width: 100%;
+				max-height: 224px;
+				max-width: $desktop-max-card-width;
+			}
+		}
+	}
 </style>

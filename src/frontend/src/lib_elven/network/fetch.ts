@@ -1,6 +1,7 @@
 import { NetworkError } from "$lib_elven/network/errors"
 
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+
 export interface Stringer {
     toString: () => string
 }

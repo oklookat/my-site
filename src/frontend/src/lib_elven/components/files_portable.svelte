@@ -1,18 +1,15 @@
 <script lang="ts">
 	import { browser } from '$app/env';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	// utils
 	import Store from '$lib_elven/tools/store';
-	// ui
 	import Pagination from '$lib_elven/components/pagination.svelte';
-	// files
 	import type { Items } from '$lib_elven/types';
 	import type { File, Params } from '$lib_elven/types/files';
 	import NetworkFile from '$lib_elven/network/network_file';
 	import FilesList from '$lib_elven/components/files_list.svelte';
 	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
 	import ToolsFiles from '$lib_elven/tools/files';
-	import Utils from '$lib_elven/tools';
+	import { Refresh } from '$lib_elven/tools/routes';
 
 	const dispatch = createEventDispatcher<{
 		/** on 'select' option clicked on file */
@@ -60,7 +57,7 @@
 		}
 		initStore();
 		document.body.classList.add('no-scroll');
-		await getAll();
+		await refresh();
 	});
 
 	onDestroy(() => {
@@ -102,20 +99,17 @@
 	}
 
 	async function refresh() {
-		const getPage = async () => {
-			return params.page;
-		};
-		const setPage = async (newPage: number) => {
-			params.page = newPage;
-		};
-		const fetchItems = async (initial: boolean) => {
-			if(initial) {
-				return items
-			}
-			await onPageChanged(await getPage());
-			return items;
-		};
-		await Utils.refresh(getPage, setPage, fetchItems);
+		const data = await Refresh(
+			networkFile,
+			{
+				items: items,
+				params: params,
+				searchparams: undefined
+			},
+			false
+		);
+		items = data.items;
+		params = data.params;
 	}
 
 	async function onParamChanged(event: { name: string; val: string }) {
@@ -141,14 +135,16 @@
 				/>
 			</svg>
 
-			<slot name="back-title" />
+			<div class="back__title">
+				<slot name="back-title" />
+			</div>
 		</div>
 
 		<div class="base__container">
 			<FilesToolbars
 				bind:params
-				{refresh}
 				on:paramChanged={async (e) => onParamChanged(e.detail)}
+				on:uploaded={async () => refresh()}
 			/>
 
 			<FilesList {items} onDeleted={async () => await refresh()} />
@@ -156,8 +152,8 @@
 			<div class="pages">
 				{#if items && items.meta}
 					<Pagination
-						total={items.meta.total_pages}
-						current={items.meta.current_page}
+						bind:total={items.meta.total_pages}
+						bind:current={items.meta.current_page}
 						on:changed={(e) => onPageChanged(e.detail)}
 					/>
 				{/if}
@@ -186,12 +182,20 @@
 				width: 100%;
 				height: 48px;
 				background-color: var(--color-level-1);
-				display: flex;
-				align-items: center;
+				display: grid;
+				grid-template-rows: 1fr;
+				grid-template-columns: max-content 1fr;
+				* {
+					height: 100%;
+				}
 				svg {
 					width: 30px;
-					height: 30px;
 					fill: var(--color-text);
+				}
+				&__title {
+					display: flex;
+					justify-content: center;
+					align-items: center;
 				}
 			}
 		}

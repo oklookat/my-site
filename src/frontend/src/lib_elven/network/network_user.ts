@@ -1,5 +1,5 @@
 import Fetchd from '$lib_elven/network'
-import Utils from '$lib_elven/tools'
+import { addTokenToHeaders } from '$lib_elven/tools'
 import type { UserChange } from '../types/user'
 
 
@@ -13,7 +13,7 @@ export default class NetworkUser {
 
     constructor(token: string) {
         const headers = new Headers()
-        Utils.addTokenToHeaders(token, headers)
+        addTokenToHeaders(token, headers)
         this.headers = headers
     }
 

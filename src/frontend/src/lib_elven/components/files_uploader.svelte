@@ -2,9 +2,8 @@
 	import NetworkFile from '$lib_elven/network/network_file';
 	import Store from '$lib_elven/tools/store';
 	import type { File as TFile } from '$lib_elven/types/files';
-
 	import { createEventDispatcher } from 'svelte';
-	// files
+
 	const dispatch = createEventDispatcher<{
 		/** on file uploaded */
 		uploaded: void;

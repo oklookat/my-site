@@ -12,8 +12,8 @@ import (
 
 // get paginated articles (GET url/).
 func getArticles(response http.ResponseWriter, request *http.Request) {
-	var h = call.Http.Get(request)
 	var err error
+	var h = call.Http.Get(request)
 	var pipe = pipe.GetByContext(request)
 	var isAdmin = pipe.IsAdmin()
 

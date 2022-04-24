@@ -29,6 +29,8 @@ func (f *File) queryGetSelectAll() string {
 }
 
 func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, totalPages int, err error) {
+	totalPages = 1
+
 	// preapare.
 	var getAllDollars = make([]string, 0)
 	var getAllArgs = make([]any, 0)
@@ -72,11 +74,15 @@ func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, to
 
 	// get pages count.
 	var queryCount = "SELECT count(*) FROM (" + query + ") as tentacles"
-	totalPages = 1
 	if err = IntAdapter.Get(&totalPages, queryCount, getAllArgs...); err != nil {
 		return
 	}
+
 	totalPages = int(math.Round(float64(totalPages) / float64(FilePageSize)))
+	if totalPages < 1 {
+		totalPages = 1
+		return
+	}
 	if params.Page > totalPages {
 		return
 	}

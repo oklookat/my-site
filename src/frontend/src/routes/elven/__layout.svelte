@@ -2,8 +2,13 @@
 	import type { Load } from '@sveltejs/kit';
 
 	export const load: Load = async (event) => {
+		const isError = event.session.user.isError;
 		const isAdmin = event.session.user.isAdmin;
-		const isLoginPage = Validator.isAdminPanelLoginPage(event.url);
+		const isLoginPage = isAdminPanelLoginPage(event.url);
+
+		if (isError) {
+			return {};
+		}
 
 		// redirect to login if not authorized
 		if (!isAdmin) {
@@ -39,7 +44,7 @@
 	// components
 	import Header from '$lib_elven/components/header.svelte';
 	import ServiceWrapper from '$lib_elven/components/service_wrapper.svelte';
-	import Validator from '$lib_elven/validators';
+	import { isAdminPanelLoginPage } from '$lib_elven/tools';
 
 	export let isAdmin = false;
 </script>

@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	//
 	import NetworkAuth from '$lib_elven/network/network_auth';
-	import Utils from '$lib_elven/tools';
+	import { setTitleElven } from '$lib_elven/tools';
 
 	onMount(async () => {
 		let isError = false;
@@ -24,5 +23,5 @@
 </script>
 
 <svelte:head>
-	<title>{Utils.setTitleElven('logout')}</title>
+	<title>{setTitleElven('logout')}</title>
 </svelte:head>

@@ -4,14 +4,14 @@
 	import { page } from '$app/stores';
 	// ui
 	import Pagination from '$lib_elven/components/pagination.svelte';
-	// utils
-	import Utils from '$lib_elven/tools';
 	// article
 	import type { Article, Params } from '$lib_elven/types/articles';
 	import type { Items } from '$lib_elven/types';
 	import ArticlesToolbars from '$lib_elven/components/articles_toolbars.svelte';
 	import ArticlesList from '$lib_elven/components/articles_list.svelte';
 	import NetworkArticle from '$lib_elven/network/network_article';
+	import { setTitleElven } from '$lib_elven/tools';
+	import { HandleRouteParam, Refresh } from '$lib_elven/tools/routes';
 
 	const networkArticle = new NetworkArticle('');
 
@@ -22,55 +22,38 @@
 	export let params: Params;
 
 	/** url searchparams */
-	const urlParams = $page.url.searchParams;
+	let searchparams = $page.url.searchParams;
 
-	onMount(async () => {
-		await goto(`?${urlParams.toString()}`, { replaceState: true });
-	});
-
-	/** when page changed */
 	async function onPageChanged(page: number) {
-		// refresh if page not changed
-		if (page === params.page) {
-			const resp = await networkArticle.getAll(params);
-			if (resp.ok) {
-				items = await resp.json();
-			}
-			return;
-		}
-		params.page = page;
-		urlParams.set('page', page.toString());
-		await goto(`?${urlParams.toString()}`, { keepfocus: true });
+		await onParamChanged({ name: 'page', val: page });
 	}
 
 	/** on request param changed */
-	async function onParamChanged(event: { name: string; val: string | boolean }) {
-		params[event.name] = event.val;
-		params.page = 1;
-		Utils.setSearchParam(urlParams, event.name, event.val);
-		await goto(`?${urlParams.toString()}`, { replaceState: true, keepfocus: true });
+	async function onParamChanged(event: { name: string; val: string | boolean | number }) {
+		const data = await HandleRouteParam<Article>(networkArticle, event, {
+			items,
+			params,
+			searchparams
+		});
+		items = data.items;
+		params = data.params;
+		searchparams = data.searchparams;
 	}
 
 	async function refresh() {
-		const getPage = async () => {
-			return params.page;
-		};
-		const setPage = async (newPage: number) => {
-			params.page = newPage;
-		};
-		const fetchItems = async (initial: boolean) => {
-			if (initial) {
-				return items;
-			}
-			await onPageChanged(await getPage());
-			return items;
-		};
-		await Utils.refresh(getPage, setPage, fetchItems);
+		const data = await Refresh<Article>(networkArticle, {
+			items,
+			params,
+			searchparams
+		});
+		items = data.items;
+		params = data.params;
+		searchparams = data.searchparams;
 	}
 </script>
 
 <svelte:head>
-	<title>{Utils.setTitleElven('articles')}</title>
+	<title>{setTitleElven('articles')}</title>
 </svelte:head>
 
 <div class="articles base__container">
@@ -81,8 +64,8 @@
 	<div class="pages">
 		{#if items.meta}
 			<Pagination
-				total={items.meta.total_pages}
-				current={items.meta.current_page}
+				bind:total={items.meta.total_pages}
+				bind:current={items.meta.current_page}
 				on:changed={async (e) => await onPageChanged(e.detail)}
 			/>
 		{/if}

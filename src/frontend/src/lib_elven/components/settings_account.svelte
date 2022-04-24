@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	// user
 	import NetworkUser from '$lib_elven/network/network_user';
 	import type { User, UserChange } from '$lib_elven/types/user';
 	import { usernameValidate, passwordValidate } from '$lib_elven/types/user';

@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	// ui
 	import Overlay from '$lib_elven/components/overlay.svelte';
 	import Popup from '$lib_elven/components/popup.svelte';
-	// utils
-	import Validator from '$lib_elven/validators';
-	// article
 	import type { Article } from '$lib_elven/types/articles';
 	import NetworkArticle from '$lib_elven/network/network_article';
+	import { isTouchDevice } from '$lib_elven/tools';
 
 	/** file itself */
 	export let article: Article;
@@ -23,7 +20,7 @@
 	export let onDisabled: () => void;
 
 	/** is device with touchscreen? */
-	let isTouchDevice = false;
+	let isTouch = false;
 
 	/** component to render */
 	let render: {
@@ -33,8 +30,8 @@
 	} = { isOverlay: true, component: null, props: null };
 
 	onMount(() => {
-		isTouchDevice = Validator.isTouchDevice();
-		if (isTouchDevice) {
+		isTouch = isTouchDevice();
+		if (isTouch) {
 			render.component = Overlay;
 			render.props = {
 				onClose: () => onDisabled()
@@ -57,8 +54,8 @@
 		};
 		try {
 			const resp = await NetworkArticle.update(toEdit);
-			if(resp.ok) {
-				onDeleted()
+			if (resp.ok) {
+				onDeleted();
 				return Promise.resolve(await resp.json());
 			}
 			return Promise.reject(resp.statusText);

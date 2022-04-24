@@ -1,5 +1,5 @@
 import Fetchd from '$lib_elven/network'
-import Utils from '$lib_elven/tools'
+import { addTokenToHeaders } from '$lib_elven/tools'
 import type { Article, Params } from '$lib_elven/types/articles'
 
 /** Use with SSR by passing token / or in components by passing empty token.
@@ -13,7 +13,7 @@ export default class NetworkArticle {
 
     constructor(token: string) {
         const headers = new Headers()
-        Utils.addTokenToHeaders(token, headers)
+        addTokenToHeaders(token, headers)
         this.headers = headers
     }
 
@@ -47,7 +47,8 @@ export default class NetworkArticle {
         try {
             const resp = await Fetchd.send({
                 method: "DELETE",
-                url: `${this.prefix}/${id}`})
+                url: `${this.prefix}/${id}`
+            })
             return resp
         } catch (err) {
             throw err
@@ -55,11 +56,11 @@ export default class NetworkArticle {
     }
 
     public static async create(article: Article): Promise<Response> {
-        NetworkArticle.beforeCRUD(article)
         try {
             const response = await Fetchd.send({
                 method: "POST",
-                url: `${this.prefix}`, body: article})
+                url: `${this.prefix}`, body: article
+            })
             return response
         } catch (err) {
             throw err
@@ -67,20 +68,14 @@ export default class NetworkArticle {
     }
 
     public static async update(article: Article): Promise<Response> {
-        NetworkArticle.beforeCRUD(article)
         try {
             const response = await Fetchd.send({
                 method: "PATCH", url: `${this.prefix}/${article.id}`,
-                body: article})
+                body: article
+            })
             return response
         } catch (err) {
             throw err
-        }
-    }
-
-    private static beforeCRUD(article: Article) {
-        if (!article.category_id) {
-            article.category_id = "nope"
         }
     }
 }

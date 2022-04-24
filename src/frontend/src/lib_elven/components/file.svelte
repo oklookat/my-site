@@ -1,13 +1,9 @@
 <script lang="ts">
-	// utils
-	import Utils from '$lib_elven/tools';
-	import { PathTools } from '$lib_elven/tools/paths';
 	import Dates from '$lib_elven/tools/dates';
-	import Size from '$lib_elven/tools/size';
 	import Extension from '$lib_elven/tools/extension';
-	// file
 	import type { File } from '$lib_elven/types/files';
 	import FileActions from '$lib_elven/components/file_actions.svelte';
+	import { bytesToReadable, cutString, getUploadsWith } from '$lib_elven/tools';
 
 	export let file: File;
 	$: convert(file);
@@ -21,19 +17,19 @@
 			return;
 		}
 		if (!(file.pathConverted instanceof URL)) {
-			file.pathConverted = PathTools.getUploadsWith(file.path);
+			file.pathConverted = getUploadsWith(file.path);
 		}
 		if (!file.extensionsSelector) {
 			file.extensionsSelector = Extension.getSelector(file.extension);
 		}
 		if (!file.sizeConverted) {
-			file.sizeConverted = Size.convert(file.size);
+			file.sizeConverted = bytesToReadable(file.size);
 		}
 		if (!file.createdAtConverted) {
 			file.createdAtConverted = Dates.convert(file.created_at);
 		}
 		if (!file.original_name_short) {
-			file.original_name_short = Utils.cutString(file.original_name);
+			file.original_name_short = cutString(file.original_name);
 		}
 	}
 

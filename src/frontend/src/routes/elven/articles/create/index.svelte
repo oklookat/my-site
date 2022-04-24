@@ -1,29 +1,20 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
-	// editor
 	import { marked } from 'marked';
 	import hljs from 'highlight.js';
 	import '../../../../lib_elven/assets/highlight.scss';
 	import type { Config } from '@oklookat/jmarkd';
-
-	// utils
 	import TextareaResizer from '$lib_elven/tools/textarea_resizer';
 	import { generateFileTypeSelector } from '$lib_elven/tools/extension';
-
-	// ui
 	import Toolbar from '$lib_elven/components/toolbar.svelte';
-
-	// article
 	import type { Article } from '$lib_elven/types/articles';
-	import ValidatorArticle from '$lib_elven/validators/validator_article';
 	import ArticleCover from '$lib_elven/components/article_cover.svelte';
 	import NetworkArticle from '$lib_elven/network/network_article';
-
-	// file
 	import FilesPortable from '$lib_elven/components/files_portable.svelte';
 	import type { File } from '$lib_elven/types/files';
-	import Utils from '$lib_elven/tools';
+	import { setTitleElven } from '$lib_elven/tools';
+import ToolsArticles from '$lib_elven/tools/articles';
 
 	/** creating / editing this article */
 	export let article: Article;
@@ -121,8 +112,8 @@
 	async function createArticle(): Promise<Article> {
 		const notValid =
 			article.id ||
-			!ValidatorArticle.title(article.title) ||
-			!ValidatorArticle.content(article.content);
+			!ToolsArticles.validateTitle(article.title) ||
+			!ToolsArticles.validateContent(article.content);
 		if (notValid) {
 			return;
 		}
@@ -143,8 +134,8 @@
 	async function updateArticle(): Promise<Article> {
 		const notValid =
 			!article.id ||
-			!ValidatorArticle.title(article.title) ||
-			!ValidatorArticle.content(article.content);
+			!ToolsArticles.validateTitle(article.title) ||
+			!ToolsArticles.validateContent(article.content);
 		if (notValid) {
 			return;
 		}
@@ -208,7 +199,7 @@
 </script>
 
 <svelte:head>
-	<title>{Utils.setTitleElven(`${article.id ? article.title : 'create article'}`)}</title>
+	<title>{setTitleElven(`${article.id ? article.title : 'create article'}`)}</title>
 </svelte:head>
 
 {#if isChooseCover}

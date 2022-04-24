@@ -8,6 +8,7 @@ type store_file = {
 
 /** app store */
 export default class Store {
+    
     public static onUploadedFileExists: Writable<File> = writable(undefined)
 
     public static file: store_file = {

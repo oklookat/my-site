@@ -1,16 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	// ui
 	import Overlay from '$lib_elven/components/overlay.svelte';
 	import Popup from '$lib_elven/components/popup.svelte';
-	// utils
-	import { Env } from '$lib_elven/tools/paths';
-	import Validator from '$lib_elven/validators';
 	import Store from '$lib_elven/tools/store';
-	// file
 	import type { File } from '$lib_elven/types/files';
 	import NetworkFile from '$lib_elven/network/network_file';
 	import Preview from '$lib_elven/components/preview.svelte';
+	import { getUploadsURL, isTouchDevice } from '$lib_elven/tools';
 
 	/** file itself */
 	export let file: File;
@@ -36,11 +32,11 @@
 	} = { isOverlay: true, component: null, props: null };
 
 	/** is device with touchscreen? */
-	let isTouchDevice = false;
+	let isTouch = false;
 
 	onMount(() => {
-		isTouchDevice = Validator.isTouchDevice();
-		if (isTouchDevice) {
+		isTouch = isTouchDevice();
+		if (isTouch) {
 			render.component = Overlay;
 			render.props = {
 				onClose: () => onDisabled()
@@ -75,7 +71,7 @@
 	async function copyLink() {
 		let message = '';
 		const path = file.path;
-		const formattedPath = Env.getUploads().toString() + `/${path}`
+		const formattedPath = getUploadsURL().toString() + `/${path}`;
 		try {
 			await navigator.clipboard.writeText(formattedPath);
 			message = 'Link copied to clipboard.';

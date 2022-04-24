@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
 	import NetworkAuth from '$lib_elven/network/network_auth';
-	import Utils from '$lib_elven/tools';
+	import { setTitleElven } from '$lib_elven/tools';
 
 	let username = '';
 	let password = '';
@@ -41,7 +41,7 @@
 </script>
 
 <svelte:head>
-	<title>{Utils.setTitleElven('login')}</title>
+	<title>{setTitleElven('login')}</title>
 </svelte:head>
 
 <div class="login">

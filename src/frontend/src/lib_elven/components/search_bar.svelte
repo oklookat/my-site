@@ -3,12 +3,21 @@
 
 	export let placeholder = 'search';
 
-	export let value = undefined;
+	export let value = '';
+
+	let isInitial = true;
+
 	$: onValueChanged(value);
 	function onValueChanged(val) {
+		if (isInitial) {
+			isInitial = false;
+			return;
+		}
+
 		if (!val) {
 			val = '';
 		}
+		
 		save();
 	}
 
@@ -24,8 +33,8 @@
 				clearTimeout(timer);
 			}
 			timer = setTimeout(() => {
-				if(!inputEL) {
-					return
+				if (!inputEL) {
+					return;
 				}
 				dipatch('search', inputEL.value);
 			}, 1000);
@@ -38,7 +47,7 @@
 		class="search__input"
 		type="text"
 		{placeholder}
-		bind:value={value}
+		bind:value
 		bind:this={inputEL}
 		on:input={() => save()}
 	/>

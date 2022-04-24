@@ -11,7 +11,6 @@ export class NetworkError {
         const message = this.sort(output)
         const isWindowExists = typeof window !== 'undefined' && window.$notify
         if (!isWindowExists) {
-            console.error(message)
             return message
         }
         window.$notify.add({ message })

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	//
 	import type { FileTypeSelector } from '$lib_elven/tools/extension';
 
 	/** on preview closed */

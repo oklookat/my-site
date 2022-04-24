@@ -1,7 +1,5 @@
 <script lang="ts">
-	// utils
 	import Dates from '$lib_elven/tools/dates';
-	// article
 	import type { Article } from '$lib_elven/types/articles';
 	import ArticleCover from './article_cover.svelte';
 	import ArticleActions from '$lib_elven/components/article_actions.svelte';
