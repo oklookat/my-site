@@ -58,13 +58,21 @@ export default class ElvenPlayer implements IElvenPlayer {
     }
 
     public addToPlaylist(source: Source) {
-        this._playlist.sources.push(source)
+        this.playlist.sources.push(source)
+    }
+
+    public clearPlaylist() {
+        this.playlist = {
+            position: 0,
+            sources: []
+        }
     }
 
     public async play() {
         this.initIfNotInit()
         try {
-            await this.dom.play()
+            const currentSource = this._playlist.sources[this._playlist.position]
+            await this.dom.play(currentSource)
         } catch (err) {
             Logger.error(err)
         }
@@ -93,7 +101,6 @@ export default class ElvenPlayer implements IElvenPlayer {
             return
         }
         this.playlist.position++
-        this.dom.source = next
         this.play()
     }
 
@@ -107,14 +114,14 @@ export default class ElvenPlayer implements IElvenPlayer {
             return
         }
         this.playlist.position--
-        this.dom.source = prev
         this.play()
     }
 
     private initIfNotInit() {
-        if (!this.initialized) {
-            this.init()
+        if (this.initialized) {
+            return
         }
+        this.init()
     }
 
     public get isPlaying(): boolean {
@@ -127,26 +134,25 @@ export default class ElvenPlayer implements IElvenPlayer {
 
     public set playlist(playlist: Playlist) {
         const sources = playlist.sources
-        if (sources.length === 0) {
-            Logger.error('empty playlist')
+        if (!sources || !(sources instanceof Array)) {
+            Logger.error('wrong playlist')
             return
         }
+
         this._playlist = playlist
-        let index = 0
-        if (sources[playlist.position]) {
-            index = playlist.position
+
+        let position = 0
+        if(this._playlist.position && sources[this._playlist.position]) {
+            position = playlist.position
         }
-        this.dom.source = sources[index]
+
+        this._playlist.position = position
     }
 
     // utils
 
     public get source(): string {
         return this.dom.source
-    }
-
-    public set source(src: string) {
-        this.dom.source = src
     }
 
     public set volume(volume: number) {

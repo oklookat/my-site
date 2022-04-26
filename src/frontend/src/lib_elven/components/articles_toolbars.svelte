@@ -2,18 +2,17 @@
 	import { createEventDispatcher } from 'svelte';
 	import Toolbar from '$lib_elven/components/toolbar.svelte';
 	import ToolbarBig from '$lib_elven/components/toolbar_big.svelte';
-	import ElvenLink from '$lib_elven/components/elven_link.svelte';
-	import { By } from '$lib_elven/types/articles';
-	import type { Params } from '$lib_elven/types/articles';
+	import ElvenLink from '$lib_elven/components/link.svelte';
+	import { By, type Article } from '$lib_elven/types/articles';
 	import SearchBar from '$lib_elven/components/search_bar.svelte';
+	import type { Params } from '$lib_elven/tools/params';
 
-	export let params: Params;
+	export let params: Params<Article>;
 
 	let searchValue = '';
 
-	$: onTitleParamChanged(params.title);
-	function onTitleParamChanged(value: string | undefined) {
-		searchValue = value;
+	if (params.getParam('title')) {
+		searchValue = params.getParam('title');
 	}
 
 	const dispatch = createEventDispatcher<{
@@ -26,22 +25,17 @@
 		dispatch('paramChanged', { name: 'by', val: by });
 	}
 
-	/** set 'start' param and get articles */
+	/** set 'newest' param and get articles */
 	function toggleNewest() {
-		dispatch('paramChanged', { name: 'newest', val: !params.newest });
+		dispatch('paramChanged', { name: 'newest', val: !params.getParam('newest') });
 	}
 
-	/** set 'show' param and get articles */
-	function togglePublished() {
-		if (typeof params.published !== 'boolean') {
-			console.error(
-				'params.published not a boolean, possibly toolbar strange behavior. Recheck your type conversion'
-			);
-		}
-		dispatch('paramChanged', { name: 'published', val: !params.published });
+	/** set 'drafts' param and get articles */
+	function toggleDrafts() {
+		dispatch('paramChanged', { name: 'drafts', val: !params.getParam('drafts') });
 	}
 
-	/** search by filename */
+	/** search by title */
 	function search(val: string) {
 		dispatch('paramChanged', { name: 'title', val: val });
 	}
@@ -58,21 +52,21 @@
 
 	<Toolbar>
 		<div>
-			<div class="pointer" on:click={() => togglePublished()}>
-				{params.published ? 'published' : 'drafts'}
+			<div class="pointer" on:click={() => toggleDrafts()}>
+				{params.getParam('drafts') ? 'drafts' : 'published'}
 			</div>
 		</div>
 		<div>
 			<div class="pointer" on:click={() => toggleNewest()}>
-				{params.newest ? 'newest' : 'oldest'}
+				{params.getParam('newest') ? 'newest' : 'oldest'}
 			</div>
 		</div>
 		<div>
-			{#if params.by === By.updated}
+			{#if params.getParam('by') === By.updated}
 				<div class="pointer" on:click={() => setBy(By.published)}>by updated date</div>
-			{:else if params.by === By.published}
+			{:else if params.getParam('by') === By.published}
 				<div class="pointer" on:click={() => setBy(By.created)}>by published date</div>
-			{:else if params.by === By.created}
+			{:else if params.getParam('by') === By.created}
 				<div class="pointer" on:click={() => setBy(By.updated)}>by created date</div>
 			{/if}
 		</div>

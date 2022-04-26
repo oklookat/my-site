@@ -11,6 +11,7 @@ export type RequestConfig = {
     body?: BodyInit | Object
     params?: Record<string | number, Stringer>
     headers?: Headers
+    customDriver?: typeof fetch
 }
 
 export default class FetchDriver {
@@ -79,9 +80,14 @@ export default class FetchDriver {
             delete fetchConfig.body
         }
 
+        let okFetch = fetch
+        if (config.customDriver) {
+            okFetch = config.customDriver
+        }
+
         try {
-            const result = await fetch(url.toString(), fetchConfig)
-            if(!result.ok) {
+            const result = await okFetch(url.toString(), fetchConfig)
+            if (!result.ok) {
                 NetworkError.handle(result)
             }
             return result

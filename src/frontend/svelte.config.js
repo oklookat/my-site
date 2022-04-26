@@ -9,7 +9,8 @@ const viteBase = {
 	optimizeDeps: { exclude: [] },
 	resolve: {
 		alias: {
-			'$lib_elven': path.resolve('./src/lib_elven')
+			'$lib_elven': path.resolve('./src/lib_elven'),
+			'$lib_oklookat': path.resolve('./src/lib_oklookat')
 		},
 		// include .d.ts
 		extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.d.ts']

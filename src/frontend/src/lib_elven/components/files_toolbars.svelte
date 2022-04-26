@@ -1,20 +1,16 @@
 <script lang="ts">
 	import Toolbar from '$lib_elven/components/toolbar.svelte';
 	import SearchBar from '$lib_elven/components/search_bar.svelte';
-	import type { Params } from '$lib_elven/types/files';
-	import { Start } from '$lib_elven/types/files';
+	import { Start, type File } from '$lib_elven/types/files';
 	import FilesUploader from '$lib_elven/components/files_uploader.svelte';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import Store from '$lib_elven/tools/store';
+	import type { Params } from '$lib_elven/tools/params';
 
 	/** request params */
-	export let params: Params;
+	export let params: Params<File>;
 
 	let searchValue = '';
-
-	if (params.filename) {
-		searchValue = params.filename;
-	}
 
 	const dispatch = createEventDispatcher<{
 		/** on request param changed */
@@ -55,9 +51,9 @@
 
 	<Toolbar>
 		{#if params}
-			{#if params.start === Start.newest}
+			{#if params.getParam('start') === Start.newest}
 				<div class="item" on:click={() => setStart(Start.oldest)}>newest</div>
-			{:else if params.start === Start.oldest}
+			{:else if params.getParam('start') === Start.oldest}
 				<div class="item" on:click={() => setStart(Start.newest)}>oldest</div>
 			{/if}
 		{/if}

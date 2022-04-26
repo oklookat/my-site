@@ -17,19 +17,17 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 	var validationErr = base.ValidationError{}
 
 	// "published" param
-	var published = params.Get("published")
+	var published = params.Get("drafts")
 	if len(published) < 1 {
-		a.Published = true
+		a.Drafts = false
 	} else {
-		a.Published, err = strconv.ParseBool(published)
+		a.Drafts, err = strconv.ParseBool(published)
 		if err != nil {
-			a.Published = true
+			a.Drafts = false
 		}
 	}
-	if !a.Published && !isAdmin {
-		validationErr.New("published")("invalid value")
-		err = &validationErr
-		return
+	if a.Drafts && !isAdmin {
+		a.Drafts = false
 	}
 
 	// "by" param.

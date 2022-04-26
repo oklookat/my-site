@@ -39,7 +39,7 @@ export default class Utils {
         try {
             pretty = new Date(seconds * 1000).toISOString().substring(sub[0], sub[1])
         } catch (err) {
-            Logger.warn('getPretty(): ' + err)
+            // Logger.warn('getPretty(): ' + err)
         }
         return pretty
     }

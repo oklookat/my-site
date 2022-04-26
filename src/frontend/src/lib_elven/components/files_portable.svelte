@@ -4,12 +4,12 @@
 	import Store from '$lib_elven/tools/store';
 	import Pagination from '$lib_elven/components/pagination.svelte';
 	import type { Items } from '$lib_elven/types';
-	import type { File, Params } from '$lib_elven/types/files';
+	import type { File } from '$lib_elven/types/files';
 	import NetworkFile from '$lib_elven/network/network_file';
 	import FilesList from '$lib_elven/components/files_list.svelte';
 	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
-	import ToolsFiles from '$lib_elven/tools/files';
-	import { Refresh } from '$lib_elven/tools/routes';
+	import { Refresh, type RPH_Event } from '$lib_elven/tools/routes';
+	import { Params } from '$lib_elven/tools/params';
 
 	const dispatch = createEventDispatcher<{
 		/** on 'select' option clicked on file */
@@ -22,7 +22,7 @@
 	const networkFile = new NetworkFile('');
 
 	/** request params from portable mode */
-	export let params: Params = undefined;
+	export let params: Params<File>;
 
 	/** response data */
 	let items: Items<File>;
@@ -49,15 +49,12 @@
 	}
 
 	onMount(async () => {
-		const defaultParams = ToolsFiles.getDefaultParams();
 		if (!params) {
-			params = defaultParams;
-		} else {
-			params = Object.assign(defaultParams, params);
+			params = new Params<File>('file');
 		}
 		initStore();
 		document.body.classList.add('no-scroll');
-		await refresh();
+		await getAll();
 	});
 
 	onDestroy(() => {
@@ -69,42 +66,47 @@
 	});
 
 	/** get all files */
-	async function getAll(p: Params = params) {
+	async function getAll() {
 		params = params;
-		const backupPage = p.page;
-		if (p.page < 1) {
-			p.page = 1;
+		const backupPage = params.getParam('page');
+		if (backupPage < 1) {
+			params.setParam('page', 1);
 		}
+
 		let isError = false;
 		try {
-			const resp = await networkFile.getAll(p);
-			if (resp.ok) {
-				items = await resp.json();
+			const resp = await networkFile.getAll(params.toObject());
+			if (!resp.ok) {
+				isError = true;
 				return;
 			}
-			isError = true;
+			items = await resp.json();
 		} catch (err) {
 			isError = true;
 		}
+
 		if (isError) {
 			// revert page change
-			p.page = backupPage;
+			params.setParam('page', backupPage);
 		}
+	}
+
+	async function onUploaded() {
+		await onParamChanged({ name: 'page', val: 1 });
 	}
 
 	/** when page changed */
 	async function onPageChanged(page: number) {
-		params.page = page;
+		params.setParam('page', page);
 		await getAll();
 	}
 
 	async function refresh() {
-		const data = await Refresh(
+		const data = await Refresh<File>(
 			networkFile,
 			{
 				items: items,
-				params: params,
-				searchparams: undefined
+				params: params
 			},
 			false
 		);
@@ -112,9 +114,10 @@
 		params = data.params;
 	}
 
-	async function onParamChanged(event: { name: string; val: string }) {
-		params.page = 1;
-		params[event.name] = event.val;
+	async function onParamChanged(event: RPH_Event) {
+		params.setParam('page', 1);
+		// @ts-ignore
+		params.setParam(event.name, event.val);
 		await getAll();
 	}
 </script>
@@ -143,18 +146,18 @@
 		<div class="base__container">
 			<FilesToolbars
 				bind:params
-				on:paramChanged={async (e) => onParamChanged(e.detail)}
-				on:uploaded={async () => refresh()}
+				on:paramChanged={async (e) => await onParamChanged(e.detail)}
+				on:uploaded={async () => await onUploaded()}
 			/>
 
-			<FilesList {items} onDeleted={async () => await refresh()} />
+			<FilesList {items} on:deleted={async () => await refresh()} />
 
 			<div class="pages">
 				{#if items && items.meta}
 					<Pagination
 						bind:total={items.meta.total_pages}
 						bind:current={items.meta.current_page}
-						on:changed={(e) => onPageChanged(e.detail)}
+						on:changed={async (e) => await onPageChanged(e.detail)}
 					/>
 				{/if}
 			</div>

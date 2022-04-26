@@ -100,6 +100,12 @@ export function correctElementOverflow(el: HTMLElement, evt: MouseEvent): { x: n
 
 /** convert string to value depend on type */
 export function stringToNormal(value: any): boolean | number | string {
+  try {
+    const converted = stringToUndefinedOrNull(value)
+    return converted
+  } catch (err) {
+  }
+
   // try to bool
   try {
     const converted = stringToBool(value)
@@ -126,15 +132,15 @@ export function stringToBool(value: any): boolean {
     throw Error('value is not a string');
   }
 
-  value = value.toUpperCase();
+  const valued = value.toUpperCase();
 
   const trueVals = ['T', 'TRUE', 'YES', 'Y', 'ON'];
-  if (trueVals.includes(value)) {
+  if (trueVals.includes(valued)) {
     return true;
   }
 
   const falseVals = ['F', 'FALSE', 'N', 'NO', 'OFF'];
-  if (falseVals.includes(value)) {
+  if (falseVals.includes(valued)) {
     return false;
   }
 
@@ -157,6 +163,24 @@ export function stringToNumber(value: any): number {
   }
 
   return converted
+}
+
+export function stringToUndefinedOrNull(value: any): string {
+  if (typeof value === 'undefined' || value === null) {
+    return ''
+  }
+
+  if (typeof value !== "string") {
+    throw Error('value is not a string')
+  }
+
+  const valued = value.toUpperCase()
+
+  if (valued === 'UNDEFINED' || valued === 'NULL') {
+    return ''
+  }
+
+  throw Error('value is not convertible')
 }
 
 /** get uploads URL (for uploading files etc) */

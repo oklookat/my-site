@@ -11,7 +11,7 @@ export enum By {
 export type Params = {
     page?: Page
 
-    published?: boolean
+    drafts?: boolean
 
     newest?: boolean
 

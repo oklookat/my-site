@@ -70,7 +70,7 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 	var query = a.queryGetSelectAll()
 
 	// is published.
-	query += "WHERE is_published = " + addGetAllArg(params.Published) + " "
+	query += "WHERE is_published = " + addGetAllArg(!params.Drafts) + " "
 
 	// title.
 	if params.Title != nil {

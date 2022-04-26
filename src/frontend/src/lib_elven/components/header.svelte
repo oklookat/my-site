@@ -1,13 +1,29 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import ElvenLink from '$lib_elven/components/elven_link.svelte';
+	import ElvenLink from '$lib_elven/components/link.svelte';
+	import Link from '$lib_oklookat/components/link.svelte';
+	import { onDestroy } from 'svelte';
 
 	let isUnknown = false;
 	let isArticles = false;
 	let isFiles = false;
 
-	$: onPathChanged($page.url.pathname);
+	const unsub = page.subscribe((v) => {
+		if (!v || !v.url || !v.url.pathname) {
+			return;
+		}
+		onPathChanged(v.url.pathname);
+	});
+
+	onDestroy(() => {
+		unsub();
+	});
+
 	function onPathChanged(path: string) {
+		if (!path) {
+			isUnknown = true;
+			return;
+		}
 		isFiles = path.includes('/elven/files');
 		isArticles = path.includes('/elven/articles');
 		isUnknown = !isFiles && !isArticles;

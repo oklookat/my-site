@@ -48,6 +48,7 @@ export default class Events implements IEvents {
         const target = e.target as HTMLMediaElement
         const err = target.error
         const msg = err.message ? ` ${err.message}` : ''
+        this.onPause()
         switch (err.code) {
             case MediaError.MEDIA_ERR_ABORTED:
                 Logger.error(`aborted.${msg}`)
@@ -60,6 +61,9 @@ export default class Events implements IEvents {
                 break
             case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
                 Logger.error(`not supported.${msg}`)
+                if(!msg) {
+                    Logger.error(`it is .flac? If yes, maybe in tags of your .flac exists non-ASCII chars? Idk why (browser problem maybe?), but we cannot play flacs with non-ASCII title/tags/etc.\nrelated: https://github.com/koel/koel/issues/869`)
+                }
                 break
             default:
                 Logger.error(`unknown error.${msg}`)

@@ -14,7 +14,8 @@
 	import FilesPortable from '$lib_elven/components/files_portable.svelte';
 	import type { File } from '$lib_elven/types/files';
 	import { setTitleElven } from '$lib_elven/tools';
-import ToolsArticles from '$lib_elven/tools/articles';
+	import ToolsArticles from '$lib_elven/tools/articles';
+	import { Params } from '$lib_elven/tools/params';
 
 	/** creating / editing this article */
 	export let article: Article;
@@ -196,6 +197,12 @@ import ToolsArticles from '$lib_elven/tools/articles';
 		article.cover_id = undefined;
 		save();
 	}
+
+	const filesPortableParams = new Params<File>('file');
+	filesPortableParams.setParam(
+		'extensions',
+		generateFileTypeSelector(['IMAGE', 'VIDEO']).selectedToString()
+	);
 </script>
 
 <svelte:head>
@@ -204,9 +211,7 @@ import ToolsArticles from '$lib_elven/tools/articles';
 
 {#if isChooseCover}
 	<FilesPortable
-		params={{
-			extensions: generateFileTypeSelector(['IMAGE', 'VIDEO']).selectedToString()
-		}}
+		params={filesPortableParams}
 		on:closed={() => (isChooseCover = false)}
 		on:selected={(e) => {
 			onCoverSelected(e.detail);

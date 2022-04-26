@@ -18,11 +18,10 @@ export default class NetworkFile {
     }
 
     /** get files list */
-    public async getAll(params: Params): Promise<Response> {
-        // send
+    public async getAll(params: Params, driver?: typeof fetch): Promise<Response> {
         try {
-            const response = await Fetchd.send({ method: "GET", url: 'files', params: params, headers: this.headers })
-            return response
+            const resp = await Fetchd.send({ method: "GET", url: 'files', params: params, headers: this.headers, customDriver: driver })
+            return resp
         } catch (err) {
             throw err
         }
@@ -34,23 +33,23 @@ export default class NetworkFile {
             return
         }
         const form = new FormData()
-        //
         form.append("file", file)
+
         try {
             const resp = await Fetchd.send({ method: "POST", url: 'files', body: form })
             return resp
         } catch (err) {
-            return Promise.reject(err)
+            throw err
         }
     }
 
     /** delete one file */
-    public static async delete(id: string) {
+    public static async delete(id: string): Promise<Response> {
         try {
-            await Fetchd.send({ method: "DELETE", url: `files/${id}` })
-            return
+            const resp = await Fetchd.send({ method: "DELETE", url: `files/${id}` })
+            return resp
         } catch (err) {
-            return Promise.reject(err)
+            throw err
         }
     }
 }

@@ -17,12 +17,13 @@ export default class NetworkArticle {
         this.headers = headers
     }
 
-    public async getAll(params: Params): Promise<Response> {
+    public async getAll(params: Params, driver?: typeof fetch): Promise<Response> {
 
         try {
             const response = await Fetchd.send({
                 method: "GET",
-                url: NetworkArticle.prefix, params: params, headers: this.headers
+                url: NetworkArticle.prefix, params: params, headers: this.headers,
+                customDriver: driver
             })
             return response
         } catch (err) {

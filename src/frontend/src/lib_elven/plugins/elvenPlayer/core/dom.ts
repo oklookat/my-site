@@ -13,8 +13,8 @@ export default class DOM {
     private _onError: (e?: Event) => void
 
 
-    constructor(events: Events, source?: string, volume?: number) {
-        this.element = new Audio(source)
+    constructor(events: Events, volume?: number) {
+        this.element = new Audio(undefined)
         this.volume = volume
         this.events = events
         this._onPlaying = this.events.onPlaying.bind(this.events)
@@ -45,7 +45,8 @@ export default class DOM {
         this.element = null
     }
 
-    public async play(): Promise<void> {
+    public async play(source: URL | string): Promise<void> {
+        this.element.src = source.toString()
         try {
             await this.element.play()
             return Promise.resolve()
@@ -73,7 +74,7 @@ export default class DOM {
         return this.element.currentSrc
     }
 
-    public set source(src: string) {
+    private set source(src: string) {
         this.element.src = src
     }
 

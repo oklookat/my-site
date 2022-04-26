@@ -2,21 +2,18 @@
 	import CFile from '$lib_elven/components/file.svelte';
 	import type { Items } from '$lib_elven/types';
 	import type { File } from '$lib_elven/types/files';
+	import { createEventDispatcher } from 'svelte';
 
 	export let items: Items<File>;
 
-	/** on file deleted */
-	export let onDeleted: () => void;
+	const dispatch = createEventDispatcher<{
+		deleted: number;
+	}>();
 
-	/** delete file from files array */
-	function deleteFromArray(counter: number) {
+	async function whenDeleted(counter: number) {
 		delete items.data[counter];
 		items = items;
-	}
-
-	function whenDeleted(counter: number) {
-		deleteFromArray(counter);
-		onDeleted();
+		dispatch('deleted', counter);
 	}
 </script>
 

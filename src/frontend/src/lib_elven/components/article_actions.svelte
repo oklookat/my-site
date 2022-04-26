@@ -46,7 +46,7 @@
 		};
 	});
 
-	async function publishUnpublish(isPublished: boolean): Promise<Article> {
+	async function publishUnpublish(isPublished: boolean) {
 		// @ts-ignore
 		const toEdit: Article = {
 			id: article.id,
@@ -56,9 +56,7 @@
 			const resp = await NetworkArticle.update(toEdit);
 			if (resp.ok) {
 				onDeleted();
-				return Promise.resolve(await resp.json());
 			}
-			return Promise.reject(resp.statusText);
 		} catch (err) {
 			return Promise.reject(err);
 		}
@@ -66,17 +64,17 @@
 
 	/** publish article */
 	async function publish() {
-		publishUnpublish(true);
+		await publishUnpublish(true);
 	}
 
 	/** unpublish article */
 	async function unpublish() {
-		publishUnpublish(false);
+		await publishUnpublish(false);
 	}
 
 	/** edit article */
-	function edit() {
-		goto(`/elven/articles/create?id=${article.id}`);
+	async function edit() {
+		await goto(`/elven/articles/create?id=${article.id}`);
 	}
 
 	/** delete article */
@@ -95,11 +93,11 @@
 <svelte:component this={render.component} {...render.props}>
 	<div class="base__items {render.isOverlay ? 'extended' : ''}">
 		{#if article.is_published}
-			<div on:click={() => unpublish()}>unpublish</div>
+			<div on:click={async () => await unpublish()}>unpublish</div>
 		{:else}
-			<div on:click={() => publish()}>publish</div>
+			<div on:click={async () => await publish()}>publish</div>
 		{/if}
-		<div on:click={() => edit()}>edit</div>
-		<div on:click={() => deleteArticle()}>delete</div>
+		<div on:click={async () => await edit()}>edit</div>
+		<div on:click={async () => await deleteArticle()}>delete</div>
 	</div>
 </svelte:component>

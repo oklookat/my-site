@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ElvenLink from '$lib_elven/components/elven_link.svelte';
+	import ElvenLink from '$lib_elven/components/link.svelte';
 	import AccountSettings from '$lib_elven/components/settings_account.svelte';
 	import ToolbarBig from '$lib_elven/components/toolbar_big.svelte';
 	import { setTitleElven } from '$lib_elven/tools';

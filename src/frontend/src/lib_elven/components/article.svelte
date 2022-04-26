@@ -3,11 +3,14 @@
 	import type { Article } from '$lib_elven/types/articles';
 	import ArticleCover from './article_cover.svelte';
 	import ArticleActions from '$lib_elven/components/article_actions.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	export let article: Article;
 
-	/** on article deleted */
-	export let onDeleted: () => void;
+	const dispatch = createEventDispatcher<{
+		/** on article deleted */
+		deleted: void;
+	}>();
 
 	function convertDate(date: string | number | Date): string {
 		return Dates.convert(date);
@@ -20,6 +23,11 @@
 		selectedMouseEvent = e;
 		isSelected = true;
 	}
+
+	function onDeleted() {
+		dispatch('deleted');
+		isSelected = false;
+	}
 </script>
 
 {#if isSelected}
@@ -27,7 +35,9 @@
 		{article}
 		mouseEvent={selectedMouseEvent}
 		onDisabled={() => (isSelected = false)}
-		onDeleted={() => onDeleted()}
+		onDeleted={() => {
+			onDeleted();
+		}}
 	/>
 {/if}
 
@@ -78,7 +88,7 @@
 			gap: 12px;
 			flex-wrap: wrap;
 
-			.meta__item {
+			&__item {
 				font-size: 0.9rem;
 				min-width: 44px;
 				border-radius: 12px;

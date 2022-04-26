@@ -6,7 +6,7 @@ type ArticleGetParams struct {
 	Page int
 
 	// show published or drafts?
-	Published bool
+	Drafts bool
 
 	// start from newest? true == DESC; false == ASC.
 	Newest bool

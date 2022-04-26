@@ -37,7 +37,8 @@
 
 	/** play audio by url */
 	function playAudio() {
-		window.$player.playlist = { position: 0, sources: [url.toString()] };
+		window.$player.clearPlaylist()
+		window.$player.addToPlaylist(url.toString())
 		window.$player.play();
 		onClose();
 	}
