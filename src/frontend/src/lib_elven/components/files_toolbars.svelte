@@ -1,26 +1,26 @@
 <script lang="ts">
-	import Toolbar from '$lib_elven/components/toolbar.svelte';
-	import SearchBar from '$lib_elven/components/search_bar.svelte';
-	import { Start, type File } from '$lib_elven/types/files';
-	import FilesUploader from '$lib_elven/components/files_uploader.svelte';
-	import { createEventDispatcher, onDestroy } from 'svelte';
-	import Store from '$lib_elven/tools/store';
-	import type { Params } from '$lib_elven/tools/params';
+	import Toolbar from "$lib_elven/components/toolbar.svelte";
+	import SearchBar from "$lib_elven/components/search_bar.svelte";
+	import { Start, type File } from "$lib_elven/types/files";
+	import FilesUploader from "$lib_elven/components/files_uploader.svelte";
+	import { createEventDispatcher, onDestroy } from "svelte";
+	import Store from "$lib_elven/tools/store";
+	import type { Params, RPH_Event } from "$lib_elven/tools/params";
 
 	/** request params */
 	export let params: Params<File>;
 
-	let searchValue = '';
+	let searchValue = "";
 
 	const dispatch = createEventDispatcher<{
 		/** on request param changed */
-		paramChanged: { name: string; val: string };
+		paramChanged: RPH_Event<File>;
 
 		/** on file uploaded */
 		uploaded: void;
 	}>();
 
-	const onUploadedExistsUnsub = Store.onUploadedFileExists.subscribe((v) => {
+	const onUploadedExistsUnsub = Store.files.uploadedExists.subscribe((v) => {
 		if (!v) {
 			return;
 		}
@@ -29,32 +29,41 @@
 
 	onDestroy(() => {
 		onUploadedExistsUnsub();
+		Store.files.uploadedExists.set(null);
 	});
 
 	/** set 'start' param */
 	function setStart(start: Start = Start.newest) {
-		dispatch('paramChanged', { name: 'start', val: start });
+		dispatch("paramChanged", { name: "start", val: start });
 	}
 
 	/** search by filename */
 	function search(val: string) {
-		dispatch('paramChanged', { name: 'filename', val: val });
+		dispatch("paramChanged", { name: "filename", val: val });
 	}
 </script>
 
 <div class="toolbars">
-	<FilesUploader on:uploaded={() => dispatch('uploaded')} />
+	<FilesUploader on:uploaded={() => dispatch("uploaded")} />
 
 	<div class="search">
-		<SearchBar bind:value={searchValue} on:search={(e) => search(e.detail)} placeholder="search" />
+		<SearchBar
+			bind:value={searchValue}
+			on:search={(e) => search(e.detail)}
+			placeholder="search"
+		/>
 	</div>
 
 	<Toolbar>
 		{#if params}
-			{#if params.getParam('start') === Start.newest}
-				<div class="item" on:click={() => setStart(Start.oldest)}>newest</div>
-			{:else if params.getParam('start') === Start.oldest}
-				<div class="item" on:click={() => setStart(Start.newest)}>oldest</div>
+			{#if params.getParam("start") === Start.newest}
+				<div class="item" on:click={() => setStart(Start.oldest)}>
+					newest
+				</div>
+			{:else if params.getParam("start") === Start.oldest}
+				<div class="item" on:click={() => setStart(Start.newest)}>
+					oldest
+				</div>
 			{/if}
 		{/if}
 	</Toolbar>

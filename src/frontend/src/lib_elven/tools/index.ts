@@ -1,6 +1,9 @@
 import * as cookie from 'cookie';
 import ByteSize from 'byte-size'
+
+// @ts-ignore
 const uploadsURL = import.meta.env.VITE_UPLOADS_URL as string
+// @ts-ignore
 const apiURL = import.meta.env.VITE_API_URL as string
 
 /** convert bytes count to string like '10,4 MB' */
@@ -283,33 +286,25 @@ export function searchParamsToObject(params: URLSearchParams): Object {
 
   const result = {}
 
-  for (const [key, value] of params) {
+  params.forEach((value, key) => {
     // convert if needed.
     try {
       const valNormal = stringToNormal(value)
       result[key] = valNormal;
-      continue
+      return
     } catch (err) {
+      return
     }
-
-    result[key] = value;
-  }
+  })
 
   return result;
 }
 
 /** add params to URLSearchParams by object */
-export function searchParamsByObject(params: URLSearchParams, data: Record<string, string>) {
-  if (!(params instanceof URLSearchParams)) {
-    return
-  }
+export function searchParamsByObject(data: Record<string | number, any>): URLSearchParams {
+  const params = new URLSearchParams()
 
   for (const key in data) {
-    // no add param if it exists in params
-    if (params.has(key)) {
-      params.delete(key)
-    }
-
     const value = data[key]
     if (value === undefined || value === null) {
       continue
@@ -317,10 +312,5 @@ export function searchParamsByObject(params: URLSearchParams, data: Record<strin
     params.append(key, value)
   }
 
-  const result = {}
-  params.forEach((value, key) => {
-    result[key] = value;
-  })
-
-  return result;
+  return params;
 }

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher } from "svelte";
 
-	export let placeholder = 'search';
+	export let placeholder = "search";
 
-	export let value = '';
+	export let value = "";
 
 	let isInitial = true;
 
@@ -15,9 +15,9 @@
 		}
 
 		if (!val) {
-			val = '';
+			val = "";
 		}
-		
+
 		save();
 	}
 
@@ -36,7 +36,7 @@
 				if (!inputEL) {
 					return;
 				}
-				dipatch('search', inputEL.value);
+				dipatch("search", inputEL.value);
 			}, 1000);
 		};
 	}

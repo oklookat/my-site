@@ -1,8 +1,8 @@
 <script lang="ts">
-	import NetworkFile from '$lib_elven/network/network_file';
-	import Store from '$lib_elven/tools/store';
-	import type { File as TFile } from '$lib_elven/types/files';
-	import { createEventDispatcher } from 'svelte';
+	import NetworkFile from "$lib_elven/network/network_file";
+	import Store from "$lib_elven/tools/store";
+	import type { File as TFile } from "$lib_elven/types/files";
+	import { createEventDispatcher } from "svelte";
 
 	const dispatch = createEventDispatcher<{
 		/** on file uploaded */
@@ -16,7 +16,7 @@
 	let inputEL;
 
 	/** text used in upload field */
-	let hintText = '';
+	let hintText = "";
 
 	/** drag on uploader? */
 	let isDragActive = false;
@@ -32,7 +32,7 @@
 		if (!inputEL) {
 			return;
 		}
-		inputEL.value = '';
+		inputEL.value = "";
 		inputEL.click();
 	}
 
@@ -52,10 +52,10 @@
 		if (isUploadingNow) {
 			return;
 		}
-		const isStart = e.type === 'dragenter' && !isDragActive;
+		const isStart = e.type === "dragenter" && !isDragActive;
 		if (isStart) {
 			dragSwitcher(true);
-		} else if (e.type === 'dragleave' && isDragActive) {
+		} else if (e.type === "dragleave" && isDragActive) {
 			dragSwitcher(false);
 		}
 	}
@@ -63,9 +63,9 @@
 	/** set isDragActive & hint text */
 	function dragSwitcher(enable: boolean) {
 		if (enable) {
-			hintText = 'release mouse to upload';
+			hintText = "release mouse to upload";
 		} else {
-			hintText = 'click or drag to upload';
+			hintText = "click or drag to upload";
 		}
 		isDragActive = enable;
 	}
@@ -78,7 +78,7 @@
 		}
 		dragSwitcher(false);
 		for (let i = 0; i < e.dataTransfer.items.length; i++) {
-			const isFile = e.dataTransfer.items[i].kind === 'file';
+			const isFile = e.dataTransfer.items[i].kind === "file";
 			if (!isFile) {
 				continue;
 			}
@@ -105,13 +105,12 @@
 			// use empty token because we have token in cookie
 			const resp = await NetworkFile.upload(file);
 			if (resp.ok) {
-				dispatch('uploaded');
-			} else if(resp.status === 409) {
+				dispatch("uploaded");
+			} else if (resp.status === 409) {
 				// if uploaded file already exists
-				const theFile = await resp.json() as TFile
-				Store.onUploadedFileExists.set(theFile)
+				const theFile = (await resp.json()) as TFile;
+				Store.files.uploadedExists.set(theFile);
 			}
-			
 		} catch (err) {
 		} finally {
 			isUploadingNow = false;

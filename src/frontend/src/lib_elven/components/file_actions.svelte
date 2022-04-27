@@ -22,7 +22,7 @@
 
 	/** add 'select' option to actions? */
 	let withSelectOption = false;
-	Store.file.withSelectOption.subscribe((v) => (withSelectOption = v))();
+	Store.files.withSelectOption.subscribe((v) => (withSelectOption = v))();
 
 	/** choose component to render: overlay / popup */
 	let render: {
@@ -110,7 +110,7 @@
 			{#if withSelectOption}
 				<div
 					on:click={() => {
-						Store.file.selected.set(file);
+						Store.files.selected.set(file);
 					}}
 				>
 					select
