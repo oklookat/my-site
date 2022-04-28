@@ -7,7 +7,7 @@
 	}>();
 
 	/** default selected value */
-	export let selected: string | number = null;
+	export let selected: string | number;
 
 	/** selectable elements (options). Key = option value, value = option text */
 	export let selectable: Record<string, string>;
@@ -20,7 +20,7 @@
 
 <select class="select" on:change={onChange} value={selected}>
 	{#each Object.entries(selectable) as [value, text]}
-		<option value={value}>{text}</option>
+		<option {value}>{text}</option>
 	{/each}
 </select>
 

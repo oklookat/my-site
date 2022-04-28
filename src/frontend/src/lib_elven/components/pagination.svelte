@@ -113,7 +113,7 @@
 
 	.pagination {
 		width: 100%;
-		height: $paginator-height;
+		height: var(--paginator-height);
 		display: grid;
 		grid-template-columns: 1fr;
 		grid-template-rows: 50% 1fr;

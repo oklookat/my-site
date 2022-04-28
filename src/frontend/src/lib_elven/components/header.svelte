@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import ElvenLink from '$lib_elven/components/link.svelte';
-	import Link from '$lib_oklookat/components/link.svelte';
 	import { onDestroy } from 'svelte';
 
 	let isUnknown = false;

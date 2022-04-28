@@ -6,55 +6,81 @@
 	export let article: Article;
 	$: onArticle(article);
 
-	let coverExists = false;
+	let isCoverExists = false;
 	let extensionSelector: FileTypeSelector;
 	let fullPath: string;
 	function onArticle(val: Article) {
+		isCoverExists = false
 		if (!val) {
 			return;
 		}
-		coverExists = !!(article.cover_id && article.cover_path && article.cover_extension);
-		if (!coverExists) {
-			return;
+		if(!article.cover_id || !article.cover_extension) {
+			return
 		}
 		extensionSelector = Extension.getSelector(article.cover_extension);
+		if(!article.cover_path) {
+			return
+		}
 		fullPath = getUploadsWith(article.cover_path).toString();
+		isCoverExists = true
 	}
 </script>
 
-<div class="cover">
-	{#if coverExists}
-		{#if extensionSelector.selected === 'IMAGE'}
-			<div class="cover__image">
-				<img decoding="async" loading="lazy" alt="article cover" src={fullPath} />
-			</div>
-		{:else if extensionSelector.selected === 'VIDEO'}
-			<div class="cover__video">
-				<video autoplay muted src={fullPath} />
-			</div>
-		{/if}
+{#if isCoverExists}
+	{#if extensionSelector.selected === 'IMAGE'}
+		<div class="image">
+			<img class="image__main" src={fullPath} alt="cover" />
+			<div class="image__blurred" style={`background-image: url(${fullPath})`} />
+		</div>
+	{:else if extensionSelector.selected === 'VIDEO'}
+		<div class="video">
+			<video autoplay muted loop src={fullPath} />
+		</div>
 	{/if}
-</div>
+{/if}
 
 <style lang="scss">
-	@import '../assets/utils';
-
-	.cover {
+	.image,
+	.video {
 		width: 100%;
-		height: 100%;
-		&__image,
-		&__video {
+		height: 224px;
+
+		display: flex;
+		justify-content: center;
+		:global(img),
+		:global(video) {
+			object-fit: fill;
 			width: 100%;
 			height: 100%;
-			display: flex;
-			justify-content: center;
-			:global(img),
-			:global(video) {
-				object-fit: fill;
-				width: 100%;
-				max-height: 224px;
-				max-width: $desktop-max-card-width;
-			}
+		}
+	}
+
+	.image,
+	.video {
+		height: 224px;
+		width: 100%;
+	}
+
+	.image__main {
+		max-width: $desktop-max-card-width;
+	}
+
+	.image {
+		position: relative;
+		overflow: hidden;
+		&__main {
+			width: 100%;
+			position: absolute;
+			height: 100%;
+			z-index: 7;
+			background-size: cover;
+		}
+		&__blurred {
+			width: 100%;
+			filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='a' x='0' y='0' width='1' height='1'%3E%3CfeGaussianBlur stdDeviation='76' primitiveUnits='userSpaceOnUse' result='b'/%3E%3CfeMorphology operator='dilate' /%3E %3CfeMerge%3E%3CfeMergeNode/%3E%3CfeMergeNode in='b'/%3E%3C/feMerge%3E%3C/filter%3E%3C/svg%3E#a");
+			background-repeat: no-repeat;
+			background-size: cover;
+			background-position: center;
 		}
 	}
 </style>

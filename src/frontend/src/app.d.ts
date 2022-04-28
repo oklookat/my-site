@@ -10,22 +10,22 @@
 declare namespace App {
 	interface Locals {
 		user: {
-			isError: boolean
-			isExists: boolean
-			isAdmin: boolean
-			username: string
-			token: string | null
-		}
+			isError: boolean;
+			isExists: boolean;
+			isAdmin: boolean;
+			username: string;
+			token: string | null;
+		};
 	}
 	// interface Platform {}
 	interface Session {
 		user: {
-			isError: boolean
-			isExists: boolean
-			isAdmin: boolean
-			username: string
-			token: string | null
-		}
+			isError: boolean;
+			isExists: boolean;
+			isAdmin: boolean;
+			username: string;
+			token: string | null;
+		};
 	}
 	// interface Stuff {}
 }

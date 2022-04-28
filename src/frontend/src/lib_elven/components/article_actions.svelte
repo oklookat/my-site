@@ -7,16 +7,9 @@
 	import NetworkArticle from '$lib_elven/network/network_article';
 	import { isTouchDevice } from '$lib_elven/tools';
 
-	/** file itself */
 	export let article: Article;
-
-	/** click on file mouse event */
 	export let mouseEvent: MouseEvent;
-
-	/** on file deleted */
 	export let onDeleted: () => void;
-
-	/** on actions closed */
 	export let onDisabled: () => void;
 
 	/** is device with touchscreen? */
@@ -79,7 +72,11 @@
 
 	/** delete article */
 	async function deleteArticle() {
-		const isDelete = await window.$choose.confirm('Delete article');
+		if(!window.$confirm || !article.id) {
+			return
+		}
+		onDisabled()
+		const isDelete = await window.$confirm('Delete article');
 		if (!isDelete) {
 			return;
 		}

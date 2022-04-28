@@ -52,7 +52,7 @@
 {/if}
 
 <div class="file" on:click={(e) => onSelected(e)}>
-	{#if file.extensionsSelector && file.extensionsSelector.selected === 'IMAGE'}
+	{#if file.extensionsSelector && file.extensionsSelector.selected === 'IMAGE' && file.pathConverted}
 		<div class="preview">
 			<img decoding="async" loading="lazy" src={file.pathConverted.href} alt="" />
 		</div>

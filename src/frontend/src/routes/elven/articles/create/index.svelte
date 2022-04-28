@@ -16,6 +16,7 @@
 	import { setTitleElven } from '$lib_elven/tools';
 	import ToolsArticles from '$lib_elven/tools/articles';
 	import { Params } from '$lib_elven/tools/params';
+	import Dates from '$lib_elven/tools/dates';
 
 	/** creating / editing this article */
 	export let article: Article;
@@ -39,15 +40,15 @@
 	let isCoverExists = false;
 
 	$: onCoverChanged(article.cover_id);
-	function onCoverChanged(val) {
+	function onCoverChanged(val: string | undefined) {
 		isCoverExists = !!(article.cover_id && article.cover_path && article.cover_extension);
 	}
 
 	/** md editor */
-	let jmarkdClass;
+	let jmarkdClass: any;
 
 	/** md editor instance */
-	let editor;
+	let editor: any;
 
 	onMount(async () => {
 		// import markdown editor
@@ -55,8 +56,8 @@
 		// @ts-ignore
 		await import('@oklookat/jmarkd/styles');
 		// editor class
-		const jmarkdModule = await import('@oklookat/jmarkd');
-		jmarkdClass = jmarkdModule.default;
+		const { default: jmarkdModule } = await import('@oklookat/jmarkd');
+		jmarkdClass = jmarkdModule;
 
 		// manually add title before creating TextareaResizer, for correct height in start
 		textareaResizer = new TextareaResizer(articleTitleEL, 54);
@@ -98,7 +99,7 @@
 				elements: {
 					config: {
 						preview: {
-							parse: (data) => {
+							parse: (data: string) => {
 								return marked.parse(data);
 							}
 						}
@@ -109,6 +110,25 @@
 		editor = new jmarkdClass(config);
 	}
 
+	let lastSavedPretty = 'not saved';
+	const updateLastSaved = createLastSaver();
+	function createLastSaver() {
+		let lastSavedTimestamp = 0;
+		let lastSavedInterval: NodeJS.Timer;
+		return () => {
+			lastSavedTimestamp = new Date().getTime();
+			lastSavedPretty = Dates.convert(lastSavedTimestamp) + ' ago';
+
+			if (lastSavedInterval) {
+				clearInterval(lastSavedInterval);
+			}
+
+			lastSavedInterval = setInterval(() => {
+				lastSavedPretty = Dates.convert(lastSavedTimestamp) + ' ago';
+			}, 1000);
+		};
+	}
+
 	/** create new article */
 	async function createArticle(): Promise<Article> {
 		const notValid =
@@ -116,18 +136,22 @@
 			!ToolsArticles.validateTitle(article.title) ||
 			!ToolsArticles.validateContent(article.content);
 		if (notValid) {
-			return;
+			return Promise.reject('not valid article');
 		}
+		window.$progress?.startBasic();
 		try {
 			const resp = await NetworkArticle.create(article);
+			window.$progress?.finishBasic();
 			if (resp.ok) {
 				const newArticle = await resp.json();
 				article.id = newArticle.id;
+				updateLastSaved();
 				return newArticle;
 			}
 			throw resp.statusText;
 		} catch (err) {
 			throw err;
+		} finally {
 		}
 	}
 
@@ -138,10 +162,13 @@
 			!ToolsArticles.validateTitle(article.title) ||
 			!ToolsArticles.validateContent(article.content);
 		if (notValid) {
-			return;
+			return Promise.reject("not valid article");
 		}
+		window.$progress?.startBasic();
 		const resp = await NetworkArticle.update(article);
+		window.$progress?.finishBasic();
 		if (resp.ok) {
+			updateLastSaved();
 			return await resp.json();
 		}
 		throw Error(resp.statusText);
@@ -222,13 +249,13 @@
 {/if}
 
 <div class="create base__container">
-	{#if isCoverExists}
-		<div class="toolbars">
-			<Toolbar>
-				<div class="remove-cover button" on:click={() => removeCover()}>remove cover</div>
-			</Toolbar>
-		</div>
-	{/if}
+	<div class="toolbars">
+		<Toolbar>
+			<div class="last__saved">
+				Last saved: {lastSavedPretty}
+			</div>
+		</Toolbar>
+	</div>
 
 	<div
 		class="cover pointer with-border"
@@ -237,11 +264,12 @@
 		}}
 	>
 		{#if isCoverExists}
-			<div class="cover__itself">
+			<div class="remove" on:click|stopPropagation|preventDefault={() => removeCover()}>X</div>
+			<div class="itself">
 				<ArticleCover bind:article />
 			</div>
 		{:else}
-			<div class="cover__upload item">
+			<div class="upload item">
 				<svg
 					version="1.1"
 					xmlns="http://www.w3.org/2000/svg"
@@ -280,49 +308,73 @@
 	.create {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
 		gap: 18px;
+
+		max-width: $readable-max-width;
+		margin: auto;
 		.toolbars,
 		.editable {
 			width: 100%;
-			max-width: 744px;
+
 			display: flex;
 			flex-direction: column;
 			gap: 12px;
 		}
-		.cover,
 		.editable {
 			width: 100%;
-			max-width: 744px;
 		}
 	}
 
-	.remove-cover {
-		width: 104px;
-		height: 100%;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-
 	.cover {
+		position: relative;
+		// overflow for clipping child border
+		overflow: hidden;
 		background-color: var(--color-level-1);
+
 		display: flex;
-		justify-content: center;
-		justify-items: center;
-		&__upload {
+		flex-direction: column;
+
+		width: 100%;
+		height: 224px;
+		.remove {
+			width: 48px;
+			height: 48px;
+
+			z-index: 777;
+
+			top: 0;
+			right: 0;
+
+			background-color: inherit;
+
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			align-self: flex-end;
+
+			border-bottom: var(--border);
+			border-left: var(--border);
+
+			&:hover {
+				background-color: var(--color-hover);
+			}
+		}
+		.upload {
 			width: 100%;
-			height: 84px;
 			svg {
 				width: 40px;
 				height: 40px;
+
 				opacity: 0.5;
 				fill: var(--color-text);
 			}
 		}
-		&__itself {
-			width: 100%;
+		.itself {
+			position: absolute;
 			height: max-content;
+			width: 100%;
+			display: flex;
+			justify-content: center;
 		}
 	}
 

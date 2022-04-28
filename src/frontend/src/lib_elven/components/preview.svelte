@@ -23,7 +23,7 @@
 		isAudio = extension.selected === 'AUDIO';
 		isSupported = isImage || isVideo || isAudio;
 		if (!isSupported) {
-			window.$notify.add({ message: 'Unsupported.' });
+			window.$notify?.add({ message: 'Unsupported.' });
 			onClose();
 			return;
 		}
@@ -37,8 +37,12 @@
 
 	/** play audio by url */
 	function playAudio() {
-		window.$player.clearPlaylist()
-		window.$player.addToPlaylist(url.toString())
+		if (!window.$player) {
+			onClose();
+			return;
+		}
+		window.$player.clearPlaylist();
+		window.$player.addToPlaylist(url.toString());
 		window.$player.play();
 		onClose();
 	}
@@ -65,6 +69,11 @@
 			padding: 12px;
 			max-width: 90%;
 			max-height: 90%;
+			img,
+			video {
+				width: 100%;
+				height: 100%;
+			}
 		}
 	}
 </style>

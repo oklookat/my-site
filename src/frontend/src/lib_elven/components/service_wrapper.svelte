@@ -2,27 +2,26 @@
 	import { onDestroy, onMount } from 'svelte';
 	import Notify from '$lib_elven/plugins/elvenNotify/notify.svelte';
 	import Player from '$lib_elven/plugins/elvenPlayer/components/index.svelte';
+	import Confirm from '$lib_elven/plugins/elvenChoose/confirm.svelte';
 
 	export let isAdmin = false;
 
 	let isPlayerReady = false;
-	let playerCore;
+	let elvenPlayer: any;
 
 	onMount(async () => {
-		const ElvenPlayer = await import('$lib_elven/plugins/elvenPlayer');
-		const { ElvenChoose } = await import('$lib_elven/plugins/elvenChoose');
-		new ElvenChoose();
-
-		playerCore = new ElvenPlayer.default();
-		isPlayerReady = true;
+		const { default: ElvenPlayerModule } = await import('$lib_elven/plugins/elvenPlayer');
+		elvenPlayer = new ElvenPlayerModule();
+		isPlayerReady = true
 	});
 
 	function destroyPlugins() {
-		if (!playerCore) {
+		if (!elvenPlayer) {
 			return;
 		}
-		playerCore.destroy();
-		playerCore = null;
+		elvenPlayer.destroy();
+		elvenPlayer = undefined;
+		isPlayerReady = false;
 	}
 
 	onDestroy(() => {
@@ -32,9 +31,10 @@
 
 <div class="service">
 	<Notify />
+	<Confirm />
 
 	{#if isPlayerReady && isAdmin}
-		<Player core={playerCore} />
+		<Player core={elvenPlayer} />
 	{/if}
 </div>
 

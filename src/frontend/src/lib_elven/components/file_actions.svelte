@@ -15,7 +15,7 @@
 	export let mouseEvent: MouseEvent;
 
 	/** on file deleted */
-	export let onDeleted: () => void = undefined;
+	export let onDeleted: () => void;
 
 	/** on actions closed */
 	export let onDisabled: () => void;
@@ -53,11 +53,11 @@
 
 	/** delete file */
 	async function deleteFile() {
-		if (!onDeleted || !onDisabled) {
+		if (!window.$confirm || !onDeleted || !onDisabled) {
 			return;
 		}
 		onDisabled();
-		const isDelete = await window.$choose.confirm('delete file');
+		const isDelete = await window.$confirm('delete file');
 		if (!isDelete) {
 			return;
 		}
@@ -78,7 +78,7 @@
 		} catch (err) {
 			message = 'Error: clipboard not have permission.';
 		}
-		window.$notify.add({ message });
+		window.$notify?.add({ message });
 		onDisabled();
 	}
 
@@ -91,12 +91,12 @@
 			isPreview = true;
 			return;
 		}
-		isPreview = false;
 		onDisabled();
+		isPreview = false;
 	}
 </script>
 
-{#if isPreview}
+{#if isPreview && file.pathConverted && file.extensionsSelector}
 	<Preview
 		onClose={() => onPreview(false)}
 		url={file.pathConverted}

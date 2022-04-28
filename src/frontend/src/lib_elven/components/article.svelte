@@ -46,7 +46,7 @@
 		<div class="meta__item">
 			{#if article.is_published && article.published_at}
 				{convertDate(article.published_at)}
-			{:else}
+			{:else if article.updated_at}
 				{convertDate(article.updated_at)}
 			{/if}
 		</div>

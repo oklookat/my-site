@@ -1,8 +1,8 @@
 <script lang="ts">
-	import NetworkFile from "$lib_elven/network/network_file";
-	import Store from "$lib_elven/tools/store";
-	import type { File as TFile } from "$lib_elven/types/files";
-	import { createEventDispatcher } from "svelte";
+	import NetworkFile from '$lib_elven/network/network_file';
+	import Store from '$lib_elven/tools/store';
+	import type { File as TFile } from '$lib_elven/types/files';
+	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher<{
 		/** on file uploaded */
@@ -13,10 +13,10 @@
 	export let multipleUploading = false;
 
 	/** file input for upload */
-	let inputEL;
+	let inputEL: HTMLInputElement;
 
 	/** text used in upload field */
-	let hintText = "";
+	let hintText = '';
 
 	/** drag on uploader? */
 	let isDragActive = false;
@@ -32,13 +32,16 @@
 		if (!inputEL) {
 			return;
 		}
-		inputEL.value = "";
+		inputEL.value = '';
 		inputEL.click();
 	}
 
 	/** when file changed on file input */
 	async function onInputChange(e: Event) {
 		const target = e.target as HTMLInputElement;
+		if(!target || !target.files) {
+			return
+		}
 		if (target.files.length < 1) {
 			return 0;
 		}
@@ -52,10 +55,10 @@
 		if (isUploadingNow) {
 			return;
 		}
-		const isStart = e.type === "dragenter" && !isDragActive;
+		const isStart = e.type === 'dragenter' && !isDragActive;
 		if (isStart) {
 			dragSwitcher(true);
-		} else if (e.type === "dragleave" && isDragActive) {
+		} else if (e.type === 'dragleave' && isDragActive) {
 			dragSwitcher(false);
 		}
 	}
@@ -63,9 +66,9 @@
 	/** set isDragActive & hint text */
 	function dragSwitcher(enable: boolean) {
 		if (enable) {
-			hintText = "release mouse to upload";
+			hintText = 'release mouse to upload';
 		} else {
-			hintText = "click or drag to upload";
+			hintText = 'click or drag to upload';
 		}
 		isDragActive = enable;
 	}
@@ -73,16 +76,19 @@
 	/** https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop */
 	function onDrop(e: DragEvent) {
 		e.preventDefault();
-		if (isUploadingNow) {
-			return;
+		if(isUploadingNow || !e || !e.dataTransfer) {
+			return
 		}
 		dragSwitcher(false);
 		for (let i = 0; i < e.dataTransfer.items.length; i++) {
-			const isFile = e.dataTransfer.items[i].kind === "file";
+			const isFile = e.dataTransfer.items[i].kind === 'file';
 			if (!isFile) {
 				continue;
 			}
 			const file = e.dataTransfer.items[i].getAsFile();
+			if(!file) {
+				continue
+			}
 			upload(file);
 			// upload only one if multipleUploading disabled
 			if (!multipleUploading) {
@@ -100,12 +106,13 @@
 		if (!file || isUploadingNow) {
 			return;
 		}
+		window.$progress?.startBasic();
 		isUploadingNow = true;
 		try {
 			// use empty token because we have token in cookie
 			const resp = await NetworkFile.upload(file);
 			if (resp.ok) {
-				dispatch("uploaded");
+				dispatch('uploaded');
 			} else if (resp.status === 409) {
 				// if uploaded file already exists
 				const theFile = (await resp.json()) as TFile;
@@ -115,6 +122,7 @@
 		} finally {
 			isUploadingNow = false;
 		}
+		window.$progress?.finishBasic();
 	}
 </script>
 

@@ -44,12 +44,15 @@
 	// components
 	import Header from '$lib_elven/components/header.svelte';
 	import ServiceWrapper from '$lib_elven/components/service_wrapper.svelte';
+	import Progress from '$lib_elven/plugins/elvenProgress/progress.svelte';
 	import { isAdminPanelLoginPage } from '$lib_elven/tools';
 
 	export let isAdmin = false;
 </script>
 
 <div class="container">
+	<Progress />
+
 	{#if isAdmin}
 		<Header />
 	{/if}
