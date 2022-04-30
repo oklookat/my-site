@@ -11,7 +11,7 @@
 
 		let items: Items<Article>;
 
-		const networkArticle = new NetworkArticle(event.session.user.token);
+		const networkArticle = new NetworkArticle(event.session.user.token || '');
 
 		const fetchData = async () => {
 			response = await networkArticle.getAll(requestParams.toObject(), event.fetch);
@@ -32,7 +32,7 @@
 		} catch (err) {}
 
 		return {
-			status: response.status,
+			status: 200,
 			props: {
 				items: items,
 				params: requestParams
@@ -59,6 +59,7 @@
 		type RPH_Event
 	} from '$lib_elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
+	import { _ } from 'svelte-i18n'
 
 	/** articles data */
 	export let items: Items<Article>;
@@ -91,7 +92,7 @@
 </script>
 
 <svelte:head>
-	<title>{setTitleElven('articles')}</title>
+	<title>{setTitleElven($_('elven.routes.articles.title'))}</title>
 </svelte:head>
 
 <div class="articles base__container">

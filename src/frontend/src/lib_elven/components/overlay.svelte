@@ -49,7 +49,6 @@
 			flex-direction: column;
 			align-items: center;
 			gap: 24px;
-			font-size: 1.2rem;
 			height: 100%;
 			width: 100%;
 		}

@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import NetworkAuth from '$lib_elven/network/network_auth';
 	import { setTitleElven } from '$lib_elven/tools';
+	import { _ } from 'svelte-i18n'
 
 	onMount(async () => {
 		let isError = false;
@@ -23,5 +24,5 @@
 </script>
 
 <svelte:head>
-	<title>{setTitleElven('logout')}</title>
+	<title>{setTitleElven($_('elven.routes.logout.title'))}</title>
 </svelte:head>

@@ -11,7 +11,7 @@
 
 		let items: Items<File>;
 
-		const networkFile = new NetworkFile(event.session.user.token);
+		const networkFile = new NetworkFile(event.session.user.token || '');
 
 		const fetchData = async () => {
 			response = await networkFile.getAll(requestParams.toObject(), event.fetch);
@@ -32,7 +32,7 @@
 		} catch (err) {}
 
 		return {
-			status: response.status,
+			status: 200,
 			props: {
 				items: items,
 				params: requestParams
@@ -57,8 +57,8 @@
 		type RPH_Event
 	} from '$lib_elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
+	import { _ } from 'svelte-i18n'
 
-	const networkFile = new NetworkFile('');
 
 	/** files data */
 	export let items: Items<File>;
@@ -95,7 +95,7 @@
 </script>
 
 <svelte:head>
-	<title>{setTitleElven('files')}</title>
+	<title>{setTitleElven($_('elven.routes.files.title'))}</title>
 </svelte:head>
 
 <div class="files base__container">

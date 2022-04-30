@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileTypeSelector } from '$lib_elven/tools/extension';
+import { _ } from 'svelte-i18n';
 
 	/** on preview closed */
 	export let onClose: () => void;
@@ -23,7 +24,7 @@
 		isAudio = extension.selected === 'AUDIO';
 		isSupported = isImage || isVideo || isAudio;
 		if (!isSupported) {
-			window.$notify?.add({ message: 'Unsupported.' });
+			window.$notify?.add({ message: $_('elven.general.unsupported') });
 			onClose();
 			return;
 		}
@@ -54,7 +55,7 @@
 	{/if}
 	<div class="watchable">
 		{#if isImage}
-			<img decoding="async" loading="lazy" src={url.toString()} alt="preview" />
+			<img decoding="async" loading="lazy" src={url.toString()} alt={$_('elven.general.preview')} />
 		{:else if isVideo}
 			<video controls src={url.toString()}>
 				<track default kind="captions" srclang="en" src="" />

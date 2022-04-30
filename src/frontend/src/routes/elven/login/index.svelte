@@ -3,6 +3,7 @@
 	import { browser } from '$app/env';
 	import NetworkAuth from '$lib_elven/network/network_auth';
 	import { setTitleElven } from '$lib_elven/tools';
+	import { _ } from 'svelte-i18n';
 
 	let username = '';
 	let password = '';
@@ -41,7 +42,7 @@
 </script>
 
 <svelte:head>
-	<title>{setTitleElven('login')}</title>
+	<title>{setTitleElven($_('elven.routes.login.title'))}</title>
 </svelte:head>
 
 <div class="login">
@@ -56,7 +57,7 @@
 		bind:this={loginButton}
 		on:click={makeLogin}
 	>
-		ok
+		{$_('elven.routes.login.button')}
 	</button>
 </div>
 

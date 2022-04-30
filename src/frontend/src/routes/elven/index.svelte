@@ -1,20 +1,20 @@
 <script lang="ts">
 	import { session } from '$app/stores';
 	import OkLink from '$lib_oklookat/components/link.svelte';
-
 	import ElvenLink from '$lib_elven/components/link.svelte';
 	import { setTitleElven } from '$lib_elven/tools';
+	import { _ } from 'svelte-i18n'
 </script>
 
 <svelte:head>
-	<title>{setTitleElven('home')}</title>
+	<title>{setTitleElven($_('elven.routes.index.title'))}</title>
 </svelte:head>
 
 <div class="hello base__container">
-	<div class="hi">Hello, {$session.user.username}</div>
+	<div class="hi">{$_('elven.routes.index.hello')} {$session.user.username}</div>
 	<div class="things">
-		<OkLink path="/">main site</OkLink>
-		<ElvenLink path="/settings">settings</ElvenLink>
+		<OkLink path="/">{$_('elven.routes.index.mainSite')}</OkLink>
+		<ElvenLink path="/settings">{$_('elven.routes.index.settings')}</ElvenLink>
 	</div>
 </div>
 

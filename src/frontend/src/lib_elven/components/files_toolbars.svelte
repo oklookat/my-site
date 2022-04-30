@@ -6,6 +6,7 @@
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import Store from '$lib_elven/tools/store';
 	import type { Params, RPH_Event } from '$lib_elven/tools/params';
+	import { _ } from 'svelte-i18n'
 
 	/** request params */
 	export let params: Params<File>;
@@ -47,15 +48,15 @@
 	<FilesUploader on:uploaded={() => dispatch('uploaded')} />
 
 	<div class="search">
-		<SearchBar bind:value={searchValue} on:search={(e) => search(e.detail)} placeholder="search" />
+		<SearchBar bind:value={searchValue} on:search={(e) => search(e.detail)} />
 	</div>
 
 	<Toolbar>
 		{#if params}
 			{#if params.getParam('start') === Start.newest}
-				<div class="item" on:click={() => setStart(Start.oldest)}>newest</div>
+				<div class="item" on:click={() => setStart(Start.oldest)}>{$_('elven.components.filesToolbars.newest')}</div>
 			{:else if params.getParam('start') === Start.oldest}
-				<div class="item" on:click={() => setStart(Start.newest)}>oldest</div>
+				<div class="item" on:click={() => setStart(Start.newest)}>{$_('elven.components.filesToolbars.oldest')}</div>
 			{/if}
 		{/if}
 	</Toolbar>

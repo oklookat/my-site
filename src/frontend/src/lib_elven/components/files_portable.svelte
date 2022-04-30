@@ -9,7 +9,7 @@
 	import FilesList from '$lib_elven/components/files_list.svelte';
 	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
 	import { Params, Refresh, type RPH_Event } from '$lib_elven/tools/params';
-import type { Unsubscriber } from 'svelte/store';
+	import type { Unsubscriber } from 'svelte/store';
 
 	const dispatch = createEventDispatcher<{
 		/** on 'select' option clicked on file */
@@ -184,20 +184,11 @@ import type { Unsubscriber } from 'svelte/store';
 				width: 100%;
 				height: 48px;
 				background-color: var(--color-level-1);
-				display: grid;
-				grid-template-rows: 1fr;
-				grid-template-columns: max-content 1fr;
-				* {
-					height: 100%;
-				}
+				display: flex;
+				align-items: center;
 				svg {
 					width: 30px;
 					fill: var(--color-text);
-				}
-				&__title {
-					display: flex;
-					justify-content: center;
-					align-items: center;
 				}
 			}
 		}

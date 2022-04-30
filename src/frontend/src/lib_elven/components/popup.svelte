@@ -63,13 +63,13 @@
 
 <style lang="scss">
 	.popup {
-		font-size: 1rem;
+		font-size: 0.9rem;
 		z-index: 9999;
 		display: block;
 		position: absolute;
 		background-color: var(--color-level-1);
 		border-radius: var(--border-radius);
-		width: 104px;
+		min-width: 104px;
 		height: max-content;
 	}
 </style>

@@ -7,6 +7,7 @@
 	import NetworkFile from '$lib_elven/network/network_file';
 	import Preview from '$lib_elven/components/preview.svelte';
 	import { getUploadsURL, isTouchDevice } from '$lib_elven/tools';
+	import { _ } from 'svelte-i18n';
 
 	/** file itself */
 	export let file: File;
@@ -57,7 +58,7 @@
 			return;
 		}
 		onDisabled();
-		const isDelete = await window.$confirm('delete file');
+		const isDelete = await window.$confirm($_('elven.components.fileActions.deleteQuestion'));
 		if (!isDelete) {
 			return;
 		}
@@ -74,9 +75,9 @@
 		const formattedPath = getUploadsURL().toString() + `/${path}`;
 		try {
 			await navigator.clipboard.writeText(formattedPath);
-			message = 'Link copied to clipboard.';
+			message = $_('elven.general.linkCopied');
 		} catch (err) {
-			message = 'Error: clipboard not have permission.';
+			message = $_('elven.general.notHavePermError');
 		}
 		window.$notify?.add({ message });
 		onDisabled();
@@ -113,16 +114,16 @@
 						Store.files.selected.set(file);
 					}}
 				>
-					select
+					{$_('elven.general.select')}
 				</div>
 			{/if}
 
-			<div on:click={() => onPreview(true)}>preview</div>
+			<div on:click={() => onPreview(true)}>{$_('elven.general.preview')}</div>
 
-			<div on:click={() => copyLink()}>copy link</div>
+			<div on:click={() => copyLink()}>{$_('elven.general.copyLink')}</div>
 
 			{#if onDeleted}
-				<div on:click={() => deleteFile()}>delete</div>
+				<div on:click={() => deleteFile()}>{$_('elven.general.delete')}</div>
 			{/if}
 		</div>
 	</svelte:component>

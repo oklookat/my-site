@@ -16,7 +16,8 @@
 	import { setTitleElven } from '$lib_elven/tools';
 	import ToolsArticles from '$lib_elven/tools/articles';
 	import { Params } from '$lib_elven/tools/params';
-	import Dates from '$lib_elven/tools/dates';
+	import { dateToReadable } from '$lib_elven/tools/dates';
+	import { _ } from 'svelte-i18n'
 
 	/** creating / editing this article */
 	export let article: Article;
@@ -93,7 +94,7 @@
 		});
 		const config: Config = {
 			container: editorEL,
-			placeholder: `It's a long story...`,
+			placeholder: $_('elven.routes.articles.create.editorPlaceholder'),
 			input: data,
 			toolbar: {
 				elements: {
@@ -110,21 +111,21 @@
 		editor = new jmarkdClass(config);
 	}
 
-	let lastSavedPretty = 'not saved';
+	let lastSavedPretty = $_('elven.routes.articles.create.notSaved');
 	const updateLastSaved = createLastSaver();
 	function createLastSaver() {
 		let lastSavedTimestamp = 0;
 		let lastSavedInterval: NodeJS.Timer;
 		return () => {
 			lastSavedTimestamp = new Date().getTime();
-			lastSavedPretty = Dates.convert(lastSavedTimestamp) + ' ago';
+			lastSavedPretty = dateToReadable(lastSavedTimestamp);
 
 			if (lastSavedInterval) {
 				clearInterval(lastSavedInterval);
 			}
 
 			lastSavedInterval = setInterval(() => {
-				lastSavedPretty = Dates.convert(lastSavedTimestamp) + ' ago';
+				lastSavedPretty = dateToReadable(lastSavedTimestamp);
 			}, 1000);
 		};
 	}
@@ -230,10 +231,12 @@
 		'extensions',
 		generateFileTypeSelector(['IMAGE', 'VIDEO']).selectedToString()
 	);
+
+	const createArticleTitle = $_('elven.routes.articles.create.createArticle')
 </script>
 
 <svelte:head>
-	<title>{setTitleElven(`${article.id ? article.title : 'create article'}`)}</title>
+	<title>{setTitleElven(`${article.id ? article.title : createArticleTitle}`)}</title>
 </svelte:head>
 
 {#if isChooseCover}
@@ -244,7 +247,7 @@
 			onCoverSelected(e.detail);
 		}}
 	>
-		<div slot="back-title">article</div>
+		<div slot="back-title">{$_('elven.general.article')}</div>
 	</FilesPortable>
 {/if}
 
@@ -252,7 +255,7 @@
 	<div class="toolbars">
 		<Toolbar>
 			<div class="last__saved">
-				Last saved: {lastSavedPretty}
+				{$_('elven.routes.articles.create.lastSaved')} {lastSavedPretty}
 			</div>
 		</Toolbar>
 	</div>
@@ -293,7 +296,7 @@
 	<div class="editable">
 		<textarea
 			class="title"
-			placeholder="Actually..."
+			placeholder={$_('elven.routes.articles.create.titlePlaceholder')}
 			rows="1"
 			maxlength="124"
 			bind:value={article.title}

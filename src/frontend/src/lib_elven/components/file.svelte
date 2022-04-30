@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Dates from '$lib_elven/tools/dates';
+	import { dateToReadable } from '$lib_elven/tools/dates';
 	import Extension from '$lib_elven/tools/extension';
 	import type { File } from '$lib_elven/types/files';
 	import FileActions from '$lib_elven/components/file_actions.svelte';
@@ -26,7 +26,7 @@
 			file.sizeConverted = bytesToReadable(file.size);
 		}
 		if (!file.createdAtConverted) {
-			file.createdAtConverted = Dates.convert(file.created_at);
+			file.createdAtConverted = dateToReadable(file.created_at);
 		}
 		if (!file.original_name_short) {
 			file.original_name_short = cutString(file.original_name);

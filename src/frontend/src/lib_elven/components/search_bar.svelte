@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { _ } from 'svelte-i18n'
 
-	export let placeholder = 'search';
+	export let placeholder = $_('elven.general.search');
 
 	export let value = '';
 

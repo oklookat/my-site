@@ -1,9 +1,10 @@
 <script lang="ts">
-	import Dates from '$lib_elven/tools/dates';
+	import { dateToReadable } from '$lib_elven/tools/dates';
 	import type { Article } from '$lib_elven/types/articles';
 	import ArticleCover from './article_cover.svelte';
 	import ArticleActions from '$lib_elven/components/article_actions.svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { _ } from 'svelte-i18n';
 
 	export let article: Article;
 
@@ -13,7 +14,7 @@
 	}>();
 
 	function convertDate(date: string | number | Date): string {
-		return Dates.convert(date);
+		return dateToReadable(date);
 	}
 
 	/** is article selected? (actions menu/overlay opened) */
@@ -53,9 +54,9 @@
 
 		<div class="meta__item">
 			{#if article.is_published}
-				published
+				{$_('elven.components.article.published')}
 			{:else}
-				draft
+				{$_('elven.components.article.draft')}
 			{/if}
 		</div>
 	</div>

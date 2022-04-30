@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { _ } from 'svelte-i18n';
 
 	const dispatch = createEventDispatcher<{
 		/** when page changed */
@@ -73,7 +74,11 @@
 		<div class="paginator">
 			<div class="prev">
 				{#if current > 1}
-					<div class="prev__butt pointer center" on:click={onPrevButton} />
+					<div
+						class="prev__butt pointer center"
+						title={$_('elven.components.pagination.prevPage')}
+						on:click={onPrevButton}
+					/>
 				{/if}
 			</div>
 
@@ -81,7 +86,8 @@
 				<input
 					class="pagination__input"
 					type="text"
-					placeholder="page"
+					placeholder={$_('elven.components.pagination.page')}
+					title={$_('elven.components.pagination.page')}
 					bind:value={inputPage}
 					on:input={onPageInput}
 				/>
@@ -89,12 +95,16 @@
 
 			<div class="next">
 				{#if current < total}
-					<div class="next__butt pointer center" on:click={onNextButton} />
+					<div
+						class="next__butt pointer center"
+						title={$_('elven.components.pagination.nextPage')}
+						on:click={onNextButton}
+					/>
 				{/if}
 			</div>
 		</div>
 
-		<div class="total">
+		<div class="total" title={$_('elven.components.pagination.totalPages')}>
 			<div class="count center">{total}</div>
 		</div>
 	</div>

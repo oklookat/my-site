@@ -2,6 +2,8 @@
 	import { page } from '$app/stores';
 	import ElvenLink from '$lib_elven/components/link.svelte';
 	import { onDestroy } from 'svelte';
+	import { _ } from 'svelte-i18n'
+	// {$_('elven.header.elven')}
 
 	let isUnknown = false;
 	let isArticles = false;
@@ -32,15 +34,15 @@
 <nav class="header">
 	<div class="header__items">
 		<ElvenLink path="">
-			<div class={isUnknown ? 'route-active' : ''}>elven</div>
+			<div class={isUnknown ? 'route-active' : ''}>{$_('elven.components.header.elven')}</div>
 		</ElvenLink>
 
 		<ElvenLink path="/articles">
-			<div class={isArticles ? 'route-active' : ''}>articles</div>
+			<div class={isArticles ? 'route-active' : ''}>{$_('elven.components.header.articles')}</div>
 		</ElvenLink>
 
 		<ElvenLink path="/files">
-			<div class={isFiles ? 'route-active' : ''}>files</div>
+			<div class={isFiles ? 'route-active' : ''}>{$_('elven.components.header.files')}</div>
 		</ElvenLink>
 	</div>
 </nav>

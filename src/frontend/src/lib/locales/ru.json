@@ -1,0 +1,112 @@
+{
+    "general": {
+        "secondsAgo": "секунд назад",
+        "minutesAgo": "минут назад",
+        "hoursAgo": "часов назад",
+        "hourAgo": "час назад",
+        "yesterday": "вчера"
+    },
+    "elven": {
+        "general": {
+            "article": "Статья",
+            "search": "Поиск",
+            "delete": "Удалить",
+            "edit": "Редактировать",
+            "select": "Выбрать",
+            "preview": "Предпросмотр",
+            "copyLink": "Скопировать ссылку",
+            "linkCopied": "Ссылка скопирована",
+            "notHavePermError": "Ошибка: нет разрешения",
+            "create": "Создать",
+            "unsupported": "Не поддерживается",
+            "password": "Пароль",
+            "newUsername": "Новое имя пользователя",
+            "newPassword": "Новый пароль",
+            "changeUsername": "Изменить имя пользователя",
+            "changePassword": "Изменить пароль",
+            "ok": "Ок"
+        },
+        "routes": {
+            "index": {
+                "title": "Главная",
+                "hello": "Привет,",
+                "mainSite": "На сайт",
+                "settings": "Настройки"
+            },
+            "articles": {
+                "title": "Статьи",
+                "create": {
+                    "editorPlaceholder": "Заходят как-то в бар...",
+                    "titlePlaceholder": "Это долгая история...",
+                    "notSaved": "нет",
+                    "ago": "назад",
+                    "createArticle": "Создать статью",
+                    "lastSaved": "Последнее сохранение:"
+                }
+            },
+            "files": {
+                "title": "Файлы"
+            },
+            "login": {
+                "title": "Вход",
+                "button": "Войти"
+            },
+            "logout": {
+                "title": "Выход"
+            },
+            "settings": {
+                "title": "Настройки",
+                "logout": "Выйти"
+            }
+        },
+        "components": {
+            "header": {
+                "elven": "elven",
+                "articles": "статьи",
+                "files": "файлы"
+            },
+            "article": {
+                "published": "опубликована",
+                "draft": "черновик"
+            },
+            "articlesToolbars": {
+                "published": "опубликованные",
+                "drafts": "черновики",
+                "byUpdatedDate": "по дате редактирования",
+                "byPublishedDate": "по дате публикации",
+                "byCreatedDate": "по дате создания",
+                "newest": "новые",
+                "oldest": "старые"
+            },
+            "articleActions": {
+                "toDrafts": "В черновики",
+                "publish": "Опубликовать",
+                "deleteQuestion": "Удалить статью"
+            },
+            "fileActions": {
+                "deleteQuestion": "Удалить файл"
+            },
+            "filesUploader": {
+                "releaseToUpload": "Отпустите для загрузки",
+                "clickOrDrag": "Кликните или перетащите для загрузки"
+            },
+            "filesToolbars": {
+                "newest": "newest",
+                "oldest": "oldest"
+            },
+            "pagination": {
+              "page": "Страница",
+              "nextPage": "Следующая страница",
+              "prevPage": "Предыдущая страница",
+              "totalPages": "Общее количество страниц"
+            }
+        },
+        "plugins": {
+            "elvenChoose": {
+                "no": "Нет",
+                "yes": "Да",
+                "areYouSure": "Вы уверены?"
+            }
+        }
+    }
+}

@@ -3,15 +3,16 @@
 	import AccountSettings from '$lib_elven/components/settings_account.svelte';
 	import ToolbarBig from '$lib_elven/components/toolbar_big.svelte';
 	import { setTitleElven } from '$lib_elven/tools';
+	import { _ } from 'svelte-i18n'
 </script>
 
 <svelte:head>
-	<title>{setTitleElven('settings')}</title>
+	<title>{setTitleElven($_('elven.routes.settings.title'))}</title>
 </svelte:head>
 
 <div class="settings">
 	<ToolbarBig>
-		<ElvenLink path="/logout">logout</ElvenLink>
+		<ElvenLink path="/logout">{$_('elven.routes.settings.logout')}</ElvenLink>
 	</ToolbarBig>
 
 	<AccountSettings />

@@ -7,7 +7,11 @@
 		const isLoginPage = isAdminPanelLoginPage(event.url);
 
 		if (isError) {
-			return {};
+			// redirect to main page if auth check error
+			return {
+				status: 302,
+				redirect: ''
+			};
 		}
 
 		// redirect to login if not authorized
