@@ -111,7 +111,7 @@
 {/if}
 
 <style lang="scss">
-	@import '../assets/utils';
+	@import "../../lib/assets/vars.scss";
 
 	.center {
 		display: flex;

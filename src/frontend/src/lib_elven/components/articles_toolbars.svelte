@@ -6,7 +6,7 @@
 	import { By, type Article } from '$lib_elven/types/articles';
 	import SearchBar from '$lib_elven/components/search_bar.svelte';
 	import type { Params, RPH_Event } from '$lib_elven/tools/params';
-	import { _ } from 'svelte-i18n'
+	import { _ } from 'svelte-i18n';
 
 	export let params: Params<Article>;
 
@@ -60,21 +60,33 @@
 	<Toolbar>
 		<div>
 			<div class="pointer" on:click={() => toggleDrafts()}>
-				{params.getParam('drafts') ? $_('elven.components.articlesToolbars.drafts') : $_('elven.components.articlesToolbars.published')}
+				{params.getParam('drafts')
+					? $_('elven.components.articlesToolbars.drafts')
+					: $_('elven.components.articlesToolbars.published')}
 			</div>
 		</div>
+
 		<div>
 			<div class="pointer" on:click={() => toggleNewest()}>
-				{params.getParam('newest') ? $_('elven.components.articlesToolbars.newest') : $_('elven.components.articlesToolbars.oldest')}
+				{params.getParam('newest')
+					? $_('elven.components.articlesToolbars.newest')
+					: $_('elven.components.articlesToolbars.oldest')}
 			</div>
 		</div>
+
 		<div>
 			{#if params.getParam('by') === By.updated}
-				<div class="pointer" on:click={() => setBy(By.published)}>{$_('elven.components.articlesToolbars.byUpdatedDate')}</div>
+				<div class="pointer" on:click={() => setBy(By.published)}>
+					{$_('elven.components.articlesToolbars.byUpdatedDate')}
+				</div>
 			{:else if params.getParam('by') === By.published}
-				<div class="pointer" on:click={() => setBy(By.created)}>{$_('elven.components.articlesToolbars.byPublishedDate')}</div>
+				<div class="pointer" on:click={() => setBy(By.created)}>
+					{$_('elven.components.articlesToolbars.byPublishedDate')}
+				</div>
 			{:else if params.getParam('by') === By.created}
-				<div class="pointer" on:click={() => setBy(By.updated)}>{$_('elven.components.articlesToolbars.byCreatedDate')}</div>
+				<div class="pointer" on:click={() => setBy(By.updated)}>
+					{$_('elven.components.articlesToolbars.byCreatedDate')}
+				</div>
 			{/if}
 		</div>
 	</Toolbar>

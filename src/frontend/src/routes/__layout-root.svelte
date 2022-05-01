@@ -4,7 +4,7 @@
 	import { getLocaleFromNavigator, init } from 'svelte-i18n';
 	import { register } from 'svelte-i18n';
 
-    // https://github.com/kaisermann/svelte-i18n/issues/166#issuecomment-1001009977
+	// https://github.com/kaisermann/svelte-i18n/issues/166#issuecomment-1001009977
 	register('en', () => import('../lib/locales/en.json'));
 	register('ru', () => import('../lib/locales/ru.json'));
 
@@ -25,6 +25,13 @@
 
 		return {};
 	};
+</script>
+
+<script lang="ts">
+	// main style
+	import '$lib/assets/fonts.css';
+	import '$lib/assets/root.css';
+	import '$lib_elven/assets/global.scss';
 </script>
 
 <slot />

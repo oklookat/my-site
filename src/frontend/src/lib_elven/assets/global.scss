@@ -1,14 +1,5 @@
-@import './themes.scss';
 @import './base.scss';
 @import './ui.scss';
-@import './utils.scss';
-
-:root {
-	--header-height: 52px;
-	--border-radius: 4px;
-	--border: var(--color-border) 1px solid;
-	--paginator-height: 140px;
-}
 
 ::placeholder {
 	opacity: 45%;
@@ -48,6 +39,9 @@ body {
 	color: var(--color-text);
 	background-color: var(--color-body);
 	text-underline-offset: 0.4em;
+	> div {
+		min-height: 100vh;
+	}
 }
 
 #app {

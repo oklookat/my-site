@@ -2,11 +2,6 @@
 	export const load: Load = async (event) => {
 		let requestParams = new Params<Article>('article', event.url.searchParams);
 
-		const setParam = (name: string, val: any) => {
-			// @ts-ignore
-			requestParams.setParam(name, val);
-		};
-
 		let response: Response;
 
 		let items: Items<Article>;
@@ -26,7 +21,8 @@
 			await fetchData();
 			const pageParam = requestParams.getParam('page');
 			if (pageParam > items.meta.total_pages) {
-				setParam('page', items.meta.total_pages);
+				// @ts-ignore
+				requestParams.setParam('page', items.meta.total_pages);
 				await fetchData();
 			}
 		} catch (err) {}
@@ -59,7 +55,7 @@
 		type RPH_Event
 	} from '$lib_elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
-	import { _ } from 'svelte-i18n'
+	import { _ } from 'svelte-i18n';
 
 	/** articles data */
 	export let items: Items<Article>;

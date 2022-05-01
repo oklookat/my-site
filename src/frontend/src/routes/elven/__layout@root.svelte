@@ -43,8 +43,6 @@
 </script>
 
 <script lang="ts">
-	// main style
-	import '$lib_elven/assets/global.scss';
 	// components
 	import Header from '$lib_elven/components/header.svelte';
 	import ServiceWrapper from '$lib_elven/components/service_wrapper.svelte';

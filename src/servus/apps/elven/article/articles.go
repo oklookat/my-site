@@ -56,9 +56,12 @@ func getArticle(response http.ResponseWriter, request *http.Request) {
 	// get id from params.
 	var id = h.GetRouteArgs()["id"]
 
+	var pAuth = pipe.GetByContext(request)
+	isAdmin = pAuth.IsAdmin()
+
 	// find.
 	var article = model.Article{ID: id}
-	found, err := article.FindByID()
+	found, err := article.FindByID(isAdmin)
 	if err != nil {
 		h.Send("", 500, err)
 		return
@@ -69,8 +72,6 @@ func getArticle(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// if not published and user not admin, access denied.
-	var pAuth = pipe.GetByContext(request)
-	isAdmin = pAuth.IsAdmin()
 	if !article.IsPublished && !isAdmin {
 		h.Send("", 403, err)
 		return
@@ -131,7 +132,9 @@ func updateArticle(response http.ResponseWriter, request *http.Request) {
 
 	// find.
 	var article = model.Article{ID: id}
-	found, err := article.FindByID()
+
+	// isAdmin = true because this handler protected by admin-only
+	found, err := article.FindByID(true)
 	if err != nil {
 		h.Send("", 500, err)
 		return
@@ -180,7 +183,9 @@ func deleteArticle(response http.ResponseWriter, request *http.Request) {
 
 	// find.
 	var article = model.Article{ID: id}
-	found, err := article.FindByID()
+
+	// isAdmin = true because this handler protected by admin-only
+	found, err := article.FindByID(true)
 	if err != nil {
 		h.Send("", 500, err)
 		return

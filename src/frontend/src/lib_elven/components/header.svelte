@@ -31,7 +31,7 @@
 	}
 </script>
 
-<nav class="header">
+<nav class="header base__container">
 	<div class="header__items">
 		<ElvenLink path="">
 			<div class={isUnknown ? 'route-active' : ''}>{$_('elven.components.header.elven')}</div>
@@ -54,16 +54,11 @@
 
 	.header {
 		font-weight: bold;
-		background-color: var(--color-level-1);
-		color: var(--color-header-text);
-		border-bottom: var(--color-border) 1px solid;
 		height: max-content;
-		width: 100%;
 		display: flex;
 		align-items: center;
 		&__items {
-			padding-top: 16px;
-			padding-bottom: 16px;
+			padding: 14px;
 			width: 100%;
 			display: flex;
 			align-items: center;

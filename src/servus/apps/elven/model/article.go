@@ -29,25 +29,39 @@ type Article struct {
 }
 
 // get query what gets articles + article cover (JOIN).
-func (a *Article) queryGetWithCats() string {
-	var withFile = `
-	SELECT art.*, 
-	file.path as cover_path, file.extension as cover_extension
-	FROM articles as art
-	LEFT JOIN files as file
-	ON art.cover_id = file.id
-	`
-	return withFile
+func (a *Article) queryGetWithCats(withSensitive bool) string {
+	var query string
+	if withSensitive {
+		query = `
+		SELECT art.*, 
+		file.path as cover_path, file.extension as cover_extension
+		FROM articles as art
+
+		LEFT JOIN files as file
+		ON art.cover_id = file.id
+		`
+	} else {
+		query = `
+		SELECT art.id, art.is_published, art.cover_id, art.title, art.content, art.published_at,
+		file.path as cover_path, file.extension as cover_extension
+		FROM articles as art
+
+		LEFT JOIN files as file
+		ON art.cover_id = file.id
+		`
+	}
+
+	return query
 }
 
 // get query to get article(s) with join additional fields.
-func (a *Article) queryGetSelectAll() string {
-	return "SELECT * FROM (" + a.queryGetWithCats() + ") as tentacles\n"
+func (a *Article) queryGetSelectAll(withSensitive bool) string {
+	return "SELECT * FROM (" + a.queryGetWithCats(withSensitive) + ") as tentacles\n"
 }
 
 // get query to get rows count.
-func (a *Article) queryGetCount() string {
-	return "SELECT count(*) FROM (" + a.queryGetWithCats() + ") as tentacles\n"
+func (a *Article) queryGetCount(withSensitive bool) string {
+	return "SELECT count(*) FROM (" + a.queryGetWithCats(withSensitive) + ") as tentacles\n"
 }
 
 // get paginated.
@@ -67,7 +81,7 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 		return getAllDollars[len(getAllDollars)-1]
 	}
 
-	var query = a.queryGetSelectAll()
+	var query = a.queryGetSelectAll(params.Drafts)
 
 	// is published.
 	query += "WHERE is_published = " + addGetAllArg(!params.Drafts) + " "
@@ -145,9 +159,9 @@ func (a *Article) Update() (err error) {
 }
 
 // find article in database by id field.
-func (a *Article) FindByID() (found bool, err error) {
+func (a *Article) FindByID(isAdmin bool) (found bool, err error) {
 	found = false
-	var query = a.queryGetSelectAll() + "WHERE id=$1 LIMIT 1"
+	var query = a.queryGetSelectAll(isAdmin) + "WHERE id=$1 LIMIT 1"
 	founded, err := articleAdapter.Find(query, a.ID)
 	if err != nil {
 		return

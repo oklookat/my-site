@@ -89,14 +89,14 @@ func (h *httpHelper) onHTTPError(theHTTP *iHTTP.Instance, code int, err error) {
 
 	// if zip error.
 	if err != nil {
-		var message = fmt.Sprintf("[#ERROR #%v] make .zip also failed.", code)
+		var message = fmt.Sprintf("[#ERROR #code%v] make .zip also failed.", code)
 		h.logger.Error("[core/http]: " + err.Error())
 		h.control.SendMessage(message)
 		return
 	}
 
 	// send dump.
-	var message = fmt.Sprintf("[#ERROR #%v]", code)
+	var message = fmt.Sprintf("[#ERROR #code%v]", code)
 	var timestamp = fmt.Sprint(time.Now().Unix())
 	h.control.SendFile(&message, timestamp+".zip", zip.GetBytesAndClose())
 }

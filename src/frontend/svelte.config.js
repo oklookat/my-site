@@ -40,7 +40,7 @@ const config = {
 	// for more information about preprocessors
 	preprocess: preprocess({
 		scss: {
-			prependData: `@import './src/lib_elven/assets/utils.scss';`
+			prependData: `@import './src/lib/assets/vars.scss';`
 		}
 	}),
 
