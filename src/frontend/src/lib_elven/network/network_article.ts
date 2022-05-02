@@ -1,5 +1,5 @@
 import Fetchd from '$lib_elven/network';
-import { addTokenToHeaders } from '$lib_elven/tools';
+import { addTokenToHeaders } from '$lib/tools';
 import type { Article, Params } from '$lib_elven/types/articles';
 
 /** Use with SSR by passing token / or in components by passing empty token.
@@ -31,15 +31,14 @@ export default class NetworkArticle {
 		}
 	}
 
-	public async get(id: string): Promise<Article> {
+	public async get(id: string): Promise<Response> {
 		try {
 			const response = await Fetchd.send({
 				method: 'GET',
 				url: `${NetworkArticle.prefix}/${id}`,
 				headers: this.headers
 			});
-			const jsond = await response.json();
-			return jsond as Article;
+			return response
 		} catch (err) {
 			throw err;
 		}

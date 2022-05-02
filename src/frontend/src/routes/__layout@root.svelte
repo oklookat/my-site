@@ -22,10 +22,6 @@
 		padding-bottom: 12px;
 		.content {
 			height: 100%;
-			width: 100%;
-			font-size: 1.1rem;
-			line-height: 1.46rem;
-			letter-spacing: 0.0007rem;
 		}
 	}
 </style>

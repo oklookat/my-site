@@ -4,18 +4,14 @@
 	export let isPlaying: boolean = false;
 
 	const dispatch = createEventDispatcher<{
-		play: null;
-		pause: null;
-		next: null;
-		prev: null;
+		// play = true, pause = false
+		playPause: boolean,
+		next: void;
+		prev: void;
 	}>();
 
-	function play() {
-		dispatch('play');
-	}
-
-	function pause() {
-		dispatch('pause');
+	function playPause(isPlay: boolean) {
+		dispatch('playPause', isPlay);
 	}
 
 	function next() {
@@ -43,12 +39,12 @@
 
 	<div class="playpause">
 		{#if isPlaying}
-			<svg on:click={() => pause()} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 207 310">
+			<svg on:click={() => playPause(false)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 207 310">
 				<rect width="70" height="310" />
 				<rect x="137" width="70" height="310" />
 			</svg>
 		{:else}
-			<svg on:click={() => play()} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 152.76 169.37">
+			<svg on:click={() => playPause(true)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 152.76 169.37">
 				<path
 					d="M173.62,320.29V179.71a14.38,14.38,0,0,1,21.47-12.51l124,70.29a14.38,14.38,0,0,1,0,25l-124,70.29A14.38,14.38,0,0,1,173.62,320.29Z"
 					transform="translate(-173.62 -165.31)"

@@ -43,12 +43,12 @@
 
 <script lang="ts">
 	import type { Items } from '$lib_elven/types';
-	import Pagination from '$lib_elven/components/pagination.svelte';
+	import Pagination from '$lib/components/pagination.svelte';
 	import type { File } from '$lib_elven/types/files';
 	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
 	import FilesList from '$lib_elven/components/files_list.svelte';
 	import NetworkFile from '$lib_elven/network/network_file';
-	import { setTitleElven } from '$lib_elven/tools';
+	import { setTitleElven } from '$lib/tools';
 	import {
 		HandleRouteParam,
 		Params,

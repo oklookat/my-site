@@ -2,14 +2,14 @@ import type { GetSession, Handle } from '@sveltejs/kit';
 //
 import NetworkUser from '$lib_elven/network/network_user';
 import type { User } from '$lib_elven/types/user';
-import { getTokenFromRequestHeaders } from '$lib_elven/tools';
+import { getTokenFromRequestHeaders } from '$lib/tools';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	let isError = false;
 	let isExists = false;
 	let isAdmin = false;
 	let username = '';
-	let token = '';
+	let token: string | null = '';
 	event.locals.user = {
 		isError: isError,
 		isExists: isExists,
@@ -27,7 +27,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	const networkUser = new NetworkUser(token);
-	let user: User;
+	let user: User | undefined = undefined;
 	try {
 		const resp = await networkUser.getMe();
 		if (resp.ok) {

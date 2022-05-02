@@ -16,7 +16,7 @@
 	}
 </script>
 
-<div class="header base__container">
+<div class="header">
 	<div class="items">
 		<div class="hamburger" on:click={() => toggleHamburger()}>
 			<Hamburger />
@@ -38,11 +38,15 @@
 
 <style lang="scss">
 	.header {
+		position: sticky;
+		top: 0;
+		z-index: 99;
 		height: 44px;
 		align-items: center;
 		.items {
 			height: 100%;
-			width: 100%;
+			width: var(--width-95);
+			margin: auto;
 
 			* {
 				height: 100%;
@@ -51,16 +55,13 @@
 				cursor: pointer;
 			}
 
-			display: grid;
-			grid-template-rows: 1fr;
-			grid-template-columns: max-content 1fr;
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
 			gap: 14px;
 
 			.hamburger {
 				width: 24px;
-			}
-			.logo {
-				width: 100%;
 			}
 		}
 	}

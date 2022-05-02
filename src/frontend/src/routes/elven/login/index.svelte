@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
 	import NetworkAuth from '$lib_elven/network/network_auth';
-	import { setTitleElven } from '$lib_elven/tools';
+	import { setTitleElven } from '$lib/tools';
 	import { _ } from 'svelte-i18n';
 
 	let username = '';

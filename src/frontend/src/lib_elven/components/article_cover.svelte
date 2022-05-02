@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getUploadsWith } from '$lib_elven/tools';
+	import { getUploadsWith } from '$lib/tools';
 	import Extension, { type FileTypeSelector } from '$lib_elven/tools/extension';
 	import type { Article } from '$lib_elven/types/articles';
 

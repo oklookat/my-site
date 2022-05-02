@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import NetworkAuth from '$lib_elven/network/network_auth';
-	import { setTitleElven } from '$lib_elven/tools';
+	import { setTitleElven } from '$lib/tools';
 	import { _ } from 'svelte-i18n'
 
 	onMount(async () => {

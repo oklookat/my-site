@@ -1,6 +1,5 @@
 <script context="module" lang="ts">
 	import NetworkArticle from '$lib_elven/network/network_article';
-
 	import { HandleRouteParam, Params, type RPH_Data, type RPH_Event } from '$lib_elven/tools/params';
 	import type { Items } from '$lib_elven/types';
 	import type { Article } from '$lib_elven/types/articles';
@@ -49,7 +48,7 @@
 
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Pagination from '$lib_elven/components/pagination.svelte';
+	import Pagination from '$lib/components/pagination.svelte';
 	import ArticlesToolbars from '$lib_oklookat/components/articles_toolbars.svelte';
 	import ArticlesList from '$lib_oklookat/components/articles_list.svelte';
 

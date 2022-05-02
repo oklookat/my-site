@@ -47,7 +47,7 @@
 	import Header from '$lib_elven/components/header.svelte';
 	import ServiceWrapper from '$lib_elven/components/service_wrapper.svelte';
 	import Progress from '$lib_elven/plugins/elvenProgress/progress.svelte';
-	import { isAdminPanelLoginPage } from '$lib_elven/tools';
+	import { isAdminPanelLoginPage } from '$lib/tools';
 
 	export let isAdmin = false;
 </script>

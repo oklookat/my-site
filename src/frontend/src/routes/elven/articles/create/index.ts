@@ -17,10 +17,13 @@ export async function get(event: RequestEvent): Promise<RequestHandlerOutput> {
 			body: { article: article }
 		};
 	}
+
 	try {
-		const networkArticle = new NetworkArticle(event.locals.user.token);
-		const articled = await networkArticle.get(params.get('id'));
-		article = articled;
+		const networkArticle = new NetworkArticle(event.locals.user.token || '');
+		const resp = await networkArticle.get(params.get('id')!);
+		if(resp.ok) {
+			article = await resp.json()
+		}
 	} catch (err) {}
 	return {
 		body: { article: article }

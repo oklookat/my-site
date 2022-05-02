@@ -1,9 +1,7 @@
 /** notification element class names */
 export enum ClassName {
 	notification = 'notification',
-	message = 'notification__message',
-	progressWrapper = 'notification__progress-wrapper',
-	progress = 'notification__progress'
+	message = 'message'
 }
 
 /** plugin */

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { dateToReadable } from '$lib_elven/tools/dates';
+	import { dateToReadable } from '$lib/tools/dates';
 	import Extension from '$lib_elven/tools/extension';
 	import type { File } from '$lib_elven/types/files';
 	import FileActions from '$lib_elven/components/file_actions.svelte';
-	import { bytesToReadable, cutString, getUploadsWith } from '$lib_elven/tools';
+	import { bytesToReadable, cutString, getUploadsWith } from '$lib/tools';
 
 	export let file: File;
 	$: convert(file);

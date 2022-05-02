@@ -1,5 +1,4 @@
-import { stringToNumber } from "$lib_elven/tools";
-import { getDateFormatter, getMessageFormatter, getTimeFormatter, _, json } from "svelte-i18n";
+import { getDateFormatter, _, json } from "svelte-i18n";
 
 
 let i18n_hourAgo = 'hour ago'

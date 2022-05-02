@@ -5,7 +5,7 @@
 	import Popup from '$lib_elven/components/popup.svelte';
 	import type { Article } from '$lib_elven/types/articles';
 	import NetworkArticle from '$lib_elven/network/network_article';
-	import { isTouchDevice } from '$lib_elven/tools';
+	import { isTouchDevice } from '$lib/tools';
 	import { _ } from 'svelte-i18n'
 
 	export let article: Article;

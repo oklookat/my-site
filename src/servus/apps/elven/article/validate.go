@@ -55,17 +55,6 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 		}
 	}
 
-	// "preview" param.
-	var preview = params.Get("preview")
-	if len(preview) < 1 {
-		a.Preview = true
-	} else {
-		a.Preview, err = strconv.ParseBool(preview)
-		if err != nil {
-			a.Preview = true
-		}
-	}
-
 	// "page" param
 	var pageStr = params.Get("page")
 	if len(pageStr) < 1 {

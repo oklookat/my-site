@@ -6,13 +6,14 @@
 	// ui
 	import PlaybackControls from './playback_controls.svelte';
 	import OverlayMenu from './overlay_menu.svelte';
+	import Hamburger from '$lib/icons/hamburger.svelte';
 
 	/** is player active */
 	let active: boolean = false;
 	export let core: ElvenPlayer;
 
 	/** when player open/close */
-	export let onActiveChanged: (active?: boolean) => void | undefined = undefined;
+	export let onActiveChanged: ((active?: boolean) => void) | undefined = undefined;
 	$: onActiveChange(active);
 	function onActiveChange(val: boolean) {
 		if (!onActiveChanged) {
@@ -45,12 +46,6 @@
 		}
 	};
 
-	let unsub1: Unsubscriber,
-		unsub2: Unsubscriber,
-		unsub3: Unsubscriber,
-		unsub4: Unsubscriber,
-		unsub5: Unsubscriber,
-		unsub6: Unsubscriber;
 	let unsubs: Unsubscriber[] = [];
 
 	onMount(() => {
@@ -62,38 +57,66 @@
 	});
 
 	function init() {
-		unsub1 = core.store.state.playing.onChange((v) => {
-			if (v) {
-				active = true;
-			}
-			state.playing = v;
-		});
+		unsubs.push(
+			core.store.state.playing.onChange((v) => {
+				if (typeof v !== 'boolean') {
+					return;
+				}
+				if (v) {
+					active = true;
+				}
+				state.playing = v;
+			})
+		);
 
-		unsub2 = core.store.state.current.buffered.percents.onChange((v) => {
-			state.current.buffered.percents = v;
-		});
+		unsubs.push(
+			core.store.state.current.buffered.percents.onChange((v) => {
+				if (typeof v !== 'number') {
+					return;
+				}
+				state.current.buffered.percents = v;
+			})
+		);
 
-		unsub3 = core.store.state.current.time.percents.onChange((v) => {
-			state.current.time.percents = v;
-		});
+		unsubs.push(
+			core.store.state.current.time.percents.onChange((v) => {
+				if (typeof v !== 'number') {
+					return;
+				}
+				state.current.time.percents = v;
+			})
+		);
 
-		unsub4 = core.store.state.current.time.pretty.onChange((v) => {
-			// not setting pretty if user dragging time slider now (time preview)
-			if (state.current.time.draggingNow) {
-				return;
-			}
-			state.current.time.pretty = v;
-		});
+		unsubs.push(
+			core.store.state.current.time.pretty.onChange((v) => {
+				// not setting pretty if user dragging time slider now (time preview)
+				if (state.current.time.draggingNow) {
+					return;
+				}
+				if (typeof v !== 'string') {
+					return;
+				}
+				state.current.time.pretty = v;
+			})
+		);
 
-		unsub5 = core.store.state.current.duration.pretty.onChange((v) => {
-			state.current.duration.pretty = v;
-		});
+		unsubs.push(
+			core.store.state.current.duration.pretty.onChange((v) => {
+				if (typeof v !== 'string') {
+					return;
+				}
+				state.current.duration.pretty = v;
+			})
+		);
 
-		unsub6 = core.store.state.volume.percents.onChange((v) => {
-			state.volume.percents = v;
-		});
-
-		unsubs.push(unsub1, unsub2, unsub3, unsub4, unsub5, unsub6);
+		unsubs.push(
+			core.store.state.volume.percents.onChange((v) => {
+				if (typeof v !== 'number') {
+					return;
+				}
+				state.volume.percents = v;
+			})
+		);
 	}
 
 	function destroy() {
@@ -105,15 +128,9 @@
 		core.stop();
 	}
 
-	/** events */
-
-	function onPlay() {
+	function onPlayPause(isPlay: boolean) {
 		active = true;
-		core.play();
-	}
-
-	function onPause() {
-		core.pause();
+		core.playPause()
 	}
 
 	function onNext() {
@@ -142,36 +159,41 @@
 	}
 </script>
 
+{#if isOverlay}
+	<OverlayMenu
+		bind:state
+		on:deactivated={() => (isOverlay = false)}
+		on:volumeChanged={(e) => setVolumePercents(e.detail)}
+		on:currentTimeChanged={(e) => setCurrentTimePercents(e.detail)}
+		on:currentTimePreviewChanged={(e) => setCurrentTimePreview(e.detail)}
+	>
+		<PlaybackControls
+			slot="playbackControls"
+			bind:isPlaying={state.playing}
+			on:playPause={e => (onPlayPause(e.detail))}
+			on:next={() => onNext()}
+			on:prev={() => onPrev()}
+		/>
+	</OverlayMenu>
+{/if}
+
 {#if active}
 	<div class="player">
-		<div class="player__show">
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				viewBox="0 0 191 168"
-				on:click={() => (isOverlay = !isOverlay)}
-			>
-				<rect x="1" y="138" width="190" height="30" rx="15" />
-				<rect y="69" width="190" height="30" rx="15" />
-				<rect x="1" width="190" height="30" rx="15" />
-			</svg>
+		<div class="show">
+			<Hamburger on:click={() => (isOverlay = !isOverlay)} />
 		</div>
 
-		<div class="player__controls" on:click|stopPropagation>
+		<div class="controls" on:click|stopPropagation>
 			<PlaybackControls
 				bind:isPlaying={state.playing}
-				on:play={() => onPlay()}
-				on:pause={() => onPause()}
+				on:playPause={e => (onPlayPause(e.detail))}
 				on:next={() => onNext()}
 				on:prev={() => onPrev()}
 			/>
 		</div>
 
-		<div class="player__close">
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				viewBox="0 0 255.07 295.91"
-				on:click={() => onClose()}
-			>
+		<div class="close" on:click={() => onClose()}>
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 255.07 295.91">
 				<path
 					d="M135,390.18h0a33.69,33.69,0,0,0,48-4.29L369.93,159.34a35.1,35.1,0,0,0-4.19-48.86h0a33.69,33.69,0,0,0-48,4.29L130.83,341.33A35.09,35.09,0,0,0,135,390.18Z"
 					transform="translate(-122.85 -102.37)"
@@ -183,25 +205,6 @@
 			</svg>
 		</div>
 	</div>
-
-	{#if isOverlay}
-		<OverlayMenu
-			bind:state
-			on:deactivated={() => (isOverlay = false)}
-			on:volumeChanged={(e) => setVolumePercents(e.detail)}
-			on:currentTimeChanged={(e) => setCurrentTimePercents(e.detail)}
-			on:currentTimePreviewChanged={(e) => setCurrentTimePreview(e.detail)}
-		>
-			<PlaybackControls
-				slot="playbackControls"
-				bind:isPlaying={state.playing}
-				on:play={() => onPlay()}
-				on:pause={() => onPause()}
-				on:next={() => onNext()}
-				on:prev={() => onPrev()}
-			/>
-		</OverlayMenu>
-	{/if}
 {/if}
 
 <style lang="scss">
@@ -212,20 +215,28 @@
 		height: 64px;
 		display: grid;
 		grid-template-columns: 52px 1fr 52px;
-		svg {
-			height: 20px;
+		align-items: center;
+
+		div {
 			width: 100%;
-		}
-		> div {
-			height: 100%;
+			height: 50%;
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			> svg {
+			svg {
 				cursor: pointer;
+				width: 100%;
+				height: 100%;
 			}
 		}
-		&__controls,
+		
+		.close {
+			svg {
+				height: 60%;
+			}
+		}
+
+		.controls,
 		svg {
 			@media (prefers-color-scheme: dark) {
 				fill: white;

@@ -48,10 +48,6 @@
 </nav>
 
 <style lang="scss">
-	:global(.route-active) {
-		text-decoration: underline 1px;
-	}
-
 	.header {
 		font-weight: bold;
 		height: max-content;

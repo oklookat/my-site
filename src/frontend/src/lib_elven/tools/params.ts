@@ -1,4 +1,4 @@
-import { getRecordLength, searchParamsByObject, stringToNormal } from '$lib_elven/tools';
+import { getRecordLength, searchParamsByObject, stringToNormal } from '$lib/tools';
 import type { Article } from '$lib_elven/types/articles';
 import {
 	By as FilesBy,
@@ -65,7 +65,7 @@ export class Params<T> {
 	}
 
 	/** import values from searchparams */
-	public import(params: URLSearchParams) {
+	public import(params?: URLSearchParams) {
 		if (!params || !(params instanceof URLSearchParams)) {
 			return;
 		}
@@ -141,25 +141,23 @@ export class Params<T> {
 				page: 1,
 				drafts: false,
 				newest: true,
-				preview: true,
 				by: ArticlesBy.published,
 				title: undefined
 			} as ParamType<T>;
-		} else if (this.paramsFor === 'file') {
-			return {
-				page: 1,
-				start: Start.newest,
-				by: FilesBy.created,
-				extensions: undefined,
-				filename: undefined
-			} as ParamType<T>;
 		}
+		return {
+			page: 1,
+			start: Start.newest,
+			by: FilesBy.created,
+			extensions: undefined,
+			filename: undefined
+		} as ParamType<T>;
 	}
 }
 
 /** fetch data / set searchparams when you change params */
 export async function HandleRouteParam<T>(event: RPH_Event<T>, data: RPH_Data<T>) {
-	let windowSearch: string;
+	let windowSearch = ''
 	let searchparams: URLSearchParams;
 	if (browser) {
 		windowSearch = window.location.search;

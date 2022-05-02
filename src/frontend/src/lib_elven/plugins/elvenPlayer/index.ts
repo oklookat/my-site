@@ -1,6 +1,5 @@
 import type {
 	Events as IEvents,
-	Store as IStore,
 	Playlist,
 	Source,
 	ElvenPlayer as IElvenPlayer,
@@ -10,14 +9,13 @@ import DOM from './core/dom';
 import Store from './core/store';
 import Events from './core/events';
 import Logger from './core/logger';
-import Utils from './core/utils';
+import { getPercents, convertPercentsToCurrentTime as _convertPercentsToCurrentTime, convertCurrentTimePretty } from '$lib_elven/plugins/elvenPlayer/core/utils';
 
 // warning: Chrome has bug with FLAC double-rewind to the end (PTS not defined). Idk how fix that, except decrease time of rewinding to end
 /** controls audio player */
 export default class ElvenPlayer implements IElvenPlayer {
-	public store: IStore;
+	public store: Store;
 	private dom: DOM;
-	private initialized: boolean = false;
 	private unsubs: Unsubscribe[] = [];
 	private events: IEvents;
 
@@ -27,33 +25,25 @@ export default class ElvenPlayer implements IElvenPlayer {
 	};
 
 	constructor() {
-		this.init();
-	}
-
-	public init() {
 		this.store = new Store();
 		this.events = new Events(this.store);
 		this.dom = new DOM(this.events);
 		this.subscribe();
-		this.initialized = true;
 		window.$player = this;
 	}
 
 	public destroy() {
 		this.unsubscribe();
 		this.dom.destroy();
-		this.dom = null;
-		this.initialized = false;
 		window.$player = undefined;
 	}
 
 	private subscribe() {
-		const u1 = this.store.state.current.ended.onChange((v) => {
+		this.unsubs.push(this.store.state.current.ended.onChange((v) => {
 			if (v && this.store.playing) {
 				this.next();
 			}
-		});
-		this.unsubs.push(u1);
+		}));
 	}
 
 	private unsubscribe() {
@@ -64,7 +54,16 @@ export default class ElvenPlayer implements IElvenPlayer {
 	}
 
 	public addToPlaylist(source: Source) {
+		const isPlaylistEmpty = this.playlist.sources.length < 1
+		if (isPlaylistEmpty) {
+			this.playlist.position = 0
+		}
+
 		this.playlist.sources.push(source);
+
+		if (isPlaylistEmpty) {
+			this.recheckSource(true)
+		}
 	}
 
 	public clearPlaylist() {
@@ -74,29 +73,36 @@ export default class ElvenPlayer implements IElvenPlayer {
 		};
 	}
 
-	public async play() {
-		this.initIfNotInit();
-		try {
-			const currentSource = this._playlist.sources[this._playlist.position];
-			await this.dom.play(currentSource);
-		} catch (err) {
-			Logger.error(err);
+	private recheckSource(force = false) {
+		if (!this.dom.source || force) {
+			this.stop()
+			this.dom.source = this.playlist.sources[this.playlist.position]
 		}
 	}
 
-	public pause() {
-		this.initIfNotInit();
-		this.dom.pause();
+	public async playPause() {
+		this.recheckSource()
+
+		if (this.isPlaying) {
+			this.dom.pause()
+			return
+		}
+
+		try {
+			// @ts-ignore
+			await this.dom.play();
+		} catch (err) {
+			Logger.error(`${err}`);
+		}
 	}
 
 	public stop() {
-		this.initIfNotInit();
 		this.dom.stop();
 	}
 
 	private repeat() {
 		this.stop();
-		this.play();
+		this.playPause();
 	}
 
 	public next() {
@@ -107,27 +113,26 @@ export default class ElvenPlayer implements IElvenPlayer {
 			return;
 		}
 		this.playlist.position++;
-		this.play();
+		this.dom.source = this.playlist.sources[this.playlist.position];
+
+		this.playPause();
 	}
 
 	public prev() {
 		// if no source behind
 		const prev = this.playlist.sources[this.playlist.position - 1];
+
 		// if current time > 2% of total time - repeat
 		const notInStart = this.currentTimePercents > 2;
 		if (!prev || notInStart) {
 			this.repeat();
 			return;
 		}
-		this.playlist.position--;
-		this.play();
-	}
 
-	private initIfNotInit() {
-		if (this.initialized) {
-			return;
-		}
-		this.init();
+		this.playlist.position--;
+		this.dom.source = this.playlist.sources[this.playlist.position];
+
+		this.playPause();
 	}
 
 	public get isPlaying(): boolean {
@@ -192,7 +197,7 @@ export default class ElvenPlayer implements IElvenPlayer {
 	}
 
 	public get currentTimePercents(): number {
-		return Utils.getPercents(this.dom.currentTime, this.dom.duration);
+		return getPercents(this.dom.currentTime, this.dom.duration);
 	}
 
 	public get duration(): number {
@@ -200,11 +205,11 @@ export default class ElvenPlayer implements IElvenPlayer {
 	}
 
 	public convertPercentsToCurrentTime(percents: number): number {
-		return Utils.convertPercentsToCurrentTime(percents, this.dom.duration);
+		return _convertPercentsToCurrentTime(percents, this.dom.duration);
 	}
 
 	public convertPercentsToCurrentTimePretty(percents: number): string {
 		const seconds = this.convertPercentsToCurrentTime(percents);
-		return Utils.convertCurrentTimePretty(seconds, this.dom.duration);
+		return convertCurrentTimePretty(seconds, this.dom.duration);
 	}
 }

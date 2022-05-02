@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileTypeSelector } from '$lib_elven/tools/extension';
-import { _ } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 
 	/** on preview closed */
 	export let onClose: () => void;
@@ -44,7 +44,7 @@ import { _ } from 'svelte-i18n';
 		}
 		window.$player.clearPlaylist();
 		window.$player.addToPlaylist(url.toString());
-		window.$player.play();
+		window.$player.playPause();
 		onClose();
 	}
 </script>

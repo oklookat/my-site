@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dateToReadable } from '$lib_elven/tools/dates';
+	import { dateToReadable } from '$lib/tools/dates';
 	import type { Article } from '$lib_elven/types/articles';
 	import ArticleCover from './article_cover.svelte';
 	import ArticleActions from '$lib_elven/components/article_actions.svelte';

@@ -39,14 +39,14 @@
 
 <script lang="ts">
 	// ui
-	import Pagination from '$lib_elven/components/pagination.svelte';
+	import Pagination from '$lib/components/pagination.svelte';
 	// article
 	import type { Article } from '$lib_elven/types/articles';
 	import type { Items } from '$lib_elven/types';
 	import ArticlesToolbars from '$lib_elven/components/articles_toolbars.svelte';
 	import ArticlesList from '$lib_elven/components/articles_list.svelte';
 	import NetworkArticle from '$lib_elven/network/network_article';
-	import { setTitleElven } from '$lib_elven/tools';
+	import { setTitleElven } from '$lib/tools';
 	import {
 		HandleRouteParam,
 		Params,

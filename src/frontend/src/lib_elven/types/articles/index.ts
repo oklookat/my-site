@@ -15,8 +15,6 @@ export type Params = {
 
 	newest?: boolean;
 
-	preview?: boolean;
-
 	by?: By;
 
 	/** search by title */

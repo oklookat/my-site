@@ -6,7 +6,7 @@
 	import type { File } from '$lib_elven/types/files';
 	import NetworkFile from '$lib_elven/network/network_file';
 	import Preview from '$lib_elven/components/preview.svelte';
-	import { getUploadsURL, isTouchDevice } from '$lib_elven/tools';
+	import { getUploadsURL, isTouchDevice } from '$lib/tools';
 	import { _ } from 'svelte-i18n';
 
 	/** file itself */

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { session } from '$app/stores';
 	import ElvenLink from '$lib_elven/components/link.svelte';
-	import { setTitleElven } from '$lib_elven/tools';
+	import { setTitleElven } from '$lib/tools';
 	import { _ } from 'svelte-i18n'
 </script>
 
@@ -33,11 +33,6 @@
 			flex-direction: row;
 			flex-wrap: wrap;
 			gap: 14px;
-			:global(*) {
-				padding: 8px;
-				background-color: var(--color-level-1);
-				border-radius: var(--border-radius);
-			}
 		}
 	}
 </style>

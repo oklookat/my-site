@@ -1,8 +1,15 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import { fly, fade } from 'svelte/transition';
 
 	const dispatch = createEventDispatcher<{ closed: void }>();
+
+	onMount(() => {
+		document.body.classList.add("no-scroll")
+	})
+	onDestroy(() => {
+		document.body.classList.remove("no-scroll")
+	})
 </script>
 
 <div
@@ -25,7 +32,7 @@
 		max-width: 100vw;
 		width: 100%;
 		height: 100%;
-		position: absolute;
+		position: fixed;
 		top: 0;
 		right: 0;
 		bottom: 0;
@@ -40,7 +47,6 @@
 				display: flex;
 				flex-direction: column;
 				flex-wrap: wrap;
-				gap: 12px;
 
 				// item
 				:global(*) {

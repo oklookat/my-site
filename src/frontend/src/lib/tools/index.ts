@@ -37,7 +37,8 @@ export function debounce(f: Function, ms: number) {
 		if (isCooldown) {
 			return;
 		}
-
+		
+		// @ts-ignore
 		f.apply(this, arguments);
 
 		isCooldown = true;
@@ -55,6 +56,10 @@ export function getTokenFromRequestHeaders(headers: Headers): string | null {
 		return null;
 	}
 	const cookiesStr = headers.get('cookie');
+	if(!cookiesStr) {
+		return null
+	}
+
 	let token = '';
 	try {
 		const parsed = cookie.parse(cookiesStr);
@@ -278,12 +283,12 @@ export function setSearchParam(params: URLSearchParams, name: string, value: any
 }
 
 /** convert URLSearchParams to object */
-export function searchParamsToObject(params: URLSearchParams): Object {
+export function searchParamsToObject(params: URLSearchParams): Object | undefined {
 	if (!(params instanceof URLSearchParams)) {
 		return;
 	}
 
-	const result = {};
+	const result: Record<any, any> = {};
 
 	params.forEach((value, key) => {
 		// convert if needed.

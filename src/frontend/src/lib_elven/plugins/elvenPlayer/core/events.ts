@@ -1,5 +1,6 @@
-import type { Events as IEvents, Store } from '../types';
-import Utils from './utils';
+import type Store from './store';
+import { convertCurrentTimePretty, getBufferedPercents, getPercents, getPretty } from '$lib_elven/plugins/elvenPlayer/core/utils';
+import type { Events as IEvents} from '../types';
 import Logger from './logger';
 
 /** updates playback state */
@@ -24,7 +25,10 @@ export default class Events implements IEvents {
 		this.store.ended = false;
 	}
 
-	public onTimeUpdate(e: Event) {
+	public onTimeUpdate(e?: Event) {
+		if(!e) {
+			return
+		}
 		const el = e.target as HTMLAudioElement;
 		const currentTime = el.currentTime;
 		const buffered = el.buffered;
@@ -33,20 +37,31 @@ export default class Events implements IEvents {
 		if (badDuration) {
 			duration = 0;
 		}
-		this.store.bufferedPercents = Utils.getBufferedPercents(currentTime, duration, buffered);
+		this.store.bufferedPercents = getBufferedPercents(currentTime, duration, buffered);
 		this.store.durationNum = duration;
-		this.store.durationPretty = Utils.getPretty(duration);
+		this.store.durationPretty = getPretty(duration);
 		this.store.currentTimeNum = currentTime;
-		this.store.currentTimePretty = Utils.convertCurrentTimePretty(currentTime, duration);
-		this.store.currentTimePercents = Utils.getPercents(currentTime, duration);
+		this.store.currentTimePretty = convertCurrentTimePretty(currentTime, duration);
+		this.store.currentTimePercents = getPercents(currentTime, duration);
 	}
 
-	public onError(e: Event) {
-		// https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/networkState
+	public onError(e?: Event) {
+		this.onPause();
+		if (!e || !('target' in e)) {
+			Logger.error(`unknown error.`);
+			return
+		}
+
 		const target = e.target as HTMLMediaElement;
 		const err = target.error;
+		if (!err) {
+			Logger.error(`unknown error.`);
+			return
+		}
+
 		const msg = err.message ? ` ${err.message}` : '';
-		this.onPause();
+
+		// https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/networkState
 		switch (err.code) {
 			case MediaError.MEDIA_ERR_ABORTED:
 				Logger.error(`aborted.${msg}`);

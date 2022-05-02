@@ -3,6 +3,7 @@
 	--border-radius: 4px;
 	--border: var(--color-border) 1px solid;
 	--paginator-height: 140px;
+	--width-95: 95%;
 }
 
 @media (prefers-color-scheme: light) {

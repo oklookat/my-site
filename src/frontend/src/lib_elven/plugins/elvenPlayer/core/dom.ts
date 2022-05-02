@@ -12,13 +12,20 @@ export default class DOM {
 
 	constructor(events: Events, volume?: number) {
 		this.element = new Audio(undefined);
-		this.volume = volume;
+
+		if (typeof volume !== 'number') {
+			this.volume = 1
+		} else {
+			this.volume = volume;
+		}
 		this.events = events;
+
 		this._onPlaying = this.events.onPlaying.bind(this.events);
 		this._onPause = this.events.onPause.bind(this.events);
 		this._onEnded = this.events.onEnded.bind(this.events);
 		this._onTimeUpdate = this.events.onTimeUpdate.bind(this.events);
 		this._onError = this.events.onError.bind(this.events);
+
 		this.manageEvents(true);
 	}
 
@@ -39,15 +46,15 @@ export default class DOM {
 		}
 		this.manageEvents(false);
 		this.stop();
-		this.element = null;
+		this.element.remove()
 	}
 
-	public async play(source: URL | string): Promise<void> {
-		this.element.src = source.toString();
+	public async play(): Promise<void> {
 		try {
 			await this.element.play();
-			return Promise.resolve();
-		} catch (err) {}
+		} catch (err) {
+			throw err
+		}
 	}
 
 	public pause() {
@@ -70,8 +77,9 @@ export default class DOM {
 		return this.element.currentSrc;
 	}
 
-	private set source(src: string) {
+	public set source(src: string) {
 		this.element.src = src;
+		this.element.load()
 	}
 
 	public get currentTime(): number {

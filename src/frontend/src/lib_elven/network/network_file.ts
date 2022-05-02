@@ -1,6 +1,6 @@
 //
 import Fetchd from '$lib_elven/network';
-import { addTokenToHeaders } from '$lib_elven/tools';
+import { addTokenToHeaders } from '$lib/tools';
 import type { Params } from '$lib_elven/types/files';
 
 /** Use with SSR by passing token / or in components by passing empty token.
@@ -35,7 +35,7 @@ export default class NetworkFile {
 	/** upload one file */
 	public static async upload(file: File): Promise<Response> {
 		if (!(file instanceof File)) {
-			return;
+			throw Error("not a File")
 		}
 		const form = new FormData();
 		form.append('file', file);

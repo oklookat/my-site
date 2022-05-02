@@ -46,16 +46,17 @@
 
 <Overlay on:deactivated={() => onDeactivated()}>
 	<div class="overlay">
+
 		<div class="current">
-			<div class="current__sliders">
-				<div class="progress__buffered">
+			<div class="sliders">
+				<div class="buffered">
 					<Progress
 						bind:percents={state.current.buffered.percents}
 						--color="#383659"
 						--border-radius="12px"
 					/>
 				</div>
-				<div class="slider__time">
+				<div class="time">
 					<SliderTime
 						positionPercents={state.current.time.percents}
 						on:draggingNow={(e) => setCurrentTimeDraggingNow(e.detail)}
@@ -64,17 +65,18 @@
 					/>
 				</div>
 			</div>
-			<div class="current__info">
-				<div class="current__position">
+
+			<div class="info">
+				<div class="position">
 					{state.current.time.pretty}
 				</div>
-				<div class="current__total">
+				<div class="total">
 					{state.current.duration.pretty}
 				</div>
 			</div>
 		</div>
 
-		<div class="slider__volume">
+		<div class="volume">
 			<Slider
 				percents={state.volume.percents}
 				afterUp={false}
@@ -85,6 +87,7 @@
 		<div class="playback">
 			<slot name="playbackControls" />
 		</div>
+
 	</div>
 </Overlay>
 
@@ -104,33 +107,35 @@
 		grid-template-columns: 1fr;
 		grid-template-rows: 1fr 1fr;
 		gap: 18px;
-		&__sliders {
+
+		.sliders {
 			position: relative;
 			background-color: #000;
 			border-radius: 4px;
-			.progress__buffered,
-			.slider__time {
+			.buffered,
+			.time {
 				position: absolute;
 				width: 100%;
 				height: 100%;
 			}
 		}
-		&__info {
+
+		.info {
 			display: flex;
 			flex-direction: row;
-			.current__total {
+			.total {
 				margin-left: auto;
 			}
 		}
 	}
 
-	.slider__time,
-	.slider__volume,
-	.progress__buffered {
+	.volume,
+	.sliders > .time,
+	.sliders > .buffered {
 		border-radius: 4px;
 	}
 
-	.slider__volume {
+	.volume {
 		background-color: #000;
 		position: relative;
 		width: 50%;

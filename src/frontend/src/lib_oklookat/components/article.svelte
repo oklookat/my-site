@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import ArticleCover from '$lib_elven/components/article_cover.svelte';
-	import { dateToReadable } from '$lib_elven/tools/dates';
+	import { dateToReadable } from '$lib/tools/dates';
 
 	import type { Article } from '$lib_elven/types/articles';
 

@@ -1,3 +1,5 @@
+import type Store from "./core/store";
+
 export type ConvertSecondsMode = 'auto' | 'hours' | 'minutes';
 export type Source = string;
 export type Sources = Array<string>;
@@ -25,70 +27,6 @@ export interface State<T> {
 
 	/** hook when value changed. Returns unsubscribe function */
 	onChange(hook: (value?: T) => void): Unsubscribe;
-}
-
-/** audio element store with state */
-export interface Store {
-	state: {
-		/** is audio playing now? */
-		playing: State<boolean>;
-
-		volume: {
-			/** in float */
-			num: State<number>;
-
-			/** in percents */
-			percents: State<number>;
-		};
-
-		/** current playing */
-		current: {
-			/** is audio ended */
-			ended: State<boolean>;
-
-			/** buffered */
-			buffered: {
-				/** in percents */
-				percents: State<number>;
-			};
-
-			/** total time */
-			duration: {
-				/** in seconds */
-				num: State<number>;
-
-				/** in string like '04:20' */
-				pretty: State<string>;
-			};
-
-			/** current time */
-			time: {
-				/** in seconds */
-				num: State<number>;
-
-				/** in percents */
-				percents: State<number>;
-
-				/** in string '01:37' */
-				pretty: State<string>;
-			};
-		};
-	};
-
-	set playing(v: boolean);
-	set ended(v: boolean);
-
-	set bufferedPercents(v: number);
-
-	set durationNum(v: number);
-	set durationPretty(v: string);
-
-	set currentTimeNum(v: number);
-	set currentTimePercents(v: number);
-	set currentTimePretty(v: string);
-
-	set volumePercents(v: number);
-	set volumeNum(v: number);
 }
 
 /** local copy of IStore.state (almost),
@@ -169,10 +107,7 @@ export interface ElvenPlayer {
 	convertPercentsToCurrentTimePretty(percents: number): string;
 
 	/** play audio */
-	play(): void;
-
-	/** pause audio */
-	pause(): void;
+	playPause(): void;
 
 	/** stop audio */
 	stop(): void;
@@ -205,5 +140,5 @@ export interface Events {
 	onTimeUpdate: (e?: Event) => void;
 
 	/** when error */
-	onError: (e?: ErrorEvent) => void;
+	onError: (e?: Event) => void;
 }

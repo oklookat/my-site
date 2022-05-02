@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import Toolbar from '$lib_elven/components/toolbar.svelte';
-	import ToolbarBig from '$lib_elven/components/toolbar_big.svelte';
+	import Toolbar from '$lib/components/toolbar.svelte';
+	import ToolbarBig from '$lib/components/toolbar_big.svelte';
 	import ElvenLink from '$lib_elven/components/link.svelte';
 	import { By, type Article } from '$lib_elven/types/articles';
-	import SearchBar from '$lib_elven/components/search_bar.svelte';
+	import SearchBar from '$lib/components/search_bar.svelte';
 	import type { Params, RPH_Event } from '$lib_elven/tools/params';
 	import { _ } from 'svelte-i18n';
 

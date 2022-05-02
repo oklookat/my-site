@@ -2,22 +2,21 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
 	import { marked } from 'marked';
-	import hljs from 'highlight.js';
-	import '../../../../lib_elven/assets/highlight.scss';
 	import type { Config } from '@oklookat/jmarkd';
-	import TextareaResizer from '$lib_elven/tools/textarea_resizer';
+	import TextareaResizer from '$lib/tools/textarea_resizer';
 	import { generateFileTypeSelector } from '$lib_elven/tools/extension';
-	import Toolbar from '$lib_elven/components/toolbar.svelte';
+	import Toolbar from '$lib/components/toolbar.svelte';
 	import type { Article } from '$lib_elven/types/articles';
 	import ArticleCover from '$lib_elven/components/article_cover.svelte';
 	import NetworkArticle from '$lib_elven/network/network_article';
 	import FilesPortable from '$lib_elven/components/files_portable.svelte';
 	import type { File } from '$lib_elven/types/files';
-	import { setTitleElven } from '$lib_elven/tools';
+	import { setTitleElven } from '$lib/tools';
 	import ToolsArticles from '$lib_elven/tools/articles';
 	import { Params } from '$lib_elven/tools/params';
-	import { dateToReadable } from '$lib_elven/tools/dates';
+	import { dateToReadable } from '$lib/tools/dates';
 	import { _ } from 'svelte-i18n'
+import { getParser } from '$lib/tools/markdown';
 
 	/** creating / editing this article */
 	export let article: Article;
@@ -76,22 +75,7 @@
 
 	/** start text editor */
 	function initEditor(data?: string) {
-		marked.setOptions({
-			renderer: new marked.Renderer(),
-			highlight: function (code, lang) {
-				const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-				return hljs.highlight(code, { language }).value;
-			},
-			// highlight.js css expects a top-level 'hljs' class.
-			langPrefix: 'hljs language-',
-			pedantic: false,
-			gfm: true,
-			breaks: false,
-			sanitize: false,
-			smartLists: true,
-			smartypants: false,
-			xhtml: false
-		});
+		const markParser = getParser()
 		const config: Config = {
 			container: editorEL,
 			placeholder: $_('elven.routes.articles.create.editorPlaceholder'),
@@ -101,7 +85,7 @@
 					config: {
 						preview: {
 							parse: (data: string) => {
-								return marked.parse(data);
+								return markParser(data);
 							}
 						}
 					}

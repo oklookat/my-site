@@ -11,9 +11,6 @@ type ArticleGetParams struct {
 	// start from newest? true == DESC; false == ASC.
 	Newest bool
 
-	// true = empty content; false = full content.
-	Preview bool
-
 	// created; updated; published.
 	By string
 

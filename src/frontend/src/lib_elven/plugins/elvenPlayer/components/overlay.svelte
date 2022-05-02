@@ -7,7 +7,7 @@
 		if (!v) {
 			dispatch('deactivated');
 		}
-		document.body.style.overflow = v ? 'hidden' : null;
+		document.body.style.overflow = v ? 'hidden' : '';
 	};
 
 	let container: HTMLDivElement;
@@ -56,7 +56,7 @@
 		&__main {
 			border-radius: var(--border-radius);
 			z-index: 9999;
-			max-width: 95%;
+			max-width: var(--width-95);
 			width: 294px;
 			height: 224px;
 		}

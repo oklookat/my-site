@@ -4,7 +4,7 @@
 	import { browser } from '$app/env';
 
 	let container: HTMLDivElement;
-	let plugin: ElvenNotify;
+	let plugin: ElvenNotify | undefined;
 
 	onMount(() => {
 		if (!browser) {
@@ -14,15 +14,16 @@
 	});
 
 	onDestroy(() => {
-		if (!browser) {
+		if (!browser || !plugin) {
 			return;
 		}
 		plugin.destroy();
+		plugin = undefined
 	});
 </script>
 
 <div class="notify">
-	<div class="notify__notifications" bind:this={container} />
+	<div class="notifications" bind:this={container} />
 </div>
 
 <style lang="scss">
@@ -39,7 +40,8 @@
 		margin-bottom: 8px;
 		position: fixed;
 		overflow: hidden;
-		&__notifications {
+
+		.notifications {
 			width: 100%;
 			gap: 8px;
 			height: max-content;
@@ -48,13 +50,15 @@
 			box-sizing: border-box;
 			position: relative;
 		}
+		
 		@include _desktop() {
 			margin-right: 12px;
 			height: min-content;
 			width: 224px;
 			right: 0;
 			bottom: 0;
-			&__notifications {
+			
+			.notifications {
 				height: max-content;
 				width: max-content;
 				flex-direction: column;
