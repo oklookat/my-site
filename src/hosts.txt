@@ -1,4 +1,0 @@
-127.0.0.1 oklookat.ru
-127.0.0.1 api.oklookat.ru
-127.0.0.1 elven.oklookat.ru
-127.0.0.1 static.oklookat.ru

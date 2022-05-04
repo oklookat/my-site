@@ -46,7 +46,6 @@ func (s *Service) Middleware(next http.Handler) http.Handler {
 
 		// continue if not.
 		next.ServeHTTP(response, request)
-		return
 	})
 }
 

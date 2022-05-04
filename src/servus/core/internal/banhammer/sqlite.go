@@ -21,7 +21,6 @@ type IPEntry struct {
 }
 
 type SQLite struct {
-	dir        string
 	path       string
 	maxWarns   int
 	connection *sql.DB
@@ -47,8 +46,7 @@ func (s *SQLite) Boot(databasePath string, maxWarns int) error {
 	// connect.
 	err = s.connectToDatabase()
 	if err == nil && isDbExists {
-		// remove older entries.
-		err = s.removeOlder()
+		err = s.someAmnesty()
 	}
 	return err
 }
@@ -127,10 +125,20 @@ func (s *SQLite) RemoveEntry(ip string) error {
 	return err
 }
 
-func (s *SQLite) removeOlder() error {
+// remove some items depend on some conditions.
+func (s *SQLite) someAmnesty() error {
+	// remove 5 days-old entries.
 	var fiveDaysAgo = time.Now().Add(120 - time.Hour).Unix()
-	var _, err = s.connection.Exec("DELETE FROM ip_list WHERE created_at <= $1", fiveDaysAgo)
-	return err
+	if _, err := s.connection.Exec("DELETE FROM ip_list WHERE created_at <= $1", fiveDaysAgo); err != nil {
+		return err
+	}
+
+	// remove not banned & not warned
+	if _, err := s.connection.Exec("DELETE FROM ip_list WHERE is_banned < 1 AND warns_count < 1"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *SQLite) SetPath(path string) {
