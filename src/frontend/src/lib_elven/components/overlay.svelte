@@ -1,14 +1,17 @@
 <script lang="ts">
+	import { toggleBodyScroll } from '$lib/tools';
+
 	import { onDestroy, onMount } from 'svelte';
 
 	export let onClose: () => void;
 
+	let setDefScroll: () => void;
 	onMount(() => {
-		document.body.classList.add('no-scroll');
+		setDefScroll = toggleBodyScroll();
 	});
 
 	onDestroy(() => {
-		document.body.classList.remove('no-scroll');
+		setDefScroll();
 	});
 </script>
 

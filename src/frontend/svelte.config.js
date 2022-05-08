@@ -46,7 +46,14 @@ const config = {
 
 	kit: {
 		adapter: adapter({ out: './build' }),
-		vite: viteBase
+		vite: viteBase,
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+		csp: {
+			mode: 'auto',
+			directives: {
+				'default-src': ['self', 'data:', '*.oklookat.ru', '*.google.com', '*.youtube.com', '*.vk.com', '*.github.com', '*.facebook.com', '*.yandex.ru', '*.spotify.com', '*.deezer.com', '*.twitter.com', '*.instagram.com', '*.reddit.com']
+			}
+		}
 	}
 };
 

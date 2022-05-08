@@ -6,7 +6,7 @@
 
 		let items: Items<Article>;
 
-		const networkArticle = new NetworkArticle(event.session.user.token || '');
+		const networkArticle = new NetworkArticle('');
 
 		const fetchData = async () => {
 			response = await networkArticle.getAll(requestParams.toObject(), event.fetch);

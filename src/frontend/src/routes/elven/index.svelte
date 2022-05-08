@@ -2,7 +2,7 @@
 	import { session } from '$app/stores';
 	import ElvenLink from '$lib_elven/components/link.svelte';
 	import { setTitleElven } from '$lib/tools';
-	import { _ } from 'svelte-i18n'
+	import { _ } from 'svelte-i18n';
 </script>
 
 <svelte:head>

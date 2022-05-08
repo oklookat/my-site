@@ -2,6 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileTypeSelector } from '$lib_elven/tools/extension';
 	import { _ } from 'svelte-i18n';
+	import { toggleBodyScroll } from '$lib/tools';
 
 	/** on preview closed */
 	export let onClose: () => void;
@@ -17,7 +18,10 @@
 	let isAudio = false;
 	let isSupported = false;
 
+	let setDefScroll: () => void;
 	onMount(() => {
+		setDefScroll = toggleBodyScroll();
+
 		// check support
 		isImage = extension.selected === 'IMAGE';
 		isVideo = extension.selected === 'VIDEO';
@@ -29,11 +33,14 @@
 			return;
 		}
 
-		document.body.classList.add('no-scroll');
+		if (isAudio) {
+			playAudio();
+			return;
+		}
 	});
 
 	onDestroy(() => {
-		document.body.classList.remove('no-scroll');
+		setDefScroll();
 	});
 
 	/** play audio by url */
@@ -43,16 +50,13 @@
 			return;
 		}
 		window.$player.clearPlaylist();
-		window.$player.addToPlaylist(url.toString());
-		window.$player.playPause();
+		window.$player.addToPlaylist(url);
+		window.$player.play();
 		onClose();
 	}
 </script>
 
 <div class="preview base__overlay" on:click|self={onClose}>
-	{#if isAudio}
-		{playAudio()}
-	{/if}
 	<div class="watchable">
 		{#if isImage}
 			<img decoding="async" loading="lazy" src={url.toString()} alt={$_('elven.general.preview')} />

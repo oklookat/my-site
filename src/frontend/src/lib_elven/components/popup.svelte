@@ -32,6 +32,7 @@
 			return;
 		}
 		e.preventDefault();
+
 		const target = e.target;
 		if (target instanceof HTMLElement) {
 			const isChild = isChildOfPopup(target);
@@ -39,6 +40,7 @@
 				return;
 			}
 		}
+
 		onDisabled();
 	}
 

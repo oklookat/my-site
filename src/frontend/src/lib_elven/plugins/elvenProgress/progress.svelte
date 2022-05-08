@@ -32,7 +32,6 @@
 				const intervalID = setInterval(() => {
 					if (percents < settings.basicLoading.startTo) {
 						percents++;
-						console.log(percents);
 						return;
 					}
 					clearInterval(intervalID);

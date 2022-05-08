@@ -10,6 +10,7 @@
 	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
 	import { Params, Refresh, type RPH_Event } from '$lib_elven/tools/params';
 	import type { Unsubscriber } from 'svelte/store';
+import { toggleBodyScroll } from '$lib/tools';
 
 	const dispatch = createEventDispatcher<{
 		/** on 'select' option clicked on file */
@@ -48,12 +49,16 @@
 		Store.files.selected.set(null);
 	}
 
+	let setDefScroll: () => void
 	onMount(async () => {
+		if (!browser) {
+			return;
+		}
 		if (!params) {
 			params = new Params<File>('file');
 		}
 		initStore();
-		document.body.classList.add('no-scroll');
+		setDefScroll = toggleBodyScroll()
 		await getAll();
 	});
 
@@ -62,7 +67,7 @@
 		if (!browser) {
 			return;
 		}
-		document.body.classList.remove('no-scroll');
+		setDefScroll()
 	});
 
 	/** get all files */
@@ -166,11 +171,11 @@
 
 <style lang="scss">
 	.overlay {
-		z-index: 9990;
+		z-index: 7000;
 		background-color: var(--color-body);
 		display: block;
 		&__main {
-			z-index: 9990;
+			z-index: 8000;
 			overflow: auto;
 			width: 100%;
 			height: 100%;

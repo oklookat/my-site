@@ -17,8 +17,8 @@
             "copyLink": "Скопировать ссылку",
             "linkCopied": "Ссылка скопирована",
             "notHavePermError": "Ошибка: нет разрешения",
-            "create": "Создать",
             "unsupported": "Не поддерживается",
+            "username": "Имя пользователя",
             "password": "Пароль",
             "newUsername": "Новое имя пользователя",
             "newPassword": "Новый пароль",
@@ -36,6 +36,7 @@
             "articles": {
                 "title": "Статьи",
                 "create": {
+                    "create": "создать",
                     "editorPlaceholder": "Заходят как-то в бар...",
                     "titlePlaceholder": "Это долгая история...",
                     "notSaved": "нет",
@@ -87,12 +88,12 @@
                 "deleteQuestion": "Удалить файл"
             },
             "filesUploader": {
-                "releaseToUpload": "Отпустите для загрузки",
-                "clickOrDrag": "Кликните или перетащите для загрузки"
+                "releaseToUpload": "отпустите для загрузки",
+                "clickOrDrag": "кликните или перетащите для загрузки"
             },
             "filesToolbars": {
-                "newest": "newest",
-                "oldest": "oldest"
+                "newest": "новые",
+                "oldest": "старые"
             },
             "pagination": {
               "page": "Страница",

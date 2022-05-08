@@ -11,7 +11,7 @@
 	/** request params */
 	export let params: Params<File>;
 
-	let searchValue = '';
+	let searchValue = params.getParam('filename') || '';
 
 	const dispatch = createEventDispatcher<{
 		/** on request param changed */

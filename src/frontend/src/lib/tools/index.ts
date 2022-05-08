@@ -91,14 +91,14 @@ export function correctElementOverflow(el: HTMLElement, evt: MouseEvent): { x: n
 
 	// left-right (X)
 	const popupWidth = el.offsetWidth;
-	const overflowDifferenceX = x + popupWidth - window.screen.width;
+	const overflowDifferenceX = (x + popupWidth) - document.body.clientWidth;
 	if (overflowDifferenceX > 0) {
 		x = x - overflowDifferenceX - moveOffset;
 	}
 
 	// top-bottom (Y)
 	const popupHeight = el.offsetHeight;
-	const overflowDifferenceY = y + popupHeight - window.screen.height;
+	const overflowDifferenceY = (y + popupHeight) - document.body.clientHeight;
 	if (overflowDifferenceY > 0) {
 		y = y - overflowDifferenceY - moveOffset;
 	}
@@ -317,4 +317,21 @@ export function searchParamsByObject(data: Record<string | number, any>): URLSea
 	}
 
 	return params;
+}
+
+/** first call = store default body 'no-scroll' / set 'no-scroll'
+ * 
+ * second call = remove 'no-scroll' if not exists before
+ */
+export function toggleBodyScroll() {
+	const noScrollBefore = document?.body.classList.contains("no-scroll")
+	if(!noScrollBefore) {
+		document?.body.classList.add("no-scroll")
+	}
+	return () => {
+		if(noScrollBefore || !document) {
+			return
+		}
+		document.body.classList.remove("no-scroll")
+	}
 }

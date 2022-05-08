@@ -31,7 +31,7 @@
 	}
 </script>
 
-<nav class="header base__container">
+<nav class="header">
 	<div class="header__items">
 		<ElvenLink path="">
 			<div class={isUnknown ? 'route-active' : ''}>{$_('elven.components.header.elven')}</div>
@@ -50,6 +50,7 @@
 <style lang="scss">
 	.header {
 		font-weight: bold;
+		width: 100%;
 		height: max-content;
 		display: flex;
 		align-items: center;

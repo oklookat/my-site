@@ -43,10 +43,11 @@
 		z-index: 99;
 		height: 44px;
 		align-items: center;
+		width: var(--width-95);
+		margin: auto;
 		.items {
 			height: 100%;
-			width: var(--width-95);
-			margin: auto;
+			width: 100%;
 
 			* {
 				height: 100%;

@@ -3,7 +3,7 @@
 	import Store from '$lib_elven/tools/store';
 	import type { File as TFile } from '$lib_elven/types/files';
 	import { createEventDispatcher } from 'svelte';
-import { _ } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 
 	const dispatch = createEventDispatcher<{
 		/** on file uploaded */
@@ -40,8 +40,8 @@ import { _ } from 'svelte-i18n';
 	/** when file changed on file input */
 	async function onInputChange(e: Event) {
 		const target = e.target as HTMLInputElement;
-		if(!target || !target.files) {
-			return
+		if (!target || !target.files) {
+			return;
 		}
 		if (target.files.length < 1) {
 			return 0;
@@ -77,8 +77,8 @@ import { _ } from 'svelte-i18n';
 	/** https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop */
 	function onDrop(e: DragEvent) {
 		e.preventDefault();
-		if(isUploadingNow || !e || !e.dataTransfer) {
-			return
+		if (isUploadingNow || !e || !e.dataTransfer) {
+			return;
 		}
 		dragSwitcher(false);
 		for (let i = 0; i < e.dataTransfer.items.length; i++) {
@@ -87,8 +87,8 @@ import { _ } from 'svelte-i18n';
 				continue;
 			}
 			const file = e.dataTransfer.items[i].getAsFile();
-			if(!file) {
-				continue
+			if (!file) {
+				continue;
 			}
 			upload(file);
 			// upload only one if multipleUploading disabled
@@ -149,7 +149,7 @@ import { _ } from 'svelte-i18n';
 	.uploader {
 		cursor: pointer;
 		width: 100%;
-		height: 64px;
+		min-height: 64px;
 		display: flex;
 		align-items: center;
 		justify-content: center;

@@ -14,7 +14,7 @@ types {
     application/rdf+xml                   rdf;
 
 
-  # JavaScript
+    # JavaScript
 
     # Servers should use text/javascript for JavaScript resources.
     # https://html.spec.whatwg.org/multipage/scripting.html#scriptingLanguages
@@ -37,7 +37,7 @@ types {
     audio/ogg                             oga ogg opus;
     audio/realaudio                       ra;
     audio/wav                             wav;
-	audio/flac						  	  flac;
+	  audio/flac						  	            flac;
     image/apng                            apng;
     image/avif                            avif;
     image/avif-sequence                   avifs;

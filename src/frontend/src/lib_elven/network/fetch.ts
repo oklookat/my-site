@@ -91,7 +91,7 @@ export default class FetchDriver {
 			}
 			return result;
 		} catch (err) {
-			NetworkError.handle(err);
+			NetworkError.handle(err as any);
 			return Promise.reject(err);
 		}
 	}

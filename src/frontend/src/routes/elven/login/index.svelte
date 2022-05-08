@@ -48,8 +48,8 @@
 <div class="login">
 	<div class="login__inputs">
 		<div class="login__logo logo__text">elven</div>
-		<input type="text" name="username" placeholder="username" bind:value={username} />
-		<input type="password" name="password" placeholder="password" bind:value={password} />
+		<input type="text" name="username" placeholder={$_('elven.general.username')} bind:value={username} />
+		<input type="password" name="password" placeholder={$_('elven.general.password')} bind:value={password} />
 	</div>
 	<button
 		disabled={!username || !password}

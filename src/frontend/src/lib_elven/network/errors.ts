@@ -12,7 +12,7 @@ export class NetworkError {
 		if (!isWindowExists) {
 			return message;
 		}
-		window.$notify.add({ message });
+		window.$notify?.add({ message });
 		return message;
 	}
 

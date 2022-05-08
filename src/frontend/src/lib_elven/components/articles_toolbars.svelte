@@ -10,7 +10,7 @@
 
 	export let params: Params<Article>;
 
-	let searchValue = '';
+	let searchValue = params.getParam('title') || '';
 
 	if (params.getParam('title')) {
 		searchValue = params.getParam('title');
@@ -50,7 +50,7 @@
 
 <div class="toolbars">
 	<ToolbarBig>
-		<ElvenLink path="/articles/create">{$_('elven.general.create')}</ElvenLink>
+		<ElvenLink path="/articles/create">{$_('elven.routes.articles.create.create')}</ElvenLink>
 	</ToolbarBig>
 
 	<div class="search">

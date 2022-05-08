@@ -11,7 +11,7 @@
 
 		let items: Items<File>;
 
-		const networkFile = new NetworkFile(event.session.user.token || '');
+		const networkFile = new NetworkFile('');
 
 		const fetchData = async () => {
 			response = await networkFile.getAll(requestParams.toObject(), event.fetch);

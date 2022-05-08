@@ -19,7 +19,7 @@
 </svelte:head>
 
 <article>
-	<div class="content">
+	<div class="article__content">
 		<h1>{article.title}</h1>
 		<ArticleCover {article} />
 		{#if parseMarkdown}
@@ -34,13 +34,5 @@
 		width: 95%;
 		max-width: 624px;
 		margin: auto;
-		.content {
-            min-width: 0;
-            width: 100%;
-			display: grid;
-			flex-direction: column;
-			justify-content: center;
-			gap: 24px;
-		}
 	}
 </style>

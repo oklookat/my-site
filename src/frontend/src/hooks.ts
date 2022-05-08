@@ -5,6 +5,14 @@ import type { User } from '$lib_elven/types/user';
 import { getTokenFromRequestHeaders } from '$lib/tools';
 
 export const handle: Handle = async ({ event, resolve }) => {
+	
+	const resolver = async (): Promise<Response> => {
+		const resp = await resolve(event)
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy
+		resp.headers.append("Permissions-Policy", "microphone=(), geolocation=(), camera=(), payment=(), usb=()")
+		return resp
+	}
+
 	let isError = false;
 	let isExists = false;
 	let isAdmin = false;
@@ -22,8 +30,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	token = getTokenFromRequestHeaders(event.request.headers);
 
 	if (!token) {
-		const response = await resolve(event);
-		return response;
+		return await resolver()
 	}
 
 	const networkUser = new NetworkUser(token);
@@ -51,8 +58,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.user.username = username;
 	event.locals.user.token = token;
 
-	const response = await resolve(event);
-	return response;
+	return await resolver()
 };
 
 export const getSession: GetSession = (event) => {

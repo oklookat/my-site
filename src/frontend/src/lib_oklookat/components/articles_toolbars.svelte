@@ -8,7 +8,7 @@
 
 	export let params: Params<Article>;
 
-	let searchValue = '';
+	let searchValue = params.getParam('title') || '';
 
 	if (params.getParam('title')) {
 		searchValue = params.getParam('title');

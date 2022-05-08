@@ -20,8 +20,8 @@
       "copyLink": "Copy link",
       "linkCopied": "Link copied",
       "notHavePermError": "Error: not have permission",
-      "create": "Create",
       "unsupported": "Unsupported",
+      "username": "Username",
       "password": "Password",
       "newUsername": "New username",
       "newPassword": "New password",
@@ -39,6 +39,7 @@
       "articles": {
         "title": "Articles",
         "create": {
+          "create": "create",
           "editorPlaceholder": "It's a long story...",
           "titlePlaceholder": "Actually...",
           "notSaved": "Not saved",
@@ -90,8 +91,8 @@
         "deleteQuestion": "Delete file"
       },
       "filesUploader": {
-        "releaseToUpload": "Release to upload",
-        "clickOrDrag": "Click or drag to upload"
+        "releaseToUpload": "release to upload",
+        "clickOrDrag": "click or drag to upload"
       },
       "filesToolbars": {
         "newest": "newest",

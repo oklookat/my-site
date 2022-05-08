@@ -39,6 +39,7 @@ body {
 	color: var(--color-text);
 	background-color: var(--color-body);
 	text-underline-offset: 0.4em;
+
 	&:first-child {
 		min-height: 100vh;
 	}
@@ -94,10 +95,22 @@ button {
 	}
 }
 
-h1, pre, p {
+h1,
+pre,
+p {
 	margin: 0;
 }
 
 pre {
 	overflow: auto;
+}
+
+.jmarkd__preview,
+.article__content {
+	min-width: 0;
+	width: 100%;
+	display: grid;
+	flex-direction: column;
+	justify-content: center;
+	gap: 24px;
 }
