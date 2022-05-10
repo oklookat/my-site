@@ -18,7 +18,7 @@
 	transition:fade={{ duration: 324 }}
 >
 	<div class="menu" transition:fly={{ x: -100, duration: 324 }}>
-		<div class="items">
+		<div class="items base__links">
 			<slot />
 		</div>
 	</div>

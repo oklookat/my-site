@@ -2,12 +2,11 @@ package file
 
 import (
 	"net/url"
-	"servus/apps/elven/base"
 	"strconv"
 	"strings"
 )
 
-func ValidateGetParams(f *base.FileGetParams, params url.Values, isAdmin bool) (err error) {
+func ValidateGetParams(f *GetParams, params url.Values, isAdmin bool) (err error) {
 	// "start" param.
 	var start = params.Get("start")
 	if start != "newest" && start != "oldest" {

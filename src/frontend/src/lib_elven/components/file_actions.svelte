@@ -7,7 +7,7 @@
 	import NetworkFile from '$lib_elven/network/network_file';
 	import Preview from '$lib_elven/components/preview.svelte';
 	import { getUploadsURL, isTouchDevice } from '$lib/tools';
-	import { _ } from 'svelte-i18n';
+	import { t } from '$lib/locale';
 
 	/** file itself */
 	export let file: File;
@@ -58,7 +58,7 @@
 			return;
 		}
 		onDisabled();
-		const isDelete = await window.$confirm($_('elven.components.fileActions.deleteQuestion'));
+		const isDelete = await window.$confirm($t('elven.files.deleteQuestion'));
 		if (!isDelete) {
 			return;
 		}
@@ -75,9 +75,9 @@
 		const formattedPath = getUploadsURL().toString() + `/${path}`;
 		try {
 			await navigator.clipboard.writeText(formattedPath);
-			message = $_('elven.general.linkCopied');
+			message = $t('elven.files.linkCopied');
 		} catch (err) {
-			message = $_('elven.general.notHavePermError');
+			message = $t('elven.files.notHavePermError');
 		}
 		window.$notify?.add({ message });
 		onDisabled();
@@ -107,24 +107,22 @@
 
 {#if !isPreview}
 	<svelte:component this={render.component} {...render.props}>
-		<div class="base__items {render.isOverlay ? 'extended' : ''}">
-			{#if withSelectOption}
-				<div
-					on:click={() => {
-						Store.files.selected.set(file);
-					}}
-				>
-					{$_('elven.general.select')}
-				</div>
-			{/if}
+		{#if withSelectOption}
+			<div
+				on:click={() => {
+					Store.files.selected.set(file);
+				}}
+			>
+				{$t('elven.files.select')}
+			</div>
+		{/if}
 
-			<div on:click={() => onPreview(true)}>{$_('elven.general.preview')}</div>
+		<div on:click={() => onPreview(true)}>{$t('elven.files.preview')}</div>
 
-			<div on:click={() => copyLink()}>{$_('elven.general.copyLink')}</div>
+		<div on:click={() => copyLink()}>{$t('elven.files.copyLink')}</div>
 
-			{#if onDeleted}
-				<div on:click={() => deleteFile()}>{$_('elven.general.delete')}</div>
-			{/if}
-		</div>
+		{#if onDeleted}
+			<div on:click={() => deleteFile()}>{$t('elven.files.delete')}</div>
+		{/if}
 	</svelte:component>
 {/if}

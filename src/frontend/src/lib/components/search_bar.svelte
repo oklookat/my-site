@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { _ } from 'svelte-i18n'
+	import { t } from '$lib/locale';
 
-	export let placeholder = $_('elven.general.search');
+	export let placeholder = $t('elven.components.searchbar.search');
 
 	export let value = '';
 

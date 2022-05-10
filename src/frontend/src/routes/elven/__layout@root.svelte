@@ -35,6 +35,7 @@
 		}
 
 		return {
+			status: 200,
 			props: {
 				isAdmin: isAdmin
 			}
@@ -43,14 +44,19 @@
 </script>
 
 <script lang="ts">
-	// components
 	import Header from '$lib_elven/components/header.svelte';
 	import ServiceWrapper from '$lib_elven/components/service_wrapper.svelte';
 	import Progress from '$lib_elven/plugins/elvenProgress/progress.svelte';
 	import { isAdminPanelLoginPage } from '$lib/tools';
+	import { page } from '$app/stores';
+	import { browser } from '$app/env';
 
 	export let isAdmin = false;
 </script>
+
+<svelte:head>
+	<title>{$page.stuff.title ? $page.stuff.title : 'elven'}</title>
+</svelte:head>
 
 <div class="container">
 	<Progress />
@@ -63,7 +69,9 @@
 		<slot />
 	</div>
 
-	<ServiceWrapper bind:isAdmin />
+	{#if browser}
+		<ServiceWrapper bind:isAdmin />
+	{/if}
 </div>
 
 <style lang="scss">

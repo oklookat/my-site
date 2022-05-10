@@ -10,7 +10,7 @@
 		slide: number;
 
 		mouseDown: void;
-		mouseUp: void
+		mouseUp: void;
 	}>();
 
 	/** set percents */
@@ -18,13 +18,13 @@
 
 	/** is mouse down on slider? */
 	let isMouseDown = false;
-	$: watchMouseDown(isMouseDown)
+	$: watchMouseDown(isMouseDown);
 	function watchMouseDown(val: boolean) {
-		if(val) {
-			dispatch('mouseDown')
-			return
+		if (val) {
+			dispatch('mouseDown');
+			return;
 		}
-		dispatch('mouseUp')
+		dispatch('mouseUp');
 	}
 
 	let finalPercents = percents;
@@ -32,8 +32,8 @@
 	/** watch when percents prop changed */
 	$: watchPercents(percents);
 	function watchPercents(perc: number) {
-		if(isMouseDown) {
-			return
+		if (isMouseDown) {
+			return;
 		}
 		if (!perc) {
 			perc = 0;
@@ -93,19 +93,19 @@
 		const rect = container.getBoundingClientRect();
 		const position = e.clientX - rect.left;
 		let perc = computePercents(position, containerWidth);
-		if(perc > 100) {
-			perc = 100
-		} else if(perc < 0) {
-			perc = 0
+		if (perc > 100) {
+			perc = 100;
+		} else if (perc < 0) {
+			perc = 0;
 		}
-		finalPercents = perc
+		finalPercents = perc;
 		dispatch('slide', finalPercents);
 	}
 </script>
 
 <div class="slider" bind:this={container}>
 	<div class="itself" style="width: {finalPercents}%" />
-	<div class="bubble" style="left: calc({finalPercents}% - 12px)" />
+	<div class="line" style="left: calc({finalPercents}% - 1%)" />
 </div>
 
 <style lang="scss">
@@ -124,7 +124,7 @@
 		align-items: center;
 
 		.itself,
-		.bubble {
+		.line {
 			background-color: #918ce6;
 		}
 		.itself {
@@ -135,11 +135,10 @@
 			width: 0;
 			height: 100%;
 		}
-		.bubble {
+		.line {
 			position: absolute;
-			width: 20px;
-			height: 20px;
-			border-radius: 50%;
+			width: 6px;
+			height: 130%;
 		}
 	}
 </style>

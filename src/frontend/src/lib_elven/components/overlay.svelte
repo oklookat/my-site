@@ -16,8 +16,8 @@
 </script>
 
 <div class="overlay base__overlay" on:click|self={onClose}>
-	<div class="overlay__main">
-		<div class="overlay__content">
+	<div class="main">
+		<div>
 			<slot />
 		</div>
 	</div>
@@ -25,35 +25,33 @@
 
 <style lang="scss">
 	.overlay {
-		&__main {
+		.main {
+			user-select: none;
+			background-color: var(--color-level-1);
 			border-radius: var(--border-radius);
-			z-index: 9999;
-			overflow: auto;
-			max-width: 365px;
-			max-height: 365px;
-			width: 250px;
-			height: 250px;
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			justify-content: center;
-			@media (prefers-color-scheme: light) {
-				color: #000;
-				background-color: #fff;
+			min-height: 244px;
+			width: 224px;
+			@media screen and(max-width: 644px) {
+				width: 75%;
 			}
-			@media (prefers-color-scheme: dark) {
-				color: #fff;
-				background-color: #202020;
+			> div {
+				// item
+				:global(*) {
+					cursor: pointer;
+					border-bottom: 1px solid var(--color-border);
+					min-height: 54px;
+					width: 100%;
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+					&:hover {
+						background-color: var(--color-hover);
+					}
+				}
+				width: 100%;
+				height: 100%;
 			}
-		}
-		&__content {
-			box-sizing: border-box;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 24px;
-			height: 100%;
-			width: 100%;
 		}
 	}
 </style>

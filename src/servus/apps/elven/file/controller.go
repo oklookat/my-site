@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"servus/apps/elven/base"
-	"servus/apps/elven/model"
 	"servus/core/external/filer"
 	"servus/core/external/utils"
 	"strings"
@@ -26,14 +25,14 @@ func getAll(response http.ResponseWriter, request *http.Request) {
 	var isAdmin = pipe.IsAdmin()
 
 	// validate/filter.
-	validatedBody := &base.FileGetParams{}
+	validatedBody := &GetParams{}
 	if err = ValidateGetParams(validatedBody, request.URL.Query(), isAdmin); err != nil {
 		h.Send("bad request", 400, nil)
 		return
 	}
 
 	// get paginated.
-	pag := model.File{}
+	pag := Model{}
 	files, totalPages, err := pag.GetPaginated(validatedBody)
 	if err != nil {
 		h.Send("", 500, err)
@@ -44,7 +43,7 @@ func getAll(response http.ResponseWriter, request *http.Request) {
 	var responseContent = base.ResponseContent{}
 	responseContent.Meta.CurrentPage = validatedBody.Page
 	responseContent.Meta.TotalPages = totalPages
-	responseContent.Meta.PerPage = model.FilePageSize
+	responseContent.Meta.PerPage = pageSize
 	responseContent.Data = files
 
 	// make json.
@@ -75,7 +74,7 @@ func upload(response http.ResponseWriter, request *http.Request) {
 
 	// find duplicates in db by hash.
 	var hash = processed.Hash
-	var fileInDB = model.File{Hash: hash}
+	var fileInDB = Model{Hash: hash}
 	found, err := fileInDB.FindByHash()
 	if err != nil {
 		h.Send("", 500, err)
@@ -169,7 +168,7 @@ func upload(response http.ResponseWriter, request *http.Request) {
 	// create model.
 	var filename = processed.Header.Filename
 	var size = processed.Header.Size
-	fileInDB = model.File{
+	fileInDB = Model{
 		UserID:       auth.GetID(),
 		Hash:         hash,
 		Path:         newFilePathLocal,
@@ -209,7 +208,7 @@ func deleteOne(response http.ResponseWriter, request *http.Request) {
 	var id = h.GetRouteArgs()["id"]
 
 	// find.
-	var file = model.File{ID: id}
+	var file = Model{ID: id}
 	found, err := file.FindByID()
 	if err != nil {
 		h.Send("", 500, err)

@@ -1,38 +1,28 @@
 <script context="module" lang="ts">
-	export const load: Load = async (event) => {
-		let requestParams = new Params<File>('file', event.url.searchParams);
+	export const load: Load = async (e) => {
+		let requestParams = new Params<File>('file', e.url.searchParams);
 
-		const setParam = (name: string, val: any) => {
-			// @ts-ignore
-			requestParams.setParam(name, val);
-		};
-
-		let response: Response;
-
+		let resp: Response | null = null;
 		let items: Items<File>;
+
+		const stuff = e.stuff
+		stuff.title = t.get('elven.files.title')
 
 		const networkFile = new NetworkFile('');
 
-		const fetchData = async () => {
-			response = await networkFile.getAll(requestParams.toObject(), event.fetch);
-			if (response.ok) {
-				items = (await response.json()) as Items<File>;
-				return;
-			}
-			throw Error(response.statusText);
-		};
 
 		try {
-			await fetchData();
-			const pageParam = requestParams.getParam('page');
-			if (pageParam > items.meta.total_pages) {
-				setParam('page', items.meta.total_pages);
-				await fetchData();
+			resp = await networkFile.getAll(requestParams.toObject(), e.fetch);
+			if (resp.ok) {
+				items = (await resp.json()) as Items<File>;
 			}
-		} catch (err) {}
+		} catch (err) {
+			throw Error(resp?.statusText);
+		}
 
 		return {
-			status: 200,
+			status: resp?.status || 200,
+			stuff: stuff,
 			props: {
 				items: items,
 				params: requestParams
@@ -48,7 +38,6 @@
 	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
 	import FilesList from '$lib_elven/components/files_list.svelte';
 	import NetworkFile from '$lib_elven/network/network_file';
-	import { setTitleElven } from '$lib/tools';
 	import {
 		HandleRouteParam,
 		Params,
@@ -57,7 +46,7 @@
 		type RPH_Event
 	} from '$lib_elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
-	import { _ } from 'svelte-i18n'
+	import { t } from '$lib/locale';
 
 
 	/** files data */
@@ -93,10 +82,6 @@
 		await Refresh<File>(getData);
 	}
 </script>
-
-<svelte:head>
-	<title>{setTitleElven($_('elven.routes.files.title'))}</title>
-</svelte:head>
 
 <div class="files base__container">
 	<FilesToolbars

@@ -1,34 +1,26 @@
 <script context="module" lang="ts">
-	export const load: Load = async (event) => {
-		let requestParams = new Params<Article>('article', event.url.searchParams);
-
-		let response: Response;
-
+	export const load: Load = async (e) => {
+		let requestParams = new Params<Article>('article', e.url.searchParams);
 		let items: Items<Article>;
 
-		const networkArticle = new NetworkArticle('');
+		let resp: Response | null = null;
 
-		const fetchData = async () => {
-			response = await networkArticle.getAll(requestParams.toObject(), event.fetch);
-			if (response.ok) {
-				items = (await response.json()) as Items<Article>;
-				return;
-			}
-			throw Error(response.statusText);
-		};
+		const stuff = e.stuff
+		stuff.title = t.get('elven.articles.title')
 
+		const networkArticle = new NetworkArticle('', e.fetch);	
 		try {
-			await fetchData();
-			const pageParam = requestParams.getParam('page');
-			if (pageParam > items.meta.total_pages) {
-				// @ts-ignore
-				requestParams.setParam('page', items.meta.total_pages);
-				await fetchData();
+			resp = await networkArticle.getAll(requestParams.toObject());
+			if (resp.ok) {
+				items = (await resp.json()) as Items<Article>;
 			}
-		} catch (err) {}
+		} catch (err) {
+			throw Error(resp?.statusText);
+		}
 
 		return {
-			status: 200,
+			status: resp?.status || 200,
+			stuff: stuff,
 			props: {
 				items: items,
 				params: requestParams
@@ -46,7 +38,6 @@
 	import ArticlesToolbars from '$lib_elven/components/articles_toolbars.svelte';
 	import ArticlesList from '$lib_elven/components/articles_list.svelte';
 	import NetworkArticle from '$lib_elven/network/network_article';
-	import { setTitleElven } from '$lib/tools';
 	import {
 		HandleRouteParam,
 		Params,
@@ -55,7 +46,7 @@
 		type RPH_Event
 	} from '$lib_elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
-	import { _ } from 'svelte-i18n';
+	import { t } from '$lib/locale';
 
 	/** articles data */
 	export let items: Items<Article>;
@@ -86,10 +77,6 @@
 		await Refresh<Article>(getData);
 	}
 </script>
-
-<svelte:head>
-	<title>{setTitleElven($_('elven.routes.articles.title'))}</title>
-</svelte:head>
 
 <div class="articles base__container">
 	<ArticlesToolbars bind:params on:paramChanged={async (e) => await onParamChanged(e.detail)} />

@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import ElvenLink from '$lib_elven/components/link.svelte';
 	import { onDestroy } from 'svelte';
-	import { _ } from 'svelte-i18n'
-	// {$_('elven.header.elven')}
+	import { t } from '$lib/locale';
 
 	let isUnknown = false;
 	let isArticles = false;
@@ -31,34 +29,32 @@
 	}
 </script>
 
-<nav class="header">
+<nav class="header base__container">
 	<div class="header__items">
-		<ElvenLink path="">
-			<div class={isUnknown ? 'route-active' : ''}>{$_('elven.components.header.elven')}</div>
-		</ElvenLink>
+		<a href="/elven">
+			<div class={isUnknown ? 'base__links' : ''}><div>{$t('elven.components.header.elven')}</div>
+		</a>
 
-		<ElvenLink path="/articles">
-			<div class={isArticles ? 'route-active' : ''}>{$_('elven.components.header.articles')}</div>
-		</ElvenLink>
+		<a href="/elven/articles">
+			<div class={isArticles ? 'base__links' : ''}><div>{$t('elven.components.header.articles')}</div></div>
+		</a>
 
-		<ElvenLink path="/files">
-			<div class={isFiles ? 'route-active' : ''}>{$_('elven.components.header.files')}</div>
-		</ElvenLink>
+		<a href="/elven/files">
+			<div class={isFiles ? 'base__links' : ''}><div>{$t('elven.components.header.files')}</div></div>
+		</a>
 	</div>
 </nav>
 
 <style lang="scss">
 	.header {
 		font-weight: bold;
-		width: 100%;
 		height: max-content;
 		display: flex;
-		align-items: center;
 		&__items {
-			padding: 14px;
+			padding-top: 14px;
+			padding-bottom: 14px;
 			width: 100%;
 			display: flex;
-			align-items: center;
 			flex-wrap: wrap;
 			justify-content: center;
 			gap: 42px;

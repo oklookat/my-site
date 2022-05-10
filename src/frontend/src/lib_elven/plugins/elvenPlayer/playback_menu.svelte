@@ -57,7 +57,7 @@
 	}
 </script>
 
-<div class="overlay" on:click|self|stopPropagation={onClose}>
+<div class="overlay base__overlay" on:click|self|stopPropagation={onClose}>
 	<div class="main">
 		<div>
 			<div class="status">
@@ -79,14 +79,13 @@
 				</div>
 			</div>
 
-			<div class="volume">
-				<div class="itself">
+			<div class="control">
+				<div class="volume">
 					<Slider percents={$volumePercents} on:slide={(e) => ($volumePercents = e.detail)} />
 				</div>
-			</div>
-
-			<div class="controls">
-				<PlaybackControls />
+				<div class="playback">
+					<PlaybackControls />
+				</div>
 			</div>
 		</div>
 	</div>
@@ -94,26 +93,14 @@
 
 <style lang="scss">
 	.overlay {
-		background-color: rgba(0, 0, 0, 0.4);
-		z-index: 9998;
-		max-width: 100vw;
-		width: 100%;
-		height: 100%;
-		position: fixed;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
 		.main {
 			user-select: none;
 			background-color: var(--color-level-1);
 			border-radius: var(--border-radius);
-			height: 314px;
-			width: 424px;
+			height: 304px;
+			width: 304px;
 			@media screen and(max-width: 644px) {
+				max-width: 304px;
 				width: 95%;
 			}
 			padding: 24px;
@@ -123,10 +110,7 @@
 				height: 100%;
 				display: flex;
 				flex-direction: column;
-
-				div {
-					height: 50%;
-				}
+				gap: 15%;
 
 				.status {
 					display: flex;
@@ -162,18 +146,22 @@
 					}
 				}
 
-				.volume,
-				.controls {
+				.control {
+					align-self: center;
+					height: max-content;
+					width: max-content;
 					display: flex;
+					flex-direction: column;
 					align-items: center;
 					justify-content: center;
-				}
-				.volume {
-					height: 12px;
-					width: 100%;
-					.itself {
-						height: 100%;
-						width: 112px;
+					gap: 64px;
+					.volume {
+						width: 134px;
+						height: 18px;
+					}
+					.playback {
+						width: max-content;
+						height: max-content;
 					}
 				}
 			}

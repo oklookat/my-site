@@ -6,7 +6,7 @@
 	import type { Article } from '$lib_elven/types/articles';
 	import NetworkArticle from '$lib_elven/network/network_article';
 	import { isTouchDevice } from '$lib/tools';
-	import { _ } from 'svelte-i18n'
+	import { t } from '$lib/locale';
 
 	export let article: Article;
 	export let mouseEvent: MouseEvent;
@@ -73,11 +73,11 @@
 
 	/** delete article */
 	async function deleteArticle() {
-		if(!window.$confirm || !article.id) {
-			return
+		if (!window.$confirm || !article.id) {
+			return;
 		}
-		onDisabled()
-		const isDelete = await window.$confirm($_('elven.components.articleActions.deleteQuestion'));
+		onDisabled();
+		const isDelete = await window.$confirm($t('elven.articles.deleteQuestion'));
 		if (!isDelete) {
 			return;
 		}
@@ -89,13 +89,15 @@
 </script>
 
 <svelte:component this={render.component} {...render.props}>
-	<div class="base__items {render.isOverlay ? 'extended' : ''}">
-		{#if article.is_published}
-			<div on:click={async () => await unpublish()}>{$_('elven.components.articleActions.toDrafts')}</div>
-		{:else}
-			<div on:click={async () => await publish()}>{$_('elven.components.articleActions.publish')}</div>
-		{/if}
-		<div on:click={async () => await edit()}>{$_('elven.general.edit')}</div>
-		<div on:click={async () => await deleteArticle()}>{$_('elven.general.delete')}</div>
-	</div>
+	{#if article.is_published}
+		<div on:click={async () => await unpublish()}>
+			{$t('elven.articles.toDrafts')}
+		</div>
+	{:else}
+		<div on:click={async () => await publish()}>
+			{$t('elven.articles.publish')}
+		</div>
+	{/if}
+	<div on:click={async () => await edit()}>{$t('elven.articles.edit')}</div>
+	<div on:click={async () => await deleteArticle()}>{$t('elven.articles.delete')}</div>
 </svelte:component>

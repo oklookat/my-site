@@ -3,7 +3,7 @@
 	import NetworkUser from '$lib_elven/network/network_user';
 	import type { User, UserChange } from '$lib_elven/types/user';
 	import { usernameValidate, passwordValidate } from '$lib_elven/types/user';
-import { _ } from 'svelte-i18n';
+	import { t } from '$lib/locale';
 
 	const networkUser = new NetworkUser('');
 
@@ -99,27 +99,27 @@ import { _ } from 'svelte-i18n';
 {#if isUserDataLoaded}
 	<div class="block account">
 		<div class="big">{user.username}</div>
-		<div class="pointer" on:click={() => setChanger('username')}>{$_('elven.general.changeUsername')}</div>
-		<div class="pointer" on:click={() => setChanger('password')}>{$_('elven.general.changePassword')}</div>
+		<div class="pointer" on:click={() => setChanger('username')}>{$t('elven.settings.changeUsername')}</div>
+		<div class="pointer" on:click={() => setChanger('password')}>{$t('elven.settings.changePassword')}</div>
 		{#if isChangeCredentials}
 			<div class="change-credentials">
 				<input
 					type="password"
-					placeholder={$_('elven.general.password')}
+					placeholder={$t('elven.settings.password')}
 					bind:value={changer.password}
 					on:input={onPasswordInput}
 				/>
 				{#if changer.what === 'username'}
 					<input
 						type="text"
-						placeholder={$_('elven.general.newUsername')}
+						placeholder={$t('elven.settings.newUsername')}
 						bind:value={changer.newValue}
 						on:input={onNewUsernameInput}
 					/>
 				{:else if changer.what === 'password'}
 					<input
 						type="password"
-						placeholder={$_('elven.general.newPassword')}
+						placeholder={$t('elven.settings.newPassword')}
 						bind:value={changer.newValue}
 						on:input={onNewPasswordInput}
 					/>
@@ -129,7 +129,7 @@ import { _ } from 'svelte-i18n';
 					disabled={!(newValueValid && passwordConfirmValid)}
 					on:click={changeCredentials}
 				>
-					{$_('elven.general.ok')}
+					{$t('elven.settings.ok')}
 				</div>
 			</div>
 		{/if}

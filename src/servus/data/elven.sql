@@ -91,6 +91,7 @@ DROP DOMAIN IF EXISTS created CASCADE;
 CREATE DOMAIN created AS timestamp with time zone DEFAULT current_timestamp NOT NULL;
 ---------------------- SERVICE FUNCTIONS END ----------------------
 
+
 ---------------------- BASIC FUNCTIONS. ACTUAL FOR ALL MODELS. ----------------------
 -------- before insert or update --------
 CREATE OR REPLACE FUNCTION before_insert_or_update() RETURNS TRIGGER AS
@@ -103,6 +104,7 @@ BEGIN
 END;
 $$
 language 'plpgsql';
+
 
 -------- before insert --------
 CREATE
@@ -192,6 +194,7 @@ EXECUTE PROCEDURE before_insert();
 CREATE TRIGGER token_before_update BEFORE UPDATE ON tokens FOR EACH ROW
 EXECUTE PROCEDURE before_update();
 
+
 ---- FILES ----
 CREATE TABLE files
 (
@@ -215,6 +218,7 @@ EXECUTE PROCEDURE before_insert();
 CREATE TRIGGER file_before_update BEFORE UPDATE ON files FOR EACH ROW
 EXECUTE PROCEDURE before_update();
 
+
 ---- ARTICLES ----
 CREATE TABLE articles
 (
@@ -225,7 +229,7 @@ CREATE TABLE articles
     REFERENCES files(id) ON UPDATE CASCADE ON DELETE SET NULL,
     is_published boolean DEFAULT false,
     title varchar(124) DEFAULT 'Untitled'::varchar,
-    content varchar(256000) NOT NULL,
+    content varchar(816000) NOT NULL,
     published_at timestamp with time zone,
     created_at created,
     updated_at timestamp with time zone
@@ -237,6 +241,3 @@ CREATE TRIGGER article_before_insert BEFORE INSERT ON articles FOR EACH ROW
 EXECUTE PROCEDURE before_insert();
 CREATE TRIGGER article_before_update BEFORE UPDATE ON articles FOR EACH ROW
 EXECUTE PROCEDURE before_update();
-
-
----------------------- TABLES END ----------------------

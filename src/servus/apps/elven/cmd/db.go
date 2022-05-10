@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
-	"servus/apps/elven/model"
+	"servus/core/external/database"
 )
 
 // create tables in database from SQL file.
@@ -22,7 +22,7 @@ func migrate(values []string) error {
 		return fmt.Errorf("migration failed. Read SQL file error: %w", err)
 	}
 
-	if _, err = model.StringAdapter.Exec(string(script)); err != nil {
+	if _, err = database.StringAdapter.Exec(string(script)); err != nil {
 		return fmt.Errorf("migration failed. Failed to execute SQL file: %w", err)
 	}
 
@@ -31,7 +31,7 @@ func migrate(values []string) error {
 
 // delete tables from database.
 func rollback() error {
-	_, err := model.StringAdapter.Exec(`
+	_, err := database.StringAdapter.Exec(`
 	DROP SCHEMA public CASCADE;
 	CREATE SCHEMA public;
 	GRANT ALL ON SCHEMA public TO postgres;

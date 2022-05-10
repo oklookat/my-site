@@ -2,6 +2,7 @@ package utils
 
 import (
 	"math/rand"
+	"net/http"
 	"path/filepath"
 	"strings"
 	"time"
@@ -42,4 +43,20 @@ func GenerateULID() (ul string, err error) {
 // get string rune length.
 func LenRune(val string) int {
 	return len([]rune(val))
+}
+
+// get request IP.
+func GetIP(request *http.Request) (ip string) {
+	ip = ""
+	var ips = strings.Split(request.Header.Get("X-FORWARDED-FOR"), ", ")
+	for _, theIP := range ips {
+		if theIP != "" {
+			ip = theIP
+			break
+		}
+	}
+	if ip == "" {
+		ip = request.RemoteAddr
+	}
+	return
 }

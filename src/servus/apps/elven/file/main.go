@@ -9,6 +9,24 @@ import (
 	"github.com/oklookat/goway"
 )
 
+// get paginated files by params.
+type GetParams struct {
+	// number of page.
+	Page int
+
+	// newest (DESC); oldest (ASC).
+	Start string
+
+	// created (by creation date).
+	By string
+
+	// extensions without dot.
+	Extensions []string
+
+	// filename.
+	Filename *string
+}
+
 var isBooted = false
 var call *core.Instance
 var middleware base.MiddlewareAdminOnly
@@ -20,7 +38,7 @@ type Starter struct {
 	Pipe       base.UserPipe
 }
 
-func (s *Starter) Start() error {
+func Start(s *Starter) error {
 	// check.
 	if s == nil {
 		return errors.New("starter nil pointer")
@@ -45,7 +63,7 @@ func (s *Starter) Start() error {
 	return nil
 }
 
-func (s *Starter) Routes(router *goway.Router) error {
+func StartRoutes(router *goway.Router) error {
 	if !isBooted {
 		return errors.New("you must call Starter.Start() before Starter.Routes()")
 	}

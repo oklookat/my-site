@@ -16,7 +16,7 @@
 	}
 </script>
 
-<div class="header">
+<div class="header base__container">
 	<div class="items">
 		<div class="hamburger" on:click={() => toggleHamburger()}>
 			<Hamburger />
@@ -27,12 +27,12 @@
 
 {#if isHamburgerOpened}
 	<HamburgerMenu on:closed={() => toggleHamburger()}>
-		{#if $session.user.isAdmin}
-			<a href="/elven" on:click={() => toggleHamburger()}>elven</a>
-		{/if}
 		<a href="/" on:click={() => toggleHamburger()}>дом</a>
 		<a href="/blog" on:click={() => toggleHamburger()}>блог</a>
 		<a href="/toys" on:click={() => toggleHamburger()}>штуки</a>
+		{#if $session.user.isAdmin}
+			<a href="/elven" on:click={() => toggleHamburger()}>elven</a>
+		{/if}
 	</HamburgerMenu>
 {/if}
 
@@ -43,8 +43,6 @@
 		z-index: 99;
 		height: 44px;
 		align-items: center;
-		width: var(--width-95);
-		margin: auto;
 		.items {
 			height: 100%;
 			width: 100%;

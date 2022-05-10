@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/env';
 	import { onDestroy, onMount } from 'svelte';
-import { _ } from 'svelte-i18n';
+import { t } from '$lib/locale';
 
 	let isActive = false;
 	let titled = '';
@@ -17,7 +17,7 @@ import { _ } from 'svelte-i18n';
 		if (warningText) {
 			question = warningText;
 		} else {
-			question = $_('elven.plugins.elvenChoose.areYouSure');
+			question = $t('elven.plugins.elvenChoose.areYouSure');
 		}
 		toggleOverflow();
 		isActive = true;
@@ -94,11 +94,11 @@ import { _ } from 'svelte-i18n';
 			<div class="confirm__title">{titled}</div>
 			<div class="confirm__question">{question}</div>
 			<div class="confirm__ny">
-				<div class="confirm__no" on:click={onClickNo}>{$_('elven.plugins.elvenChoose.no')}</div>
+				<div class="confirm__no" on:click={onClickNo}>{$t('elven.plugins.elvenChoose.no')}</div>
 
 				<div class="confirm__divider" />
 
-				<div class="confirm__yes" on:click={onClickYes}>{$_('elven.plugins.elvenChoose.yes')}</div>
+				<div class="confirm__yes" on:click={onClickYes}>{$t('elven.plugins.elvenChoose.yes')}</div>
 			</div>
 		</div>
 	</div>

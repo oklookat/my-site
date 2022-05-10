@@ -11,45 +11,68 @@
 </script>
 
 <script lang="ts">
+	import Error400 from '$lib_oklookat/components/error400.svelte';
+	import Error404 from '$lib_oklookat/components/error404.svelte';
+	import Error500 from '$lib_oklookat/components/error500.svelte';
+	import ErrorInternet from '$lib_oklookat/components/errorInternet.svelte';
+	import ErrorUnknown from '$lib_oklookat/components/errorUnknown.svelte';
+	import { onMount } from 'svelte';
+
 	export let statusCode: number | null;
+
+	let isOffline = false;
+	onMount(() => {
+		isOffline = !navigator.onLine;
+		if(isOffline) {
+			statusCode = null
+		}
+	});
 </script>
 
-<div class="error">
-	{#if statusCode}
-		<div class="status">
-			{statusCode}
-		</div>
-		<div class="message">
+<div class="base__container">
+	<div class="message">
+		{#if isOffline}
+			<ErrorInternet />
+		{:else if statusCode}
 			{#if statusCode === 404}
-				Страница не найдена.
+				<Error404 />
 			{:else if statusCode === 500}
-				Ошибка сервера. Попробуйте позже.
+				<Error500 />
 			{:else if statusCode > 399 && statusCode < 500}
-				Странный запрос. Попробуйте вернуться на главную страницу.
+				<Error400 />
 			{:else}
-				Неизвестная ошибка. Попробуйте вернуться на главную страницу.
+				<ErrorUnknown />
 			{/if}
-		</div>
-	{:else}
-		<div class="message">Неизвестная ошибка. Попробуйте позже.</div>
-	{/if}
-	<a class="gohome" href="/"><b>на главную</b></a>
+		{/if}
+	</div>
+	<div class="links">
+		<a class="gohome" href="/">на главную</a>
+		<a class="tg" href="tg://resolve?domain=andget">написать в telegram</a>
+	</div>
 </div>
 
 <style lang="scss">
-	.error {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		height: 100%;
-		.status {
-			height: 94px;
-			font-size: 4rem;
+	div {
+		min-height: 100%;
+		margin-bottom: 12px;
+		display: grid;
+		grid-template-rows: 1fr auto;
+		gap: 24px;
+		.links {
+			margin-bottom: 24px;
+			align-self: flex-end;
 			display: flex;
+			flex-direction: row;
 			align-items: center;
-		}
-		.gohome {
-			border-bottom: 2px solid red;
+			justify-content: center;
+			gap: 24px;
+			a {
+				font-weight: bold;
+			}
+			.gohome,
+			.tg {
+				border-bottom: 2px solid red;
+			}
 		}
 	}
 </style>

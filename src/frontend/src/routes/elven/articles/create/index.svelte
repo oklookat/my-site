@@ -1,7 +1,48 @@
+<script lang="ts" context="module">
+	import type { Load, LoadOutput } from '@sveltejs/kit';
+
+	export const load: Load = async (e) => {
+		/** creating / editing this article */
+		let article: Article = {
+			title: '',
+			content: ''
+		};
+
+		const stuff = e.stuff
+		const output: LoadOutput = {
+			status: 200,
+			stuff: stuff,
+			props: { 
+				article: article 
+			}
+		};
+
+		const params = e.url.searchParams;
+		const isEditMode = params.has('id');
+		if (!isEditMode) {
+			stuff.title = t.get('elven.articles.createArticle');
+			return output
+		}
+
+		try {
+			const networkArticle = new NetworkArticle('', e.fetch);
+			const resp = await networkArticle.get(params.get('id')!);
+			output.status = resp.status
+			if (resp.ok) {
+				article = await resp.json();
+				if(output.props && article.title) {
+					output.props.article = article
+					stuff.title = article.title
+				}
+			}
+		} catch (err) {}
+		return output
+	};
+</script>
+
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
-	import { marked } from 'marked';
 	import type { Config } from '@oklookat/jmarkd';
 	import TextareaResizer from '$lib/tools/textarea_resizer';
 	import { generateFileTypeSelector } from '$lib_elven/tools/extension';
@@ -11,12 +52,11 @@
 	import NetworkArticle from '$lib_elven/network/network_article';
 	import FilesPortable from '$lib_elven/components/files_portable.svelte';
 	import type { File } from '$lib_elven/types/files';
-	import { setTitleElven } from '$lib/tools';
 	import ToolsArticles from '$lib_elven/tools/articles';
 	import { Params } from '$lib_elven/tools/params';
 	import { dateToReadable } from '$lib/tools/dates';
-	import { _ } from 'svelte-i18n'
-import { getParser } from '$lib/tools/markdown';
+	import { t } from '$lib/locale';
+	import { getParser } from '$lib/tools/markdown';
 
 	/** creating / editing this article */
 	export let article: Article;
@@ -75,10 +115,10 @@ import { getParser } from '$lib/tools/markdown';
 
 	/** start text editor */
 	function initEditor(data?: string) {
-		const markParser = getParser()
+		const markParser = getParser();
 		const config: Config = {
 			container: editorEL,
-			placeholder: $_('elven.routes.articles.create.editorPlaceholder'),
+			placeholder: $t('elven.articles.editorPlaceholder'),
 			input: data,
 			toolbar: {
 				elements: {
@@ -95,7 +135,7 @@ import { getParser } from '$lib/tools/markdown';
 		editor = new jmarkdClass(config);
 	}
 
-	let lastSavedPretty = $_('elven.routes.articles.create.notSaved');
+	let lastSavedPretty = $t('elven.articles.notSaved');
 	const updateLastSaved = createLastSaver();
 	function createLastSaver() {
 		let lastSavedTimestamp = 0;
@@ -147,7 +187,7 @@ import { getParser } from '$lib/tools/markdown';
 			!ToolsArticles.validateTitle(article.title) ||
 			!ToolsArticles.validateContent(article.content);
 		if (notValid) {
-			return Promise.reject("not valid article");
+			return Promise.reject('not valid article');
 		}
 		window.$progress?.startBasic();
 		const resp = await NetworkArticle.update(article);
@@ -216,12 +256,7 @@ import { getParser } from '$lib/tools/markdown';
 		generateFileTypeSelector(['IMAGE', 'VIDEO']).selectedToString()
 	);
 
-	const createArticleTitle = $_('elven.routes.articles.create.createArticle')
 </script>
-
-<svelte:head>
-	<title>{setTitleElven(`${article.id ? article.title : createArticleTitle}`)}</title>
-</svelte:head>
 
 {#if isChooseCover}
 	<FilesPortable
@@ -231,7 +266,7 @@ import { getParser } from '$lib/tools/markdown';
 			onCoverSelected(e.detail);
 		}}
 	>
-		<div slot="back-title">{$_('elven.general.article')}</div>
+		<div slot="back-title">{$t('elven.articles.article')}</div>
 	</FilesPortable>
 {/if}
 
@@ -239,7 +274,8 @@ import { getParser } from '$lib/tools/markdown';
 	<div class="toolbars">
 		<Toolbar>
 			<div class="last__saved">
-				{$_('elven.routes.articles.create.lastSaved')} {lastSavedPretty}
+				{$t('elven.articles.lastSaved')}
+				{lastSavedPretty}
 			</div>
 		</Toolbar>
 	</div>
@@ -280,7 +316,7 @@ import { getParser } from '$lib/tools/markdown';
 	<div class="editable">
 		<textarea
 			class="title"
-			placeholder={$_('elven.routes.articles.create.titlePlaceholder')}
+			placeholder={$t('elven.articles.titlePlaceholder')}
 			rows="1"
 			maxlength="124"
 			bind:value={article.title}

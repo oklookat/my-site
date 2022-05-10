@@ -1,0 +1,16 @@
+{
+    "header": {
+        "elven": "elven",
+        "articles": "articles",
+        "files": "files"
+    },
+    "pagination": {
+        "page": "Page",
+        "nextPage": "Next page",
+        "prevPage": "Previous page",
+        "totalPages": "Total pages"
+    },
+    "searchbar": {
+        "search": "search"
+    }
+}

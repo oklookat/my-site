@@ -20,7 +20,7 @@ type Starter struct {
 	Pipe       base.TokenPipe
 }
 
-func (s *Starter) Start() error {
+func Start(s *Starter) error {
 	// check.
 	if s == nil {
 		return errors.New("starter nil pointer")
@@ -45,7 +45,7 @@ func (s *Starter) Start() error {
 	return nil
 }
 
-func (s *Starter) Routes(router *goway.Router) error {
+func StartRoutes(router *goway.Router) error {
 	if !isBooted {
 		return errors.New("you must call Starter.Boot() before Starter.Routes()")
 	}

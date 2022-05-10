@@ -6,7 +6,7 @@
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import Store from '$lib_elven/tools/store';
 	import type { Params, RPH_Event } from '$lib_elven/tools/params';
-	import { _ } from 'svelte-i18n'
+	import { t } from '$lib/locale';
 
 	/** request params */
 	export let params: Params<File>;
@@ -54,9 +54,9 @@
 	<Toolbar>
 		{#if params}
 			{#if params.getParam('start') === Start.newest}
-				<div class="item" on:click={() => setStart(Start.oldest)}>{$_('elven.components.filesToolbars.newest')}</div>
+				<div class="item" on:click={() => setStart(Start.oldest)}>{$t('elven.files.newest')}</div>
 			{:else if params.getParam('start') === Start.oldest}
-				<div class="item" on:click={() => setStart(Start.newest)}>{$_('elven.components.filesToolbars.oldest')}</div>
+				<div class="item" on:click={() => setStart(Start.newest)}>{$t('elven.files.oldest')}</div>
 			{/if}
 		{/if}
 	</Toolbar>

@@ -4,50 +4,42 @@
 	import type { Items } from '$lib_elven/types';
 	import type { Article } from '$lib_elven/types/articles';
 
-	import type { Load } from '@sveltejs/kit';
+	import type { Load, LoadOutput } from '@sveltejs/kit';
 
-	export const load: Load = async (event) => {
-		let requestParams = new Params<Article>('article', event.url.searchParams);
+	export const load: Load = async (e) => {
+		const requestParams = new Params<Article>('article', e.url.searchParams);
 		requestParams.setParam('drafts', false);
 		requestParams.setParam('by', 'published');
 
-		let response: Response;
+		let resp: Response;
+		const networkArticle = new NetworkArticle('', e.fetch);
 
-		let items: Items<Article>;
-
-		const networkArticle = new NetworkArticle('');
-
-		const fetchData = async () => {
-			response = await networkArticle.getAll(requestParams.toObject(), event.fetch);
-			if (response.ok) {
-				items = (await response.json()) as Items<Article>;
-				return;
+		const stuff = e.stuff
+		const output: LoadOutput = {
+			status: 200,
+			stuff: stuff,
+			props: {
+				items: null,
+				params: requestParams
 			}
-			throw Error(response.statusText);
-		};
+		}
+
+		stuff.title = "блог"
 
 		try {
-			await fetchData();
-			const pageParam = requestParams.getParam('page');
-			if (pageParam > items.meta.total_pages) {
-				// @ts-ignore
-				requestParams.setParam('page', items.meta.total_pages);
-				await fetchData();
+			resp = await networkArticle.getAll(requestParams.toObject());
+			output.status = resp.status
+			if (resp.ok && output.props) {
+				output.props.items = (await resp.json()) as Items<Article>;
 			}
 		} catch (err) {}
 
-		return {
-			status: 200,
-			props: {
-				items: items,
-				params: requestParams
-			}
-		};
+		return output
 	};
 </script>
 
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
+	import { t } from '$lib/locale';
 	import Pagination from '$lib/components/pagination.svelte';
 	import ArticlesToolbars from '$lib_oklookat/components/articles_toolbars.svelte';
 	import ArticlesList from '$lib_oklookat/components/articles_list.svelte';
@@ -71,10 +63,6 @@
 		await HandleRouteParam<Article>(event, data);
 	}
 </script>
-
-<svelte:head>
-	<title>блог - oklookat</title>
-</svelte:head>
 
 <div class="articles base__container">
 	<ArticlesToolbars bind:params on:paramChanged={async (e) => await onParamChanged(e.detail)} />

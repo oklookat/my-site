@@ -1,13 +1,16 @@
-package model
+package token
 
 import (
 	"net/http"
-	"strings"
+	"servus/core/external/database"
+	"servus/core/external/utils"
 	"time"
 )
 
+var tokenAdapter = database.Adapter[Model]{}
+
 // represents token in database.
-type Token struct {
+type Model struct {
 	ID        string    `json:"id" db:"id"`
 	UserID    string    `json:"user_id" db:"user_id"`
 	Token     string    `json:"token" db:"token"`
@@ -20,88 +23,88 @@ type Token struct {
 }
 
 // create Model in database.
-func (t *Token) Create() (err error) {
+func (m *Model) Create() (err error) {
 	var query = `INSERT INTO tokens (user_id, token, last_ip, 
 		last_agent, auth_ip, auth_agent) VALUES ($1, $2, $3, 
 			$4, $5, $6) RETURNING *`
-	err = tokenAdapter.Get(t, query, t.UserID, t.Token, t.LastIP, t.LastAgent, t.AuthIP, t.AuthAgent)
+	err = tokenAdapter.Get(m, query, m.UserID, m.Token, m.LastIP, m.LastAgent, m.AuthIP, m.AuthAgent)
 	return
 }
 
 // updates TokenModel in database. All fields except update and created dates must be filled.
-func (t *Token) Update() (err error) {
-	t.hookBeforeUpdate()
+func (m *Model) Update() (err error) {
+	m.hookBeforeUpdate()
 	var query = `UPDATE tokens SET user_id=$1, token=$2, last_ip=$3, 
 	last_agent=$4, auth_ip=$5, auth_agent=$6 WHERE id=$7 RETURNING *`
-	err = tokenAdapter.Get(t, query, t.UserID, t.Token, t.LastIP, t.LastAgent, t.AuthIP, t.AuthAgent, t.ID)
+	err = tokenAdapter.Get(m, query, m.UserID, m.Token, m.LastIP, m.LastAgent, m.AuthIP, m.AuthAgent, m.ID)
 	return
 }
 
 // find TokenModel in database by id field.
-func (t *Token) FindByID() (found bool, err error) {
+func (m *Model) FindByID() (found bool, err error) {
 	found = false
 	var query = "SELECT * FROM tokens WHERE id=$1 LIMIT 1"
-	founded, err := tokenAdapter.Find(query, t.ID)
+	founded, err := tokenAdapter.Find(query, m.ID)
 	if err != nil {
 		return
 	}
 	if founded != nil {
 		found = true
-		*t = *founded
+		*m = *founded
 	}
 	return
 }
 
 // delete TokenModel from database by id field.
-func (t *Token) DeleteByID() (err error) {
+func (m *Model) DeleteByID() (err error) {
 	var query = "DELETE FROM tokens WHERE id=$1"
-	_, err = tokenAdapter.Exec(query, t.ID)
+	_, err = tokenAdapter.Exec(query, m.ID)
 	return
 }
 
 // executes before token update.
-func (t *Token) hookBeforeUpdate() {
-	if t.AuthAgent != nil && len(*t.AuthAgent) > 323 {
-		var authAgent = *t.AuthAgent
+func (m *Model) hookBeforeUpdate() {
+	if m.AuthAgent != nil && len(*m.AuthAgent) > 323 {
+		var authAgent = *m.AuthAgent
 		var cut = 323 - len(authAgent)
-		*t.AuthAgent = authAgent[:len(authAgent)-cut]
+		*m.AuthAgent = authAgent[:len(authAgent)-cut]
 	}
-	if t.LastAgent != nil && len(*t.LastAgent) > 323 {
-		var lastAgent = *t.LastAgent
+	if m.LastAgent != nil && len(*m.LastAgent) > 323 {
+		var lastAgent = *m.LastAgent
 		var cut = 323 - len(lastAgent)
-		*t.LastAgent = lastAgent[:len(lastAgent)-cut]
+		*m.LastAgent = lastAgent[:len(lastAgent)-cut]
 	}
-	if t.AuthIP != nil && len(*t.AuthIP) > 53 {
-		var authIP = *t.AuthIP
+	if m.AuthIP != nil && len(*m.AuthIP) > 53 {
+		var authIP = *m.AuthIP
 		var cut = 53 - len(authIP)
-		*t.AuthIP = authIP[:len(authIP)-cut]
+		*m.AuthIP = authIP[:len(authIP)-cut]
 	}
-	if t.LastIP != nil && len(*t.LastIP) > 53 {
-		var lastIP = *t.LastIP
+	if m.LastIP != nil && len(*m.LastIP) > 53 {
+		var lastIP = *m.LastIP
 		var cut = 53 - len(lastIP)
-		*t.LastIP = lastIP[:len(lastIP)-cut]
+		*m.LastIP = lastIP[:len(lastIP)-cut]
 	}
 }
 
 // writes last ip and user agent then updating model in database.
-func (t *Token) SetAuthAgents(request *http.Request) (err error) {
-	t.AuthAgent = new(string)
-	*t.AuthAgent = request.UserAgent()
-	t.AuthIP = new(string)
-	*t.AuthIP = t.getIP(request)
-	err = t.Update()
+func (m *Model) SetAuthAgents(request *http.Request) (err error) {
+	m.AuthAgent = new(string)
+	*m.AuthAgent = request.UserAgent()
+	m.AuthIP = new(string)
+	*m.AuthIP = utils.GetIP(request)
+	err = m.Update()
 	return
 }
 
 // writes ip and user agent then updating model in database.
-func (t *Token) SetLastAgents(request *http.Request) (err error) {
+func (m *Model) SetLastAgents(request *http.Request) (err error) {
 	var lastAgent = request.UserAgent()
-	var lastIP = t.getIP(request)
-	t.LastAgent = new(string)
-	*t.LastAgent = lastAgent
-	t.LastIP = new(string)
-	*t.LastIP = lastIP
-	err = t.Update()
+	var lastIP = utils.GetIP(request)
+	m.LastAgent = new(string)
+	*m.LastAgent = lastAgent
+	m.LastIP = new(string)
+	*m.LastIP = lastIP
+	err = m.Update()
 	return
 }
 
@@ -112,21 +115,21 @@ func (t *Token) SetLastAgents(request *http.Request) (err error) {
 // token - token for user
 //
 // hash - saved in db as TokenModel.Token.
-func (t *Token) Generate(userID string) (token string, hash string, err error) {
+func (m *Model) Generate(userID string) (token string, hash string, err error) {
 	// token generating.
 	// first we generate fake token model to get created token ID.
-	t.UserID = userID
-	t.Token = "-1"
-	if err = t.Create(); err != nil {
+	m.UserID = userID
+	m.Token = "-1"
+	if err = m.Create(); err != nil {
 		return
 	}
 	defer func() {
 		if err != nil {
-			_ = t.DeleteByID()
+			_ = m.DeleteByID()
 		}
 	}()
-	// then we get newly created token model id and encrypt it. That's we send to user as token.
-	token, err = call.Encryptor.AES.Encrypt(t.ID)
+	// then we get newly created token model id and encrypt im. That's we send to user as token.
+	token, err = call.Encryptor.AES.Encrypt(m.ID)
 	if err != nil {
 		return
 	}
@@ -137,22 +140,7 @@ func (t *Token) Generate(userID string) (token string, hash string, err error) {
 		return
 	}
 	// now we replace fake token with real token in database.
-	t.Token = hash
-	err = t.Update()
-	return
-}
-
-func (t *Token) getIP(request *http.Request) (ip string) {
-	ip = ""
-	var ips = strings.Split(request.Header.Get("X-FORWARDED-FOR"), ", ")
-	for _, theIP := range ips {
-		if theIP != "" {
-			ip = theIP
-			break
-		}
-	}
-	if ip == "" {
-		ip = request.RemoteAddr
-	}
+	m.Token = hash
+	err = m.Update()
 	return
 }

@@ -1,9 +1,18 @@
+<script lang="ts" context="module">
+	export const load: Load = async (e) => {
+		const title = t.get('elven.auth.loginTitle');
+		const stuff = e.stuff;
+		stuff.title = title;
+		return {
+			stuff: stuff
+		};
+	};
+</script>
+
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
-	import { browser } from '$app/env';
 	import NetworkAuth from '$lib_elven/network/network_auth';
-	import { setTitleElven } from '$lib/tools';
-	import { _ } from 'svelte-i18n';
+	import { t } from '$lib/locale';
+	import type { Load } from '@sveltejs/kit';
 
 	let username = '';
 	let password = '';
@@ -18,17 +27,6 @@
 		} catch (err) {}
 	}
 
-	onMount(() => {
-		document.addEventListener('keydown', onEnter);
-	});
-
-	onDestroy(() => {
-		if (!browser) {
-			return;
-		}
-		document.removeEventListener('keydown', onEnter);
-	});
-
 	function onEnter(event: KeyboardEvent) {
 		// remove double-login when focused on 'log in' button (pressed enter by document event + pressed enter on log in)
 		if (event.target === loginButton) {
@@ -41,15 +39,23 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{setTitleElven($_('elven.routes.login.title'))}</title>
-</svelte:head>
+<svelte:window on:keydown={onEnter} />
 
 <div class="login">
 	<div class="login__inputs">
 		<div class="login__logo logo__text">elven</div>
-		<input type="text" name="username" placeholder={$_('elven.general.username')} bind:value={username} />
-		<input type="password" name="password" placeholder={$_('elven.general.password')} bind:value={password} />
+		<input
+			type="text"
+			name="username"
+			placeholder={$t('elven.auth.username')}
+			bind:value={username}
+		/>
+		<input
+			type="password"
+			name="password"
+			placeholder={$t('elven.auth.password')}
+			bind:value={password}
+		/>
 	</div>
 	<button
 		disabled={!username || !password}
@@ -57,7 +63,7 @@
 		bind:this={loginButton}
 		on:click={makeLogin}
 	>
-		{$_('elven.routes.login.button')}
+		{$t('elven.auth.login')}
 	</button>
 </div>
 

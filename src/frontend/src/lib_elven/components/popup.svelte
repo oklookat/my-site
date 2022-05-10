@@ -60,7 +60,9 @@
 
 <svelte:window on:click={watchClick} />
 <div class="popup with-border" bind:this={popupEL}>
-	<slot />
+	<div class="items base__items">
+		<slot />
+	</div>
 </div>
 
 <style lang="scss">

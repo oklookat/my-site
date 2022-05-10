@@ -1,41 +1,40 @@
-package pipe
+package token
 
 import (
 	"net/http"
 	"servus/apps/elven/base"
-	"servus/apps/elven/model"
 )
 
-type _ctx_token string
+type _string string
 
 const (
-	CtxToken _ctx_token = "ELVEN_TOKEN_PIPE"
+	CTX _string = "ELVEN_TOKEN_PIPE"
 )
 
-type Token struct {
-	model *model.Token
+type Pipe struct {
+	model *Model
 }
 
 // is pipe model exists?
-func (t *Token) IsExists() bool {
-	return t.model != nil
+func (p *Pipe) IsExists() bool {
+	return p.model != nil
 }
 
 // get pipe by request context. Use only if you provided to request context.
-func (t *Token) GetByContext(request *http.Request) base.TokenPipe {
-	pipe, ok := request.Context().Value(CtxToken).(base.TokenPipe)
+func (p *Pipe) GetByContext(request *http.Request) base.TokenPipe {
+	pipe, ok := request.Context().Value(CTX).(base.TokenPipe)
 	if !ok {
-		var emptyPipe = &Token{}
+		var emptyPipe = &Pipe{}
 		return emptyPipe
 	}
 	return pipe
 }
 
 // used for ex. providing pipe to request context.
-func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
+func (p *Pipe) GetByRequest(request *http.Request) (base.TokenPipe, error) {
 
 	// get encrypted.
-	encrypted, found := t.getEncryptedByRequest(request)
+	encrypted, found := p.getEncryptedByRequest(request)
 	if !found {
 		return nil, nil
 	}
@@ -47,7 +46,7 @@ func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
 	}
 
 	// search by ID.
-	var md = &model.Token{}
+	var md = &Model{}
 	md.ID = id
 	found, err = md.FindByID()
 	if !found || err != nil {
@@ -57,13 +56,13 @@ func (t *Token) GetByRequest(request *http.Request) (base.TokenPipe, error) {
 	_ = md.SetLastAgents(request)
 
 	// create pipe.
-	var pipe = &Token{}
+	var pipe = &Pipe{}
 	pipe.model = md
 	return pipe, err
 }
 
 // get encrypted token from request cookie or headers.
-func (t *Token) getEncryptedByRequest(request *http.Request) (encrypted string, found bool) {
+func (p *Pipe) getEncryptedByRequest(request *http.Request) (encrypted string, found bool) {
 	found = false
 
 	// get from cookie.
@@ -89,23 +88,23 @@ func (t *Token) getEncryptedByRequest(request *http.Request) (encrypted string, 
 	return
 }
 
-func (t *Token) GetID() string {
-	if !t.IsExists() {
+func (p *Pipe) GetID() string {
+	if !p.IsExists() {
 		return ""
 	}
-	return t.model.ID
+	return p.model.ID
 }
 
-func (t *Token) GetUserID() string {
-	if !t.IsExists() {
+func (p *Pipe) GetUserID() string {
+	if !p.IsExists() {
 		return ""
 	}
-	return t.model.UserID
+	return p.model.UserID
 }
 
-func (t *Token) GetToken() string {
-	if !t.IsExists() {
+func (p *Pipe) GetToken() string {
+	if !p.IsExists() {
 		return ""
 	}
-	return t.model.Token
+	return p.model.Token
 }

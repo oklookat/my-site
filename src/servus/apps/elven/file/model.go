@@ -1,17 +1,19 @@
-package model
+package file
 
 import (
 	"fmt"
 	"math"
-	"servus/apps/elven/base"
+	"servus/core/external/database"
 	"strconv"
 	"strings"
 	"time"
 )
 
-const FilePageSize = 2
+const pageSize = 2
 
-type File struct {
+var fileAdapter = database.Adapter[Model]{}
+
+type Model struct {
 	ID           string    `json:"id" db:"id"`
 	UserID       string    `json:"user_id" db:"user_id"`
 	Hash         string    `json:"hash" db:"hash"`
@@ -24,11 +26,11 @@ type File struct {
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }
 
-func (f *File) queryGetSelectAll() string {
+func (m *Model) queryGetSelectAll() string {
 	return "SELECT * FROM files "
 }
 
-func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, totalPages int, err error) {
+func (m *Model) GetPaginated(params *GetParams) (files map[int]*Model, totalPages int, err error) {
 	totalPages = 1
 
 	// preapare.
@@ -46,7 +48,7 @@ func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, to
 
 	// args to get paginated files.
 
-	var query = f.queryGetSelectAll()
+	var query = m.queryGetSelectAll()
 
 	// extensions.
 	var isExtensionsExists = params.Extensions != nil && len(params.Extensions) > 0
@@ -74,11 +76,11 @@ func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, to
 
 	// get pages count.
 	var queryCount = "SELECT count(*) FROM (" + query + ") as tentacles"
-	if err = IntAdapter.Get(&totalPages, queryCount, getAllArgs...); err != nil {
+	if err = database.IntAdapter.Get(&totalPages, queryCount, getAllArgs...); err != nil {
 		return
 	}
 
-	totalPages = int(math.Round(float64(totalPages) / float64(FilePageSize)))
+	totalPages = int(math.Round(float64(totalPages) / float64(pageSize)))
 	if totalPages < 1 {
 		totalPages = 1
 		return
@@ -95,7 +97,7 @@ func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, to
 	limitOffsetDollars[0] = len(getAllDollars) + 1
 	limitOffsetDollars[1] = len(getAllDollars) + 2
 	query += fmt.Sprintf("LIMIT $%v OFFSET $%v ", limitOffsetDollars[0], limitOffsetDollars[1])
-	getAllArgs = append(getAllArgs, FilePageSize, (params.Page-1)*FilePageSize)
+	getAllArgs = append(getAllArgs, pageSize, (params.Page-1)*pageSize)
 
 	// get all.
 	files, err = fileAdapter.GetRows(query, getAllArgs...)
@@ -103,49 +105,49 @@ func (f *File) GetPaginated(params *base.FileGetParams) (files map[int]*File, to
 }
 
 // create file in database.
-func (f *File) Create() (err error) {
+func (m *Model) Create() (err error) {
 	var query = `INSERT INTO files 
 	(user_id, hash, path, name, original_name, extension, size) 
 	VALUES 
 	($1, $2, $3, $4, $5, $6, $7) 
 	RETURNING *`
-	err = fileAdapter.Get(f, query, f.UserID, f.Hash, f.Path, f.Name, f.OriginalName, f.Extension, f.Size)
+	err = fileAdapter.Get(m, query, m.UserID, m.Hash, m.Path, m.Name, m.OriginalName, m.Extension, m.Size)
 	return
 }
 
 // find one file in database by id field.
-func (f *File) FindByID() (found bool, err error) {
+func (m *Model) FindByID() (found bool, err error) {
 	found = false
 	var query = "SELECT * FROM files WHERE id=$1 LIMIT 1"
-	founded, err := fileAdapter.Find(query, f.ID)
+	founded, err := fileAdapter.Find(query, m.ID)
 	if err != nil {
 		return
 	}
 	if founded != nil {
 		found = true
-		*f = *founded
+		*m = *founded
 	}
 	return
 }
 
 // find file in database by hash field.
-func (f *File) FindByHash() (found bool, err error) {
+func (m *Model) FindByHash() (found bool, err error) {
 	found = false
 	var query = "SELECT * FROM files WHERE hash=$1 LIMIT 1"
-	founded, err := fileAdapter.Find(query, f.Hash)
+	founded, err := fileAdapter.Find(query, m.Hash)
 	if err != nil {
 		return
 	}
 	if founded != nil {
 		found = true
-		*f = *founded
+		*m = *founded
 	}
 	return
 }
 
 // delete file in database by id field.
-func (f *File) DeleteByID() (err error) {
+func (m *Model) DeleteByID() (err error) {
 	var query = "DELETE FROM files WHERE id=$1"
-	_, err = fileAdapter.Exec(query, f.ID)
+	_, err = fileAdapter.Exec(query, m.ID)
 	return
 }

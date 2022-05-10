@@ -5,6 +5,12 @@ import (
 	"errors"
 )
 
+// adapter for basic type (int).
+var IntAdapter = Adapter[int]{}
+
+// adapter for basic type (string).
+var StringAdapter = Adapter[string]{}
+
 // provides database functions. You must call Connector.New to init database connection (once, in core).
 type Adapter[T comparable] struct {
 }
@@ -16,8 +22,7 @@ func (a *Adapter[T]) Get(dest *T, query string, args ...any) (err error) {
 	}
 
 	// if result empty, keep dest in original state, no overwrite
-	var destCopy T
-	destCopy = *dest
+	var destCopy = *dest
 	err = con.Connection.Get(&destCopy, query, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

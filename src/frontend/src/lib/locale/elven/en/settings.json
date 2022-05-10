@@ -1,0 +1,10 @@
+{
+  "title": "Settings",
+  "logout": "Logout",
+  "password": "Password",
+  "newUsername": "New username",
+  "newPassword": "New password",
+  "changeUsername": "Change username",
+  "changePassword": "Change password",
+  "ok": "OK"
+}

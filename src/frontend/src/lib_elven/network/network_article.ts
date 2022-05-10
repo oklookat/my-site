@@ -9,21 +9,22 @@ import type { Article, Params } from '$lib_elven/types/articles';
 export default class NetworkArticle {
 	private static prefix = 'article/articles';
 	private headers: Headers;
+	private driver: typeof fetch
 
-	constructor(token: string) {
+	constructor(token: string, driver?: typeof fetch) {
 		const headers = new Headers();
 		addTokenToHeaders(token, headers);
 		this.headers = headers;
 	}
 
-	public async getAll(params: Params, driver?: typeof fetch): Promise<Response> {
+	public async getAll(params: Params): Promise<Response> {
 		try {
 			const response = await Fetchd.send({
 				method: 'GET',
 				url: NetworkArticle.prefix,
 				params: params,
 				headers: this.headers,
-				customDriver: driver
+				customDriver: this.driver
 			});
 			return response;
 		} catch (err) {
@@ -36,7 +37,8 @@ export default class NetworkArticle {
 			const response = await Fetchd.send({
 				method: 'GET',
 				url: `${NetworkArticle.prefix}/${id}`,
-				headers: this.headers
+				headers: this.headers,
+				customDriver: this.driver
 			});
 			return response
 		} catch (err) {

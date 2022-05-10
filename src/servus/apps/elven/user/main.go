@@ -12,15 +12,14 @@ import (
 var isBooted = false
 var call *core.Instance
 var middleware base.MiddlewareAuthorizedOnly
-var pipe base.UserPipe
+var pipe = Pipe{}
 
 type Starter struct {
 	Core       *core.Instance
 	Middleware base.MiddlewareAuthorizedOnly
-	Pipe       base.UserPipe
 }
 
-func (s *Starter) Start() error {
+func Start(s *Starter) error {
 	// check.
 	if s == nil {
 		return errors.New("starter nil pointer")
@@ -31,21 +30,17 @@ func (s *Starter) Start() error {
 	if s.Middleware == nil {
 		return errors.New("middleware nil pointer")
 	}
-	if s.Pipe == nil {
-		return errors.New("pipe nil pointer")
-	}
 
 	// set.
 	call = s.Core
 	middleware = s.Middleware
-	pipe = s.Pipe
 
 	// ok.
 	isBooted = true
 	return nil
 }
 
-func (s *Starter) Routes(router *goway.Router) error {
+func StartRoutes(router *goway.Router) error {
 	if !isBooted {
 		return errors.New("you must call Starter.Start() before Starter.Routes()")
 	}

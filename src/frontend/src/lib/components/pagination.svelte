@@ -1,22 +1,14 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { _ } from 'svelte-i18n';
+	import { t } from '$lib/locale';
 
 	const dispatch = createEventDispatcher<{
 		/** when page changed */
 		changed: number;
 	}>();
 
-	/** is pagination active? */
-	let active = false;
-
 	/** total pages */
 	export let total: number;
-
-	$: watchTotalPages(total);
-	function watchTotalPages(value: number) {
-		active = value > 1;
-	}
 
 	/** current page */
 	export let current: number;
@@ -41,11 +33,23 @@
 	}
 
 	function onNextButton() {
-		dispatchChanged(current + 1);
+		let next = current + 1;
+		if (next > total) {
+			next = total;
+		} else if (next < 1) {
+			next = 1;
+		}
+		dispatchChanged(next);
 	}
 
 	function onPrevButton() {
-		dispatchChanged(current - 1);
+		let prev = current - 1;
+		if (prev > total) {
+			prev = total;
+		} else if (prev < 1) {
+			prev = 1;
+		}
+		dispatchChanged(prev);
 	}
 
 	function onPageInput() {
@@ -59,7 +63,7 @@
 				return;
 			}
 
-			let isBadInput = inputPageInt < 1 || inputPageInt === current || inputPageInt > total;
+			const isBadInput = inputPageInt < 1 || inputPageInt === current || inputPageInt > total;
 			if (isBadInput) {
 				return;
 			}
@@ -69,49 +73,46 @@
 	}
 </script>
 
-{#if active}
-	<div class="pagination">
-		<div class="paginator">
-			<div class="prev">
-				{#if current > 1}
-					<div
-						class="prev__butt pointer center"
-						title={$_('elven.components.pagination.prevPage')}
-						on:click={onPrevButton}
-					/>
-				{/if}
-			</div>
-
-			<div class="page">
-				<input
-					class="pagination__input"
-					type="text"
-					placeholder={$_('elven.components.pagination.page')}
-					title={$_('elven.components.pagination.page')}
-					bind:value={inputPage}
-					on:input={onPageInput}
+<div class="pagination">
+	<div class="paginator">
+		<div class="prev">
+			{#if current > 1}
+				<div
+					class="prev__butt pointer center"
+					title={$t('elven.components.pagination.prevPage')}
+					on:click={onPrevButton}
 				/>
-			</div>
-
-			<div class="next">
-				{#if current < total}
-					<div
-						class="next__butt pointer center"
-						title={$_('elven.components.pagination.nextPage')}
-						on:click={onNextButton}
-					/>
-				{/if}
-			</div>
+			{/if}
 		</div>
 
-		<div class="total" title={$_('elven.components.pagination.totalPages')}>
-			<div class="count center">{total}</div>
+		<div class="page">
+			<input
+				type="number"
+				placeholder={$t('elven.components.pagination.page')}
+				title={$t('elven.components.pagination.page')}
+				bind:value={inputPage}
+				on:input={onPageInput}
+			/>
+		</div>
+
+		<div class="next">
+			{#if current < total}
+				<div class="next__butt pointer center" title={$t('routes.')} on:click={onNextButton} />
+			{/if}
 		</div>
 	</div>
-{/if}
+
+	<div class="total" title={$t('elven')}>
+		<div class="count center">{total}</div>
+	</div>
+</div>
 
 <style lang="scss">
-	@import "../../lib/assets/vars.scss";
+	@import '../../lib/assets/vars.scss';
+
+	input[type='number'] {
+		-moz-appearance: textfield;
+	}
 
 	.center {
 		display: flex;

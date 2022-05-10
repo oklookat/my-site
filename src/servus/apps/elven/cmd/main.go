@@ -12,19 +12,15 @@ type Logger interface {
 	Error(msg string)
 }
 
-type Config struct {
-	Logger Logger
-}
+var logger Logger
 
-var cfg *Config
+func Boot(l Logger) error {
 
-func Boot(c *Config) error {
-
-	if c == nil {
-		return errors.New("cmd: empty config")
+	if l == nil {
+		return errors.New("cmd: empty logger")
 	}
 
-	cfg = c
+	logger = l
 
 	var arguments = argument.New()
 
@@ -36,28 +32,28 @@ func Boot(c *Config) error {
 
 	// create superuser.
 	arguments.Add("create-superuser", "csu", func(values []string) {
-		cfg.Logger.Info("cmd: create superuser")
+		logger.Info("cmd: create superuser")
 		var err = createUser(true, values)
 		afterCommand(err)
 	})
 
 	// create user.
 	arguments.Add("create-user", "cu", func(values []string) {
-		cfg.Logger.Info("cmd: create user")
+		logger.Info("cmd: create user")
 		var err = createUser(false, values)
 		afterCommand(err)
 	})
 
 	// create tables in db.
 	arguments.Add("migrate", "mg", func(values []string) {
-		cfg.Logger.Info("cmd: migrate")
+		logger.Info("cmd: migrate")
 		var err = migrate(values)
 		afterCommand(err)
 	})
 
 	// delete all from db.
 	arguments.Add("rollback", "rb", func(values []string) {
-		cfg.Logger.Info("cmd: rollback")
+		logger.Info("cmd: rollback")
 		var err = rollback()
 		afterCommand(err)
 	})

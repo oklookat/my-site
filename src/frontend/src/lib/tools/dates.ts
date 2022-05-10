@@ -1,64 +1,61 @@
-import { getDateFormatter, _, json } from "svelte-i18n";
-
-
 let i18n_hourAgo = 'hour ago'
 let i18n_hoursAgo = 'hours ago'
 let i18n_minutesAgo = 'minutes ago'
 let i18n_secondsAgo = 'seconds ago'
 let i18n_yesterday = 'yesterday'
-// let i18n_months = [
-// 	'jan',
-// 	'feb',
-// 	'mar',
-// 	'apr',
-// 	'may',
-// 	'jun',
-// 	'jul',
-// 	'aug',
-// 	'sep',
-// 	'oct',
-// 	'nov',
-// 	'dec'
-// ];
+let i18n_months = [
+	'jan',
+	'feb',
+	'mar',
+	'apr',
+	'may',
+	'jun',
+	'jul',
+	'aug',
+	'sep',
+	'oct',
+	'nov',
+	'dec'
+];
 
 // i18n
-json.subscribe(v => {
-	i18n_hourAgo = v('general.hourAgo') as any
-	i18n_hoursAgo = v('general.hoursAgo') as any
-	i18n_minutesAgo = v('general.minutesAgo') as any
-	i18n_secondsAgo = v('general.secondsAgo') as any
-	i18n_yesterday = v('general.yesterday') as any
-	//i18n_months = v('general.months') as any
-})()
+// json.subscribe(v => {
+// 	i18n_hourAgo = v('general.hourAgo') as any
+// 	i18n_hoursAgo = v('general.hoursAgo') as any
+// 	i18n_minutesAgo = v('general.minutesAgo') as any
+// 	i18n_secondsAgo = v('general.secondsAgo') as any
+// 	i18n_yesterday = v('general.yesterday') as any
+// 	//i18n_months = v('general.months') as any
+// })()
 
 /** convert date to string like: '12 minutes ago' or '12 jan 1970 at 12:22' */
 export function dateToReadable(date: string | number | Date): string {
 	let d = new Date(date);
 	const currentDate = new Date();
 
-	const dateFormatter = getDateFormatter({
-		'month': 'short',
-		'day': '2-digit',
-		'year': 'numeric',
-		'hour': '2-digit',
-	})
+	// const dateFormatter = getDateFormatter({
+	// 	'month': 'short',
+	// 	'day': '2-digit',
+	// 	'year': 'numeric',
+	// 	'hour': '2-digit',
+	// })
 
 	let monthName = ''
 	let year = ''
 	let dayPeriod = ''
-	for(const form of dateFormatter.formatToParts(d)) {
-		switch(form.type) {
-			case 'month': 
-				monthName = form.value
-				continue
-			case 'year':
-				year = form.value
-				continue
-			case 'dayPeriod':
-				dayPeriod = ' '+ form.value
-				continue
-		}
-	}
+	// for(const form of dateFormatter.formatToParts(d)) {
+	// 	switch(form.type) {
+	// 		case 'month': 
+	// 			monthName = form.value
+	// 			continue
+	// 		case 'year':
+	// 			year = form.value
+	// 			continue
+	// 		case 'dayPeriod':
+	// 			dayPeriod = ' '+ form.value
+	// 			continue
+	// 	}
+	// }
 
 	const isCurrentYear = currentDate.getFullYear() === d.getFullYear();
 	const isCurrentMonth = currentDate.getMonth() === d.getMonth();

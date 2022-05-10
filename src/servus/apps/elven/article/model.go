@@ -1,18 +1,20 @@
-package model
+package article
 
 import (
 	"fmt"
 	"math"
-	"servus/apps/elven/base"
+	"servus/core/external/database"
 	"strconv"
 	"strings"
 	"time"
 )
 
-const ArticlePageSize = 2
+const pageSize = 2
+
+var articleAdapter = database.Adapter[Model]{}
 
 // represents article in database.
-type Article struct {
+type Model struct {
 	ID          string     `json:"id" db:"id"`
 	UserID      string     `json:"user_id" db:"user_id"`
 	CoverID     *string    `json:"cover_id" db:"cover_id"`
@@ -29,7 +31,7 @@ type Article struct {
 }
 
 // get query what gets articles + article cover (JOIN).
-func (a *Article) queryGetWithCats(withSensitive bool, withContent bool) string {
+func (m *Model) queryGetWithCats(withSensitive bool, withContent bool) string {
 	var query = `SELECT art.id, art.cover_id, art.is_published, art.title, art.published_at, `
 
 	if withContent {
@@ -51,17 +53,12 @@ func (a *Article) queryGetWithCats(withSensitive bool, withContent bool) string 
 }
 
 // get query to get article(s) with join additional fields.
-func (a *Article) queryGetSelectAll(withSensitive bool, withContent bool) string {
-	return "SELECT * FROM (" + a.queryGetWithCats(withSensitive, withContent) + ") as tentacles\n"
-}
-
-// get query to get rows count.
-func (a *Article) queryGetCount(withSensitive bool, withContent bool) string {
-	return "SELECT count(*) FROM (" + a.queryGetWithCats(withSensitive, withContent) + ") as tentacles\n"
+func (m *Model) queryGetSelectAll(withSensitive bool, withContent bool) string {
+	return "SELECT * FROM (" + m.queryGetWithCats(withSensitive, withContent) + ") as tentacles\n"
 }
 
 // get paginated.
-func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]*Article, totalPages int, err error) {
+func (m *Model) GetPaginated(params *GetParams, isAdmin bool) (articles map[int]*Model, totalPages int, err error) {
 	totalPages = 1
 
 	// preapare.
@@ -77,7 +74,7 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 		return getAllDollars[len(getAllDollars)-1]
 	}
 
-	var query = a.queryGetSelectAll(params.Drafts, false)
+	var query = m.queryGetSelectAll(isAdmin, false)
 
 	// is published.
 	query += "WHERE is_published = " + addGetAllArg(!params.Drafts) + " "
@@ -91,11 +88,11 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 
 	// get pages count.
 	var queryCount = "SELECT count(*) FROM (" + query + ") as tentacles"
-	if err = IntAdapter.Get(&totalPages, queryCount, getAllArgs...); err != nil {
+	if err = database.IntAdapter.Get(&totalPages, queryCount, getAllArgs...); err != nil {
 		return
 	}
 
-	totalPages = int(math.Round(float64(totalPages) / float64(FilePageSize)))
+	totalPages = int(math.Round(float64(totalPages) / float64(pageSize)))
 	if totalPages < 1 {
 		totalPages = 1
 		return
@@ -116,7 +113,7 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 	limitOffsetDollars[0] = len(getAllDollars) + 1
 	limitOffsetDollars[1] = len(getAllDollars) + 2
 	query += fmt.Sprintf("LIMIT $%v OFFSET $%v ", limitOffsetDollars[0], limitOffsetDollars[1])
-	getAllArgs = append(getAllArgs, ArticlePageSize, (params.Page-1)*ArticlePageSize)
+	getAllArgs = append(getAllArgs, pageSize, (params.Page-1)*pageSize)
 
 	// get all.
 	articles, err = articleAdapter.GetRows(query, getAllArgs...)
@@ -124,14 +121,14 @@ func (a *Article) GetPaginated(params *base.ArticleGetParams) (articles map[int]
 }
 
 // create in database. AFTER CREATING RETURNS ONLY ID.
-func (a *Article) Create() (err error) {
-	a.hookBeforeChange()
+func (m *Model) Create() (err error) {
+	m.hookBeforeChange()
 	var query = `
 	INSERT INTO articles 
 	(user_id, cover_id, is_published, title, content) 
 	VALUES ($1, $2, $3, $4, $5) 
 	RETURNING id`
-	err = articleAdapter.Get(a, query, a.UserID, a.CoverID, a.IsPublished, a.Title, a.Content)
+	err = articleAdapter.Get(m, query, m.UserID, m.CoverID, m.IsPublished, m.Title, m.Content)
 	if err != nil {
 		return
 	}
@@ -139,54 +136,54 @@ func (a *Article) Create() (err error) {
 }
 
 // update all article in database.
-func (a *Article) Update() (err error) {
-	a.hookBeforeChange()
+func (m *Model) Update() (err error) {
+	m.hookBeforeChange()
 	var query = `UPDATE articles SET 
 	user_id=$1, cover_id=$2,
 	is_published=$3, title=$4, content=$5, 
 	published_at=$6 
 	WHERE id=$7 RETURNING *`
-	if err = articleAdapter.Get(a, query, a.UserID,
-		a.CoverID, a.IsPublished, a.Title,
-		a.Content, a.PublishedAt, a.ID); err != nil {
+	if err = articleAdapter.Get(m, query, m.UserID,
+		m.CoverID, m.IsPublished, m.Title,
+		m.Content, m.PublishedAt, m.ID); err != nil {
 		return
 	}
 	return
 }
 
 // find article in database by id field.
-func (a *Article) FindByID(isAdmin bool) (found bool, err error) {
+func (m *Model) FindByID(isAdmin bool) (found bool, err error) {
 	found = false
-	var query = a.queryGetSelectAll(isAdmin, true) + "WHERE id=$1 LIMIT 1"
-	founded, err := articleAdapter.Find(query, a.ID)
+	var query = m.queryGetSelectAll(isAdmin, true) + "WHERE id=$1 LIMIT 1"
+	founded, err := articleAdapter.Find(query, m.ID)
 	if err != nil {
 		return
 	}
 	if founded != nil {
 		found = true
-		*a = *founded
+		*m = *founded
 	}
 	return
 }
 
 // delete article from database by id field.
-func (a *Article) DeleteByID() (err error) {
+func (m *Model) DeleteByID() (err error) {
 	var query = "DELETE FROM articles WHERE id=$1"
-	_, err = articleAdapter.Exec(query, a.ID)
+	_, err = articleAdapter.Exec(query, m.ID)
 	return
 }
 
 // executes before article create or update.
-func (a *Article) hookBeforeChange() {
+func (m *Model) hookBeforeChange() {
 
 	// title.
-	if len(strings.TrimSpace(a.Title)) < 1 {
-		a.Title = "Untitled"
+	if len(strings.TrimSpace(m.Title)) < 1 {
+		m.Title = "Untitled"
 	}
 
 	// article published and no published date? wtf lets fix that.
-	if a.IsPublished && a.PublishedAt == nil {
+	if m.IsPublished && m.PublishedAt == nil {
 		var cur = time.Now()
-		a.PublishedAt = &cur
+		m.PublishedAt = &cur
 	}
 }

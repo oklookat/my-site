@@ -14,7 +14,7 @@ func exit(withError bool) {
 // check error, log, exit.
 func afterCommand(err error) {
 	if err != nil {
-		cfg.Logger.Error(err.Error())
+		logger.Error(err.Error())
 		exit(true)
 	}
 	exit(false)

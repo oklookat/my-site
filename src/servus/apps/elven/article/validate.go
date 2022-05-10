@@ -6,15 +6,15 @@ import (
 	"net/http"
 	"net/url"
 	"servus/apps/elven/base"
-	"servus/apps/elven/model"
+	"servus/apps/elven/file"
 	"servus/core/external/utils"
 	"strconv"
 	"strings"
 )
 
 // validate params to get paginated articles.
-func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool) (err error) {
-	var validationErr = base.ValidationError{}
+func ValidateGetParams(a *GetParams, params url.Values, isAdmin bool) {
+	var err error
 
 	// "published" param
 	var published = params.Get("drafts")
@@ -34,9 +34,7 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 	var by = params.Get("by")
 	if by == "created" || by == "updated" {
 		if !isAdmin {
-			validationErr.New("by")("invalid value")
-			err = &validationErr
-			return
+			by = "published"
 		}
 	} else {
 		by = "published"
@@ -73,8 +71,6 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 	if len(title) > 0 {
 		a.Title = &title
 	}
-
-	return
 }
 
 // validate/filter body to change/create article.
@@ -92,7 +88,7 @@ func ValidateGetParams(a *base.ArticleGetParams, params url.Values, isAdmin bool
 // if changing mode = copy of reference but filtered/validated by body.
 //
 // if creating mode = semi-filled filtered/validated article by body.
-func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Article) (filtered *model.Article, err error) {
+func ValidateBody(requestMethod string, body io.ReadCloser, reference *Model) (filtered *Model, err error) {
 
 	var validationErr = base.ValidationError{}
 
@@ -107,7 +103,7 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 	}
 
 	// decode body.
-	var bodyStruct = &base.ArticleBody{}
+	var bodyStruct = &Body{}
 	err = json.NewDecoder(body).Decode(bodyStruct)
 	if err != nil {
 		return
@@ -163,8 +159,8 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 	var isContent, contentLength = checkContent()
 
 	// pre check content.
-	if contentLength > 256000 {
-		validationErr.New("content")("max length is 256000")
+	if contentLength > 816000 {
+		validationErr.New("content")("max length is 816000")
 		err = &validationErr
 		return
 	}
@@ -210,7 +206,7 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 		var articleCopy = *reference
 		filtered = &articleCopy
 	} else {
-		filtered = &model.Article{}
+		filtered = &Model{}
 	}
 
 	// check body fields / add to filtered.
@@ -237,7 +233,7 @@ func ValidateBody(requestMethod string, body io.ReadCloser, reference *model.Art
 
 	// cover.
 	if filtered.CoverID != nil {
-		var file = model.File{}
+		var file = file.Model{}
 		file.ID = *filtered.CoverID
 		var isFound bool
 		isFound, err = file.FindByID()

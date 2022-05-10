@@ -2,11 +2,10 @@
 	import { createEventDispatcher } from 'svelte';
 	import Toolbar from '$lib/components/toolbar.svelte';
 	import ToolbarBig from '$lib/components/toolbar_big.svelte';
-	import ElvenLink from '$lib_elven/components/link.svelte';
 	import { By, type Article } from '$lib_elven/types/articles';
 	import SearchBar from '$lib/components/search_bar.svelte';
 	import type { Params, RPH_Event } from '$lib_elven/tools/params';
-	import { _ } from 'svelte-i18n';
+	import { t } from '$lib/locale';
 
 	export let params: Params<Article>;
 
@@ -50,7 +49,7 @@
 
 <div class="toolbars">
 	<ToolbarBig>
-		<ElvenLink path="/articles/create">{$_('elven.routes.articles.create.create')}</ElvenLink>
+		<a href="/elven/articles/create">{$t('elven.articles.create')}</a>
 	</ToolbarBig>
 
 	<div class="search">
@@ -61,31 +60,31 @@
 		<div>
 			<div class="pointer" on:click={() => toggleDrafts()}>
 				{params.getParam('drafts')
-					? $_('elven.components.articlesToolbars.drafts')
-					: $_('elven.components.articlesToolbars.published')}
+					? $t('elven.articles.drafts')
+					: $t('elven.articles.published')}
 			</div>
 		</div>
 
 		<div>
 			<div class="pointer" on:click={() => toggleNewest()}>
 				{params.getParam('newest')
-					? $_('elven.components.articlesToolbars.newest')
-					: $_('elven.components.articlesToolbars.oldest')}
+					? $t('elven.articles.newest')
+					: $t('elven.articles.oldest')}
 			</div>
 		</div>
 
 		<div>
 			{#if params.getParam('by') === By.updated}
 				<div class="pointer" on:click={() => setBy(By.published)}>
-					{$_('elven.components.articlesToolbars.byUpdatedDate')}
+					{$t('elven.articles.byUpdatedDate')}
 				</div>
 			{:else if params.getParam('by') === By.published}
 				<div class="pointer" on:click={() => setBy(By.created)}>
-					{$_('elven.components.articlesToolbars.byPublishedDate')}
+					{$t('elven.articles.byPublishedDate')}
 				</div>
 			{:else if params.getParam('by') === By.created}
 				<div class="pointer" on:click={() => setBy(By.updated)}>
-					{$_('elven.components.articlesToolbars.byCreatedDate')}
+					{$t('elven.articles.byCreatedDate')}
 				</div>
 			{/if}
 		</div>

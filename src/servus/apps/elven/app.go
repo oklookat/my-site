@@ -7,8 +7,7 @@ import (
 	"servus/apps/elven/auth"
 	"servus/apps/elven/cmd"
 	"servus/apps/elven/file"
-	"servus/apps/elven/model"
-	"servus/apps/elven/pipe"
+	"servus/apps/elven/token"
 	"servus/apps/elven/user"
 	"servus/core"
 
@@ -16,71 +15,44 @@ import (
 )
 
 var call *core.Instance
+var appMiddleware = &middleware{}
 
 type App struct {
-	Middleware *middleware
-	Auth       *auth.Starter
-	Article    *article.Starter
-	File       *file.Starter
-	User       *user.Starter
 }
 
 func (a *App) Boot(c *core.Instance) {
 	call = c
 	c.Logger.Info("elven: booting")
+	cmd.Boot(call.Logger)
 
-	// models.
-	model.Boot(c)
+	token.Start(&token.Starter{
+		Core: call,
+	})
+	var tokenPipe = &token.Pipe{}
 
-	// cmd.
-	var cmdConfig = &cmd.Config{
-		Logger: call.Logger,
-	}
-	cmd.Boot(cmdConfig)
-
-	// middleware.
-	a.Middleware = &middleware{}
-
-	// pipe.
-	pipe.Boot(c)
-	var pipeToken = &pipe.Token{}
-	var pipeUser = &pipe.User{}
-
-	// auth.
-	var auth = &auth.Starter{
+	user.Start(&user.Starter{
 		Core:       call,
-		Middleware: a.Middleware,
-		Pipe:       pipeToken,
-	}
-	auth.Start()
-	a.Auth = auth
+		Middleware: appMiddleware,
+	})
+	var userPipe = &user.Pipe{}
 
-	// article.
-	var article = &article.Starter{
+	auth.Start(&auth.Starter{
 		Core:       call,
-		Middleware: a.Middleware,
-		Pipe:       pipeUser,
-	}
-	article.Start()
-	a.Article = article
+		Middleware: appMiddleware,
+		Pipe:       tokenPipe,
+	})
 
-	// file.
-	var file = &file.Starter{
+	article.Start(&article.Starter{
 		Core:       call,
-		Middleware: a.Middleware,
-		Pipe:       pipeUser,
-	}
-	file.Start()
-	a.File = file
+		Middleware: appMiddleware,
+		Pipe:       userPipe,
+	})
 
-	// user.
-	var user = &user.Starter{
+	file.Start(&file.Starter{
 		Core:       call,
-		Middleware: a.Middleware,
-		Pipe:       pipeUser,
-	}
-	user.Start()
-	a.User = user
+		Middleware: appMiddleware,
+		Pipe:       userPipe,
+	})
 
 	a.setupHooks()
 
@@ -102,14 +74,6 @@ func (a *App) setupRoutes() {
 	// provide HTTP helper.
 	elven.Use(call.Http.Middleware)
 
-	// set content-type.
-	elven.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-			request.Header.Add("Content-Type", "application/json")
-			next.ServeHTTP(response, request)
-		})
-	})
-
 	// limit body.
 	elven.Use(call.Limiter.Body.Middleware)
 
@@ -117,16 +81,16 @@ func (a *App) setupRoutes() {
 	elven.Use(call.Banhammer.Middleware)
 
 	// user token.
-	elven.Use(a.Middleware.ProvideTokenPipe)
+	elven.Use(appMiddleware.ProvideTokenPipe)
 
 	// user.
-	elven.Use(a.Middleware.ProvideUserPipe)
+	elven.Use(appMiddleware.ProvideUserPipe)
 
 	// start routes.
-	a.Auth.Routes(elven)
-	a.Article.Routes(elven)
-	a.File.Routes(elven)
-	a.User.Routes(elven)
+	auth.StartRoutes(elven)
+	article.StartRoutes(elven)
+	file.StartRoutes(elven)
+	user.StartRoutes(elven)
 
 	// get before router global middlewares.
 	var useBeforeRouter = call.Cors.GetMiddleware(root)

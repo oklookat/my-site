@@ -1,23 +1,30 @@
 <script lang="ts">
 	import { session } from '$app/stores';
-	import ElvenLink from '$lib_elven/components/link.svelte';
-	import { setTitleElven } from '$lib/tools';
-	import { _ } from 'svelte-i18n';
+	import { t } from '$lib/locale';
 </script>
 
 <svelte:head>
-	<title>{setTitleElven($_('elven.routes.index.title'))}</title>
+	<title>{$t('elven.index.title')}</title>
 </svelte:head>
 
 <div class="hello base__container">
-	<div class="hi">{$_('elven.routes.index.hello')} {$session.user.username}</div>
+	<div class="hi">{$t('elven.index.hello')} {$session.user.username}</div>
 	<div class="things">
-		<a href="/">{$_('elven.routes.index.mainSite')}</a>
-		<ElvenLink path="/settings">{$_('elven.routes.index.settings')}</ElvenLink>
+		<a class="card" href="/">{$t('elven.index.mainSite')}</a>
+		<a class="card" href="/elven/settings">{$t('elven.index.settings')}</a>
 	</div>
 </div>
 
 <style lang="scss">
+	.card {
+		height: 48px;
+		width: 100%;
+		background-color: var(--color-level-1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--border-radius);
+	}
 	.hello {
 		display: flex;
 		flex-direction: column;
@@ -27,6 +34,7 @@
 		border-radius: var(--border-radius);
 		.hi {
 			font-size: 2rem;
+			align-self: center;
 		}
 		.things {
 			display: flex;

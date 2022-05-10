@@ -4,7 +4,7 @@
 	import type { Params, RPH_Event } from '$lib_elven/tools/params';
 	import type { Article } from '$lib_elven/types/articles';
 	import { createEventDispatcher } from 'svelte';
-	import { _ } from 'svelte-i18n';
+	import { t } from '$lib/locale';
 
 	export let params: Params<Article>;
 
@@ -39,8 +39,8 @@
 		<div>
 			<div class="pointer" on:click={() => toggleNewest()}>
 				{params.getParam('newest')
-					? $_('elven.components.articlesToolbars.newest')
-					: $_('elven.components.articlesToolbars.oldest')}
+					? $t('elven.articles.newest')
+					: $t('elven.articles.oldest')}
 			</div>
 		</div>
 	</Toolbar>

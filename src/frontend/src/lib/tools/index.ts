@@ -1,20 +1,53 @@
 import * as cookie from 'cookie';
-import ByteSize from 'byte-size';
 
 // @ts-ignore
 const uploadsURL = import.meta.env.VITE_UPLOADS_URL as string;
 // @ts-ignore
 const apiURL = import.meta.env.VITE_API_URL as string;
 
-/** convert bytes count to string like '10,4 MB' */
+/** convert bytes count to string like '10.4 MB' */
 export function bytesToReadable(bytes: number): string {
-	const data = ByteSize(bytes);
-	return `${data.value} ${data.unit}`;
+	let converted = 0
+	try {
+		const conv = stringToNormal(bytes)
+		if(typeof conv === 'number') {
+			converted = conv
+		} else {
+			return `unknown size`
+		}
+	} catch(err) {
+		return `unknown size`
+	}
+
+	const exponent = 3
+	const system = 1000
+
+	const kb = saveTwoAfterDot(converted / Math.pow(10, exponent))
+	if(kb < system) {
+		return `${kb} KB`
+	}
+
+	const mb = saveTwoAfterDot(converted / Math.pow(10, exponent * 2))
+	if(mb < system) {
+		return `${mb} MB`
+	}
+
+	const gb = saveTwoAfterDot(converted / Math.pow(10, exponent * 3))
+	if(gb < system) {
+		return `${gb} GB`
+	}
+
+	const tb = saveTwoAfterDot(converted / Math.pow(10, exponent * 4))
+	if(tb < system) {
+		return `${tb} TB`
+	}
+
+	const pb = saveTwoAfterDot(converted / Math.pow(10, exponent * 5))
+	return `${pb} PB`
 }
 
 /** if string > 31 length = cut it and add '...' */
-export function cutString(str: string): string {
-	const maxLength = 31;
+export function cutString(str: string, maxLength = 31): string {
 	if (str.length < maxLength) {
 		return str;
 	}
@@ -249,11 +282,6 @@ export function isAdminPanelLogoutPage(url: URL): boolean {
 	return url.pathname.startsWith('/elven/logout');
 }
 
-/** set title with elven prefix */
-export function setTitleElven(title: string): string {
-	return `${title} - elven`;
-}
-
 /** set searchparam to URL */
 export function setSearchParam(params: URLSearchParams, name: string, value: any) {
 	if (!(params instanceof URLSearchParams)) {
@@ -334,4 +362,28 @@ export function toggleBodyScroll() {
 		}
 		document.body.classList.remove("no-scroll")
 	}
+}
+
+/**
+ * example:
+ * 
+ * val: 528.3333333333334
+ * 
+ * returns: 528.33
+ */
+export function saveTwoAfterDot(val: number) {
+	// val = 528.3333333333334
+	// [528, 3333333333334]
+	let dotsSplit = val.toString(10).split(".")
+	if(dotsSplit.length > 1) {
+		// 3333333333334
+		let second = dotsSplit[1]
+		if(second.length > 2) {
+			second = second.slice(0, 2)
+		}
+		dotsSplit[1] = second
+	}
+	const resultString = dotsSplit.join(".")
+	const result = Number(resultString)
+	return result
 }

@@ -4,7 +4,7 @@
 	import ArticleCover from './article_cover.svelte';
 	import ArticleActions from '$lib_elven/components/article_actions.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { _ } from 'svelte-i18n';
+	import { t } from '$lib/locale';
 
 	export let article: Article;
 
@@ -54,9 +54,9 @@
 
 		<div class="meta__item">
 			{#if article.is_published}
-				{$_('elven.components.article.published')}
+				{$t('elven.articles.published')}
 			{:else}
-				{$_('elven.components.article.draft')}
+				{$t('elven.articles.draft')}
 			{/if}
 		</div>
 	</div>

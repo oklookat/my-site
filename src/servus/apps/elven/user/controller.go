@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"servus/apps/elven/model"
 )
 
 var (
@@ -16,7 +15,10 @@ var (
 func getMe(response http.ResponseWriter, request *http.Request) {
 	var h = call.Http.Get(request)
 	var pipe = pipe.GetByContext(request)
-	var resp = Response{}
+	var resp = struct {
+		IsAdmin  bool   `json:"is_admin"`
+		Username string `json:"username"`
+	}{}
 	resp.IsAdmin = pipe.IsAdmin()
 	resp.Username = pipe.GetUsername()
 	bytes, err := json.Marshal(resp)
@@ -50,11 +52,10 @@ func change(response http.ResponseWriter, request *http.Request) {
 
 	var sendValidationErr = func() {
 		h.Send("invalid request", 400, err)
-		return
 	}
 
 	// configure model & update.
-	var user = model.User{}
+	var user = Model{}
 	user.ID = pipe.GetID()
 	switch body.What {
 	case "username":
@@ -104,7 +105,7 @@ func Create(username string, password string, isAdmin bool) (err error) {
 	}
 
 	// fill.
-	var user = model.User{}
+	var user = Model{}
 	var role string
 	if isAdmin {
 		role = "admin"
@@ -132,7 +133,7 @@ func Create(username string, password string, isAdmin bool) (err error) {
 
 // delete user. THIS IS NOT A ROUTE.
 func DeleteByUsername(username string) (err error) {
-	var user = model.User{}
+	var user = Model{}
 	user.Username = username
 	found, err := user.FindByUsername()
 	if !found {

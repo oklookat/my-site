@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"servus/apps/elven/base"
-	"servus/apps/elven/model"
 )
 
 // ALL HANDLERS PROTECTED BY SAFE METHODS MIDDLEWARE.
@@ -18,15 +17,12 @@ func getArticles(response http.ResponseWriter, request *http.Request) {
 	var isAdmin = pipe.IsAdmin()
 
 	// validate.
-	validatedBody := &base.ArticleGetParams{}
-	if err = ValidateGetParams(validatedBody, request.URL.Query(), isAdmin); err != nil {
-		h.Send("", 400, err)
-		return
-	}
+	validatedBody := &GetParams{}
+	ValidateGetParams(validatedBody, request.URL.Query(), isAdmin)
 
 	// get.
-	article := model.Article{}
-	articles, totalPages, err := article.GetPaginated(validatedBody)
+	article := Model{}
+	articles, totalPages, err := article.GetPaginated(validatedBody, isAdmin)
 	if err != nil {
 		h.Send("", 500, err)
 		return
@@ -36,7 +32,7 @@ func getArticles(response http.ResponseWriter, request *http.Request) {
 	var responseContent = base.ResponseContent{}
 	responseContent.Meta.CurrentPage = validatedBody.Page
 	responseContent.Meta.TotalPages = totalPages
-	responseContent.Meta.PerPage = model.ArticlePageSize
+	responseContent.Meta.PerPage = pageSize
 	responseContent.Data = articles
 
 	// send.
@@ -60,7 +56,7 @@ func getArticle(response http.ResponseWriter, request *http.Request) {
 	isAdmin = pAuth.IsAdmin()
 
 	// find.
-	var article = model.Article{ID: id}
+	var article = Model{ID: id}
 	found, err := article.FindByID(isAdmin)
 	if err != nil {
 		h.Send("", 500, err)
@@ -131,7 +127,7 @@ func updateArticle(response http.ResponseWriter, request *http.Request) {
 	var id = h.GetRouteArgs()["id"]
 
 	// find.
-	var article = model.Article{ID: id}
+	var article = Model{ID: id}
 
 	// isAdmin = true because this handler protected by admin-only
 	found, err := article.FindByID(true)
@@ -145,7 +141,7 @@ func updateArticle(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// validate body.
-	var filteredArticle *model.Article
+	var filteredArticle *Model
 	filteredArticle, err = ValidateBody(request.Method, request.Body, &article)
 	if err != nil {
 		var valError *base.ValidationError
@@ -182,7 +178,7 @@ func deleteArticle(response http.ResponseWriter, request *http.Request) {
 	var id = h.GetRouteArgs()["id"]
 
 	// find.
-	var article = model.Article{ID: id}
+	var article = Model{ID: id}
 
 	// isAdmin = true because this handler protected by admin-only
 	found, err := article.FindByID(true)

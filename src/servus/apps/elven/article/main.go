@@ -9,6 +9,32 @@ import (
 	"github.com/oklookat/goway"
 )
 
+// get paginated articles by params.
+type GetParams struct {
+	// number of page.
+	Page int
+
+	// show published or drafts?
+	Drafts bool
+
+	// start from newest? true == DESC; false == ASC.
+	Newest bool
+
+	// created; updated; published.
+	By string
+
+	// search by title.
+	Title *string
+}
+
+// article request body that user should send to create/update article.
+type Body struct {
+	CoverID     *string `json:"cover_id"`
+	IsPublished *bool   `json:"is_published"`
+	Title       *string `json:"title"`
+	Content     *string `json:"content"`
+}
+
 var isBooted = false
 var call *core.Instance
 var middleware base.MiddlewareSafeMethodsOnly
@@ -20,7 +46,7 @@ type Starter struct {
 	Pipe       base.UserPipe
 }
 
-func (s *Starter) Start() error {
+func Start(s *Starter) error {
 	// check.
 	if s == nil {
 		return errors.New("starter nil pointer")
@@ -45,9 +71,9 @@ func (s *Starter) Start() error {
 	return nil
 }
 
-func (s *Starter) Routes(router *goway.Router) error {
+func StartRoutes(router *goway.Router) error {
 	if !isBooted {
-		return errors.New("you must call Starter.Boot() before Starter.Routes()")
+		return errors.New("you must call Start() before StartRoutes()")
 	}
 
 	var root = router.Group("/article")

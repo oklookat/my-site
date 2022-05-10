@@ -22,5 +22,9 @@ declare namespace App {
 			token: string | null;
 		};
 	}
-	// interface Stuff {}
+	interface Stuff {
+		title?: string
+		description?: string
+		author?: string
+	}
 }

@@ -3,7 +3,8 @@ package auth
 import (
 	"fmt"
 	"net/http"
-	"servus/apps/elven/model"
+	"servus/apps/elven/token"
+	"servus/apps/elven/user"
 )
 
 // generate token if username and password are correct.
@@ -19,7 +20,7 @@ func login(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// find user.
-	var user = model.User{Username: body.Username}
+	var user = user.Model{Username: body.Username}
 	isUserFound, err := user.FindByUsername()
 	if err != nil {
 		h.Send("", 500, err)
@@ -43,7 +44,7 @@ func login(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// generate token.
-	var tokenModel = model.Token{}
+	var tokenModel = token.Model{}
 	encryptedToken, _, err := tokenModel.Generate(user.ID)
 	if err != nil {
 		h.Send("", 500, err)
@@ -78,7 +79,7 @@ func logout(response http.ResponseWriter, request *http.Request) {
 	var pipe = pipe.GetByContext(request)
 
 	// delete token.
-	var token = model.Token{}
+	var token = token.Model{}
 	token.ID = pipe.GetID()
 	var err error
 	if err = token.DeleteByID(); err != nil {

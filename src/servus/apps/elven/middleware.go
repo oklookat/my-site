@@ -3,7 +3,8 @@ package elven
 import (
 	"context"
 	"net/http"
-	"servus/apps/elven/pipe"
+	"servus/apps/elven/token"
+	"servus/apps/elven/user"
 )
 
 type middleware struct {
@@ -15,8 +16,8 @@ func (m *middleware) AuthorizedOnly(next http.Handler) http.Handler {
 		var h = call.Http.Get(request)
 
 		// get pipe.
-		var user = pipe.User{}
-		userPipe := user.GetByContext(request)
+		var userGetter = user.Pipe{}
+		var userPipe = userGetter.GetByContext(request)
 
 		// check rights.
 		if !userPipe.IsAuthorized() {
@@ -44,8 +45,8 @@ func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 		}
 
 		// check rights.
-		var user = pipe.User{}
-		userPipe := user.GetByContext(request)
+		var userGetter = user.Pipe{}
+		var userPipe = userGetter.GetByContext(request)
 
 		// allow if admin.
 		var isAdmin = userPipe.IsAdmin()
@@ -60,8 +61,6 @@ func (m *middleware) SafeMethodsOnly(next http.Handler) http.Handler {
 			statusCode = 401 // 401 = not authorized
 		}
 		h.Send("", statusCode, nil)
-		return
-
 	})
 }
 
@@ -71,8 +70,8 @@ func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 		var h = call.Http.Get(request)
 
 		// check rights.
-		var user = pipe.User{}
-		userPipe := user.GetByContext(request)
+		var userGetter = user.Pipe{}
+		var userPipe = userGetter.GetByContext(request)
 		var isAdmin = userPipe.IsAdmin()
 		if isAdmin {
 			next.ServeHTTP(response, request)
@@ -85,8 +84,6 @@ func (m *middleware) AdminOnly(next http.Handler) http.Handler {
 			statusCode = 401 // 401 = not authorized
 		}
 		h.Send("", statusCode, nil)
-		return
-
 	})
 }
 
@@ -95,11 +92,11 @@ func (m *middleware) ProvideTokenPipe(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		var ctx = request.Context()
 		// get token.
-		var token = pipe.Token{}
-		var tokenPipe, err = token.GetByRequest(request)
+		var tokenGetter = token.Pipe{}
+		var tokenPipe, err = tokenGetter.GetByRequest(request)
 		var isHasTokenPipe = !(tokenPipe == nil || err != nil)
 		if isHasTokenPipe {
-			var tokenCtx = context.WithValue(ctx, pipe.CtxToken, tokenPipe)
+			var tokenCtx = context.WithValue(ctx, token.CTX, tokenPipe)
 			*request = *request.WithContext(tokenCtx)
 		}
 		next.ServeHTTP(response, request)
@@ -112,19 +109,19 @@ func (m *middleware) ProvideUserPipe(next http.Handler) http.Handler {
 		var ctx = request.Context()
 
 		// get token.
-		var token = pipe.Token{}
-		tokenPipe := token.GetByContext(request)
+		var tokenGetter = token.Pipe{}
+		tokenPipe := tokenGetter.GetByContext(request)
 		if !tokenPipe.IsExists() {
 			next.ServeHTTP(response, request)
 			return
 		}
 
 		// get user.
-		var user = pipe.User{}
-		var userPipe, err = user.GetByID(tokenPipe.GetUserID())
+		var userGetter = user.Pipe{}
+		var userPipe, err = userGetter.GetByID(tokenPipe.GetUserID())
 		var isHasUserPipe = !(userPipe == nil || err != nil)
 		if isHasUserPipe {
-			var userCtx = context.WithValue(ctx, pipe.CtxUser, userPipe)
+			var userCtx = context.WithValue(ctx, user.CTX, userPipe)
 			*request = *request.WithContext(userCtx)
 		}
 		next.ServeHTTP(response, request)
