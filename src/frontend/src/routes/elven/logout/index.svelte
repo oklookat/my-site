@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import NetworkAuth from '$lib_elven/network/network_auth';
+	import NetworkAuth from '$lib/network/auth';
 	import { t } from '$lib/locale';
 
 	onMount(async () => {

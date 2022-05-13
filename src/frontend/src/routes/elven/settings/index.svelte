@@ -1,12 +1,20 @@
-<script lang="ts">
-	import AccountSettings from '$lib_elven/components/settings_account.svelte';
-	import ToolbarBig from '$lib/components/toolbar_big.svelte';
-	import { t } from '$lib/locale';
+<script context="module" lang="ts">
+	export const load: Load = async (e) => {
+		const stuff = e.stuff;
+		const output = {
+			stuff: stuff
+		};
+		stuff.title = t.get('elven.settings.title');
+		return output;
+	};
 </script>
 
-<svelte:head>
-	<title>{$t('elven.settings.title')}</title>
-</svelte:head>
+<script lang="ts">
+	import AccountSettings from '$lib/components/elven/settings_account.svelte';
+	import ToolbarBig from '$lib/components/toolbar_big.svelte';
+	import { t } from '$lib/locale';
+	import type { Load } from '@sveltejs/kit';
+</script>
 
 <div class="settings">
 	<ToolbarBig>

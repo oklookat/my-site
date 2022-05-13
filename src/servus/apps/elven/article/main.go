@@ -27,12 +27,12 @@ type GetParams struct {
 	Title *string
 }
 
-// article request body that user should send to create/update article.
+// article request body that user should send to create article.
 type Body struct {
-	CoverID     *string `json:"cover_id"`
-	IsPublished *bool   `json:"is_published"`
-	Title       *string `json:"title"`
-	Content     *string `json:"content"`
+	CoverID     string `json:"cover_id"`
+	IsPublished bool   `json:"is_published"`
+	Title       string `json:"title"`
+	Content     string `json:"content"`
 }
 
 var isBooted = false
@@ -84,7 +84,7 @@ func StartRoutes(router *goway.Router) error {
 	articles.Route("", getArticles).Methods(http.MethodGet)
 	articles.Route("", createArticle).Methods(http.MethodPost)
 	articles.Route("/{id}", getArticle).Methods(http.MethodGet)
-	articles.Route("/{id}", updateArticle).Methods(http.MethodPut, http.MethodPatch)
+	articles.Route("/{id}", updateArticle).Methods(http.MethodPatch)
 	articles.Route("/{id}", deleteArticle).Methods(http.MethodDelete)
 
 	return nil

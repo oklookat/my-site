@@ -5,12 +5,6 @@
 			// default
 			"$lib": ["src/lib"],
 			"$lib/*": ["src/lib/*"],
-			// custom
-			"$lib_elven": ["src/lib_elven"],
-			"$lib_elven/*": ["src/lib_elven/*"],
-			//
-			"$lib_oklookat": ["src/lib_oklookat"],
-			"$lib_oklookat/*": ["src/lib_oklookat/*"]
 		},
 		"allowJs": true,
 		"checkJs": true,

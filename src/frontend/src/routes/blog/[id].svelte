@@ -34,9 +34,9 @@
 	import { cutString } from '$lib/tools';
 	import { getParser } from '$lib/tools/markdown';
 
-	import ArticleCover from '$lib_elven/components/article_cover.svelte';
-	import NetworkArticle from '$lib_elven/network/network_article';
-	import type { Article } from '$lib_elven/types/articles';
+	import ArticleCover from '$lib/components/elven/article_cover.svelte';
+	import NetworkArticle from '$lib/network/article';
+	import type { Article } from '$lib/types/articles';
 	import type { Load, LoadOutput } from '@sveltejs/kit';
 
 	export let article: Article;

@@ -1,7 +1,7 @@
 import type { GetSession, Handle } from '@sveltejs/kit';
 //
-import NetworkUser from '$lib_elven/network/network_user';
-import type { User } from '$lib_elven/types/user';
+import NetworkUser from '$lib/elven/entities/user/network';
+import type { User } from '$lib/elven/entities/user/types';
 import { getTokenFromRequestHeaders } from '$lib/tools';
 
 export const handle: Handle = async ({ event, resolve }) => {

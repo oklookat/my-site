@@ -75,6 +75,7 @@ function generateRouteLoaders(locales: string[]): Array<any> {
 }
 
 const config: Config = ({
+  fallbackLocale: 'en',
   loaders: generateRouteLoaders(["en"])
 });
 

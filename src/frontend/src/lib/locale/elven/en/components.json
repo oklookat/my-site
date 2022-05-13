@@ -1,4 +1,10 @@
 {
+    "dates": {
+        "system": "12",
+        "months": {
+            
+        }
+    },
     "header": {
         "elven": "elven",
         "articles": "articles",
@@ -6,8 +12,6 @@
     },
     "pagination": {
         "page": "Page",
-        "nextPage": "Next page",
-        "prevPage": "Previous page",
         "totalPages": "Total pages"
     },
     "searchbar": {

@@ -5,10 +5,10 @@
 
 		let resp: Response | null = null;
 
-		const stuff = e.stuff
-		stuff.title = t.get('elven.articles.title')
+		const stuff = e.stuff;
+		stuff.title = t.get('elven.articles.title');
 
-		const networkArticle = new NetworkArticle('', e.fetch);	
+		const networkArticle = new NetworkArticle(getTokenFromSession(e), e.fetch);
 		try {
 			resp = await networkArticle.getAll(requestParams.toObject());
 			if (resp.ok) {
@@ -33,20 +33,21 @@
 	// ui
 	import Pagination from '$lib/components/pagination.svelte';
 	// article
-	import type { Article } from '$lib_elven/types/articles';
-	import type { Items } from '$lib_elven/types';
-	import ArticlesToolbars from '$lib_elven/components/articles_toolbars.svelte';
-	import ArticlesList from '$lib_elven/components/articles_list.svelte';
-	import NetworkArticle from '$lib_elven/network/network_article';
+	import type { Article } from '$lib/types/articles';
+	import type { Items } from '$lib/types';
+	import ArticlesToolbars from '$lib/components/elven/articles_toolbars.svelte';
+	import ArticlesList from '$lib/components/elven/articles_list.svelte';
+	import NetworkArticle from '$lib/network/article';
 	import {
 		HandleRouteParam,
 		Params,
 		Refresh,
 		type RPH_Data,
 		type RPH_Event
-	} from '$lib_elven/tools/params';
+	} from '$lib/tools/params';
 	import type { Load } from '@sveltejs/kit';
 	import { t } from '$lib/locale';
+	import { getTokenFromSession } from '$lib/tools';
 
 	/** articles data */
 	export let items: Items<Article>;

@@ -120,18 +120,15 @@ func (m *Model) GetPaginated(params *GetParams, isAdmin bool) (articles map[int]
 	return
 }
 
-// create in database. AFTER CREATING RETURNS ONLY ID.
+// create in database.
 func (m *Model) Create() (err error) {
 	m.hookBeforeChange()
 	var query = `
 	INSERT INTO articles 
 	(user_id, cover_id, is_published, title, content) 
 	VALUES ($1, $2, $3, $4, $5) 
-	RETURNING id`
+	RETURNING *`
 	err = articleAdapter.Get(m, query, m.UserID, m.CoverID, m.IsPublished, m.Title, m.Content)
-	if err != nil {
-		return
-	}
 	return
 }
 
@@ -181,9 +178,9 @@ func (m *Model) hookBeforeChange() {
 		m.Title = "Untitled"
 	}
 
-	// article published and no published date? wtf lets fix that.
+	// article published but published date not exists? Fix that.
 	if m.IsPublished && m.PublishedAt == nil {
-		var cur = time.Now()
-		m.PublishedAt = &cur
+		var currentTime = time.Now()
+		m.PublishedAt = &currentTime
 	}
 }

@@ -1,8 +1,8 @@
 <script context="module" lang="ts">
-	import NetworkArticle from '$lib_elven/network/network_article';
-	import { HandleRouteParam, Params, type RPH_Data, type RPH_Event } from '$lib_elven/tools/params';
-	import type { Items } from '$lib_elven/types';
-	import type { Article } from '$lib_elven/types/articles';
+	import NetworkArticle from '$lib/network/article';
+	import { HandleRouteParam, Params, type RPH_Data, type RPH_Event } from '$lib/tools/params';
+	import type { Items } from '$lib/types';
+	import type { Article } from '$lib/types/articles';
 
 	import type { Load, LoadOutput } from '@sveltejs/kit';
 
@@ -41,8 +41,8 @@
 <script lang="ts">
 	import { t } from '$lib/locale';
 	import Pagination from '$lib/components/pagination.svelte';
-	import ArticlesToolbars from '$lib_oklookat/components/articles_toolbars.svelte';
-	import ArticlesList from '$lib_oklookat/components/articles_list.svelte';
+	import ArticlesToolbars from '$lib/oklookat/components/articles_toolbars.svelte';
+	import ArticlesList from '$lib/oklookat/components/articles_list.svelte';
 
 	/** articles data */
 	export let items: Items<Article>;

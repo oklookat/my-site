@@ -79,7 +79,6 @@
 			{#if current > 1}
 				<div
 					class="prev__butt pointer center"
-					title={$t('elven.components.pagination.prevPage')}
 					on:click={onPrevButton}
 				/>
 			{/if}
@@ -88,8 +87,8 @@
 		<div class="page">
 			<input
 				type="number"
-				placeholder={$t('elven.components.pagination.page')}
 				title={$t('elven.components.pagination.page')}
+				placeholder={$t('elven.components.pagination.page')}
 				bind:value={inputPage}
 				on:input={onPageInput}
 			/>
@@ -102,7 +101,7 @@
 		</div>
 	</div>
 
-	<div class="total" title={$t('elven')}>
+	<div class="total" title={$t('elven.components.pagination.totalPages')}>
 		<div class="count center">{total}</div>
 	</div>
 </div>

@@ -229,7 +229,7 @@ CREATE TABLE articles
     REFERENCES files(id) ON UPDATE CASCADE ON DELETE SET NULL,
     is_published boolean DEFAULT false,
     title varchar(124) DEFAULT 'Untitled'::varchar,
-    content varchar(816000) NOT NULL,
+    content varchar(816000) DEFAULT ''::varchar NOT NULL,
     published_at timestamp with time zone,
     created_at created,
     updated_at timestamp with time zone

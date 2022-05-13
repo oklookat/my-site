@@ -2,18 +2,15 @@
 	import type { Load, LoadOutput } from '@sveltejs/kit';
 
 	export const load: Load = async (e) => {
-		/** creating / editing this article */
-		let article: Article = {
-			title: '',
-			content: ''
-		};
+		/** creating/editing this article */
+		let article: Editable;
 
-		const stuff = e.stuff
+		const stuff = e.stuff;
 		const output: LoadOutput = {
 			status: 200,
 			stuff: stuff,
-			props: { 
-				article: article 
+			props: {
+				article: article
 			}
 		};
 
@@ -21,22 +18,22 @@
 		const isEditMode = params.has('id');
 		if (!isEditMode) {
 			stuff.title = t.get('elven.articles.createArticle');
-			return output
+			return output;
 		}
 
 		try {
-			const networkArticle = new NetworkArticle('', e.fetch);
+			const networkArticle = new NetworkArticle(getTokenFromSession(e), e.fetch);
 			const resp = await networkArticle.get(params.get('id')!);
-			output.status = resp.status
+			output.status = resp.status;
 			if (resp.ok) {
-				article = await resp.json();
-				if(output.props && article.title) {
-					output.props.article = article
-					stuff.title = article.title
+				article = new Editable(await resp.json());
+				if (output.props && article.title) {
+					output.props.article = article;
+					stuff.title = article.title;
 				}
 			}
 		} catch (err) {}
-		return output
+		return output;
 	};
 </script>
 
@@ -45,24 +42,22 @@
 	import { browser } from '$app/env';
 	import type { Config } from '@oklookat/jmarkd';
 	import TextareaResizer from '$lib/tools/textarea_resizer';
-	import { generateFileTypeSelector } from '$lib_elven/tools/extension';
+	import { generateFileTypeSelector } from '$lib/tools/extension';
 	import Toolbar from '$lib/components/toolbar.svelte';
-	import type { Article } from '$lib_elven/types/articles';
-	import ArticleCover from '$lib_elven/components/article_cover.svelte';
-	import NetworkArticle from '$lib_elven/network/network_article';
-	import FilesPortable from '$lib_elven/components/files_portable.svelte';
-	import type { File } from '$lib_elven/types/files';
-	import ToolsArticles from '$lib_elven/tools/articles';
-	import { Params } from '$lib_elven/tools/params';
+	import ArticleCover from '$lib/components/elven/article_cover.svelte';
+	import NetworkArticle from '$lib/network/article';
+	import FilesPortable from '$lib/components/elven/files_portable.svelte';
+	import type { File } from '$lib/types/files';
+	import { Params } from '$lib/tools/params';
 	import { dateToReadable } from '$lib/tools/dates';
 	import { t } from '$lib/locale';
 	import { getParser } from '$lib/tools/markdown';
+	import { getTokenFromSession } from '$lib/tools';
+	import UploadPhoto from '$lib/icons/upload_photo.svelte';
+	import { Editable } from '$lib/tools/article';
 
 	/** creating / editing this article */
-	export let article: Article;
-
-	/** save all data */
-	const save = saver();
+	export let article: Editable = new Editable();
 
 	/** title element */
 	let articleTitleEL: HTMLTextAreaElement;
@@ -78,11 +73,6 @@
 
 	/** is cover exists in article? */
 	let isCoverExists = false;
-
-	$: onCoverChanged(article.cover_id);
-	function onCoverChanged(val: string | undefined) {
-		isCoverExists = !!(article.cover_id && article.cover_path && article.cover_extension);
-	}
 
 	/** md editor */
 	let jmarkdClass: any;
@@ -101,11 +91,19 @@
 
 		// manually add title before creating TextareaResizer, for correct height in start
 		textareaResizer = new TextareaResizer(articleTitleEL, 54);
-		articleTitleEL.value = article.title;
-		initEditor(article.content);
+
+		if (article) {
+			isCoverExists = !!(article.cover_id && article.cover_extension && article.cover_path)
+			articleTitleEL.value = article.title;
+			initEditor(article.content);
+		}
 	});
 
+	let lastSavedInterval: NodeJS.Timer;
 	onDestroy(() => {
+		if (lastSavedInterval) {
+			clearInterval(lastSavedInterval);
+		}
 		if (!browser) {
 			return;
 		}
@@ -136,119 +134,7 @@
 	}
 
 	let lastSavedPretty = $t('elven.articles.notSaved');
-	const updateLastSaved = createLastSaver();
-	function createLastSaver() {
-		let lastSavedTimestamp = 0;
-		let lastSavedInterval: NodeJS.Timer;
-		return () => {
-			lastSavedTimestamp = new Date().getTime();
-			lastSavedPretty = dateToReadable(lastSavedTimestamp);
 
-			if (lastSavedInterval) {
-				clearInterval(lastSavedInterval);
-			}
-
-			lastSavedInterval = setInterval(() => {
-				lastSavedPretty = dateToReadable(lastSavedTimestamp);
-			}, 1000);
-		};
-	}
-
-	/** create new article */
-	async function createArticle(): Promise<Article> {
-		const notValid =
-			article.id ||
-			!ToolsArticles.validateTitle(article.title) ||
-			!ToolsArticles.validateContent(article.content);
-		if (notValid) {
-			return Promise.reject('not valid article');
-		}
-		window.$progress?.startBasic();
-		try {
-			const resp = await NetworkArticle.create(article);
-			window.$progress?.finishBasic();
-			if (resp.ok) {
-				const newArticle = await resp.json();
-				article.id = newArticle.id;
-				updateLastSaved();
-				return newArticle;
-			}
-			throw resp.statusText;
-		} catch (err) {
-			throw err;
-		} finally {
-		}
-	}
-
-	/** update existing article */
-	async function updateArticle(): Promise<Article> {
-		const notValid =
-			!article.id ||
-			!ToolsArticles.validateTitle(article.title) ||
-			!ToolsArticles.validateContent(article.content);
-		if (notValid) {
-			return Promise.reject('not valid article');
-		}
-		window.$progress?.startBasic();
-		const resp = await NetworkArticle.update(article);
-		window.$progress?.finishBasic();
-		if (resp.ok) {
-			updateLastSaved();
-			return await resp.json();
-		}
-		throw Error(resp.statusText);
-	}
-
-	/** create save func */
-	function saver() {
-		let throttle: NodeJS.Timeout;
-
-		// save logic
-		const saver = async () => {
-			const outputData = editor.save();
-			article.content = outputData;
-			// if saved before (update)
-			if (article.id) {
-				return await updateArticle();
-			}
-			// if not saved before (new article)
-			return await createArticle();
-		};
-
-		// save data
-		return (): Promise<null> => {
-			if (throttle) {
-				clearTimeout(throttle);
-			}
-			return new Promise((resolve, reject) => {
-				throttle = setTimeout(async () => {
-					try {
-						await saver();
-						resolve(null);
-					} catch (err) {
-						reject(err);
-					}
-				}, 1000);
-			});
-		};
-	}
-
-	function onCoverSelected(file: File) {
-		isChooseCover = false;
-		article.cover_id = file.id;
-		article.cover_extension = file.extension;
-		article.cover_path = file.path;
-		save();
-	}
-
-	function removeCover() {
-		isChooseCover = false;
-		if (!article.cover_id) {
-			return;
-		}
-		article.cover_id = undefined;
-		save();
-	}
 
 	const filesPortableParams = new Params<File>('file');
 	filesPortableParams.setParam(
@@ -256,6 +142,30 @@
 		generateFileTypeSelector(['IMAGE', 'VIDEO']).selectedToString()
 	);
 
+	function onCoverSelected(file: File) {
+		isChooseCover = false;
+		article.cover_id = file.id;
+		article.cover_path = file.path
+		article.cover_extension = file.extension
+		isCoverExists = true
+	}
+
+	function onCoverRemoved() {
+		isChooseCover = false;
+		isCoverExists = false
+		if (!article.cover_id) {
+			return;
+		}
+		article.cover_id = undefined;
+	}
+
+	function onTitleChanged() {
+		article.title = articleTitleEL.value;
+	}
+
+	function onContentChanged() {
+		article.content = editor?.save();
+	}
 </script>
 
 {#if isChooseCover}
@@ -275,7 +185,7 @@
 		<Toolbar>
 			<div class="last__saved">
 				{$t('elven.articles.lastSaved')}
-				{lastSavedPretty}
+				{article.lastSaved}
 			</div>
 		</Toolbar>
 	</div>
@@ -287,28 +197,13 @@
 		}}
 	>
 		{#if isCoverExists}
-			<div class="remove" on:click|stopPropagation|preventDefault={() => removeCover()}>X</div>
+			<div class="remove" on:click|stopPropagation|preventDefault={() => onCoverRemoved()}>X</div>
 			<div class="itself">
 				<ArticleCover bind:article />
 			</div>
 		{:else}
 			<div class="upload item">
-				<svg
-					version="1.1"
-					xmlns="http://www.w3.org/2000/svg"
-					xmlns:xlink="http://www.w3.org/1999/xlink"
-					x="0px"
-					y="0px"
-					viewBox="0 0 230 230"
-					style="enable-background:new 0 0 230 230;"
-					xml:space="preserve"
-				>
-					<path
-						d="M132.651,140.748H97.349v-35.301h35.302V140.748z M59.32,52.496H230v141.203H0V52.496h17.571V36.301H59.32V52.496z
-      M166.313,81.975h45.491V67.781h-45.491V81.975z M65.87,123.096c0,27.136,21.996,49.131,49.13,49.131s49.13-21.995,49.13-49.131
-     c0-27.131-21.996-49.129-49.13-49.129S65.87,95.965,65.87,123.096z"
-					/>
-				</svg>
+				<UploadPhoto />
 			</div>
 		{/if}
 	</div>
@@ -319,11 +214,10 @@
 			placeholder={$t('elven.articles.titlePlaceholder')}
 			rows="1"
 			maxlength="124"
-			bind:value={article.title}
 			bind:this={articleTitleEL}
-			on:input={() => save()}
+			on:input={() => onTitleChanged()}
 		/>
-		<div class="editor" bind:this={editorEL} on:input={() => save()} />
+		<div class="editor" bind:this={editorEL} on:input={() => onContentChanged()} />
 	</div>
 </div>
 
@@ -384,7 +278,7 @@
 		}
 		.upload {
 			width: 100%;
-			svg {
+			:global(svg) {
 				width: 40px;
 				height: 40px;
 

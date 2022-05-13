@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Header from '$lib_oklookat/components/header.svelte';
+	import Header from '$lib/oklookat/components/header.svelte';
 	import { page } from '$app/stores';
 </script>
 

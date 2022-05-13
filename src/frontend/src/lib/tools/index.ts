@@ -1,3 +1,4 @@
+import type { LoadInput } from '@sveltejs/kit';
 import * as cookie from 'cookie';
 
 // @ts-ignore
@@ -111,6 +112,10 @@ export function addTokenToHeaders(token: string, headers: Headers) {
 		return;
 	}
 	headers.append('Authorization', `Elven ${token}`);
+}
+
+export function getTokenFromSession(e: LoadInput): string {
+	return e.session.user.token || ''
 }
 
 /** returns normalized XY coords depend on click position and element

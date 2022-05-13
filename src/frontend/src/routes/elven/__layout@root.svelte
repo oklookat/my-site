@@ -44,9 +44,9 @@
 </script>
 
 <script lang="ts">
-	import Header from '$lib_elven/components/header.svelte';
-	import ServiceWrapper from '$lib_elven/components/service_wrapper.svelte';
-	import Progress from '$lib_elven/plugins/elvenProgress/progress.svelte';
+	import Header from '$lib/components/elven/header.svelte';
+	import ServiceWrapper from '$lib/components/elven/service_wrapper.svelte';
+	import Progress from '$lib/elven/plugins/elvenProgress/progress.svelte';
 	import { isAdminPanelLoginPage } from '$lib/tools';
 	import { page } from '$app/stores';
 	import { browser } from '$app/env';

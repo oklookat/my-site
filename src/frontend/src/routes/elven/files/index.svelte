@@ -5,11 +5,10 @@
 		let resp: Response | null = null;
 		let items: Items<File>;
 
-		const stuff = e.stuff
-		stuff.title = t.get('elven.files.title')
+		const stuff = e.stuff;
+		stuff.title = t.get('elven.files.title');
 
-		const networkFile = new NetworkFile('');
-
+		const networkFile = new NetworkFile(getTokenFromSession(e));
 
 		try {
 			resp = await networkFile.getAll(requestParams.toObject(), e.fetch);
@@ -32,22 +31,22 @@
 </script>
 
 <script lang="ts">
-	import type { Items } from '$lib_elven/types';
+	import type { Items } from '$lib/types';
 	import Pagination from '$lib/components/pagination.svelte';
-	import type { File } from '$lib_elven/types/files';
-	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
-	import FilesList from '$lib_elven/components/files_list.svelte';
-	import NetworkFile from '$lib_elven/network/network_file';
+	import type { File } from '$lib/types/files';
+	import FilesToolbars from '$lib/components/elven/files_toolbars.svelte';
+	import FilesList from '$lib/components/elven/files_list.svelte';
+	import NetworkFile from '$lib/elven/entities/file/network';
 	import {
 		HandleRouteParam,
 		Params,
 		Refresh,
 		type RPH_Data,
 		type RPH_Event
-	} from '$lib_elven/tools/params';
+	} from '$lib/tools/params';
 	import type { Load } from '@sveltejs/kit';
 	import { t } from '$lib/locale';
-
+	import { getTokenFromSession } from '$lib/tools';
 
 	/** files data */
 	export let items: Items<File>;

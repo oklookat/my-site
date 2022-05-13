@@ -1,4 +1,3 @@
-import * as path from 'path';
 import adapter from '@sveltejs/adapter-node';
 import preprocess from 'svelte-preprocess';
 
@@ -8,10 +7,6 @@ const expose = false;
 const viteBase = {
 	optimizeDeps: { exclude: [] },
 	resolve: {
-		alias: {
-			$lib_elven: path.resolve('./src/lib_elven'),
-			$lib_oklookat: path.resolve('./src/lib_oklookat')
-		}
 		// include .d.ts
 		//extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.d.ts']
 	},

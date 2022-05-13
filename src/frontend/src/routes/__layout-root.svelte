@@ -1,11 +1,15 @@
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
-	import { locale, loadTranslations } from '$lib/locale';
+	import { loadTranslations } from '$lib/locale';
 
 	export const load: Load = async (event) => {
 		const { pathname } = event.url;
 		const defaultLocale = 'en';
-		const initLocale = locale.get() || defaultLocale;
+		let browserLocale: string | null = null
+		if(browser) {
+			browserLocale = navigator.language
+		}
+		const initLocale = browserLocale || defaultLocale;
 		await loadTranslations(initLocale, pathname);
 		return {};
 	};
@@ -18,6 +22,7 @@
 	import '$lib/assets/global.scss';
 	import '$lib/assets/root.css';
 	import '$lib/assets/ui.scss';
+import { browser } from '$app/env';
 </script>
 
 <slot />

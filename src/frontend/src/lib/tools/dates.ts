@@ -1,61 +1,51 @@
-let i18n_hourAgo = 'hour ago'
-let i18n_hoursAgo = 'hours ago'
-let i18n_minutesAgo = 'minutes ago'
-let i18n_secondsAgo = 'seconds ago'
-let i18n_yesterday = 'yesterday'
-let i18n_months = [
-	'jan',
-	'feb',
-	'mar',
-	'apr',
-	'may',
-	'jun',
-	'jul',
-	'aug',
-	'sep',
-	'oct',
-	'nov',
-	'dec'
-];
+import { browser } from "$app/env";
 
-// i18n
-// json.subscribe(v => {
-// 	i18n_hourAgo = v('general.hourAgo') as any
-// 	i18n_hoursAgo = v('general.hoursAgo') as any
-// 	i18n_minutesAgo = v('general.minutesAgo') as any
-// 	i18n_secondsAgo = v('general.secondsAgo') as any
-// 	i18n_yesterday = v('general.yesterday') as any
-// 	//i18n_months = v('general.months') as any
-// })()
+let formatter: Intl.DateTimeFormat
+let locale = 'en-US'
+if (browser) {
+	locale = navigator.language
+	formatter = new Intl.DateTimeFormat(locale, {
+		month: 'short',
+		day: '2-digit',
+		year: 'numeric',
+		hour: '2-digit',
+		second: '2-digit',
+	});
+}
+
+
+
 
 /** convert date to string like: '12 minutes ago' or '12 jan 1970 at 12:22' */
 export function dateToReadable(date: string | number | Date): string {
+	if (!browser) {
+		return ''
+	}
 	let d = new Date(date);
 	const currentDate = new Date();
-
-	// const dateFormatter = getDateFormatter({
-	// 	'month': 'short',
-	// 	'day': '2-digit',
-	// 	'year': 'numeric',
-	// 	'hour': '2-digit',
-	// })
 
 	let monthName = ''
 	let year = ''
 	let dayPeriod = ''
-	// for(const form of dateFormatter.formatToParts(d)) {
-	// 	switch(form.type) {
-	// 		case 'month': 
-	// 			monthName = form.value
-	// 			continue
-	// 		case 'year':
-	// 			year = form.value
-	// 			continue
-	// 		case 'dayPeriod':
-	// 			dayPeriod = ' '+ form.value
-	// 			continue
-	// 	}
-	// }
+	let second = ''
+	for (const form of formatter.formatToParts(d)) {
+		switch (form.type) {
+			case 'month':
+				monthName = form.value
+				continue
+			case 'year':
+				year = form.value
+				continue
+			case 'dayPeriod':
+				dayPeriod = ' ' + form.value
+				continue
+			case 'second':
+				second = form.value
+				continue
+		}
+	}
+	console.log(second)
+
 
 	const isCurrentYear = currentDate.getFullYear() === d.getFullYear();
 	const isCurrentMonth = currentDate.getMonth() === d.getMonth();
@@ -71,24 +61,24 @@ export function dateToReadable(date: string | number | Date): string {
 
 		// n seconds ago
 		if (secondsAgo < 60) {
-			return `${secondsAgo} ${i18n_secondsAgo}`;
+			return `${secondsAgo} ${'seconds ago'}`;
 		}
 		const minutesAgo = Math.round(secondsAgo / 60);
 
 		// n minutes ago
 		if (minutesAgo < 60) {
-			return `${minutesAgo} ${i18n_minutesAgo}`;
+			return `${minutesAgo} ${'minutes ago'}`;
 		}
 		const hoursAgo = Math.round(minutesAgo / 60);
 
 		// hour ago
 		if (hoursAgo < 2) {
-			return `${i18n_hourAgo}`;
+			return `${'hour ago'}`;
 		}
 
 		// n hours ago
 		if (hoursAgo < 9) {
-			return `${hoursAgo} ${i18n_hoursAgo}`;
+			return `${hoursAgo} ${'hours ago'}`;
 		}
 
 		// today
@@ -97,14 +87,14 @@ export function dateToReadable(date: string | number | Date): string {
 
 	const isYesterday = isCurrentYear && isCurrentMonth && currentDate.getDate() - d.getDate() === 1;
 	if (isYesterday) {
-		return `${i18n_yesterday}, ${hoursAndMinutes}`;
+		return `${'yesterday'}, ${hoursAndMinutes}`;
 	}
 
 	// current year?
 	const day = numberWithZero(d.getDate());
 
 	if (isCurrentYear) {
-		return `${day} ${monthName} ${hoursAndMinutes}`;
+		return `${day} ${monthName}, ${hoursAndMinutes}`;
 	}
 
 	return `${day} ${monthName} ${year}, ${hoursAndMinutes}`;
