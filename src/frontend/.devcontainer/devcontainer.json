@@ -10,5 +10,6 @@
 	"extensions": ["aeschli.vscode-css-formatter", 
 		"EditorConfig.EditorConfig", "Nixon.env-cmd-file-syntax", "lokalise.i18n-ally",
 		"sibiraj-s.vscode-scss-formatter", "qwtel.sqlite-viewer", "sysoev.language-stylus",
-		"svelte.svelte-vscode"]
+		"svelte.svelte-vscode"],
+	"postCreateCommand": "npm install"
 }

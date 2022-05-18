@@ -1,7 +1,12 @@
 FROM postgres:14.2-alpine
 
-USER postgres
+
 ENV POSTGRES_PASSWORD=root
 ENV POSTGRES_DB=elven
+ENV PGDATA=/var/lib/postgresql/data/pgdata
 
-#EXPOSE 5432
+WORKDIR /app
+COPY .devcontainer/run.sh .
+RUN chmod +x ./run.sh
+
+USER postgres

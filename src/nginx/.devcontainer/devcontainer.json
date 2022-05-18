@@ -5,5 +5,6 @@
 	"forwardPorts": [80, 443],
 	"context": "..",
 	"dockerFile": "./Dockerfile",
-	"extensions": ["ahmadalli.vscode-nginx-conf", "EditorConfig.EditorConfig"]
+	"extensions": ["ahmadalli.vscode-nginx-conf", "EditorConfig.EditorConfig"],
+	"postCreateCommand": "nginx -g 'daemon off;'"
 }

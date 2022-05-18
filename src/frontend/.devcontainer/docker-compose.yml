@@ -16,6 +16,9 @@ services:
   build:
     context: ../../nginx
     dockerfile: .devcontainer/Dockerfile
+  depends_on:
+    - backend
+    - frontend
   ports:
    - 80:80
    - 443:443
@@ -25,7 +28,6 @@ services:
   command: /bin/sh -c "while sleep 1000; do :; done"
   container_name: pgadmin
   depends_on:
-   - nginx
    - postgres
   build:
     context: ../../database/pgadmin
@@ -52,7 +54,6 @@ services:
   command: /bin/sh -c "while sleep 1000; do :; done"
   container_name: backend
   depends_on:
-   - nginx
    - postgres
   build:
     context: ../../servus

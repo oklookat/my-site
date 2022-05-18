@@ -3,5 +3,6 @@
 {
 	"name": "postgres",
 	"context": "..",
-	"dockerFile": "./Dockerfile"
+	"dockerFile": "./Dockerfile",
+	"postCreateCommand": "/app/run.sh"
 }

@@ -23,10 +23,10 @@ func (i *Instance) Boot() {
 
 	// database.
 	i.Logger.Info("servus: setup database")
-	if err := i.setupDatabase(); err != nil {
-		i.Logger.Panic(err)
-		return
-	}
+	// if err := i.setupDatabase(); err != nil {
+	// 	i.Logger.Panic(err)
+	// 	return
+	// }
 
 	// control.
 	i.Logger.Info("servus: setup control")

@@ -1,14 +1,10 @@
 FROM nginx:1.21.6-alpine
 
-# install mkcert
-RUN apk update && apk add mkcert
+# copy root cert from host (mkcert)
 WORKDIR /app/certs
-RUN mkcert -key-file key.pem -cert-file cert.pem oklookat.ru "*.oklookat.ru" localhost 127.0.0.1 ::1
-
-# install dev certs (mkcert)
-#COPY .devcontainer/certs .
-#RUN cp ./mkcert_root.pem /usr/local/share/ca-certificates/mkcert_root.pem
-#RUN update-ca-certificates
+COPY .devcontainer/certs .
+RUN cp ./mkcert_root.pem /usr/local/share/ca-certificates/mkcert_root.pem
+RUN update-ca-certificates
 
 # replace mime types
 RUN rm /etc/nginx/mime.types
@@ -19,5 +15,7 @@ RUN rm /etc/nginx/nginx.conf
 COPY .devcontainer/nginx.conf /etc/nginx/nginx.conf
 
 # run
-CMD ["nginx", "-g", "daemon off;"]
+WORKDIR /app
+
+# due on vscode remote specific we run nginx in devcontainer.json file
 EXPOSE 80 443
