@@ -8,8 +8,6 @@ OS_POSIX = "POSIX"
 DATA_PATH = get_absolute_by_relative("./data")
 CONFIG_PATH = get_absolute_by_relative("./config.yaml")
 HOSTS_PATH = DATA_PATH + "/hosts.txt"
-MKCERT_UNIX_PATH = "mkcert "
-MKCERT_WIN_PATH = DATA_PATH + "/mkcert.exe "
 CERTS_DEV_DIR = DATA_PATH + "/devCerts"
 NGINX_MIME_TYPES_PATH = DATA_PATH + "/mime.types"
 NGINX_DEV_CONF_PATH = DATA_PATH + "/nginx.dev.conf"
@@ -73,9 +71,7 @@ def run_command(command: str, exit_if_error: bool = True) -> str:
 
 
 def run_mkcert_command(command: str) -> str:
-    mkcert_path = MKCERT_UNIX_PATH
-    if getOS() == OS_WINDOWS:
-        mkcert_path = MKCERT_WIN_PATH
+    mkcert_path = "mkcert "
     try:
         out = run_command(mkcert_path + command, True)
         return out.strip()

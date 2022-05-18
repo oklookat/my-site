@@ -1,0 +1,7 @@
+FROM postgres:14.2-alpine
+
+USER postgres
+ENV POSTGRES_PASSWORD=root
+ENV POSTGRES_DB=elven
+
+#EXPOSE 5432

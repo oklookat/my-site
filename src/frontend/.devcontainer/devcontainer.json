@@ -1,0 +1,14 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.234.0/containers/docker-existing-dockerfile
+{
+	"name": "oklookat-site",
+	"service": "frontend",
+	"dockerComposeFile": "./docker-compose.yml",
+	"shutdownAction": "stopCompose",
+	"workspaceFolder": "/app",
+	"settings": {},
+	"extensions": ["aeschli.vscode-css-formatter", 
+		"EditorConfig.EditorConfig", "Nixon.env-cmd-file-syntax", "lokalise.i18n-ally",
+		"sibiraj-s.vscode-scss-formatter", "qwtel.sqlite-viewer", "sysoev.language-stylus",
+		"svelte.svelte-vscode"]
+}

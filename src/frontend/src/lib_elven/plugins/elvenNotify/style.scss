@@ -1,0 +1,32 @@
+@mixin _desktop {
+	@media (min-width: 765px) {
+		@content;
+	}
+}
+
+.notification {
+	color: var(--color-text);
+	background-color: var(--color-level-1);
+	border-radius: var(--border-radius);
+	border: 1px solid var(--color-border);
+
+	cursor: pointer;
+	width: 240px;
+	min-height: 52px;
+	border-radius: 6px;
+
+	align-self: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	.message {
+		padding: 14px;
+	}
+	
+	@include _desktop() {
+		position: relative;
+		width: 214px;
+		min-height: 52px;
+	}
+}

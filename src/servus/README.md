@@ -1,6 +1,5 @@
 **oklookat.ru / REST API backend**
 **powered by servus little framework**
-
 # Requirements
 
 - **go 1.18+**

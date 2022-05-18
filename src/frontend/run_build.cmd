@@ -1,1 +1,0 @@
-cmd /V /C "set HOST=127.0.0.1&& set PORT=3000&& node build"

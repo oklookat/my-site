@@ -1,0 +1,20 @@
+$small-icon: 15px;
+$big-icon: 20px;
+
+@mixin big__icon {
+    svg {
+		fill: var(--color-text);
+        cursor: pointer;
+		width: $big-icon;
+		height: $big-icon;
+	}
+}
+
+@mixin small__icon {
+    svg {
+		fill: var(--color-text);
+        cursor: pointer;
+		width: $small-icon;
+		height: $small-icon;
+	}
+}

@@ -1,0 +1,89 @@
+# https://github.com/microsoft/vscode-dev-containers/blob/main/containers/docker-existing-docker-compose/.devcontainer/docker-compose.yml
+
+# what is ..:/app:cached
+# from https://code.visualstudio.com/docs/remote/create-dev-container
+# Mounts the project folder to '/workspace'. The target path inside the container
+# should match what your application expects. In this case, the compose file is
+# in a sub-folder, so you will mount '..'. You would then reference this path as the
+# 'workspaceFolder' in '.devcontainer/devcontainer.json' so VS Code starts here.
+
+# tldr: if you make changes to your code in container, these changes will be applied
+# to code in host
+
+services:
+ nginx:
+  container_name: nginx
+  build:
+    context: ../../nginx
+    dockerfile: .devcontainer/Dockerfile
+  ports:
+   - 80:80
+   - 443:443
+
+ pgadmin:
+  # Overrides default command so things don't shut down after the process ends.
+  command: /bin/sh -c "while sleep 1000; do :; done"
+  container_name: pgadmin
+  depends_on:
+   - nginx
+   - postgres
+  build:
+    context: ../../database/pgadmin
+    dockerfile: .devcontainer/Dockerfile
+  ports:
+   - 3000:80
+
+ postgres:
+  # Overrides default command so things don't shut down after the process ends.
+  command: /bin/sh -c "while sleep 1000; do :; done"
+  container_name: postgres
+  build: 
+    context: ../../database/postgres
+    dockerfile: .devcontainer/Dockerfile
+  #volumes:
+  # - ../../database/postgres/data:/var/lib/postgresql/data
+  networks:
+    net:
+      aliases:
+       - postgres
+
+ backend:
+  # Overrides default command so things don't shut down after the process ends.
+  command: /bin/sh -c "while sleep 1000; do :; done"
+  container_name: backend
+  depends_on:
+   - nginx
+   - postgres
+  build:
+    context: ../../servus
+    dockerfile: .devcontainer/Dockerfile
+  links:
+    - "postgres:db"
+  volumes:
+   - ../../servus:/app:cached
+  networks:
+    net:
+      aliases:
+       - backend
+
+ frontend:
+  # Overrides default command so things don't shut down after the process ends.
+  command: /bin/sh -c "while sleep 1000; do :; done"
+  container_name: frontend
+  depends_on:
+   - backend
+  build:
+    context: ..
+    dockerfile: .devcontainer/Dockerfile
+  volumes:
+   - ..:/app:cached
+  networks:
+    net:
+      aliases:
+       - frontend
+
+
+networks:
+  net:
+   driver: bridge
+
