@@ -1,0 +1,21 @@
+{
+	"name": "frontend",
+	"dockerComposeFile": [
+		"../../docker-compose.yml"
+	],
+	"service": "frontend",
+	"shutdownAction": "none",
+	"extensions": [
+		"aeschli.vscode-css-formatter",
+		"EditorConfig.EditorConfig",
+		"Nixon.env-cmd-file-syntax",
+		"lokalise.i18n-ally",
+		"sibiraj-s.vscode-scss-formatter",
+		"qwtel.sqlite-viewer",
+		"sysoev.language-stylus",
+		"svelte.svelte-vscode"
+	],
+	// Open the sub-folder with the source code
+	"workspaceFolder": "/workspace/frontend",
+	"postCreateCommand": "npm install"
+}

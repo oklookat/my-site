@@ -1,0 +1,14 @@
+{
+	"name": "nginx",
+	"dockerComposeFile": [
+		"../../docker-compose.yml"
+	],
+	"service": "nginx",
+	"shutdownAction": "none",
+	"extensions": [
+		"ahmadalli.vscode-nginx-conf",
+		"EditorConfig.EditorConfig"
+	],
+	// Open the sub-folder with the source code
+	"workspaceFolder": "/workspace/nginx"
+}
