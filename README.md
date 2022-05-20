@@ -6,35 +6,52 @@
 *All this will be done automatically in the container.*
 
 ## Requirements
+
+
 **All**
 - [VSCode](https://code.visualstudio.com)
 - [VSCode Docker extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
 - [VSCode Remote Development extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack)
 
+
 **Windows**
 - [WSL2](https://docs.microsoft.com/en-us/windows/wsl/install)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - Optional: [read this guide](https://docs.microsoft.com/en-us/windows/wsl/tutorials/wsl-vscode)
-- All actions with this repo will be in WSL
+
 
 **Linux**
 - Docker and Docker Compose
 
 
+## Prepare (Windows)
+**We need to make root cert (mkcert) on host and copy them to nginx devcontainer in WSL**
+- Clone repo (host)
+- *How pt.1*
+- Clone repo (WSL)
+- Copy ```./nginx/.devcontainer/certs``` from host to WSL
+- Start from *How pt.2*
+
+
 ## How
-0. Clone this repo
-1. Open VSCode
-2. (Windows) Attach VSCode to WSL
+0. Clone repo
+1. Run bootstrap and execute: 
+```setup dev certs``` | ```generate & copy``` | ```add hosts```
+2. Open VSCode
+3. (Windows) Attach VSCode to WSL
 4. F1 -> type "Open Folder in Container"
-5. Any dir with .devcontainer folder can be opened
 
-After choose, Docker start building containers and then you can work.
+- Any dir thats contains .devcontainer folder can be opened
 
-In the same way, you can open other directories (but without option 0)
+- After choose, Docker start building containers and then you can work
+
+- In the same way, you can open other directories (but start from *pt.2*)
+
+- If you change something in Dockerfile or docker-compose, run ```Rebuild and Reopen in Container```
 
 
-## Useful commands
-close WSL:
+## Tips and tricks
+After you finished, to save your RAM on Windows, close VSCode; Docker Desktop and run
 ```  
 wsl --shutdown
 ```

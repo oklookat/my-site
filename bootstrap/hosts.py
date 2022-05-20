@@ -1,18 +1,19 @@
-import utils, data
+import utils
 
 SYSTEM_HOSTS = utils.get_hosts_path()
+HOSTS_PATH = utils.DATA_PATH + "/hosts.txt"
 
+# add hosts if not exists
 def add():
     # data hosts
     paste_lines = []
-    with open(utils.HOSTS_PATH, "r") as hostsToPaste:
+    with open(HOSTS_PATH, "r") as hostsToPaste:
         paste_lines = hostsToPaste.readlines()
 
     # system hosts
     hosts_lines = []
     with open(SYSTEM_HOSTS, "r") as hosts:
         hosts_lines = hosts.readlines()
-
 
     final_lines = []
     for paste in paste_lines:
@@ -34,13 +35,13 @@ def add():
     hosts.write("\n\n")
     hosts.writelines(final_lines)
     hosts.close()
-    utils.logger("hosts", "added")
+    utils.log("hosts", "added")
 
-
+# remove hosts if exists
 def remove():
     # data hosts
     exclude_lines = []
-    with open(utils.HOSTS_PATH, "r") as exclude:
+    with open(HOSTS_PATH, "r") as exclude:
         exclude_lines = exclude.readlines()
 
     # system hosts
@@ -63,4 +64,4 @@ def remove():
     hosts = open(SYSTEM_HOSTS, "w")
     hosts.writelines(final_lines)
     hosts.close()
-    utils.logger("hosts", "removed")
+    utils.log("hosts", "removed")

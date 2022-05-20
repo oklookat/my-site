@@ -1,7 +1,0 @@
-nginx:
-  windows:
-    dev_mime: "D:/Dev/nginx/conf/mime.types"
-    dev_config: "D:/Dev/nginx/conf/nginx.conf"
-  linux:
-    dev_mime: "/etc/nginx/mime.types"
-    dev_config: "/etc/nginx/nginx.conf"

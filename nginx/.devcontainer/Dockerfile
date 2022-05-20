@@ -3,6 +3,7 @@ FROM nginx:1.21.6-alpine
 # copy root cert from host (mkcert)
 WORKDIR /app/certs
 COPY .devcontainer/certs .
+RUN chmod 777 ./*
 RUN cp ./mkcert_root.pem /usr/local/share/ca-certificates/mkcert_root.pem
 RUN update-ca-certificates
 
