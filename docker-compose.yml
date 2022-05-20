@@ -44,8 +44,6 @@ services:
   build:
     context: ./servus
     dockerfile: .devcontainer/Dockerfile
-  links:
-    - "postgres:db"
   volumes:
     # Mount the root folder that contains .git
     - .:/workspace:cached
