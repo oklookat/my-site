@@ -1,10 +1,9 @@
-**oklookat / API**
-
+# oklookat / API
 powered by [servus](./core/)
+
+
 # Requirements
-
 - [go 1.18+](https://go.dev/dl)
-
 - [GCC](https://gcc.gnu.org) or [MinGW](https://www.mingw-w64.org/downloads)
 
 
@@ -15,17 +14,17 @@ see: [help.go](./apps/elven/cmd/help.go)
 # Routes (/elven)
 *information here is rarely updated
 
-## authorization
+## Authorization
 ### /auth - manage auth tokens
 - **POST "/login"** = generate and send auth token by username and password
 - **POST "/logout"** = delete auth token by auth token
 
-## users
+## Users
 ### /users/me - current user
 - **GET "/"** = get current user info by auth token
 - **POST "/change"** = change username or password
 
-## articles
+## Articles
 ### /article/articles - manage articles
 - **GET "/"** = get paginated
 - **POST "/"** = create
@@ -34,7 +33,7 @@ see: [help.go](./apps/elven/cmd/help.go)
 - **PATCH "/id"** = update specific fields (json-patch)
 - **DELETE "/id"** = delete
 
-## files
+## Files
 ### /files - manage files
 - **GET "/"** = get paginated
 - **POST "/"** = upload

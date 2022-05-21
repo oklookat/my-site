@@ -1,5 +1,6 @@
-# Sveltekit SSR/SPA frontend
+# oklookat / frontend
 main site + admin panel (elven)
+
 
 ## BUG
 sveltekit has bug - layout may be mounted twice

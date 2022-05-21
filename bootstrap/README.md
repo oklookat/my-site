@@ -1,5 +1,5 @@
-# oklookat-site bootstrap
-## Utilities for development/deploy
+# oklookat / bootstrap
+utilities for development/deploy
 
-## Start
+## Start (as root/admin)
 - ```python ./main.py```
