@@ -33,7 +33,6 @@ services:
     context: ./database/postgres
     dockerfile: .devcontainer/Dockerfile
   volumes:
-    # Mount the root folder that contains .git
     - .:/workspace:cached
   command: /bin/sh -c "while sleep 1000; do :; done"
 
@@ -42,12 +41,11 @@ services:
   depends_on:
    - postgres
   build:
-    context: ./servus
+    context: ./backend
     dockerfile: .devcontainer/Dockerfile
   links:
     - "postgres:db"
   volumes:
-    # Mount the root folder that contains .git
     - .:/workspace:cached
   command: /bin/sh -c "while sleep 1000; do :; done"
 
@@ -59,7 +57,6 @@ services:
     context: ./frontend
     dockerfile: .devcontainer/Dockerfile
   volumes:
-    # Mount the root folder that contains .git
     - .:/workspace:cached
   command: /bin/sh -c "while sleep 1000; do :; done"
 

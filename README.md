@@ -1,4 +1,4 @@
-# oklookat-site #
+# oklookat/site #
 
 # Development (Docker)
 *With Docker you don't need to setup nginx, create database, installing languages and more.*

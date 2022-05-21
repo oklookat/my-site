@@ -1,37 +1,19 @@
-**oklookat.ru / REST API backend**
-**powered by servus little framework**
+**oklookat / API**
+
+powered by [servus](./core/)
 # Requirements
 
-- **go 1.18+**
+- [go 1.18+](https://go.dev/dl)
 
-- **GCC**
-
-# Useful
-
-**Install all deps:**
-```go get ./...```
+- [GCC](https://gcc.gnu.org) or [MinGW](https://www.mingw-w64.org/downloads)
 
 
 # Commands & flags
-
-## run args
-**path to config:**
-```-config=/dir/dir2/config.json```
-
-**create database tables by .sql:**
-```-sql=/dir/to/file.sql el:mg```
-
-**delete databaes tables:**
-```el:rb```
-
-**create user (-die = delete user if exists):**
-```el:tu -username=NAME -password=PASS -die```
-
-**create superuser:**
-```same as create user, but el:su instead el:tu```
+see: [help.go](./apps/elven/cmd/help.go)
 
 
 # Routes (/elven)
+*information here is rarely updated
 
 ## authorization
 ### /auth - manage auth tokens
@@ -48,8 +30,8 @@
 - **GET "/"** = get paginated
 - **POST "/"** = create
 - **GET "/id"** = get one
-- **PUT "/id"** = update full
-- **PATCH "/id"** = update specific fields
+- **PUT "/id"** = full update
+- **PATCH "/id"** = update specific fields (json-patch)
 - **DELETE "/id"** = delete
 
 ## files
