@@ -11,4 +11,6 @@ RUN chmod 777 ./postgres.conf
 COPY .devcontainer/run.sh .
 RUN chmod 777 ./run.sh
 
+RUN mkdir -p $PGDATA
+RUN chown -R postgres:postgres $PGDATA
 USER postgres
