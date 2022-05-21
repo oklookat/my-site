@@ -1,14 +1,6 @@
 # https://github.com/microsoft/vscode-dev-containers/blob/main/containers/docker-existing-docker-compose/.devcontainer/docker-compose.yml
+# https://code.visualstudio.com/docs/remote/create-dev-container
 
-# what is ..:/app:cached
-# from https://code.visualstudio.com/docs/remote/create-dev-container
-# Mounts the project folder to '/workspace'. The target path inside the container
-# should match what your application expects. In this case, the compose file is
-# in a sub-folder, so you will mount '..'. You would then reference this path as the
-# 'workspaceFolder' in '.devcontainer/devcontainer.json' so VS Code starts here.
-
-# tldr: if you make changes to your code in container, these changes will be applied
-# to code in host
 
 services:
  nginx:
@@ -43,8 +35,6 @@ services:
   build:
     context: ./backend
     dockerfile: .devcontainer/Dockerfile
-  links:
-    - "postgres:db"
   volumes:
     - .:/workspace:cached
   command: /bin/sh -c "while sleep 1000; do :; done"
