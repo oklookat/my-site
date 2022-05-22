@@ -1,53 +1,59 @@
 # https://github.com/microsoft/vscode-dev-containers/blob/main/containers/docker-existing-docker-compose/.devcontainer/docker-compose.yml
 # https://code.visualstudio.com/docs/remote/create-dev-container
 
+volumes:
+  dbdata:
 
 services:
- nginx:
-  container_name: nginx
-  build:
-    context: ./nginx
-    dockerfile: .devcontainer/Dockerfile
-  depends_on:
-    - backend
-    - frontend
-  ports:
-   - 80:80
-   - 443:443
-  volumes:
-    # Mount the root folder that contains .git
-    - .:/workspace:cached
-  command: nginx -g 'daemon off;'
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginx
+      dockerfile: .devcontainer/Dockerfile
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      # Mount the root folder that contains .git
+      - .:/workspace:cached
+    command: nginx -g 'daemon off;'
 
- postgres:
-  container_name: postgres
-  build: 
-    context: ./database/postgres
-    dockerfile: .devcontainer/Dockerfile
-  volumes:
-    - .:/workspace:cached
-  command: /bin/sh -c "while sleep 1000; do :; done"
+  postgres:
+    container_name: postgres
+    build:
+      context: ./database/postgres
+      dockerfile: .devcontainer/Dockerfile
+      args:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=root
+        - POSTGRES_DB=elven
+        - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - .:/workspace:cached
+      - ./database/postgres/pgdata:/var/lib/postgresql
+    command: postgres -c config_file=/app/postgres.conf
 
- backend:
-  container_name: backend
-  depends_on:
-   - postgres
-  build:
-    context: ./backend
-    dockerfile: .devcontainer/Dockerfile
-  volumes:
-    - .:/workspace:cached
-  command: /bin/sh -c "while sleep 1000; do :; done"
+  backend:
+    container_name: backend
+    depends_on:
+      - postgres
+    build:
+      context: ./backend
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - .:/workspace:cached
+    command: /bin/sh -c "while sleep 1000; do :; done"
 
- frontend:
-  container_name: frontend
-  depends_on:
-   - backend
-  build:
-    context: ./frontend
-    dockerfile: .devcontainer/Dockerfile
-  volumes:
-    - .:/workspace:cached
-  command: /bin/sh -c "while sleep 1000; do :; done"
-
-
+  frontend:
+    container_name: frontend
+    depends_on:
+      - backend
+    build:
+      context: ./frontend
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - .:/workspace:cached
+    command: /bin/sh -c "while sleep 1000; do :; done"

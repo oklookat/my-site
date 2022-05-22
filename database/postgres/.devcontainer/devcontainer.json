@@ -6,6 +6,5 @@
 	"service": "postgres",
 	"shutdownAction": "none",
 	// Open the sub-folder with the source code
-	"workspaceFolder": "/workspace/database/postgres",
-	"postCreateCommand": "/app/run.sh"
+	"workspaceFolder": "/workspace/database/postgres"
 }
