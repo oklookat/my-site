@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Items } from '$lib_elven/types';
-	import type { Article } from '$lib_elven/types/articles';
+	import type { Items } from '$elven/types';
+	import type { RAW } from '$elven/types/article';
 	import { createEventDispatcher } from 'svelte';
 	import CArticle from './article.svelte';
 
-	export let items: Items<Article>;
+	export let items: Items<RAW>;
 
 	const dispatch = createEventDispatcher<{
 		/** on article deleted (with counter) */

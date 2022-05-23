@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-
 	import { session } from '$app/stores';
-	import HamburgerMenu from '$lib/components/hamburger_menu.svelte';
-	import Hamburger from '$lib/icons/hamburger.svelte';
+	import HamburgerMenu from './hamburger_menu.svelte';
+	import Hamburger from '$oklookat/icons/hamburger.svelte';
 
 	let isHamburgerOpened = false;
 	function toggleHamburger() {

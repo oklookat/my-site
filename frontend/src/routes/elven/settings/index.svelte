@@ -10,8 +10,8 @@
 </script>
 
 <script lang="ts">
-	import AccountSettings from '$lib/components/elven/settings_account.svelte';
-	import ToolbarBig from '$lib/components/toolbar_big.svelte';
+	import AccountSettings from '$elven/components/settings_account.svelte';
+	import ToolbarBig from '$elven/components/toolbar_big.svelte';
 	import { t } from '$lib/locale';
 	import type { Load } from '@sveltejs/kit';
 </script>

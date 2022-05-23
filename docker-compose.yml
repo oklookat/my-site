@@ -1,8 +1,6 @@
 # https://github.com/microsoft/vscode-dev-containers/blob/main/containers/docker-existing-docker-compose/.devcontainer/docker-compose.yml
 # https://code.visualstudio.com/docs/remote/create-dev-container
 
-volumes:
-  dbdata:
 
 services:
   nginx:
@@ -13,12 +11,12 @@ services:
     depends_on:
       - backend
       - frontend
-    ports:
-      - 80:80
-      - 443:443
     volumes:
       # Mount the root folder that contains .git
       - .:/workspace:cached
+    ports:
+      - 80:80
+      - 443:443
     command: nginx -g 'daemon off;'
 
   postgres:
@@ -34,6 +32,8 @@ services:
     volumes:
       - .:/workspace:cached
       - ./database/postgres/pgdata:/var/lib/postgresql
+    ports:
+      - 5432:5432
     command: postgres -c config_file=/app/postgres.conf
 
   backend:
@@ -45,6 +45,8 @@ services:
       dockerfile: .devcontainer/Dockerfile
     volumes:
       - .:/workspace:cached
+    ports:
+      - 3000:3000
     command: /bin/sh -c "while sleep 1000; do :; done"
 
   frontend:
@@ -56,4 +58,6 @@ services:
       dockerfile: .devcontainer/Dockerfile
     volumes:
       - .:/workspace:cached
+    ports:
+      - 3001:3001
     command: /bin/sh -c "while sleep 1000; do :; done"

@@ -1,6 +1,6 @@
-import type { ElvenPlayer } from '$lib_elven/plugins/elvenPlayer/types';
-import type { ElvenNotify } from '$lib_elven/plugins/elvenNotify/types';
-import type { ElvenProgress } from '$lib_elven/plugins/elvenProgress/types';
+import type { ElvenPlayer } from '$elven/plugins/elvenPlayer/types';
+import type { ElvenNotify } from '$elven/plugins/elvenNotify/types';
+import type { ElvenProgress } from '$elven/plugins/elvenProgress/types';
 import type { ElvenConfirm } from '../plugins/elvenChoose/types';
 
 export type Page = number;

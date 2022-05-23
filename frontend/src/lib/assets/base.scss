@@ -1,8 +1,7 @@
-@import "./vars.scss";
-@import "./ui.scss";
+@import './vars.scss';
+@import './ui.scss';
 
 .base {
-
 	// typical container for articles, files list
 	&__container {
 		margin: auto;
@@ -66,7 +65,7 @@
 		}
 
 		.content,
-		&--big>.content {
+		&--big > .content {
 			padding: 12px;
 			height: 100%;
 			display: flex;
@@ -119,7 +118,6 @@
 
 		// extended style for overlay-like components
 		&.extended {
-
 			div,
 			a {
 				min-height: 54px;

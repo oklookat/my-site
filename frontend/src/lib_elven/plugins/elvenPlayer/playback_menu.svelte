@@ -12,7 +12,7 @@
 	import { convertPercentsToCurrentTime, getPretty } from './utils';
 	import { onDestroy, onMount } from 'svelte';
 	import PlaybackControls from './playback_controls.svelte';
-	import { toggleBodyScroll } from '$lib/tools';
+	import { toggleBodyScroll } from '$elven/tools';
 
 	export let onClose: () => void;
 

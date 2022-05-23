@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import Toolbar from '$lib/components/toolbar.svelte';
-	import ToolbarBig from '$lib/components/toolbar_big.svelte';
-	import { By, type Article } from '$lib_elven/types/articles';
-	import SearchBar from '$lib/components/search_bar.svelte';
-	import type { Params, RPH_Event } from '$lib_elven/tools/params';
+	import Toolbar from '$elven/components/toolbar.svelte';
+	import ToolbarBig from '$elven/components/toolbar_big.svelte';
+	import { By, type RAW } from '$elven/types/article';
+	import SearchBar from '$elven/components/search_bar.svelte';
+	import type { Params, RPH_Event } from '$elven/tools/params';
 	import { t } from '$lib/locale';
 
-	export let params: Params<Article>;
+	export let params: Params<RAW>;
 
 	let searchValue = params.getParam('title') || '';
 
@@ -17,7 +17,7 @@
 
 	const dispatch = createEventDispatcher<{
 		/** on request param changed */
-		paramChanged: RPH_Event<Article>;
+		paramChanged: RPH_Event<RAW>;
 	}>();
 
 	/** set 'by' param and get articles */
@@ -59,17 +59,13 @@
 	<Toolbar>
 		<div>
 			<div class="pointer" on:click={() => toggleDrafts()}>
-				{params.getParam('drafts')
-					? $t('elven.articles.drafts')
-					: $t('elven.articles.published')}
+				{params.getParam('drafts') ? $t('elven.articles.drafts') : $t('elven.articles.published')}
 			</div>
 		</div>
 
 		<div>
 			<div class="pointer" on:click={() => toggleNewest()}>
-				{params.getParam('newest')
-					? $t('elven.articles.newest')
-					: $t('elven.articles.oldest')}
+				{params.getParam('newest') ? $t('elven.articles.newest') : $t('elven.articles.oldest')}
 			</div>
 		</div>
 

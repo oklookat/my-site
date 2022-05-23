@@ -1,4 +1,4 @@
-import type { File } from '$lib_elven/types/files';
+import type { File } from '$elven/types/file';
 import { writable, type Writable } from 'svelte/store';
 
 type store_file = {

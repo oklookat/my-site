@@ -1,7 +1,7 @@
 <script lang="ts">
-	import CFile from '$lib_elven/components/file.svelte';
-	import type { Items } from '$lib_elven/types';
-	import type { File } from '$lib_elven/types/files';
+	import CFile from '$elven/components/file.svelte';
+	import type { Items } from '$elven/types';
+	import type { File } from '$elven/types/file';
 	import { createEventDispatcher } from 'svelte';
 
 	export let items: Items<File>;

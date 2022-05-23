@@ -1,4 +1,4 @@
-type ConvertSecondsMode = 'auto' | 'hours' | 'minutes'
+type ConvertSecondsMode = 'auto' | 'hours' | 'minutes';
 
 /** get percents of value */
 export function getPercents(value: number, total: number): number {
@@ -60,7 +60,6 @@ export function getBufferedPercents(
 	}
 	return 0;
 }
-
 
 /** get current time like '01:23' or '01:23:23' by seconds and duration seconds */
 export function convertCurrentTimePretty(currentTime: number, duration: number): string {

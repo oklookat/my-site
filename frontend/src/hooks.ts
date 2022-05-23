@@ -1,17 +1,19 @@
 import type { GetSession, Handle } from '@sveltejs/kit';
 //
-import NetworkUser from '$lib/elven/entities/user/network';
-import type { User } from '$lib/elven/entities/user/types';
-import { getTokenFromRequestHeaders } from '$lib/tools';
+import NetworkUser from '$elven/network/user';
+import type { User } from '$elven/types/user';
+import { getTokenFromRequestHeaders } from '$elven/tools';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	
 	const resolver = async (): Promise<Response> => {
-		const resp = await resolve(event)
+		const resp = await resolve(event);
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy
-		resp.headers.append("Permissions-Policy", "microphone=(), geolocation=(), camera=(), payment=(), usb=()")
-		return resp
-	}
+		resp.headers.append(
+			'Permissions-Policy',
+			'microphone=(), geolocation=(), camera=(), payment=(), usb=()'
+		);
+		return resp;
+	};
 
 	let isError = false;
 	let isExists = false;
@@ -30,7 +32,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	token = getTokenFromRequestHeaders(event.request.headers);
 
 	if (!token) {
-		return await resolver()
+		return await resolver();
 	}
 
 	const networkUser = new NetworkUser(token);
@@ -58,7 +60,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.user.username = username;
 	event.locals.user.token = token;
 
-	return await resolver()
+	return await resolver();
 };
 
 export const getSession: GetSession = (event) => {

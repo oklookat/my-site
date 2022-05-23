@@ -2,13 +2,7 @@
 	import { browser } from '$app/env';
 	import Close from './icons/close.svelte';
 	import Audio from './audio.svelte';
-	import {
-		audioComponent,
-		currentSource,
-		isPlaying,
-		setCurrentTime,
-		signal
-	} from './store';
+	import { audioComponent, currentSource, isPlaying, setCurrentTime, signal } from './store';
 	import { Signal, type ElvenPlayer, type Playlist } from './types';
 	import { onDestroy, onMount } from 'svelte';
 	import Hamburger from './icons/hamburger.svelte';
@@ -167,10 +161,7 @@
 {#if isActive}
 	<div class="player" bind:this={container}>
 		<div>
-			<div
-				class="menu"
-				on:click={() => (isPlaybackMenuActive = !isPlaybackMenuActive)}
-			>
+			<div class="menu" on:click={() => (isPlaybackMenuActive = !isPlaybackMenuActive)}>
 				<Hamburger />
 			</div>
 			<div class="control">

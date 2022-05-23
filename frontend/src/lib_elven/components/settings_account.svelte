@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import NetworkUser from '$lib_elven/network/network_user';
-	import type { User, UserChange } from '$lib_elven/types/user';
-	import { usernameValidate, passwordValidate } from '$lib_elven/types/user';
+	import NetworkUser from '$elven/network/user';
+	import type { User, UserChange } from '$elven/types/user';
+	import { usernameValidate, passwordValidate } from '$elven/types/user';
 	import { t } from '$lib/locale';
 
 	const networkUser = new NetworkUser('');
@@ -99,8 +99,12 @@
 {#if isUserDataLoaded}
 	<div class="block account">
 		<div class="big">{user.username}</div>
-		<div class="pointer" on:click={() => setChanger('username')}>{$t('elven.settings.changeUsername')}</div>
-		<div class="pointer" on:click={() => setChanger('password')}>{$t('elven.settings.changePassword')}</div>
+		<div class="pointer" on:click={() => setChanger('username')}>
+			{$t('elven.settings.changeUsername')}
+		</div>
+		<div class="pointer" on:click={() => setChanger('password')}>
+			{$t('elven.settings.changePassword')}
+		</div>
 		{#if isChangeCredentials}
 			<div class="change-credentials">
 				<input

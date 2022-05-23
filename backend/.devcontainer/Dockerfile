@@ -4,3 +4,5 @@ FROM golang:1.18.2-alpine3.15
 WORKDIR /app
 COPY . .
 RUN apk update && apk add build-base && go mod download
+
+EXPOSE 3000

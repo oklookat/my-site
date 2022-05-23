@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-	import NetworkAuth from '$lib/network/auth';
+	import NetworkAuth from '$elven/network/auth';
 	import { t } from '$lib/locale';
 	import type { Load } from '@sveltejs/kit';
 

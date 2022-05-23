@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import Overlay from '$lib_elven/components/overlay.svelte';
-	import Popup from '$lib_elven/components/popup.svelte';
-	import type { Article } from '$lib_elven/types/articles';
-	import NetworkArticle from '$lib_elven/network/network_article';
-	import { isTouchDevice } from '$lib/tools';
+	import Overlay from '$elven/components/overlay.svelte';
+	import Popup from '$elven/components/popup.svelte';
+	import NetworkArticle from '$elven/network/article';
+	import { isTouchDevice } from '$elven/tools';
 	import { t } from '$lib/locale';
+	import type { RAW } from '$elven/types/article';
+	import { Editable } from '$elven/tools/article';
 
-	export let article: Article;
+	export let article: RAW;
 	export let mouseEvent: MouseEvent;
 	export let onDeleted: () => void;
 	export let onDisabled: () => void;
@@ -47,10 +47,13 @@
 			is_published: isPublished
 		};
 		try {
-			const resp = await NetworkArticle.update(toEdit);
-			if (resp.ok) {
-				onDeleted();
-			}
+			// TODO: you know
+			const articled = new Editable(toEdit);
+			articled.is_published = isPublished;
+			// const resp = await NetworkArticle.update(toEdit);
+			// if (resp.ok) {
+			// 	onDeleted();
+			// }
 		} catch (err) {
 			return Promise.reject(err);
 		}
@@ -64,11 +67,6 @@
 	/** unpublish article */
 	async function unpublish() {
 		await publishUnpublish(false);
-	}
-
-	/** edit article */
-	async function edit() {
-		await goto(`/elven/articles/create?id=${article.id}`);
 	}
 
 	/** delete article */
@@ -98,6 +96,6 @@
 			{$t('elven.articles.publish')}
 		</div>
 	{/if}
-	<div on:click={async () => await edit()}>{$t('elven.articles.edit')}</div>
+	<a href={`/elven/articles/create?id=${article.id}`}>{$t('elven.articles.edit')}</a>
 	<div on:click={async () => await deleteArticle()}>{$t('elven.articles.delete')}</div>
 </svelte:component>

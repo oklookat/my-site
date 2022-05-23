@@ -4,7 +4,7 @@
 		const networkArticle = new NetworkArticle('', e.fetch);
 		let statusCode = 200;
 
-		const stuff = e.stuff
+		const stuff = e.stuff;
 		const output: LoadOutput = {
 			status: statusCode,
 			stuff: stuff,
@@ -19,7 +19,7 @@
 		} catch (err) {}
 
 		if (resp && resp.ok && output.props) {
-			const art = (await resp.json()) as Article;
+			const art = (await resp.json()) as RAW;
 			output.props.article = art;
 			stuff.title = art.title;
 			stuff.description = cutString(art.content, 94);
@@ -31,15 +31,15 @@
 
 <script lang="ts">
 	import { browser } from '$app/env';
-	import { cutString } from '$lib/tools';
-	import { getParser } from '$lib/tools/markdown';
+	import { cutString } from '$elven/tools';
+	import { getParser } from '$elven/tools/markdown';
 
-	import ArticleCover from '$lib/components/elven/article_cover.svelte';
-	import NetworkArticle from '$lib/network/article';
-	import type { Article } from '$lib/types/articles';
+	import ArticleCover from '$elven/components/article_cover.svelte';
+	import NetworkArticle from '$elven/network/article';
+	import type { RAW } from '$elven/types/article';
 	import type { Load, LoadOutput } from '@sveltejs/kit';
 
-	export let article: Article;
+	export let article: RAW;
 
 	let parseMarkdown: (data: string) => string;
 

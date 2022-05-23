@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { correctElementOverflow } from '$lib/tools';
+	import { correctElementOverflow } from '$elven/tools';
 	import { onMount } from 'svelte';
 
 	export let mouseEvent: MouseEvent;

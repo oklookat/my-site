@@ -1,12 +1,15 @@
 <script lang="ts">
-	import Header from '$lib/oklookat/components/header.svelte';
+	import Header from '$oklookat/components/header.svelte';
 	import { page } from '$app/stores';
 </script>
 
 <svelte:head>
 	<meta name="author" content={$page.stuff.author ? $page.stuff.author : 'oklookat'} />
 	<title>{$page.stuff.title ? $page.stuff.title : 'oklookat'}</title>
-	<meta name="description" content={$page.stuff.description ? $page.stuff.description : 'oklookat home page'} />
+	<meta
+		name="description"
+		content={$page.stuff.description ? $page.stuff.description : 'oklookat home page'}
+	/>
 </svelte:head>
 
 <div class="container">

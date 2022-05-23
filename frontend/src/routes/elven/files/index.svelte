@@ -31,22 +31,22 @@
 </script>
 
 <script lang="ts">
-	import type { Items } from '$lib/types';
-	import Pagination from '$lib/components/pagination.svelte';
-	import type { File } from '$lib/types/files';
-	import FilesToolbars from '$lib/components/elven/files_toolbars.svelte';
-	import FilesList from '$lib/components/elven/files_list.svelte';
-	import NetworkFile from '$lib/elven/entities/file/network';
+	import type { Items } from '$elven/types';
+	import Pagination from '$elven/components/pagination.svelte';
+	import type { File } from '$elven/types/file';
+	import FilesToolbars from '$elven/components/files_toolbars.svelte';
+	import FilesList from '$elven/components/files_list.svelte';
+	import NetworkFile from '$elven/network/file';
 	import {
 		HandleRouteParam,
 		Params,
 		Refresh,
 		type RPH_Data,
 		type RPH_Event
-	} from '$lib/tools/params';
+	} from '$elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
 	import { t } from '$lib/locale';
-	import { getTokenFromSession } from '$lib/tools';
+	import { getTokenFromSession } from '$elven/tools';
 
 	/** files data */
 	export let items: Items<File>;

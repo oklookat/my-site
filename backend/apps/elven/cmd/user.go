@@ -25,29 +25,27 @@ func createUser(isAdmin bool, values []string) (err error) {
 		return errors.New("delete_if_exists must be a boolean")
 	}
 
-	err = user.Create(username, password, isAdmin)
-	if err == nil {
+	// find by username.
+	var usr = user.Model{
+		Username: username,
+	}
+	var isExists bool
+	isExists, err = usr.FindByUsername()
+	if err != nil {
 		return
 	}
 
-	var isUsernameExists = err.Error() == "user with this username already exists"
-
-	if isUsernameExists {
+	// delete/not delete if exists.
+	if isExists {
 		if !deleteIfExists {
-			// delete if exists disabled, go back.
 			return
 		}
+		err = usr.DeleteByID()
+	}
 
-		// delete old user.
-		if err = user.DeleteByUsername(username); err != nil {
-			return
-		}
-
-		// create new user.
-		if err = user.Create(username, password, isAdmin); err != nil {
-			return
-		}
-
+	// create.
+	err = user.Create(username, password, isAdmin)
+	if err == nil {
 		return
 	}
 

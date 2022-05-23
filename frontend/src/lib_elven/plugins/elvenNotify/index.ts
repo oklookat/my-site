@@ -57,7 +57,7 @@ export class ElvenNotify implements IElvenNotify {
 	/** create notification and render */
 	private set(n: TNotification) {
 		const not = new Notification(this.container, this.uid, n.message, this.settings.deletedIn);
-		not.render()
+		not.render();
 		this.uid++;
 	}
 }

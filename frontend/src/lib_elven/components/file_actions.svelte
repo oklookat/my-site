@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Overlay from '$lib_elven/components/overlay.svelte';
-	import Popup from '$lib_elven/components/popup.svelte';
-	import Store from '$lib_elven/tools/store';
-	import type { File } from '$lib_elven/types/files';
-	import NetworkFile from '$lib_elven/network/network_file';
-	import Preview from '$lib_elven/components/preview.svelte';
-	import { getUploadsURL, isTouchDevice } from '$lib/tools';
+	import Overlay from '$elven/components/overlay.svelte';
+	import Popup from '$elven/components/popup.svelte';
+	import Store from '$elven/tools/store';
+	import type { File } from '$elven/types/file';
+	import NetworkFile from '$elven/network/file';
+	import Preview from '$elven/components/preview.svelte';
+	import { getUploadsURL, isTouchDevice } from '$elven/tools';
 	import { t } from '$lib/locale';
 
 	/** file itself */

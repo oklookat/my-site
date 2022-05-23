@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/env';
 	import { onDestroy, onMount } from 'svelte';
-import { t } from '$lib/locale';
+	import { t } from '$lib/locale';
 
 	let isActive = false;
 	let titled = '';

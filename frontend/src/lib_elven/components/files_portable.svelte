@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { browser } from '$app/env';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import Store from '$lib_elven/tools/store';
-	import Pagination from '$lib/components/pagination.svelte';
-	import type { Items } from '$lib_elven/types';
-	import type { File } from '$lib_elven/types/files';
-	import NetworkFile from '$lib_elven/network/network_file';
-	import FilesList from '$lib_elven/components/files_list.svelte';
-	import FilesToolbars from '$lib_elven/components/files_toolbars.svelte';
-	import { Params, Refresh, type RPH_Event } from '$lib_elven/tools/params';
+	import Store from '$elven/tools/store';
+	import Pagination from '$elven/components/pagination.svelte';
+	import type { Items } from '$elven/types';
+	import type { File } from '$elven/types/file';
+	import NetworkFile from '$elven/network/file';
+	import FilesList from '$elven/components/files_list.svelte';
+	import FilesToolbars from '$elven/components/files_toolbars.svelte';
+	import { Params, Refresh, type RPH_Event } from '$elven/tools/params';
 	import type { Unsubscriber } from 'svelte/store';
-import { toggleBodyScroll } from '$lib/tools';
+	import { toggleBodyScroll } from '$elven/tools';
 
 	const dispatch = createEventDispatcher<{
 		/** on 'select' option clicked on file */
@@ -49,7 +49,7 @@ import { toggleBodyScroll } from '$lib/tools';
 		Store.files.selected.set(null);
 	}
 
-	let setDefScroll: () => void
+	let setDefScroll: () => void;
 	onMount(async () => {
 		if (!browser) {
 			return;
@@ -58,7 +58,7 @@ import { toggleBodyScroll } from '$lib/tools';
 			params = new Params<File>('file');
 		}
 		initStore();
-		setDefScroll = toggleBodyScroll()
+		setDefScroll = toggleBodyScroll();
 		await getAll();
 	});
 
@@ -67,7 +67,7 @@ import { toggleBodyScroll } from '$lib/tools';
 		if (!browser) {
 			return;
 		}
-		setDefScroll()
+		setDefScroll();
 	});
 
 	/** get all files */

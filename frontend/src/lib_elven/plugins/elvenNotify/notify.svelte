@@ -18,7 +18,7 @@
 			return;
 		}
 		plugin.destroy();
-		plugin = undefined
+		plugin = undefined;
 	});
 </script>
 
@@ -50,14 +50,14 @@
 			box-sizing: border-box;
 			position: relative;
 		}
-		
+
 		@include _desktop() {
 			margin-right: 12px;
 			height: min-content;
 			width: 224px;
 			right: 0;
 			bottom: 0;
-			
+
 			.notifications {
 				height: max-content;
 				width: max-content;

@@ -1,12 +1,12 @@
 <script lang="ts">
-	import SearchBar from '$lib/components/search_bar.svelte';
-	import Toolbar from '$lib/components/toolbar.svelte';
-	import type { Params, RPH_Event } from '$lib_elven/tools/params';
-	import type { Article } from '$lib_elven/types/articles';
+	import SearchBar from '$elven/components/search_bar.svelte';
+	import Toolbar from '$elven/components/toolbar.svelte';
+	import type { Params, RPH_Event } from '$elven/tools/params';
+	import type { RAW } from '$elven/types/article';
 	import { createEventDispatcher } from 'svelte';
 	import { t } from '$lib/locale';
 
-	export let params: Params<Article>;
+	export let params: Params<RAW>;
 
 	let searchValue = params.getParam('title') || '';
 
@@ -16,7 +16,7 @@
 
 	const dispatch = createEventDispatcher<{
 		/** on request param changed */
-		paramChanged: RPH_Event<Article>;
+		paramChanged: RPH_Event<RAW>;
 	}>();
 
 	/** set 'newest' param and get articles */
@@ -38,9 +38,7 @@
 	<Toolbar>
 		<div>
 			<div class="pointer" on:click={() => toggleNewest()}>
-				{params.getParam('newest')
-					? $t('elven.articles.newest')
-					: $t('elven.articles.oldest')}
+				{params.getParam('newest') ? $t('elven.articles.newest') : $t('elven.articles.oldest')}
 			</div>
 		</div>
 	</Toolbar>

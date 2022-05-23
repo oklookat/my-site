@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import type { FileTypeSelector } from '$lib_elven/tools/extension';
+	import type { FileTypeSelector } from '$elven/tools/extension';
 	import { t } from '$lib/locale';
-	import { toggleBodyScroll } from '$lib/tools';
+	import { toggleBodyScroll } from '$elven/tools';
 
 	/** on preview closed */
 	export let onClose: () => void;

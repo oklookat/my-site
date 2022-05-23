@@ -11,11 +11,11 @@
 </script>
 
 <script lang="ts">
-	import Error400 from '$lib/oklookat/components/error400.svelte';
-	import Error404 from '$lib/oklookat/components/error404.svelte';
-	import Error500 from '$lib/oklookat/components/error500.svelte';
-	import ErrorInternet from '$lib/oklookat/components/errorInternet.svelte';
-	import ErrorUnknown from '$lib/oklookat/components/errorUnknown.svelte';
+	import Error400 from '$oklookat/components/error400.svelte';
+	import Error404 from '$oklookat/components/error404.svelte';
+	import Error500 from '$oklookat/components/error500.svelte';
+	import ErrorInternet from '$oklookat/components/errorInternet.svelte';
+	import ErrorUnknown from '$oklookat/components/errorUnknown.svelte';
 	import { onMount } from 'svelte';
 
 	export let statusCode: number | null;
@@ -23,8 +23,8 @@
 	let isOffline = false;
 	onMount(() => {
 		isOffline = !navigator.onLine;
-		if(isOffline) {
-			statusCode = null
+		if (isOffline) {
+			statusCode = null;
 		}
 	});
 </script>

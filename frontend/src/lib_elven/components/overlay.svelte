@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { toggleBodyScroll } from '$lib/tools';
+	import { toggleBodyScroll } from '$elven/tools';
 
 	import { onDestroy, onMount } from 'svelte';
 

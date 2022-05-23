@@ -1,5 +1,5 @@
-import FetchDriver from '$lib_elven/network/fetch';
-import { getApiURL } from '$lib/tools';
+import FetchDriver from '$elven/network/fetch';
+import { getApiURL } from '$elven/tools';
 
 const apiURL = getApiURL();
 const Fetchd = new FetchDriver(apiURL.toString());

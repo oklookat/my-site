@@ -2,8 +2,8 @@
 	class ThePartner {
 		public exists = false;
 		public index = 0;
-        // укроп
-        public full = ''
+		// укроп
+		public full = '';
 		// укр
 		public first = '';
 		// оп
@@ -88,7 +88,7 @@
 			const wordCopy = word;
 
 			if (partners.w1 && !partners.w1.exists) {
-                partners.w1.full = wordCopy
+				partners.w1.full = wordCopy;
 				maxCutLen = wordCopy.length;
 				if (wordCopy.length > 6) {
 					maxCutLen--;
@@ -101,7 +101,7 @@
 			}
 
 			if (partners.w1 && partners.w2 && !partners.w2.exists) {
-                partners.w2.full = wordCopy
+				partners.w2.full = wordCopy;
 				partners.w2.handle(i, wordCopy);
 			}
 

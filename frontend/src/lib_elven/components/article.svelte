@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { dateToReadable } from '$lib/tools/dates';
-	import type { Article } from '$lib_elven/types/articles';
+	import { dateToReadable } from '$elven/tools/dates';
+	import type { RAW } from '$elven/types/article';
 	import ArticleCover from './article_cover.svelte';
-	import ArticleActions from '$lib_elven/components/article_actions.svelte';
+	import ArticleActions from '$elven/components/article_actions.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { t } from '$lib/locale';
 
-	export let article: Article;
+	export let article: RAW;
 
 	const dispatch = createEventDispatcher<{
 		/** on article deleted */

@@ -1,35 +1,35 @@
 {
-  "button": "",
-  "changePassword": "",
-  "changeUsername": "",
-  "create": {
-    "ago": "",
-    "create": "",
-    "createArticle": "",
-    "editorPlaceholder": "",
-    "lastSaved": "",
-    "notSaved": "",
-    "titlePlaceholder": ""
-  },
-  "elven": {
-    "components": {
-      "pagination": {
-        "nextPage": ""
-      }
-    }
-  },
-  "elvenChoose": {
-    "areYouSure": "",
-    "no": "",
-    "yes": ""
-  },
-  "hello": "Hello,",
-  "logout": "",
-  "mainSite": "Main site",
-  "newPassword": "",
-  "newUsername": "",
-  "password": "",
-  "settings": "Settings",
-  "title": "Home",
-  "username": ""
+	"button": "",
+	"changePassword": "",
+	"changeUsername": "",
+	"create": {
+		"ago": "",
+		"create": "",
+		"createArticle": "",
+		"editorPlaceholder": "",
+		"lastSaved": "",
+		"notSaved": "",
+		"titlePlaceholder": ""
+	},
+	"elven": {
+		"components": {
+			"pagination": {
+				"nextPage": ""
+			}
+		}
+	},
+	"elvenChoose": {
+		"areYouSure": "",
+		"no": "",
+		"yes": ""
+	},
+	"hello": "Hello,",
+	"logout": "",
+	"mainSite": "Main site",
+	"newPassword": "",
+	"newUsername": "",
+	"password": "",
+	"settings": "Settings",
+	"title": "Home",
+	"username": ""
 }

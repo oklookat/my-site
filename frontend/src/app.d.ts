@@ -23,8 +23,8 @@ declare namespace App {
 		};
 	}
 	interface Stuff {
-		title?: string
-		description?: string
-		author?: string
+		title?: string;
+		description?: string;
+		author?: string;
 	}
 }

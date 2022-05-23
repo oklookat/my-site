@@ -1,13 +1,8 @@
-import { getRecordLength, searchParamsByObject, stringToNormal } from '$lib/tools';
-import type { Article } from '$lib_elven/types/articles';
-import {
-	By as FilesBy,
-	Start,
-	type File,
-	type Params as FileParamsT
-} from '$lib_elven/types/files';
-import { type Params as ArticleParamsT, By as ArticlesBy } from '$lib_elven/types/articles';
-import type { Items } from '$lib_elven/types';
+import { getRecordLength, searchParamsByObject, stringToNormal } from '$elven/tools';
+import type { RAW as ArticleRAW } from '$elven/types/article';
+import { By as FilesBy, Start, type File, type Params as FileParamsT } from '$elven/types/file';
+import { type Params as ArticleParamsT, By as ArticlesBy } from '$elven/types/article';
+import type { Items } from '$elven/types';
 import { goto } from '$app/navigation';
 import { browser } from '$app/env';
 
@@ -17,7 +12,7 @@ export type ParamTypeValue<T> = ParamType<T>[ParamTypeKey<T>];
 
 export type ParamType<T extends {}> = T extends File
 	? FileParamsT
-	: T extends Article
+	: T extends ArticleRAW
 	? ArticleParamsT
 	: never;
 
@@ -157,7 +152,7 @@ export class Params<T> {
 
 /** fetch data / set searchparams when you change params */
 export async function HandleRouteParam<T>(event: RPH_Event<T>, data: RPH_Data<T>) {
-	let windowSearch = ''
+	let windowSearch = '';
 	let searchparams: URLSearchParams;
 	if (browser) {
 		windowSearch = window.location.search;

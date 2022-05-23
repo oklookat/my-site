@@ -23,7 +23,6 @@ type App struct {
 func (a *App) Boot(c *core.Instance) {
 	call = c
 	c.Logger.Info("elven: booting")
-	cmd.Boot(call.Logger)
 
 	token.Start(&token.Starter{
 		Core: call,
@@ -54,9 +53,8 @@ func (a *App) Boot(c *core.Instance) {
 		Pipe:       userPipe,
 	})
 
+	cmd.Boot(call.Logger)
 	a.setupHooks()
-
-	// routes.
 	a.setupRoutes()
 }
 

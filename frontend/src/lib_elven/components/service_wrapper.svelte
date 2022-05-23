@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Notify from '$lib_elven/plugins/elvenNotify/notify.svelte';
-	import Player from '$lib_elven/plugins/elvenPlayer/player.svelte';
-	import Confirm from '$lib_elven/plugins/elvenChoose/confirm.svelte';
+	import Notify from '$elven/plugins/elvenNotify/notify.svelte';
+	import Player from '$elven/plugins/elvenPlayer/player.svelte';
+	import Confirm from '$elven/plugins/elvenChoose/confirm.svelte';
 
 	export let isAdmin = false;
 </script>

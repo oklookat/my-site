@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Toolbar from '$lib/components/toolbar.svelte';
-	import SearchBar from '$lib/components/search_bar.svelte';
-	import { Start, type File } from '$lib_elven/types/files';
-	import FilesUploader from '$lib_elven/components/files_uploader.svelte';
+	import Toolbar from '$elven/components/toolbar.svelte';
+	import SearchBar from '$elven/components/search_bar.svelte';
+	import { Start, type File } from '$elven/types/file';
+	import FilesUploader from '$elven/components/files_uploader.svelte';
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import Store from '$lib_elven/tools/store';
-	import type { Params, RPH_Event } from '$lib_elven/tools/params';
+	import Store from '$elven/tools/store';
+	import type { Params, RPH_Event } from '$elven/tools/params';
 	import { t } from '$lib/locale';
 
 	/** request params */

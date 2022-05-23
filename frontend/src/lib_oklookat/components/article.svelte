@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import ArticleCover from '$lib_elven/components/article_cover.svelte';
-	import { dateToReadable } from '$lib/tools/dates';
+	import ArticleCover from '$elven/components/article_cover.svelte';
+	import { dateToReadable } from '$elven/tools/dates';
 
-	import type { Article } from '$lib_elven/types/articles';
+	import type { RAW } from '$elven/types/article';
 
-	export let article: Article;
+	export let article: RAW;
 
 	function convertDate(date: string | number | Date): string {
 		return dateToReadable(date);

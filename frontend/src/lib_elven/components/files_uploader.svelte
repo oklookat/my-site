@@ -1,7 +1,7 @@
 <script lang="ts">
-	import NetworkFile from '$lib_elven/network/network_file';
-	import Store from '$lib_elven/tools/store';
-	import type { File as TFile } from '$lib_elven/types/files';
+	import NetworkFile from '$elven/network/file';
+	import Store from '$elven/tools/store';
+	import type { File as TFile } from '$elven/types/file';
 	import { createEventDispatcher } from 'svelte';
 	import { t } from '$lib/locale';
 

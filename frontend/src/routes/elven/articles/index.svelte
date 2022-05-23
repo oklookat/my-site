@@ -1,7 +1,7 @@
 <script context="module" lang="ts">
 	export const load: Load = async (e) => {
-		let requestParams = new Params<Article>('article', e.url.searchParams);
-		let items: Items<Article>;
+		let requestParams = new Params<RAW>('article', e.url.searchParams);
+		let items: Items<RAW>;
 
 		let resp: Response | null = null;
 
@@ -12,7 +12,7 @@
 		try {
 			resp = await networkArticle.getAll(requestParams.toObject());
 			if (resp.ok) {
-				items = (await resp.json()) as Items<Article>;
+				items = (await resp.json()) as Items<RAW>;
 			}
 		} catch (err) {
 			throw Error(resp?.statusText);
@@ -31,41 +31,41 @@
 
 <script lang="ts">
 	// ui
-	import Pagination from '$lib/components/pagination.svelte';
+	import Pagination from '$elven/components/pagination.svelte';
 	// article
-	import type { Article } from '$lib/types/articles';
-	import type { Items } from '$lib/types';
-	import ArticlesToolbars from '$lib/components/elven/articles_toolbars.svelte';
-	import ArticlesList from '$lib/components/elven/articles_list.svelte';
-	import NetworkArticle from '$lib/network/article';
+	import type { RAW } from '$elven/types/article';
+	import type { Items } from '$elven/types';
+	import ArticlesToolbars from '$elven/components/articles_toolbars.svelte';
+	import ArticlesList from '$elven/components/articles_list.svelte';
+	import NetworkArticle from '$elven/network/article';
 	import {
 		HandleRouteParam,
 		Params,
 		Refresh,
 		type RPH_Data,
 		type RPH_Event
-	} from '$lib/tools/params';
+	} from '$elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
 	import { t } from '$lib/locale';
-	import { getTokenFromSession } from '$lib/tools';
+	import { getTokenFromSession } from '$elven/tools';
 
 	/** articles data */
-	export let items: Items<Article>;
+	export let items: Items<RAW>;
 
 	/** request params */
-	export let params: Params<Article>;
+	export let params: Params<RAW>;
 
 	async function onPageChanged(page: number) {
 		await onParamChanged({ name: 'page', val: page });
 	}
 
 	/** on request param changed */
-	async function onParamChanged(event: RPH_Event<Article>) {
-		const data: RPH_Data<Article> = {
+	async function onParamChanged(event: RPH_Event<RAW>) {
+		const data: RPH_Data<RAW> = {
 			params: params,
 			items: items
 		};
-		await HandleRouteParam<Article>(event, data);
+		await HandleRouteParam<RAW>(event, data);
 	}
 
 	async function refresh() {
@@ -75,7 +75,7 @@
 				params: params
 			});
 		};
-		await Refresh<Article>(getData);
+		await Refresh<RAW>(getData);
 	}
 </script>
 

@@ -1,28 +1,28 @@
 <script lang="ts">
-	import { getUploadsWith } from '$lib/tools';
-	import Extension, { type FileTypeSelector } from '$lib_elven/tools/extension';
-	import type { Article } from '$lib_elven/types/articles';
+	import { getUploadsWith } from '$elven/tools';
+	import Extension, { type FileTypeSelector } from '$elven/tools/extension';
+	import type { RAW } from '$elven/types/article';
 
-	export let article: Article;
+	export let article: RAW;
 	$: onArticle(article);
 
 	let isCoverExists = false;
 	let extensionSelector: FileTypeSelector;
 	let fullPath: string;
-	function onArticle(val: Article) {
-		isCoverExists = false
+	function onArticle(val: RAW) {
+		isCoverExists = false;
 		if (!val) {
 			return;
 		}
-		if(!article.cover_id || !article.cover_extension) {
-			return
+		if (!article.cover_id || !article.cover_extension) {
+			return;
 		}
 		extensionSelector = Extension.getSelector(article.cover_extension);
-		if(!article.cover_path) {
-			return
+		if (!article.cover_path) {
+			return;
 		}
 		fullPath = getUploadsWith(article.cover_path).toString();
-		isCoverExists = true
+		isCoverExists = true;
 	}
 </script>
 

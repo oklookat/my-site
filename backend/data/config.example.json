@@ -1,0 +1,99 @@
+{
+  "debug": true,
+  "host": "backend",
+  "port": "3000",
+  "db": {
+    "timezone": "Europe/Moscow",
+    "postgres": {
+      "host": "postgres",
+      "port": "5432",
+      "user": "postgres",
+      "password": "root",
+      "database": "elven"
+    }
+  },
+  "logger": {
+    "level": 1
+  },
+  "security": {
+    "https": {
+      "active": false,
+      "certPath": "",
+      "keyPath": ""
+    },
+    "cookie": {
+      "domain": "oklookat.ru",
+      "path": "/",
+      "maxAge": "9999h",
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    "cors": {
+      "allowOrigin": [
+        "https://elven.oklookat.ru",
+        "https://oklookat.ru"
+      ],
+      "allowMethods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH"
+      ],
+      "allowHeaders": [
+        "*"
+      ],
+      "exposeHeaders": [
+        "cache-control",
+        "content-language",
+        "content-type",
+        "content-length",
+        "expires"
+      ],
+      "allowCredentials": true,
+      "maxAge": 256000
+    },
+    "limiter": {
+      "body": {
+        "active": false,
+        "maxSize": 100,
+        "except": []
+      }
+    },
+    "encryption": {
+      "aes": {
+        "secret": "@McQfTjWnZr4u7x!A%D*G-KaNdRgUkXp"
+      },
+      "bcrypt": {
+        "cost": 14
+      },
+      "argon": {
+        "memory": 32,
+        "iterations": 1,
+        "parallelism": 2,
+        "saltLength": 16,
+        "keyLength": 32
+      }
+    },
+    "banhammer": {
+      "active": false,
+      "database": null,
+      "maxWarns": 3
+    }
+  },
+  "uploads": {
+    "to": "./uploads",
+    "temp": "./uploads/temp"
+  },
+  "control": {
+    "telegram": {
+      "enabled": false,
+      "token": "1234",
+      "allowedUsers": [
+      ],
+      "allowedChats": [
+      ]
+    }
+  }
+}

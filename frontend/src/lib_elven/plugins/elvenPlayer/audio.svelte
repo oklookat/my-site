@@ -16,11 +16,7 @@
 	} from './store';
 
 	import { onDestroy } from 'svelte';
-	import {
-		getBufferedPercents,
-		getPercents,
-		getPretty
-	} from './utils';
+	import { getBufferedPercents, getPercents, getPretty } from './utils';
 	import { Signal } from './types';
 
 	/** on audio ended */

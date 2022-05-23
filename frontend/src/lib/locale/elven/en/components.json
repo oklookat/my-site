@@ -1,20 +1,18 @@
 {
-    "dates": {
-        "system": "12",
-        "months": {
-            
-        }
-    },
-    "header": {
-        "elven": "elven",
-        "articles": "articles",
-        "files": "files"
-    },
-    "pagination": {
-        "page": "Page",
-        "totalPages": "Total pages"
-    },
-    "searchbar": {
-        "search": "search"
-    }
+	"dates": {
+		"system": "12",
+		"months": {}
+	},
+	"header": {
+		"elven": "elven",
+		"articles": "articles",
+		"files": "files"
+	},
+	"pagination": {
+		"page": "Page",
+		"totalPages": "Total pages"
+	},
+	"searchbar": {
+		"search": "search"
+	}
 }

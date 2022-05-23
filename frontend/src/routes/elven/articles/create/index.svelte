@@ -41,20 +41,19 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
 	import type { Config } from '@oklookat/jmarkd';
-	import TextareaResizer from '$lib/tools/textarea_resizer';
-	import { generateFileTypeSelector } from '$lib/tools/extension';
-	import Toolbar from '$lib/components/toolbar.svelte';
-	import ArticleCover from '$lib/components/elven/article_cover.svelte';
-	import NetworkArticle from '$lib/network/article';
-	import FilesPortable from '$lib/components/elven/files_portable.svelte';
-	import type { File } from '$lib/types/files';
-	import { Params } from '$lib/tools/params';
-	import { dateToReadable } from '$lib/tools/dates';
+	import TextareaResizer from '$elven/tools/textarea_resizer';
+	import { generateFileTypeSelector } from '$elven/tools/extension';
+	import Toolbar from '$elven/components/toolbar.svelte';
+	import ArticleCover from '$elven/components/article_cover.svelte';
+	import NetworkArticle from '$elven/network/article';
+	import FilesPortable from '$elven/components/files_portable.svelte';
+	import type { File } from '$elven/types/file';
+	import { Params } from '$elven/tools/params';
 	import { t } from '$lib/locale';
-	import { getParser } from '$lib/tools/markdown';
-	import { getTokenFromSession } from '$lib/tools';
-	import UploadPhoto from '$lib/icons/upload_photo.svelte';
-	import { Editable } from '$lib/tools/article';
+	import { getParser } from '$elven/tools/markdown';
+	import { getTokenFromSession } from '$elven/tools';
+	import UploadPhoto from '$elven/icons/upload_photo.svelte';
+	import { Editable } from '$elven/tools/article';
 
 	/** creating / editing this article */
 	export let article: Editable = new Editable();
@@ -93,7 +92,7 @@
 		textareaResizer = new TextareaResizer(articleTitleEL, 54);
 
 		if (article) {
-			isCoverExists = !!(article.cover_id && article.cover_extension && article.cover_path)
+			isCoverExists = !!(article.cover_id && article.cover_extension && article.cover_path);
 			articleTitleEL.value = article.title;
 			initEditor(article.content);
 		}
@@ -135,7 +134,6 @@
 
 	let lastSavedPretty = $t('elven.articles.notSaved');
 
-
 	const filesPortableParams = new Params<File>('file');
 	filesPortableParams.setParam(
 		'extensions',
@@ -145,14 +143,14 @@
 	function onCoverSelected(file: File) {
 		isChooseCover = false;
 		article.cover_id = file.id;
-		article.cover_path = file.path
-		article.cover_extension = file.extension
-		isCoverExists = true
+		article.cover_path = file.path;
+		article.cover_extension = file.extension;
+		isCoverExists = true;
 	}
 
 	function onCoverRemoved() {
 		isChooseCover = false;
-		isCoverExists = false
+		isCoverExists = false;
 		if (!article.cover_id) {
 			return;
 		}

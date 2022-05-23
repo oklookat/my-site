@@ -1,4 +1,4 @@
-import { NetworkError } from '$lib_elven/network/errors';
+import { NetworkError } from '$elven/network/errors';
 
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 

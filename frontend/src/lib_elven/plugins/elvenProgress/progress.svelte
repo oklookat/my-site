@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/env';
 
-	import type { Settings } from '$lib_elven/plugins/elvenProgress/types';
+	import type { Settings } from '$elven/plugins/elvenProgress/types';
 
 	import { onDestroy, onMount } from 'svelte';
 

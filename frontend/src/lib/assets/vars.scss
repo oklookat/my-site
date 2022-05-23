@@ -7,10 +7,10 @@ $readable-max-width: 744px;
 	@media screen and(min-width: $desktop-width) {
 		@content;
 	}
-};
+}
 
 @mixin media__mobile {
 	@media screen and(max-width: $desktop-width) {
 		@content;
 	}
-};
+} ;

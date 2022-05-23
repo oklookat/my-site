@@ -1,4 +1,4 @@
-import Animation from '$lib/tools/animation';
+import Animation from '$elven/tools/animation';
 import { ClassName } from './types';
 
 /** represents one notification */
@@ -12,10 +12,10 @@ export default class Notification {
 	private deletedIn: number = 5000;
 
 	/** user container */
-	private rootEL: HTMLDivElement
+	private rootEL: HTMLDivElement;
 
 	/** notification container */
-	private containerEL: HTMLDivElement
+	private containerEL: HTMLDivElement;
 
 	/** when deleted (in percents) */
 	public progress: number = 100;
@@ -23,7 +23,7 @@ export default class Notification {
 	/** is timers active */
 	public isExecuted: boolean = false;
 
-	private deleteTimeout: NodeJS.Timeout | undefined
+	private deleteTimeout: NodeJS.Timeout | undefined;
 
 	constructor(root: HTMLDivElement, id: number, message: string, time: number = 5000) {
 		this.deletedIn = time;
@@ -52,12 +52,12 @@ export default class Notification {
 		this.rootEL.appendChild(this.containerEL);
 		Animation.fadeIn(this.containerEL).then(() => {
 			this.runDeleteTimer();
-		})
+		});
 	}
 
 	private delete() {
-		if(this.deleteTimeout) {
-			clearTimeout(this.deleteTimeout)
+		if (this.deleteTimeout) {
+			clearTimeout(this.deleteTimeout);
 		}
 
 		Animation.fadeOut(this.containerEL).then(() => {
@@ -77,5 +77,4 @@ export default class Notification {
 			this.delete();
 		}, this.deletedIn);
 	}
-
 }
