@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onDestroy } from 'svelte';
-	import { t } from '$lib/locale';
+	
 
 	let isUnknown = false;
 	let isArticles = false;
@@ -33,19 +33,19 @@
 	<div class="header__items">
 		<a href="/elven">
 			<div class={isUnknown ? 'base__links' : ''}>
-				<div>{$t('elven.components.header.elven')}</div>
+				<div>elven</div>
 			</div></a
 		>
 
 		<a href="/elven/articles">
 			<div class={isArticles ? 'base__links' : ''}>
-				<div>{$t('elven.components.header.articles')}</div>
+				<div>articles</div>
 			</div>
 		</a>
 
 		<a href="/elven/files">
 			<div class={isFiles ? 'base__links' : ''}>
-				<div>{$t('elven.components.header.files')}</div>
+				<div>files</div>
 			</div>
 		</a>
 	</div>

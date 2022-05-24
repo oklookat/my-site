@@ -1,6 +1,28 @@
 import hljs from 'highlight.js';
 import '$lib/assets/highlight.scss';
 import { marked } from 'marked';
+import type { Config } from '@oklookat/jmarkd';
+
+/** get config for text editor */
+export function getEditorConfig(container: HTMLDivElement, data?: string): Config {
+	const parser = getParser()
+	return {
+		container: container,
+		placeholder: 'Hello.',
+		input: data,
+		toolbar: {
+			elements: {
+				config: {
+					preview: {
+						parse: (data: string) => {
+							return parser(data);
+						}
+					}
+				}
+			}
+		}
+	};
+}
 
 /** get parser to parse markdown */
 export function getParser(): (data: string) => string {

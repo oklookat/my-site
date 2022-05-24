@@ -1,99 +1,76 @@
-import { browser } from '$app/env';
-
-let formatter: Intl.DateTimeFormat;
-let locale = 'en-US';
-if (browser) {
-	locale = navigator.language;
-	formatter = new Intl.DateTimeFormat(locale, {
-		month: 'short',
-		day: '2-digit',
-		year: 'numeric',
-		hour: '2-digit',
-		second: '2-digit'
-	});
-}
+const hoursTitles = ['hour', 'hours']
+const minTitles = ['minute', 'minutes']
+const secTitles = ['second', 'seconds']
+const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 /** convert date to string like: '12 minutes ago' or '12 jan 1970 at 12:22' */
 export function dateToReadable(date: string | number | Date): string {
-	if (!browser) {
-		return '';
-	}
-	let d = new Date(date);
-	const currentDate = new Date();
+	const argDate = new Date(date)
+	const currentDate = new Date()
 
-	let monthName = '';
-	let year = '';
-	let dayPeriod = '';
-	let second = '';
-	for (const form of formatter.formatToParts(d)) {
-		switch (form.type) {
-			case 'month':
-				monthName = form.value;
-				continue;
-			case 'year':
-				year = form.value;
-				continue;
-			case 'dayPeriod':
-				dayPeriod = ' ' + form.value;
-				continue;
-			case 'second':
-				second = form.value;
-				continue;
-		}
-	}
-	console.log(second);
+	const isCurrentYear = currentDate.getFullYear() === argDate.getFullYear()
+	const isCurrentMonth = currentDate.getMonth() === argDate.getMonth()
 
-	const isCurrentYear = currentDate.getFullYear() === d.getFullYear();
-	const isCurrentMonth = currentDate.getMonth() === d.getMonth();
-
-	const isToday = isCurrentYear && isCurrentMonth && currentDate.getDate() === d.getDate();
-
-	const hours = numberWithZero(d.getHours());
-	const minutes = numberWithZero(d.getMinutes());
-	const hoursAndMinutes = `${hours}:${minutes}${dayPeriod}`;
-
+	const isToday = isCurrentYear && isCurrentMonth && currentDate.getDate() === argDate.getDate()
 	if (isToday) {
-		const secondsAgo = Math.round((currentDate.getTime() - d.getTime()) / 1000);
-
 		// n seconds ago
+		const secondsAgo = Math.round((currentDate.getTime() - argDate.getTime()) / 1000)
 		if (secondsAgo < 60) {
-			return `${secondsAgo} ${'seconds ago'}`;
+			const word = declensionOfNumbers(secondsAgo, secTitles)
+			return `${secondsAgo} ${word}`
 		}
-		const minutesAgo = Math.round(secondsAgo / 60);
 
 		// n minutes ago
+		const minutesAgo = Math.round(secondsAgo / 60)
 		if (minutesAgo < 60) {
-			return `${minutesAgo} ${'minutes ago'}`;
+			const word = declensionOfNumbers(minutesAgo, minTitles)
+			return `${minutesAgo} ${word}`
 		}
-		const hoursAgo = Math.round(minutesAgo / 60);
 
 		// hour ago
+		const hoursAgo = Math.round(minutesAgo / 60)
 		if (hoursAgo < 2) {
-			return `${'hour ago'}`;
+			return `hour`
 		}
 
 		// n hours ago
 		if (hoursAgo < 9) {
-			return `${hoursAgo} ${'hours ago'}`;
+			const word = declensionOfNumbers(hoursAgo, hoursTitles)
+			return `${hoursAgo} ${word}`
 		}
 
 		// today
-		return `${hoursAndMinutes}`;
+		const hours = numberWithZero(argDate.getHours())
+		const minutes = numberWithZero(argDate.getMinutes())
+		return `${hours}:${minutes}`
 	}
 
-	const isYesterday = isCurrentYear && isCurrentMonth && currentDate.getDate() - d.getDate() === 1;
+	const isYesterday = isCurrentYear && isCurrentMonth && currentDate.getDate() - argDate.getDate() === 1
 	if (isYesterday) {
-		return `${'yesterday'}, ${hoursAndMinutes}`;
+		const hours = numberWithZero(argDate.getHours())
+		const minutes = numberWithZero(argDate.getMinutes())
+		return `yesterday at ${hours}:${minutes}`
 	}
 
 	// current year?
-	const day = numberWithZero(d.getDate());
-
+	const day = numberWithZero(argDate.getDate())
+	const month = argDate.getMonth()
+	const monthName = months[month]
+	const hours = numberWithZero(argDate.getHours())
+	const minutes = numberWithZero(argDate.getMinutes())
 	if (isCurrentYear) {
-		return `${day} ${monthName}, ${hoursAndMinutes}`;
+		return `${day} ${monthName} at ${hours}:${minutes}`
 	}
+	return `${day} ${monthName} ${argDate.getFullYear()} at ${hours}:${minutes}`
+}
 
-	return `${day} ${monthName} ${year}, ${hoursAndMinutes}`;
+/** second(s)? minute(s)? hour(s)? */
+function declensionOfNumbers(number: number, titles: string[]): string {
+	number = Math.abs(number)
+	if (number === 1) {
+		return titles[0]
+	}
+	return titles[1]
 }
 
 /** example: 9 = 09 */

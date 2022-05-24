@@ -39,7 +39,7 @@
 </script>
 
 <script lang="ts">
-	import { t } from '$lib/locale';
+	
 	import Pagination from '$elven/components/pagination.svelte';
 	import ArticlesToolbars from '$oklookat/components/articles_toolbars.svelte';
 	import ArticlesList from '$oklookat/components/articles_list.svelte';

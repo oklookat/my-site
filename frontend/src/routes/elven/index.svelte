@@ -1,29 +1,26 @@
 <script lang="ts">
 	import { session } from '$app/stores';
-	import { t } from '$lib/locale';
+	
 </script>
 
-<svelte:head>
-	<title>{$t('elven.index.title')}</title>
-</svelte:head>
-
 <div class="hello base__container">
-	<div class="hi">{$t('elven.index.hello')} {$session.user.username}</div>
+	<div class="hi">{$session.user.username}</div>
 	<div class="things">
-		<a class="card" href="/">{$t('elven.index.mainSite')}</a>
-		<a class="card" href="/elven/settings">{$t('elven.index.settings')}</a>
+		<a class="card" href="/">main site</a>
+		<a class="card" href="/elven/settings">settings</a>
 	</div>
 </div>
 
 <style lang="scss">
 	.card {
 		height: 48px;
-		width: 100%;
+		width: max-content;
 		background-color: var(--color-level-1);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		border-radius: var(--border-radius);
+		padding: 8px;
 	}
 	.hello {
 		display: flex;
@@ -34,7 +31,6 @@
 		border-radius: var(--border-radius);
 		.hi {
 			font-size: 2rem;
-			align-self: center;
 		}
 		.things {
 			display: flex;

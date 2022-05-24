@@ -5,7 +5,7 @@
 	import { By, type RAW } from '$elven/types/article';
 	import SearchBar from '$elven/components/search_bar.svelte';
 	import type { Params, RPH_Event } from '$elven/tools/params';
-	import { t } from '$lib/locale';
+	
 
 	export let params: Params<RAW>;
 
@@ -49,7 +49,7 @@
 
 <div class="toolbars">
 	<ToolbarBig>
-		<a href="/elven/articles/create">{$t('elven.articles.create')}</a>
+		<a href="/elven/articles/create">create</a>
 	</ToolbarBig>
 
 	<div class="search">
@@ -59,29 +59,23 @@
 	<Toolbar>
 		<div>
 			<div class="pointer" on:click={() => toggleDrafts()}>
-				{params.getParam('drafts') ? $t('elven.articles.drafts') : $t('elven.articles.published')}
+				{params.getParam('drafts') ? 'drafts' : 'published'}
 			</div>
 		</div>
 
 		<div>
 			<div class="pointer" on:click={() => toggleNewest()}>
-				{params.getParam('newest') ? $t('elven.articles.newest') : $t('elven.articles.oldest')}
+				{params.getParam('newest') ? 'newest' : 'oldest'}
 			</div>
 		</div>
 
 		<div>
 			{#if params.getParam('by') === By.updated}
-				<div class="pointer" on:click={() => setBy(By.published)}>
-					{$t('elven.articles.byUpdatedDate')}
-				</div>
+				<div class="pointer" on:click={() => setBy(By.published)}>by updated date</div>
 			{:else if params.getParam('by') === By.published}
-				<div class="pointer" on:click={() => setBy(By.created)}>
-					{$t('elven.articles.byPublishedDate')}
-				</div>
+				<div class="pointer" on:click={() => setBy(By.created)}>by published date</div>
 			{:else if params.getParam('by') === By.created}
-				<div class="pointer" on:click={() => setBy(By.updated)}>
-					{$t('elven.articles.byCreatedDate')}
-				</div>
+				<div class="pointer" on:click={() => setBy(By.updated)}>by created date</div>
 			{/if}
 		</div>
 	</Toolbar>

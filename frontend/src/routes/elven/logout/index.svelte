@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import NetworkAuth from '$elven/network/auth';
-	import { t } from '$lib/locale';
+	
 
 	onMount(async () => {
 		let isError = false;
@@ -23,5 +23,5 @@
 </script>
 
 <svelte:head>
-	<title>{$t('elven.logout.title')}</title>
+	<title>logout</title>
 </svelte:head>

@@ -18,6 +18,12 @@ services:
       - 80:80
       - 443:443
     command: nginx -g 'daemon off;'
+    networks:
+      default:
+        aliases:
+          - oklookat.ru
+          - api.oklookat.ru
+          - static.oklookat.ru
 
   postgres:
     container_name: postgres

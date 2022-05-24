@@ -3,7 +3,7 @@
 	import Store from '$elven/tools/store';
 	import type { File as TFile } from '$elven/types/file';
 	import { createEventDispatcher } from 'svelte';
-	import { t } from '$lib/locale';
+	
 
 	const dispatch = createEventDispatcher<{
 		/** on file uploaded */
@@ -67,9 +67,9 @@
 	/** set isDragActive & hint text */
 	function dragSwitcher(enable: boolean) {
 		if (enable) {
-			hintText = $t('elven.files.releaseToUpload');
+			hintText = "release to upload"
 		} else {
-			hintText = $t('elven.files.clickOrDrag');
+			hintText = "click or drag to upload"
 		}
 		isDragActive = enable;
 	}

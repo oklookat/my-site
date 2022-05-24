@@ -8,10 +8,10 @@
 
 @media (prefers-color-scheme: light) {
 	:root {
-		--color-body: #f1f1f1;
 		--color-text: rgba(0, 0, 0);
 		--color-text-alpha: rgba(0, 0, 0, 0.5);
 		--color-text-inactive: #656565;
+		--color-body: #f1f1f1;
 		--color-level-1: #fff;
 		--color-level-2: #e6e6e6;
 		--color-scrollbar: #505050;
@@ -25,12 +25,12 @@
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--color-body: #000;
 		--color-text: rgb(255, 255, 255);
 		--color-text-alpha: rgba(255, 255, 255, 0.1);
 		--color-text-inactive: #a5a5a5;
-		--color-level-1: #202020;
-		--color-level-2: #303030;
+		--color-body: #101010;
+		--color-level-1: #252525;
+		--color-level-2: #353535;
 		--color-scrollbar: #505050;
 		--color-scrollbar-hover: #707070;
 		--color-placeholder: #808080;

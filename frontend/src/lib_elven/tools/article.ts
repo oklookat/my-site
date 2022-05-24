@@ -15,16 +15,18 @@ export class Editable implements RAW {
 	public cover_path: string | undefined = '';
 	public cover_extension: string | undefined = '';
 
-	private patchThrottle: NodeJS.Timeout;
-	// @ts-ignore
-	private lastPatch: Record<keyof RAW, Operation> = {};
-
 	///////////
 	/** not apply PATCH/json-patch? */
 	private avoidPatch = false;
+	/** avoid creating new article */
 	private avoidCreating = false;
-
+	/** avoid too often saves */
+	private patchThrottle: NodeJS.Timeout;
+	// @ts-ignore
+	private lastPatch: Record<keyof RAW, Operation> = {};
 	public lastSaved: Date | undefined;
+	/** on article created/saved hook */
+	public onSaved: (resp: Response) => void
 
 	/** is new article? */
 	private get isNew() {
@@ -135,6 +137,9 @@ export class Editable implements RAW {
 				this.lastSaved = new Date();
 			}
 			window.$progress?.finishBasic();
+			if(this.onSaved) {
+				this.onSaved(resp)
+			}
 		};
 
 		this.patchThrottle = setTimeout(handler, 1000);
@@ -183,8 +188,10 @@ export class Editable implements RAW {
 			this.avoidCreating = false;
 			return;
 		}
-
 		const jsond = (await resp.json()) as RAW;
 		this.fromRAW(jsond);
+		if(this.onSaved) {
+			this.onSaved(resp)
+		}
 	}
 }

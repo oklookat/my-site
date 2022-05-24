@@ -1,5 +1,4 @@
 import type { GetSession, Handle } from '@sveltejs/kit';
-//
 import NetworkUser from '$elven/network/user';
 import type { User } from '$elven/types/user';
 import { getTokenFromRequestHeaders } from '$elven/tools';

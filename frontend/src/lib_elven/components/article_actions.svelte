@@ -4,7 +4,7 @@
 	import Popup from '$elven/components/popup.svelte';
 	import NetworkArticle from '$elven/network/article';
 	import { isTouchDevice } from '$elven/tools';
-	import { t } from '$lib/locale';
+	
 	import type { RAW } from '$elven/types/article';
 	import { Editable } from '$elven/tools/article';
 
@@ -75,7 +75,7 @@
 			return;
 		}
 		onDisabled();
-		const isDelete = await window.$confirm($t('elven.articles.deleteQuestion'));
+		const isDelete = await window.$confirm("Delete article");
 		if (!isDelete) {
 			return;
 		}
@@ -89,13 +89,13 @@
 <svelte:component this={render.component} {...render.props}>
 	{#if article.is_published}
 		<div on:click={async () => await unpublish()}>
-			{$t('elven.articles.toDrafts')}
+			to drafts
 		</div>
 	{:else}
 		<div on:click={async () => await publish()}>
-			{$t('elven.articles.publish')}
+			publish
 		</div>
 	{/if}
-	<a href={`/elven/articles/create?id=${article.id}`}>{$t('elven.articles.edit')}</a>
-	<div on:click={async () => await deleteArticle()}>{$t('elven.articles.delete')}</div>
+	<a href={`/elven/articles/create?id=${article.id}`}>edit</a>
+	<div on:click={async () => await deleteArticle()}>delete</div>
 </svelte:component>

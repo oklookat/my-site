@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileTypeSelector } from '$elven/tools/extension';
-	import { t } from '$lib/locale';
+	
 	import { toggleBodyScroll } from '$elven/tools';
 
 	/** on preview closed */
@@ -28,7 +28,7 @@
 		isAudio = extension.selected === 'AUDIO';
 		isSupported = isImage || isVideo || isAudio;
 		if (!isSupported) {
-			window.$notify?.add({ message: $t('elven.general.unsupported') });
+			window.$notify?.add({ message: "Unsupported" });
 			onClose();
 			return;
 		}
@@ -59,7 +59,7 @@
 <div class="preview base__overlay" on:click|self={onClose}>
 	<div class="watchable">
 		{#if isImage}
-			<img decoding="async" loading="lazy" src={url.toString()} alt={$t('elven.files')} />
+			<img decoding="async" loading="lazy" src={url.toString()} alt="" />
 		{:else if isVideo}
 			<video controls src={url.toString()}>
 				<track default kind="captions" srclang="en" src="" />

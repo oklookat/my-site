@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
 	export const load: Load = async (e) => {
-		const title = t.get('elven.auth.loginTitle');
+		const title = "Authorization";
 		const stuff = e.stuff;
 		stuff.title = title;
 		return {
@@ -11,7 +11,7 @@
 
 <script lang="ts">
 	import NetworkAuth from '$elven/network/auth';
-	import { t } from '$lib/locale';
+	
 	import type { Load } from '@sveltejs/kit';
 
 	let username = '';
@@ -47,13 +47,13 @@
 		<input
 			type="text"
 			name="username"
-			placeholder={$t('elven.auth.username')}
+			placeholder="username"
 			bind:value={username}
 		/>
 		<input
 			type="password"
 			name="password"
-			placeholder={$t('elven.auth.password')}
+			placeholder="password"
 			bind:value={password}
 		/>
 	</div>
@@ -63,7 +63,7 @@
 		bind:this={loginButton}
 		on:click={makeLogin}
 	>
-		{$t('elven.auth.login')}
+		log in
 	</button>
 </div>
 

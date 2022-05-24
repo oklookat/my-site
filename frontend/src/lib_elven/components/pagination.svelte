@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { t } from '$lib/locale';
+	
 
 	const dispatch = createEventDispatcher<{
 		/** when page changed */
@@ -84,8 +84,7 @@
 		<div class="page">
 			<input
 				type="number"
-				title={$t('elven.components.pagination.page')}
-				placeholder={$t('elven.components.pagination.page')}
+				placeholder="page"
 				bind:value={inputPage}
 				on:input={onPageInput}
 			/>
@@ -93,12 +92,12 @@
 
 		<div class="next">
 			{#if current < total}
-				<div class="next__butt pointer center" title={$t('routes.')} on:click={onNextButton} />
+				<div class="next__butt pointer center" on:click={onNextButton} />
 			{/if}
 		</div>
 	</div>
 
-	<div class="total" title={$t('elven.components.pagination.totalPages')}>
+	<div class="total">
 		<div class="count center">{total}</div>
 	</div>
 </div>

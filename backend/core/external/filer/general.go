@@ -105,15 +105,16 @@ func ProcessFromForm(request *http.Request, formKey string, tempDir string) (dat
 	if err != nil {
 		return
 	}
+	tempFile.Chmod(0777)
 
 	defer func() {
-		// always close.
-		if tempFile != nil {
-			_ = tempFile.Close()
-			if err != nil {
-				// delete if something goes wrong.
-				_ = os.Remove(tempFile.Name())
-			}
+		if tempFile == nil {
+			return
+		}
+		_ = tempFile.Close()
+		if err != nil {
+			// delete if something goes wrong.
+			_ = os.Remove(tempFile.Name())
 		}
 	}()
 

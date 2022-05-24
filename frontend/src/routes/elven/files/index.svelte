@@ -6,7 +6,7 @@
 		let items: Items<File>;
 
 		const stuff = e.stuff;
-		stuff.title = t.get('elven.files.title');
+		stuff.title = "files";
 
 		const networkFile = new NetworkFile(getTokenFromSession(e));
 
@@ -45,7 +45,7 @@
 		type RPH_Event
 	} from '$elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
-	import { t } from '$lib/locale';
+	
 	import { getTokenFromSession } from '$elven/tools';
 
 	/** files data */

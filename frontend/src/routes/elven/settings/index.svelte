@@ -4,7 +4,7 @@
 		const output = {
 			stuff: stuff
 		};
-		stuff.title = t.get('elven.settings.title');
+		stuff.title = "settings";
 		return output;
 	};
 </script>
@@ -12,13 +12,13 @@
 <script lang="ts">
 	import AccountSettings from '$elven/components/settings_account.svelte';
 	import ToolbarBig from '$elven/components/toolbar_big.svelte';
-	import { t } from '$lib/locale';
+	
 	import type { Load } from '@sveltejs/kit';
 </script>
 
 <div class="settings">
 	<ToolbarBig>
-		<a href="/elven/logout">{$t('elven.settings.logout')}</a>
+		<a href="/elven/logout">log out</a>
 	</ToolbarBig>
 
 	<AccountSettings />

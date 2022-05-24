@@ -6,7 +6,7 @@
 		let resp: Response | null = null;
 
 		const stuff = e.stuff;
-		stuff.title = t.get('elven.articles.title');
+		stuff.title = "articles";
 
 		const networkArticle = new NetworkArticle(getTokenFromSession(e), e.fetch);
 		try {
@@ -46,7 +46,7 @@
 		type RPH_Event
 	} from '$elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
-	import { t } from '$lib/locale';
+	
 	import { getTokenFromSession } from '$elven/tools';
 
 	/** articles data */

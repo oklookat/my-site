@@ -3,6 +3,7 @@ package elven
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"servus/apps/elven/article"
 	"servus/apps/elven/auth"
 	"servus/apps/elven/cmd"
@@ -21,6 +22,7 @@ type App struct {
 }
 
 func (a *App) Boot(c *core.Instance) {
+	var err error
 	call = c
 	c.Logger.Info("elven: booting")
 
@@ -47,6 +49,17 @@ func (a *App) Boot(c *core.Instance) {
 		Pipe:       userPipe,
 	})
 
+	// correct uploads paths.
+	call.Config.Uploads.To, err = filepath.Abs(call.Config.Uploads.To)
+	if err != nil {
+		call.Logger.Panic(err)
+		return
+	}
+	call.Config.Uploads.Temp, err = filepath.Abs(call.Config.Uploads.Temp)
+	if err != nil {
+		call.Logger.Panic(err)
+		return
+	}
 	file.Start(&file.Starter{
 		Core:       call,
 		Middleware: appMiddleware,

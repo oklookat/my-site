@@ -17,7 +17,7 @@
 		const params = e.url.searchParams;
 		const isEditMode = params.has('id');
 		if (!isEditMode) {
-			stuff.title = t.get('elven.articles.createArticle');
+			stuff.title = 'new article';
 			return output;
 		}
 
@@ -40,7 +40,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
-	import type { Config } from '@oklookat/jmarkd';
 	import TextareaResizer from '$elven/tools/textarea_resizer';
 	import { generateFileTypeSelector } from '$elven/tools/extension';
 	import Toolbar from '$elven/components/toolbar.svelte';
@@ -49,11 +48,13 @@
 	import FilesPortable from '$elven/components/files_portable.svelte';
 	import type { File } from '$elven/types/file';
 	import { Params } from '$elven/tools/params';
-	import { t } from '$lib/locale';
-	import { getParser } from '$elven/tools/markdown';
+
+	import { getEditorConfig } from '$elven/tools/markdown';
 	import { getTokenFromSession } from '$elven/tools';
 	import UploadPhoto from '$elven/icons/upload_photo.svelte';
 	import { Editable } from '$elven/tools/article';
+	import { dateToReadable } from '$elven/tools/dates';
+	import type jmarkd from '@oklookat/jmarkd';
 
 	/** creating / editing this article */
 	export let article: Editable = new Editable();
@@ -73,66 +74,25 @@
 	/** is cover exists in article? */
 	let isCoverExists = false;
 
-	/** md editor */
-	let jmarkdClass: any;
-
 	/** md editor instance */
-	let editor: any;
+	let editor: jmarkd;
 
 	onMount(async () => {
-		// import markdown editor
-		// styles
+		// import editor
 		// @ts-ignore
 		await import('@oklookat/jmarkd/styles');
-		// editor class
 		const { default: jmarkdModule } = await import('@oklookat/jmarkd');
-		jmarkdClass = jmarkdModule;
-
-		// manually add title before creating TextareaResizer, for correct height in start
-		textareaResizer = new TextareaResizer(articleTitleEL, 54);
 
 		if (article) {
 			isCoverExists = !!(article.cover_id && article.cover_extension && article.cover_path);
 			articleTitleEL.value = article.title;
-			initEditor(article.content);
 		}
+
+		textareaResizer = new TextareaResizer(articleTitleEL, 54);
+		const config = getEditorConfig(editorEL, article.content);
+		editor = new jmarkdModule(config);
 	});
 
-	let lastSavedInterval: NodeJS.Timer;
-	onDestroy(() => {
-		if (lastSavedInterval) {
-			clearInterval(lastSavedInterval);
-		}
-		if (!browser) {
-			return;
-		}
-		editor?.destroy();
-		textareaResizer?.destroy();
-	});
-
-	/** start text editor */
-	function initEditor(data?: string) {
-		const markParser = getParser();
-		const config: Config = {
-			container: editorEL,
-			placeholder: $t('elven.articles.editorPlaceholder'),
-			input: data,
-			toolbar: {
-				elements: {
-					config: {
-						preview: {
-							parse: (data: string) => {
-								return markParser(data);
-							}
-						}
-					}
-				}
-			}
-		};
-		editor = new jmarkdClass(config);
-	}
-
-	let lastSavedPretty = $t('elven.articles.notSaved');
 
 	const filesPortableParams = new Params<File>('file');
 	filesPortableParams.setParam(
@@ -164,6 +124,32 @@
 	function onContentChanged() {
 		article.content = editor?.save();
 	}
+
+	let lastSavedInterval: NodeJS.Timer;
+	let lastSavedPretty = 'not saved';
+	article.onSaved = () => {
+		if (lastSavedInterval) {
+			clearInterval(lastSavedInterval);
+		}
+		lastSavedInterval = setInterval(() => {
+			if (!article.lastSaved) {
+				clearInterval(lastSavedInterval);
+				return;
+			}
+			lastSavedPretty = dateToReadable(article.lastSaved) + ' ago';
+		}, 1000);
+	};
+
+	onDestroy(() => {
+		if (lastSavedInterval) {
+			clearInterval(lastSavedInterval);
+		}
+		if (!browser) {
+			return;
+		}
+		editor?.destroy();
+		textareaResizer?.destroy();
+	});
 </script>
 
 {#if isChooseCover}
@@ -174,7 +160,7 @@
 			onCoverSelected(e.detail);
 		}}
 	>
-		<div slot="back-title">{$t('elven.articles.article')}</div>
+		<div slot="back-title">article</div>
 	</FilesPortable>
 {/if}
 
@@ -182,8 +168,8 @@
 	<div class="toolbars">
 		<Toolbar>
 			<div class="last__saved">
-				{$t('elven.articles.lastSaved')}
-				{article.lastSaved}
+				last saved:
+				{lastSavedPretty}
 			</div>
 		</Toolbar>
 	</div>
@@ -209,7 +195,7 @@
 	<div class="editable">
 		<textarea
 			class="title"
-			placeholder={$t('elven.articles.titlePlaceholder')}
+			placeholder="Sample text"
 			rows="1"
 			maxlength="124"
 			bind:this={articleTitleEL}

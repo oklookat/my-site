@@ -3,7 +3,7 @@
 	import NetworkUser from '$elven/network/user';
 	import type { User, UserChange } from '$elven/types/user';
 	import { usernameValidate, passwordValidate } from '$elven/types/user';
-	import { t } from '$lib/locale';
+	
 
 	const networkUser = new NetworkUser('');
 
@@ -100,30 +100,30 @@
 	<div class="block account">
 		<div class="big">{user.username}</div>
 		<div class="pointer" on:click={() => setChanger('username')}>
-			{$t('elven.settings.changeUsername')}
+			change username
 		</div>
 		<div class="pointer" on:click={() => setChanger('password')}>
-			{$t('elven.settings.changePassword')}
+			change password
 		</div>
 		{#if isChangeCredentials}
 			<div class="change-credentials">
 				<input
 					type="password"
-					placeholder={$t('elven.settings.password')}
+					placeholder="password"
 					bind:value={changer.password}
 					on:input={onPasswordInput}
 				/>
 				{#if changer.what === 'username'}
 					<input
 						type="text"
-						placeholder={$t('elven.settings.newUsername')}
+						placeholder="new username"
 						bind:value={changer.newValue}
 						on:input={onNewUsernameInput}
 					/>
 				{:else if changer.what === 'password'}
 					<input
 						type="password"
-						placeholder={$t('elven.settings.newPassword')}
+						placeholder="new password"
 						bind:value={changer.newValue}
 						on:input={onNewPasswordInput}
 					/>
@@ -133,7 +133,7 @@
 					disabled={!(newValueValid && passwordConfirmValid)}
 					on:click={changeCredentials}
 				>
-					{$t('elven.settings.ok')}
+					ok
 				</div>
 			</div>
 		{/if}

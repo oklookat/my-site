@@ -1,6 +1,7 @@
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit';
 
+	/** check rights before access to admin panel */
 	export const load: Load = async (event) => {
 		const isError = event.session.user.isError;
 		const isAdmin = event.session.user.isAdmin;
@@ -10,7 +11,7 @@
 			// redirect to main page if auth check error
 			return {
 				status: 302,
-				redirect: ''
+				redirect: '/'
 			};
 		}
 
@@ -55,7 +56,7 @@
 </script>
 
 <svelte:head>
-	<title>{$page.stuff.title ? $page.stuff.title : 'elven'}</title>
+	<title>{$page.stuff.title ? $page.stuff.title : "elven"}</title>
 </svelte:head>
 
 <div class="container">

@@ -26,4 +26,5 @@ data/config.json
 data/config.dev.json
 data/banhammer.db
 uploads
+.devcontainer/uploads
 __*

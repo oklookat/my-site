@@ -97,7 +97,7 @@
 			user-select: none;
 			background-color: var(--color-level-1);
 			border-radius: var(--border-radius);
-			height: 304px;
+			height: 254px;
 			width: 304px;
 			@media screen and(max-width: 644px) {
 				max-width: 304px;
@@ -156,6 +156,7 @@
 					justify-content: center;
 					gap: 64px;
 					.volume {
+						background-color: var(--color-level-2);
 						width: 134px;
 						height: 18px;
 					}
