@@ -1,34 +1,25 @@
 :root {
-	--header-height: 52px;
 	--border-radius: 4px;
 	--border: var(--color-border) 1px solid;
 	--paginator-height: 140px;
 	--width-95: 95%;
-}
 
-@media (prefers-color-scheme: light) {
-	:root {
+	@media (prefers-color-scheme: light) {
 		--color-text: rgba(0, 0, 0);
-		--color-text-alpha: rgba(0, 0, 0, 0.5);
 		--color-text-inactive: #656565;
-		--color-body: #f1f1f1;
+		--color-body: rgb(241, 241, 241);
 		--color-level-1: #fff;
 		--color-level-2: #e6e6e6;
 		--color-scrollbar: #505050;
 		--color-scrollbar-hover: #707070;
 		--color-placeholder: #808080;
-		--color-hover: rgba(0, 0, 0, 0.05);
 		--color-border: #d9d9d9;
-		--color-header-text: #000000;
 	}
-}
 
-@media (prefers-color-scheme: dark) {
-	:root {
+	@media (prefers-color-scheme: dark) {
 		--color-text: rgb(255, 255, 255);
-		--color-text-alpha: rgba(255, 255, 255, 0.1);
 		--color-text-inactive: #a5a5a5;
-		--color-body: #101010;
+		--color-body: rgba(21, 21, 21);
 		--color-level-1: #252525;
 		--color-level-2: #353535;
 		--color-scrollbar: #505050;

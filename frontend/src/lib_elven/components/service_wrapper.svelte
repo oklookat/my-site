@@ -8,9 +8,8 @@
 
 <div class="service">
 	<Notify />
-	<Confirm />
-
 	{#if isAdmin}
+		<Confirm />
 		<Player />
 	{/if}
 </div>
@@ -19,7 +18,6 @@
 	.service {
 		display: flex;
 		height: fit-content;
-		bottom: 0;
 		width: 100%;
 		z-index: 7777;
 		position: sticky;

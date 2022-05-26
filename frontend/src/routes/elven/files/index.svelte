@@ -6,7 +6,7 @@
 		let items: Items<File>;
 
 		const stuff = e.stuff;
-		stuff.title = "files";
+		stuff.title = 'files';
 
 		const networkFile = new NetworkFile(getTokenFromSession(e));
 
@@ -45,8 +45,9 @@
 		type RPH_Event
 	} from '$elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
-	
+
 	import { getTokenFromSession } from '$elven/tools';
+	import ItemsContainer from '$elven/components/items_container.svelte';
 
 	/** files data */
 	export let items: Items<File>;
@@ -82,16 +83,20 @@
 	}
 </script>
 
-<div class="files base__container">
-	<FilesToolbars
-		bind:params
-		on:uploaded={async () => await onUploaded()}
-		on:paramChanged={async (e) => await onParamChanged(e.detail)}
-	/>
+<ItemsContainer>
+	<div slot="up">
+		<FilesToolbars
+			bind:params
+			on:uploaded={async () => await onUploaded()}
+			on:paramChanged={async (e) => await onParamChanged(e.detail)}
+		/>
+	</div>
 
-	<FilesList {items} on:deleted={async () => await refresh()} />
-
-	<div class="pages">
+	<div slot="list">
+		<FilesList {items} on:deleted={async () => await refresh()} />
+	</div>
+	
+	<div slot="pages">
 		{#if items && items.meta}
 			<Pagination
 				total={items.meta.total_pages}
@@ -100,4 +105,4 @@
 			/>
 		{/if}
 	</div>
-</div>
+</ItemsContainer>

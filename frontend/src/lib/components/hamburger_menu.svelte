@@ -18,9 +18,7 @@
 	transition:fade={{ duration: 324 }}
 >
 	<div class="menu" transition:fly={{ x: -100, duration: 324 }}>
-		<div class="items base__links">
-			<slot />
-		</div>
+		<slot />
 	</div>
 </div>
 
@@ -38,33 +36,9 @@
 		bottom: 0;
 		left: 0;
 		.menu {
-			background-color: var(--color-body);
-			border-right: 2px solid var(--color-border);
+			border-right: 1px solid var(--color-border);
 			height: 100%;
 			max-width: max-content;
-			.items {
-				width: 100%;
-				display: flex;
-				flex-direction: column;
-				flex-wrap: wrap;
-
-				// item
-				:global(*) {
-					padding: 12px;
-					min-width: 104px;
-					min-height: 44px;
-
-					display: flex;
-					flex-wrap: wrap;
-					justify-content: center;
-					align-items: center;
-
-					transition: background-color 50ms;
-					&:hover {
-						background-color: var(--color-hover);
-					}
-				}
-			}
 		}
 	}
 </style>

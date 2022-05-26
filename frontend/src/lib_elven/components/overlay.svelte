@@ -3,7 +3,7 @@
 
 	import { onDestroy, onMount } from 'svelte';
 
-	export let onClose: () => void;
+	export let onClose: (e: MouseEvent) => void;
 
 	let setDefScroll: () => void;
 	onMount(() => {
@@ -15,43 +15,22 @@
 	});
 </script>
 
-<div class="overlay base__overlay" on:click|self={onClose}>
-	<div class="main">
-		<div>
-			<slot />
-		</div>
-	</div>
+<div class="overlay" on:click|stopPropagation|self={onClose}>
+	<slot />
 </div>
 
 <style lang="scss">
 	.overlay {
-		.main {
-			user-select: none;
-			background-color: var(--color-level-1);
-			border-radius: var(--border-radius);
-			min-height: 244px;
-			width: 224px;
-			@media screen and(max-width: 644px) {
-				width: 75%;
-			}
-			> div {
-				// item
-				:global(*) {
-					cursor: pointer;
-					border-bottom: 1px solid var(--color-border);
-					min-height: 54px;
-					width: 100%;
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-					justify-content: center;
-					&:hover {
-						background-color: var(--color-hover);
-					}
-				}
-				width: 100%;
-				height: 100%;
-			}
-		}
+		background-color: rgba(0, 0, 0, 0.4);
+		z-index: 9998;
+		max-width: 100vw;
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		display: grid;
 	}
 </style>

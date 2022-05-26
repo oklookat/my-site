@@ -48,14 +48,17 @@
 </script>
 
 <div class="toolbars">
-	<ToolbarBig>
-		<a href="/elven/articles/create">create</a>
-	</ToolbarBig>
+	<Toolbar>
+		<a href="/elven/articles/create">new</a>
+		<div>filters</div>
+	</Toolbar>
 
 	<div class="search">
 		<SearchBar bind:value={searchValue} on:search={(e) => search(e.detail)} />
 	</div>
+</div>
 
+<!-- <div class="toolbars">
 	<Toolbar>
 		<div>
 			<div class="pointer" on:click={() => toggleDrafts()}>
@@ -79,16 +82,16 @@
 			{/if}
 		</div>
 	</Toolbar>
-</div>
+</div> -->
 
 <style lang="scss">
 	.toolbars {
+		height: 104px;
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
-		width: 100%;
 		.search {
-			height: 54px;
+			height: 50%;
 		}
 	}
 </style>

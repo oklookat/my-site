@@ -45,52 +45,44 @@
 </script>
 
 <script lang="ts">
-	import Header from '$elven/components/header.svelte';
+	import Sidebar from '$elven/components/header.svelte';
 	import ServiceWrapper from '$elven/components/service_wrapper.svelte';
 	import Progress from '$elven/plugins/elvenProgress/progress.svelte';
 	import { isAdminPanelLoginPage } from '$elven/tools';
 	import { page } from '$app/stores';
-	import { browser } from '$app/env';
 
 	export let isAdmin = false;
 </script>
 
 <svelte:head>
-	<title>{$page.stuff.title ? $page.stuff.title : "elven"}</title>
+	<title>{$page.stuff.title ? $page.stuff.title : 'elven'}</title>
 </svelte:head>
 
 <div class="container">
 	<Progress />
-
 	{#if isAdmin}
-		<Header />
+		<Sidebar />
 	{/if}
 
-	<div class="content">
+	<main>
 		<slot />
-	</div>
+	</main>
 
-	{#if browser}
-		<ServiceWrapper bind:isAdmin />
-	{/if}
+	<ServiceWrapper bind:isAdmin />
 </div>
 
 <style lang="scss">
 	.container {
-		min-height: 100vh;
+		font-size: 1.1rem;
+		line-height: 1.46rem;
+		letter-spacing: 0.0007rem;
 		word-break: break-word;
+		min-height: 100vh;
 		display: grid;
 		grid-template-columns: 1fr;
-		// header - content - service
-		grid-template-rows: max-content 1fr min-content;
-		gap: 16px;
-
-		.content {
-			height: 100%;
-			width: 100%;
-			font-size: 1.1rem;
-			line-height: 1.46rem;
-			letter-spacing: 0.0007rem;
+		grid-template-rows: max-content 1fr max-content;
+		main {
+			padding: 12px;
 		}
 	}
 </style>

@@ -17,10 +17,8 @@
 	}
 </script>
 
-<div class="list">
-	{#if items && items.data}
-		{#each Object.entries(items.data) as [counter, file]}
-			<CFile bind:file onDeleted={() => whenDeleted(parseInt(counter, 10))} />
-		{/each}
-	{/if}
-</div>
+{#if items && items.data}
+	{#each Object.entries(items.data) as [counter, file]}
+		<CFile bind:file onDeleted={() => whenDeleted(parseInt(counter, 10))} />
+	{/each}
+{/if}

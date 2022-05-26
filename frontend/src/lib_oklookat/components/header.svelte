@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
-	import HamburgerMenu from './hamburger_menu.svelte';
-	import Hamburger from '$oklookat/icons/hamburger.svelte';
+	import HamburgerMenu from '$lib/components/hamburger_menu.svelte';
+	import Hamburger from '$lib/icons/hamburger.svelte';
 
 	let isHamburgerOpened = false;
 	function toggleHamburger() {
@@ -15,14 +15,14 @@
 	}
 </script>
 
-<div class="header base__container">
+<header class="base__container">
 	<div class="items">
 		<div class="hamburger" on:click={() => toggleHamburger()}>
 			<Hamburger />
 		</div>
 		<b class="logo" on:click={() => goMain()}>oklookat</b>
 	</div>
-</div>
+</header>
 
 {#if isHamburgerOpened}
 	<HamburgerMenu on:closed={() => toggleHamburger()}>
@@ -36,7 +36,7 @@
 {/if}
 
 <style lang="scss">
-	.header {
+	header {
 		position: sticky;
 		top: 0;
 		z-index: 99;

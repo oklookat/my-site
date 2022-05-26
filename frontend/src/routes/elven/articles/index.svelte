@@ -6,7 +6,7 @@
 		let resp: Response | null = null;
 
 		const stuff = e.stuff;
-		stuff.title = "articles";
+		stuff.title = 'articles';
 
 		const networkArticle = new NetworkArticle(getTokenFromSession(e), e.fetch);
 		try {
@@ -46,8 +46,9 @@
 		type RPH_Event
 	} from '$elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
-	
+
 	import { getTokenFromSession } from '$elven/tools';
+	import ItemsContainer from '$elven/components/items_container.svelte';
 
 	/** articles data */
 	export let items: Items<RAW>;
@@ -79,12 +80,16 @@
 	}
 </script>
 
-<div class="articles base__container">
-	<ArticlesToolbars bind:params on:paramChanged={async (e) => await onParamChanged(e.detail)} />
+<ItemsContainer>
+	<div slot="up">
+		<ArticlesToolbars bind:params on:paramChanged={async (e) => await onParamChanged(e.detail)} />
+	</div>
+	
+	<div slot="list">
+		<ArticlesList bind:items on:deleted={async () => await refresh()} />
+	</div>
 
-	<ArticlesList bind:items on:deleted={async () => await refresh()} />
-
-	<div class="pages">
+	<div slot="pages">
 		{#if items.meta}
 			<Pagination
 				bind:total={items.meta.total_pages}
@@ -93,4 +98,4 @@
 			/>
 		{/if}
 	</div>
-</div>
+</ItemsContainer>

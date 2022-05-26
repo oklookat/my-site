@@ -1,69 +1,104 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { onDestroy } from 'svelte';
-	
+	import Link from '$elven/components/link.svelte';
+	import HamburgerMenu from '$lib/components/hamburger_menu.svelte';
+	import Hamburger from '$lib/icons/hamburger.svelte';
 
-	let isUnknown = false;
-	let isArticles = false;
-	let isFiles = false;
+	let isHamburgerOpened = false;
+	function toggleHamburger() {
+		isHamburgerOpened = !isHamburgerOpened;
+	}
 
-	const unsub = page.subscribe((v) => {
-		if (!v || !v.url || !v.url.pathname) {
-			return;
-		}
-		onPathChanged(v.url.pathname);
-	});
-
-	onDestroy(() => {
-		unsub();
-	});
-
-	function onPathChanged(path: string) {
-		if (!path) {
-			isUnknown = true;
-			return;
-		}
-		isFiles = path.includes('/elven/files');
-		isArticles = path.includes('/elven/articles');
-		isUnknown = !isFiles && !isArticles;
+	$: onPathChanged($page.url.pathname);
+	function onPathChanged(val: string) {
+		isHamburgerOpened = false;
 	}
 </script>
 
-<nav class="header base__container">
-	<div class="header__items">
-		<a href="/elven">
-			<div class={isUnknown ? 'base__links' : ''}>
-				<div>elven</div>
-			</div></a
-		>
-
-		<a href="/elven/articles">
-			<div class={isArticles ? 'base__links' : ''}>
-				<div>articles</div>
-			</div>
-		</a>
-
-		<a href="/elven/files">
-			<div class={isFiles ? 'base__links' : ''}>
-				<div>files</div>
-			</div>
-		</a>
+<header>
+	<div class="hamburger" on:click={() => toggleHamburger()}>
+		<Hamburger />
 	</div>
-</nav>
+</header>
+
+{#if isHamburgerOpened}
+	<HamburgerMenu on:closed={() => (isHamburgerOpened = false)}>
+		<div class="navigateme">
+			<nav>
+				<Link path="/elven">elven</Link>
+				<Link path="/elven/articles">articles</Link>
+				<Link path="/elven/files">files</Link>
+			</nav>
+
+			<hr />
+
+			<nav>
+				<Link path="/">main site</Link>
+				<Link path="/elven/settings">settings</Link>
+			</nav>
+		</div>
+	</HamburgerMenu>
+{/if}
 
 <style lang="scss">
-	.header {
-		font-weight: bold;
-		height: max-content;
+	header {
+		position: sticky;
+		top: 0;
+		z-index: 99;
+		height: 44px;
+		width: 100%;
+		//
+		padding: 6px;
+		background-color: var(--color-level-1);
 		display: flex;
-		&__items {
-			padding-top: 14px;
-			padding-bottom: 14px;
-			width: 100%;
+		align-items: center;
+		* {
+			height: 100%;
+			display: flex;
+			align-items: center;
+			cursor: pointer;
+		}
+
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 14px;
+
+		.hamburger {
+			height: 100%;
+			width: 24px;
+		}
+	}
+
+	.navigateme {
+		background-color: var(--color-level-1);
+		font-weight: bold;
+		height: 100%;
+		min-width: 94px;
+		width: max-content;
+		&,
+		nav {
 			display: flex;
 			flex-wrap: wrap;
-			justify-content: center;
-			gap: 42px;
+			flex-direction: column;
+		}
+		hr,
+		nav {
+			width: 100%;
+		}
+		nav {
+			// nav item
+			:global(*) {
+				min-height: 44px;
+				height: max-content;
+				width: 100%;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				&:hover {
+					background-color: var(--color-level-2);
+				}
+			}
 		}
 	}
 </style>
