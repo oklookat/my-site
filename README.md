@@ -39,9 +39,9 @@ All this will be done automatically in the container.
 
 ## Requirements
 **All**
-- [VSCode](https://code.visualstudio.com)
-- [VSCode Docker extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
-- [VSCode Remote Development extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack)
+- [VS Code](https://code.visualstudio.com)
+- [VS Code Docker extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
+- [VS Code Remote Development extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack)
 
 **Windows**
 - [WSL2](https://docs.microsoft.com/en-us/windows/wsl/install)
@@ -65,8 +65,8 @@ We need to make root cert (mkcert) on host and copy them to nginx devcontainer i
 0. Clone repo
 1. Run bootstrap and execute: 
 ```setup dev certs``` | ```generate & copy``` | ```add hosts```
-2. Open VSCode
-3. (Windows) Attach VSCode to WSL
+2. Open VS Code
+3. (Windows) Attach VS Code to WSL
 4. F1 -> type "Open Folder in Container"
 
 - Any dir thats contains .devcontainer folder can be opened
@@ -79,7 +79,7 @@ We need to make root cert (mkcert) on host and copy them to nginx devcontainer i
 
 
 ## Tips and tricks
-After you finished, to save your RAM on Windows, close VSCode; Docker Desktop and run
+After you finished, to save your RAM on Windows, close VS Code; Docker Desktop and run
 ```  
 wsl --shutdown
 ```
