@@ -25,7 +25,6 @@
 	<HamburgerMenu on:closed={() => (isHamburgerOpened = false)}>
 		<div class="navigateme">
 			<nav>
-				<Link path="/elven">elven</Link>
 				<Link path="/elven/articles">articles</Link>
 				<Link path="/elven/files">files</Link>
 			</nav>

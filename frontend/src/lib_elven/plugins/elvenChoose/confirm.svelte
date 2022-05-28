@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/env';
-	import Overlay from '$elven/components/overlay.svelte';
+	import Overlay from '$lib/components/overlay.svelte';
 	import { toggleBodyScroll } from '$elven/tools';
 	import { onDestroy, onMount } from 'svelte';
 
@@ -118,6 +118,12 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
+			}
+			.no, .yes {
+				&:hover {
+					background-color: var(--color-hover);
+				}
+				cursor: pointer;
 			}
 		}
 	}

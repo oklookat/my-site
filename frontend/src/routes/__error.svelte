@@ -29,7 +29,7 @@
 	});
 </script>
 
-<div class="base__container">
+<div class="ohno">
 	<div class="message">
 		{#if isOffline}
 			<ErrorInternet />
@@ -52,20 +52,21 @@
 </div>
 
 <style lang="scss">
-	div {
+	.ohno {
 		min-height: 100%;
-		margin-bottom: 12px;
+		margin: 12px;
 		display: grid;
 		grid-template-rows: 1fr auto;
+		align-items: center;
+		justify-content: center;
 		gap: 24px;
 		.links {
-			margin-bottom: 24px;
 			align-self: flex-end;
 			display: flex;
 			flex-direction: row;
 			align-items: center;
 			justify-content: center;
-			gap: 24px;
+			gap: 12px;
 			a {
 				font-weight: bold;
 			}

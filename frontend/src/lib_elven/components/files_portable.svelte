@@ -2,7 +2,7 @@
 	import { browser } from '$app/env';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import Store from '$elven/tools/store';
-	import Pagination from '$elven/components/pagination.svelte';
+	import Pagination from '$lib/components/pagination.svelte';
 	import type { Items } from '$elven/types';
 	import type { File } from '$elven/types/file';
 	import NetworkFile from '$elven/network/file';

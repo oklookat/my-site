@@ -1,22 +1,13 @@
-<script lang="ts">
-	import { session } from '$app/stores';
-	
-</script>
+<script lang="ts" context="module">
+import type { Load } from "@sveltejs/kit";
 
-<div class="hello base__container">
-	<div class="hi">{$session.user.username}</div>
-</div>
 
-<style lang="scss">
-	.hello {
-		display: flex;
-		flex-direction: column;
-		flex-wrap: wrap;
-		gap: 24px;
-		height: 100%;
-		border-radius: var(--border-radius);
-		.hi {
-			font-size: 2rem;
-		}
+
+export const load: Load = async (e) => {
+	return {
+		status: 302,
+		redirect: "/elven/articles"
 	}
-</style>
+}
+
+</script>

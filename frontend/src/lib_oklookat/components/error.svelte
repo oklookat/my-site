@@ -18,6 +18,7 @@
 <style lang="scss">
 	.error {
 		width: 100%;
+		max-width: 720px;
 		display: flex;
 		flex-direction: column;
 		gap: 12px;

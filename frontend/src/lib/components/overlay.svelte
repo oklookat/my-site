@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { toggleBodyScroll } from '$elven/tools';
-
+	import { fade } from 'svelte/transition';
 	import { onDestroy, onMount } from 'svelte';
 
 	export let onClose: (e: MouseEvent) => void;
@@ -15,7 +15,7 @@
 	});
 </script>
 
-<div class="overlay" on:click|stopPropagation|self={onClose}>
+<div class="overlay" transition:fade={{duration: 120}} on:click|stopPropagation|self={onClose}>
 	<slot />
 </div>
 

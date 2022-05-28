@@ -32,7 +32,7 @@
 
 <script lang="ts">
 	import type { Items } from '$elven/types';
-	import Pagination from '$elven/components/pagination.svelte';
+	import Pagination from '$lib/components/pagination.svelte';
 	import type { File } from '$elven/types/file';
 	import FilesToolbars from '$elven/components/files_toolbars.svelte';
 	import FilesList from '$elven/components/files_list.svelte';

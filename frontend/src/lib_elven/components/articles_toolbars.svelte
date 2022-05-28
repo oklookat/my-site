@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import Toolbar from '$elven/components/toolbar.svelte';
-	import ToolbarBig from '$elven/components/toolbar_big.svelte';
 	import { By, type RAW } from '$elven/types/article';
 	import SearchBar from '$elven/components/search_bar.svelte';
 	import type { Params, RPH_Event } from '$elven/tools/params';
@@ -46,6 +45,8 @@
 		dispatch('paramChanged', { name: 'title', val: val });
 	}
 </script>
+
+
 
 <div class="toolbars">
 	<Toolbar>

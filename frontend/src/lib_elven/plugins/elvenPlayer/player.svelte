@@ -98,6 +98,7 @@
 		if (!browser) {
 			return;
 		}
+		console.log('MOUNT');
 		window.$player = new Plugin();
 	});
 
@@ -105,6 +106,7 @@
 		if (!browser) {
 			return;
 		}
+		console.log('DESTROY');
 		close();
 		window.$player = undefined;
 	});
@@ -147,6 +149,7 @@
 
 	/** close player UI and destroy audio */
 	function close() {
+		window.$player?.clearPlaylist();
 		destroyAudio();
 		isActive = false;
 	}

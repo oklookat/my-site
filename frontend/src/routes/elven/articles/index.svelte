@@ -30,9 +30,7 @@
 </script>
 
 <script lang="ts">
-	// ui
-	import Pagination from '$elven/components/pagination.svelte';
-	// article
+	import Pagination from '$lib/components/pagination.svelte';
 	import type { RAW } from '$elven/types/article';
 	import type { Items } from '$elven/types';
 	import ArticlesToolbars from '$elven/components/articles_toolbars.svelte';
@@ -46,7 +44,6 @@
 		type RPH_Event
 	} from '$elven/tools/params';
 	import type { Load } from '@sveltejs/kit';
-
 	import { getTokenFromSession } from '$elven/tools';
 	import ItemsContainer from '$elven/components/items_container.svelte';
 

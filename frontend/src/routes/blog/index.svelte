@@ -40,7 +40,7 @@
 
 <script lang="ts">
 	
-	import Pagination from '$elven/components/pagination.svelte';
+	import Pagination from '$lib/components/pagination.svelte';
 	import ArticlesToolbars from '$oklookat/components/articles_toolbars.svelte';
 	import ArticlesList from '$oklookat/components/articles_list.svelte';
 

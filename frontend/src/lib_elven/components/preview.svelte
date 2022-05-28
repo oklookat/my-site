@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileTypeSelector } from '$elven/tools/extension';
-	
+
 	import { toggleBodyScroll } from '$elven/tools';
+	import Overlay from '$lib/components/overlay.svelte';
 
 	/** on preview closed */
 	export let onClose: () => void;
@@ -28,7 +29,7 @@
 		isAudio = extension.selected === 'AUDIO';
 		isSupported = isImage || isVideo || isAudio;
 		if (!isSupported) {
-			window.$notify?.add({ message: "Unsupported" });
+			window.$notify?.add({ message: 'Unsupported' });
 			onClose();
 			return;
 		}
@@ -46,6 +47,7 @@
 	/** play audio by url */
 	function playAudio() {
 		if (!window.$player) {
+			console.error("player not initialized. Why?")
 			onClose();
 			return;
 		}
@@ -56,30 +58,33 @@
 	}
 </script>
 
-<div class="preview base__overlay" on:click|self={onClose}>
-	<div class="watchable">
-		{#if isImage}
-			<img decoding="async" loading="lazy" src={url.toString()} alt="" />
-		{:else if isVideo}
-			<video controls src={url.toString()}>
-				<track default kind="captions" srclang="en" src="" />
-			</video>
-		{/if}
+<Overlay {onClose}>
+	<div class="preview">
+		<div class="watchable">
+			{#if isImage}
+				<img decoding="async" loading="lazy" src={url.toString()} alt="" />
+			{:else if isVideo}
+				<video controls src={url.toString()}>
+					<track default kind="captions" srclang="en" src="" />
+				</video>
+			{/if}
+		</div>
 	</div>
-</div>
+</Overlay>
 
 <style lang="scss">
 	.preview {
+		align-self: center;
+		justify-self: center;
+		width: 80%;
+		max-width: 700px;
 		.watchable {
-			width: 80%;
-			max-width: 700px;
+			width: 100%;
 			display: flex;
 			justify-content: center;
-
 			img,
 			video {
 				width: 100%;
-				max-width: 844px;
 			}
 		}
 	}

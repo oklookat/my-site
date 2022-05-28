@@ -10,9 +10,9 @@
 		volumePercents
 	} from './store';
 	import { convertPercentsToCurrentTime, getPretty } from './utils';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import PlaybackControls from './playback_controls.svelte';
-	import { toggleBodyScroll } from '$elven/tools';
+	import Overlay from '$lib/components/overlay.svelte';
 
 	export let onClose: () => void;
 
@@ -39,13 +39,7 @@
 		currentTimePretty = getPretty(v);
 	});
 
-	let defScroll: () => void;
-	onMount(() => {
-		defScroll = toggleBodyScroll();
-	});
-
 	onDestroy(() => {
-		defScroll();
 		unsub1();
 	});
 
@@ -57,7 +51,7 @@
 	}
 </script>
 
-<div class="overlay base__overlay" on:click|self|stopPropagation={onClose}>
+<Overlay {onClose}>
 	<div class="main">
 		<div>
 			<div class="status">
@@ -89,81 +83,81 @@
 			</div>
 		</div>
 	</div>
-</div>
+</Overlay>
 
 <style lang="scss">
-	.overlay {
-		.main {
-			user-select: none;
-			background-color: var(--color-level-1);
-			border-radius: var(--border-radius);
-			height: 254px;
-			width: 304px;
-			@media screen and(max-width: 644px) {
-				max-width: 304px;
-				width: 95%;
-			}
-			padding: 24px;
+	.main {
+		align-self: center;
+		justify-self: center;
+		user-select: none;
+		background-color: var(--color-level-1);
+		border-radius: var(--border-radius);
+		height: 254px;
+		width: 304px;
+		@media screen and(max-width: 644px) {
+			max-width: 304px;
+			width: 95%;
+		}
+		padding: 24px;
 
-			> div {
-				width: 100%;
-				height: 100%;
+		> div {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			gap: 15%;
+
+			.status {
 				display: flex;
 				flex-direction: column;
-				gap: 15%;
+				gap: 14px;
 
-				.status {
+				.progress {
+					height: 16px;
+					position: relative;
 					display: flex;
-					flex-direction: column;
-					gap: 14px;
-
-					.progress {
-						height: 16px;
-						position: relative;
-						display: flex;
-						flex-direction: row;
-						.itself {
-							height: 100%;
-							width: 100%;
-							position: absolute;
-							z-index: 4;
-						}
-						.buffered {
-							background-color: var(--color-level-2);
-							height: 100%;
-						}
-					}
-
-					.time {
-						display: flex;
-						flex-direction: row;
-						justify-content: center;
-						height: max-content;
+					flex-direction: row;
+					.itself {
+						height: 100%;
 						width: 100%;
-						.current {
-							flex: 1;
-						}
+						position: absolute;
+						z-index: 4;
+					}
+					.buffered {
+						background-color: var(--color-level-2);
+						height: 100%;
 					}
 				}
 
-				.control {
-					align-self: center;
-					height: max-content;
-					width: max-content;
+				.time {
 					display: flex;
-					flex-direction: column;
-					align-items: center;
+					flex-direction: row;
 					justify-content: center;
-					gap: 64px;
-					.volume {
-						background-color: var(--color-level-2);
-						width: 134px;
-						height: 18px;
+					height: max-content;
+					width: 100%;
+					.current {
+						flex: 1;
 					}
-					.playback {
-						width: max-content;
-						height: max-content;
-					}
+				}
+			}
+
+			.control {
+				align-self: center;
+				height: max-content;
+				width: max-content;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 64px;
+				.volume {
+					background-color: var(--color-level-2);
+					width: 134px;
+					height: 18px;
+				}
+				.playback {
+					width: max-content;
+					height: max-content;
 				}
 			}
 		}

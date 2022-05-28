@@ -128,7 +128,7 @@
 </script>
 
 <div
-	class="uploader base__toolbar--big"
+	class="uploader"
 	on:click={() => onUploadClick()}
 	on:dragenter={onDrag}
 	on:dragleave={onDrag}
@@ -147,6 +147,7 @@
 
 <style lang="scss">
 	.uploader {
+		background-color: var(--color-level-1);
 		cursor: pointer;
 		width: 100%;
 		min-height: 64px;
