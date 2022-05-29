@@ -63,16 +63,17 @@
 </script>
 
 <div class="progress">
-	<div class="progress__line" style={`width: ${percents}%`} />
+	<div class="line" style={`width: ${percents}%`} />
 </div>
 
 <style lang="scss">
 	.progress {
+		z-index: 9999;
 		cursor: default;
 		position: absolute;
 		width: 100%;
 		height: 2px;
-		&__line {
+		.line {
 			height: 100%;
 			width: 0;
 			background-color: #a097dc;

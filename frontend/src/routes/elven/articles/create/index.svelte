@@ -42,7 +42,7 @@
 	import { browser } from '$app/env';
 	import TextareaResizer from '$elven/tools/textarea_resizer';
 	import { generateFileTypeSelector } from '$elven/tools/extension';
-	import Toolbar from '$elven/components/toolbar.svelte';
+	import Toolbar from '$lib/components/toolbar.svelte';
 	import ArticleCover from '$elven/components/article_cover.svelte';
 	import NetworkArticle from '$elven/network/article';
 	import FilesPortable from '$elven/components/files_portable.svelte';
@@ -92,7 +92,6 @@
 		const config = getEditorConfig(editorEL, article.content);
 		editor = new jmarkdModule(config);
 	});
-
 
 	const filesPortableParams = new Params<File>('file');
 	filesPortableParams.setParam(
@@ -164,7 +163,7 @@
 	</FilesPortable>
 {/if}
 
-<div class="create base__container">
+<div class="create">
 	<div class="toolbars">
 		<Toolbar>
 			<div class="last__saved">
@@ -175,7 +174,7 @@
 	</div>
 
 	<div
-		class="cover pointer with-border"
+		class="cover"
 		on:click={() => {
 			isChooseCover = !isChooseCover;
 		}}
@@ -207,12 +206,12 @@
 
 <style lang="scss">
 	.create {
+		max-width: $readable-max-width;
+		margin: auto;
 		display: flex;
 		flex-direction: column;
 		gap: 18px;
 
-		max-width: $readable-max-width;
-		margin: auto;
 		.toolbars,
 		.editable {
 			width: 100%;
@@ -221,61 +220,51 @@
 			flex-direction: column;
 			gap: 12px;
 		}
+
 		.editable {
 			width: 100%;
 		}
-	}
 
-	.cover {
-		position: relative;
-		// overflow for clipping child border
-		overflow: hidden;
-		background-color: var(--color-level-1);
-
-		display: flex;
-		flex-direction: column;
-
-		width: 100%;
-		height: 224px;
-		.remove {
-			width: 48px;
-			height: 48px;
-
-			z-index: 777;
-
-			top: 0;
-			right: 0;
-
-			background-color: inherit;
-
+		.cover {
+			min-height: 128px;
+			background-color: var(--color-level-1);
+			position: relative;
 			display: flex;
-			align-items: center;
-			justify-content: center;
-			align-self: flex-end;
 
-			border-bottom: var(--border);
-			border-left: var(--border);
-
-			&:hover {
-				background-color: var(--color-hover);
+			.itself, .remove {
+				cursor: pointer;
 			}
-		}
-		.upload {
-			width: 100%;
-			:global(svg) {
-				width: 40px;
-				height: 40px;
 
-				opacity: 0.5;
-				fill: var(--color-text);
+			.remove {
+				background-color: var(--color-level-1);
+				position: absolute;
+				width: 48px;
+				height: 48px;
+				top: 0;
+				right: 0;
+				z-index: 5;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				align-self: flex-end;
+
+				&:hover {
+					background-color: var(--color-hover);
+				}
 			}
-		}
-		.itself {
-			position: absolute;
-			height: max-content;
-			width: 100%;
-			display: flex;
-			justify-content: center;
+
+			.upload {
+				align-self: center;
+				justify-self: center;
+				width: 100%;
+				:global(svg) {
+					width: 40px;
+					height: 40px;
+
+					opacity: 0.5;
+					fill: var(--color-text);
+				}
+			}
 		}
 	}
 

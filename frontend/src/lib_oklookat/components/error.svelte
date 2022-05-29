@@ -23,7 +23,7 @@
 		flex-direction: column;
 		gap: 12px;
 		img {
-			margin-top: 12px;
+			padding-top: 12px;
 			max-width: 100%;
 		}
 		img,
@@ -39,7 +39,7 @@
 			color: aqua;
 		}
 		.long {
-			margin-top: 12px;
+			padding-top: 12px;
 			width: 100%;
 			height: 100%;
 			display: flex;

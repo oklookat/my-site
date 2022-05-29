@@ -147,7 +147,7 @@
 		.change-credentials {
 			width: 100%;
 			height: 100%;
-			margin-top: 24px;
+			padding-top: 24px;
 			display: flex;
 			flex-direction: column;
 			justify-content: center;

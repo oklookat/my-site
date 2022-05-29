@@ -6,10 +6,8 @@
 	export let items: Items<RAW>;
 </script>
 
-<div class="list">
-	{#if items && items.data}
-		{#each Object.entries(items.data) as [counter, article]}
-			<CArticle {article} />
-		{/each}
-	{/if}
-</div>
+{#if items && items.data}
+	{#each Object.entries(items.data) as [counter, article]}
+		<CArticle {article} />
+	{/each}
+{/if}

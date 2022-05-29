@@ -125,7 +125,7 @@
 
 		.itself,
 		.line {
-			background-color: #918ce6;
+			background-color: var(--color-text);
 		}
 		.itself {
 			border-top-left-radius: 2px;

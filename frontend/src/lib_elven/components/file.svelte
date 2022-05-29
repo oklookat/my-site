@@ -116,7 +116,7 @@
 				display: flex;
 				flex-direction: row;
 				gap: 14px;
-				margin-top: auto;
+				padding-top: auto;
 			}
 		}
 	}

@@ -1,14 +1,16 @@
 <script lang="ts">
+	import { cutString } from '$elven/tools';
+
 	import { fly } from 'svelte/transition';
 	import Overlay from './overlay.svelte';
-	export let title = "Title"
+	export let title = 'Title';
 	export let onClose: (e: MouseEvent) => void;
 </script>
 
 <Overlay {onClose}>
 	<div transition:fly={{ y: 1000, duration: 224 }} class="mobile">
 		<div class="title">
-			{title}
+			{cutString(title)}
 		</div>
 		<div class="content">
 			<slot />
@@ -18,18 +20,23 @@
 
 <style lang="scss">
 	.mobile {
+		word-break: break-word;
 		align-self: flex-end;
+		justify-self: center;
 		border-top-left-radius: 8px;
 		border-top-right-radius: 8px;
 		background-color: var(--color-body);
+		max-width: 724px;
 		width: 100%;
-		min-height: 50%;
-		height: max-content;
+		height: 50%;
+		overflow: auto;
 		display: grid;
 		grid-template-columns: 1fr;
 		grid-template-rows: max-content 1fr;
 		.title {
-			padding: 6px;
+			position: sticky;
+			top: 0;
+			padding: 12px;
 			width: 100%;
 			min-height: 25px;
 			border-radius: inherit;

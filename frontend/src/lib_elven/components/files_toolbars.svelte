@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Toolbar from '$elven/components/toolbar.svelte';
+	import Toolbar from '$lib/components/toolbar.svelte';
 	import SearchBar from '$elven/components/search_bar.svelte';
 	import { Start, type File } from '$elven/types/file';
 	import FilesUploader from '$elven/components/files_uploader.svelte';

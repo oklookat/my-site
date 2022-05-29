@@ -8,13 +8,13 @@
 	import { getUploadsURL, isTouchDevice } from '$elven/tools';
 	import OverlayMobile from '$lib/components/overlay_mobile.svelte';
 
-	/** file itself */
+	/** itself */
 	export let file: File;
 
-	/** click on file mouse event */
+	/** click that triggered this component */
 	export let mouseEvent: MouseEvent;
 
-	/** on file deleted */
+	/** on deleted */
 	export let onDeleted: () => void;
 
 	/** on actions closed */
@@ -56,7 +56,7 @@
 
 	/** delete file */
 	async function deleteFile() {
-		if (!window.$confirm || !onDeleted || !onDisabled) {
+		if (!window.$confirm) {
 			return;
 		}
 		onDisabled();
@@ -65,8 +65,10 @@
 			return;
 		}
 		try {
-			await NetworkFile.delete(file.id);
-			onDeleted();
+			const resp = await NetworkFile.delete(file.id);
+			if (resp.ok) {
+				onDeleted();
+			}
 		} catch (err) {}
 	}
 
@@ -79,7 +81,7 @@
 			await navigator.clipboard.writeText(formattedPath);
 			message = 'Link copied';
 		} catch (err) {
-			message = 'Not have permissions';
+			message = 'Not have permission';
 		}
 		window.$notify?.add({ message });
 		onDisabled();
@@ -89,17 +91,17 @@
 
 	/** preview image/video/etc */
 	function onPreview(enabled: boolean) {
-		if (enabled) {
-			const isValid = !!(file.pathConverted && file.extensionsSelector);
-			if (!isValid) {
-				return;
-			}
-			render.active = false;
-			isPreviewActive = true;
+		if (!enabled) {
+			onDisabled();
+			isPreviewActive = false;
 			return;
 		}
-		onDisabled();
-		isPreviewActive = false;
+		const isValid = !!(file.pathConverted && file.extensionsSelector);
+		if (!isValid) {
+			return;
+		}
+		render.active = false;
+		isPreviewActive = true;
 	}
 </script>
 
@@ -128,9 +130,7 @@
 
 			<div on:click={() => copyLink()}>copy link</div>
 
-			{#if onDeleted}
-				<div on:click={() => deleteFile()}>delete</div>
-			{/if}
+			<div on:click={() => deleteFile()}>delete</div>
 		</div>
 	</svelte:component>
 {/if}
@@ -142,8 +142,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: center;
-		> div {
+		> * {
 			cursor: pointer;
 			&:hover {
 				background-color: var(--color-hover);
@@ -152,19 +151,25 @@
 			align-items: center;
 			justify-content: center;
 		}
+		&.overlay,
+		&.context {
+			> * {
+				width: 100%;
+			}
+		}
 		&.overlay {
+			padding-top: 12px;
 			gap: 14px;
-			> div {
-				border-radius: 8px;
-				width: 50%;
+			// item
+			> * {
 				height: 64px;
 				background-color: var(--color-level-1);
 			}
 		}
 		&.context {
-			> div {
+			// item
+			> * {
 				height: 44px;
-				width: 100%;
 			}
 		}
 	}

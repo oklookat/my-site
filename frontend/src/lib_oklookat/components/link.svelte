@@ -6,9 +6,9 @@
 	$: onPathChanged($page.url.pathname)
 
     function onPathChanged(pathname: string) {
-        const isPropPathRoot = path === "/elven"
+        const isPropPathRoot = !path || path === "/"
         if(isPropPathRoot) {
-            highlightPath = pathname === "/elven"
+            highlightPath = pathname === "/"
             return
         }
         highlightPath = !!(path && path !== "/") && !!($page.url.pathname && $page.url.pathname.includes(path));

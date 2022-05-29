@@ -1,23 +1,34 @@
 <script lang="ts">
-	import { toggleBodyScroll } from '$elven/tools';
+	import { createBodyScrollToggler } from '$elven/tools';
 	import { fade } from 'svelte/transition';
 	import { onDestroy, onMount } from 'svelte';
+	import { browser } from '$app/env';
+	import Portal from 'svelte-portal/src/Portal.svelte';
 
 	export let onClose: (e: MouseEvent) => void;
 
-	let setDefScroll: () => void;
+	let toggleScroll: () => void;
 	onMount(() => {
-		setDefScroll = toggleBodyScroll();
+		if (!browser) {
+			return;
+		}
+		toggleScroll = createBodyScrollToggler();
+		toggleScroll();
 	});
 
 	onDestroy(() => {
-		setDefScroll();
+		if (!browser) {
+			return;
+		}
+		toggleScroll();
 	});
 </script>
 
-<div class="overlay" transition:fade={{duration: 120}} on:click|stopPropagation|self={onClose}>
-	<slot />
-</div>
+<Portal target="body">
+	<div class="overlay" transition:fade={{ duration: 120 }} on:click|stopPropagation|self={onClose}>
+		<slot />
+	</div>
+</Portal>
 
 <style lang="scss">
 	.overlay {

@@ -8,6 +8,7 @@
 	import Hamburger from './icons/hamburger.svelte';
 	import PlaybackControls from './playback_controls.svelte';
 	import PlaybackMenu from './playback_menu.svelte';
+	import { log } from '$elven/plugins/elvenPlayer/utils';
 
 	let isActive = false;
 
@@ -43,7 +44,7 @@
 			const newSrc = playlist.sources[playlist.currentPosition];
 
 			if (!newSrc) {
-				console.warn('[elvenPlayer] no sources in playlist.');
+				log('no sources in playlist');
 				return;
 			}
 
@@ -52,6 +53,7 @@
 				$currentSource &&
 				$currentSource.toString() === newSrc.toString()
 			);
+
 			if (isSameSource) {
 				if ($isPlaying) {
 					this.pause();
@@ -98,7 +100,6 @@
 		if (!browser) {
 			return;
 		}
-		console.log('MOUNT');
 		window.$player = new Plugin();
 	});
 
@@ -106,7 +107,6 @@
 		if (!browser) {
 			return;
 		}
-		console.log('DESTROY');
 		close();
 		window.$player = undefined;
 	});
@@ -187,9 +187,9 @@
 
 		> div {
 			height: 100%;
-			width: 95%;
+			width: 100%;
 			margin: auto;
-			div {
+			> div {
 				width: max-content;
 				height: 100%;
 				display: flex;
@@ -206,7 +206,12 @@
 				width: 100%;
 			}
 
+			.menu {
+				padding-left: 12px;
+			}
+
 			.close {
+				padding-right: 12px;
 				justify-self: flex-end;
 			}
 		}

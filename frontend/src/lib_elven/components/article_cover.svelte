@@ -29,8 +29,8 @@
 {#if isCoverExists}
 	{#if extensionSelector.selected === 'IMAGE'}
 		<div class="image">
-			<img class="image__main" src={fullPath} alt="cover" />
-			<div class="image__blurred" style={`background-image: url(${fullPath})`} />
+			<div class="blurred" style={`background-image: url(${fullPath})`} />
+			<img class="main" src={fullPath} alt="cover" />
 		</div>
 	{:else if extensionSelector.selected === 'VIDEO'}
 		<div class="video">
@@ -43,40 +43,31 @@
 	.image,
 	.video {
 		width: 100%;
-		height: 224px;
+		max-width: 1366px;
 
 		display: flex;
 		justify-content: center;
 		:global(img),
 		:global(video) {
 			object-fit: fill;
-			width: 100%;
-			height: 100%;
+			max-width: inherit;
 		}
-	}
-
-	.image,
-	.video {
-		height: 224px;
-		width: 100%;
-	}
-
-	.image__main {
-		max-width: $desktop-max-card-width;
 	}
 
 	.image {
 		position: relative;
 		overflow: hidden;
-		&__main {
+		.main,
+		.blurred {
 			width: 100%;
-			position: absolute;
 			height: 100%;
-			z-index: 7;
+		}
+		.main {
+			position: relative;
 			background-size: cover;
 		}
-		&__blurred {
-			width: 100%;
+		.blurred {
+			position: absolute;
 			filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='a' x='0' y='0' width='1' height='1'%3E%3CfeGaussianBlur stdDeviation='76' primitiveUnits='userSpaceOnUse' result='b'/%3E%3CfeMorphology operator='dilate' /%3E %3CfeMerge%3E%3CfeMergeNode/%3E%3CfeMergeNode in='b'/%3E%3C/feMerge%3E%3C/filter%3E%3C/svg%3E#a");
 			background-repeat: no-repeat;
 			background-size: cover;

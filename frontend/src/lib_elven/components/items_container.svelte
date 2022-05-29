@@ -18,10 +18,10 @@
 		display: grid;
 		grid-template-rows: max-content 1fr max-content;
 		grid-template-columns: 1fr;
-		gap: 16px;
+		gap: 14px;
 
 		:global(.list > div) {
-			padding-top: 12px;
+			//padding-top: 12px;
 			width: 100%;
 			height: 100%;
 			min-height: 42px;
@@ -36,7 +36,7 @@
 			}
 		}
 
-		:global(.pages > div){
+		:global(.pages > div) {
 			width: 100%;
 			height: max-content;
 			display: flex;

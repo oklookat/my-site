@@ -54,7 +54,7 @@
 <style lang="scss">
 	.ohno {
 		min-height: 100%;
-		margin: 12px;
+		padding: 12px;
 		display: grid;
 		grid-template-rows: 1fr auto;
 		align-items: center;

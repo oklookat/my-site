@@ -23,10 +23,8 @@
 	}
 </script>
 
-<div class="list">
-	{#if items && items.data}
-		{#each Object.entries(items.data) as [counter, article]}
-			<CArticle {article} on:deleted={() => onDeleted(parseInt(counter, 10))} />
-		{/each}
-	{/if}
-</div>
+{#if items && items.data}
+	{#each Object.entries(items.data) as [counter, article]}
+		<CArticle {article} on:deleted={() => onDeleted(parseInt(counter, 10))} />
+	{/each}
+{/if}

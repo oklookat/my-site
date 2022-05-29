@@ -4,22 +4,22 @@
 		const output = {
 			stuff: stuff
 		};
-		stuff.title = "settings";
+		stuff.title = 'settings';
 		return output;
 	};
 </script>
 
 <script lang="ts">
 	import AccountSettings from '$elven/components/settings_account.svelte';
-	import ToolbarBig from '$elven/components/toolbar_big.svelte';
-	
+	import Toolbar from '$lib/components/toolbar.svelte';
+
 	import type { Load } from '@sveltejs/kit';
 </script>
 
 <div class="settings">
-	<ToolbarBig>
+	<Toolbar>
 		<a href="/elven/logout">log out</a>
-	</ToolbarBig>
+	</Toolbar>
 
 	<AccountSettings />
 </div>

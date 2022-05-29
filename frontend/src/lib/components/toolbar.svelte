@@ -1,4 +1,4 @@
-<div class="toolbar base__toolbar">
+<div class="toolbar">
 	<div class="content">
 		<slot />
 	</div>
@@ -13,11 +13,15 @@
 		.content {
 			border: 1px solid var(--color-border);
 			background-color: var(--color-level-1);
+			min-height: 48px;
 			height: max-content;
 			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
 			flex-direction: row;
 			gap: 12px;
-			padding: 12px;
+			padding: 10px;
+			font-size: 1rem;
 			:global(> *) {
 				cursor: pointer;
 				height: 100%;

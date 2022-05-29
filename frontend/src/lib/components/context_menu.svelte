@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { correctElementOverflow } from '$elven/tools';
 	import { onMount } from 'svelte';
+	import Portal from 'svelte-portal/src/Portal.svelte';
 
 	export let mouseEvent: MouseEvent;
 
@@ -53,9 +54,11 @@
 </script>
 
 <svelte:window on:click={onDocumentClick} />
-<div class="context" bind:this={contextEL}>
-	<slot />
-</div>
+<Portal target="body">
+	<div class="context" bind:this={contextEL}>
+		<slot />
+	</div>
+</Portal>
 
 <style lang="scss">
 	.context {

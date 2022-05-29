@@ -16,8 +16,11 @@
 </script>
 
 <header>
-	<div class="hamburger" on:click={() => toggleHamburger()}>
-		<Hamburger />
+	<div class="items">
+		<div class="hamburger" on:click={() => toggleHamburger()}>
+			<div><Hamburger /></div>
+		</div>
+		<a href="/elven"><b>elven</b></a>
 	</div>
 </header>
 
@@ -38,66 +41,3 @@
 		</div>
 	</HamburgerMenu>
 {/if}
-
-<style lang="scss">
-	header {
-		position: sticky;
-		top: 0;
-		z-index: 99;
-		height: 44px;
-		width: 100%;
-		//
-		padding: 6px;
-		background-color: var(--color-level-1);
-		display: flex;
-		align-items: center;
-		* {
-			height: 100%;
-			display: flex;
-			align-items: center;
-			cursor: pointer;
-		}
-
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: 14px;
-
-		.hamburger {
-			height: 100%;
-			width: 24px;
-		}
-	}
-
-	.navigateme {
-		background-color: var(--color-level-1);
-		font-weight: bold;
-		height: 100%;
-		min-width: 94px;
-		width: max-content;
-		&,
-		nav {
-			display: flex;
-			flex-wrap: wrap;
-			flex-direction: column;
-		}
-		hr,
-		nav {
-			width: 100%;
-		}
-		nav {
-			// nav item
-			:global(*) {
-				min-height: 44px;
-				height: max-content;
-				width: 100%;
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				&:hover {
-					background-color: var(--color-level-2);
-				}
-			}
-		}
-	}
-</style>

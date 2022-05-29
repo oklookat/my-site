@@ -1,14 +1,26 @@
 <script lang="ts">
+	import { browser } from '$app/env';
+
+	import { createBodyScrollToggler } from '$elven/tools';
+
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import { fly, fade } from 'svelte/transition';
 
 	const dispatch = createEventDispatcher<{ closed: void }>();
+	let toggleScroll: () => void;
 
 	onMount(() => {
-		document.body.classList.add('no-scroll');
+		if (!browser) {
+			return;
+		}
+		toggleScroll = createBodyScrollToggler();
+		toggleScroll();
 	});
 	onDestroy(() => {
-		document.body.classList.remove('no-scroll');
+		if (!browser) {
+			return;
+		}
+		toggleScroll();
 	});
 </script>
 
@@ -26,7 +38,7 @@
 	.hamburger {
 		overflow: hidden;
 		background-color: rgba(0, 0, 0, 0.4);
-		z-index: 9998;
+		z-index: 9999;
 		max-width: 100vw;
 		width: 100%;
 		height: 100%;
@@ -38,6 +50,7 @@
 		.menu {
 			border-right: 1px solid var(--color-border);
 			height: 100%;
+			min-width: 104px;
 			max-width: max-content;
 		}
 	}

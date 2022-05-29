@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import Toolbar from '$elven/components/toolbar.svelte';
+	import Toolbar from '$lib/components/toolbar.svelte';
 	import { By, type RAW } from '$elven/types/article';
 	import SearchBar from '$elven/components/search_bar.svelte';
 	import type { Params, RPH_Event } from '$elven/tools/params';
-	
+	import OverlayMobile from '$lib/components/overlay_mobile.svelte';
 
 	export let params: Params<RAW>;
 
@@ -18,6 +18,8 @@
 		/** on request param changed */
 		paramChanged: RPH_Event<RAW>;
 	}>();
+
+	let isFiltersActive = false;
 
 	/** set 'by' param and get articles */
 	function setBy(by: By = By.published) {
@@ -46,12 +48,32 @@
 	}
 </script>
 
+{#if isFiltersActive}
+	<OverlayMobile title="filters" onClose={() => (isFiltersActive = false)}>
+		<div class="filters">
+			<div on:click={() => toggleDrafts()}>
+				show: {params.getParam('drafts') ? 'drafts' : 'published'}
+			</div>
 
+			<div on:click={() => toggleNewest()}>
+				age: {params.getParam('newest') ? 'newest' : 'oldest'}
+			</div>
+
+			{#if params.getParam('by') === By.updated}
+				<div on:click={() => setBy(By.published)}>by: updated date</div>
+			{:else if params.getParam('by') === By.published}
+				<div on:click={() => setBy(By.created)}>by: published date</div>
+			{:else if params.getParam('by') === By.created}
+				<div on:click={() => setBy(By.updated)}>by: created date</div>
+			{/if}
+		</div>
+	</OverlayMobile>
+{/if}
 
 <div class="toolbars">
 	<Toolbar>
 		<a href="/elven/articles/create">new</a>
-		<div>filters</div>
+		<div on:click={() => (isFiltersActive = !isFiltersActive)}>filters</div>
 	</Toolbar>
 
 	<div class="search">
@@ -59,33 +81,23 @@
 	</div>
 </div>
 
-<!-- <div class="toolbars">
-	<Toolbar>
-		<div>
-			<div class="pointer" on:click={() => toggleDrafts()}>
-				{params.getParam('drafts') ? 'drafts' : 'published'}
-			</div>
-		</div>
-
-		<div>
-			<div class="pointer" on:click={() => toggleNewest()}>
-				{params.getParam('newest') ? 'newest' : 'oldest'}
-			</div>
-		</div>
-
-		<div>
-			{#if params.getParam('by') === By.updated}
-				<div class="pointer" on:click={() => setBy(By.published)}>by updated date</div>
-			{:else if params.getParam('by') === By.published}
-				<div class="pointer" on:click={() => setBy(By.created)}>by published date</div>
-			{:else if params.getParam('by') === By.created}
-				<div class="pointer" on:click={() => setBy(By.updated)}>by created date</div>
-			{/if}
-		</div>
-	</Toolbar>
-</div> -->
-
 <style lang="scss">
+	.filters {
+		padding-top: 6px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 12px;
+		div {
+			height: 64px;
+			padding: 6px;
+			background-color: var(--color-level-1);
+			cursor: pointer;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+	}
 	.toolbars {
 		height: 104px;
 		display: flex;

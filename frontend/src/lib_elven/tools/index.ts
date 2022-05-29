@@ -1,4 +1,4 @@
-import type { LoadInput } from '@sveltejs/kit';
+import type { LoadEvent } from '@sveltejs/kit';
 import * as cookie from 'cookie';
 
 // @ts-ignore
@@ -114,7 +114,7 @@ export function addTokenToHeaders(token: string, headers: Headers) {
 	headers.append('Authorization', `Elven ${token}`);
 }
 
-export function getTokenFromSession(e: LoadInput): string {
+export function getTokenFromSession(e: LoadEvent): string {
 	return e.session.user.token || '';
 }
 
@@ -149,19 +149,19 @@ export function stringToNormal(value: any): boolean | number | string {
 	try {
 		const converted = stringToUndefinedOrNull(value);
 		return converted;
-	} catch (err) {}
+	} catch (err) { }
 
 	// try to bool
 	try {
 		const converted = stringToBool(value);
 		return converted;
-	} catch (err) {}
+	} catch (err) { }
 
 	// try to number
 	try {
 		const converted = stringToNumber(value);
 		return converted;
-	} catch (err) {}
+	} catch (err) { }
 
 	return `${value}`;
 }
@@ -352,23 +352,44 @@ export function searchParamsByObject(data: Record<string | number, any>): URLSea
 	return params;
 }
 
-/** first call = store default body 'no-scroll' / set 'no-scroll'
+/** first call = store default body 'no-scroll'
  *
- * second call = remove 'no-scroll' if not exists before
+ * second call = set no-scroll if not exists
+ * 
+ * third call = remove no-scroll if body not have it on first call
+ * 
+ * @returns body scroll toggle function
  */
-export function toggleBodyScroll() {
-	if (typeof document === 'undefined') {
-		return () => {};
-	}
-	const noScrollBefore = document.body.classList.contains('no-scroll');
-	if (!noScrollBefore) {
-		document?.body.classList.add('no-scroll');
-	}
+export function createBodyScrollToggler(): () => void {
+	let active = false
 	return () => {
-		if (noScrollBefore || !document) {
-			return;
+		if (typeof document === 'undefined') {
+			console.warn("[createBodyScrollToggler] toggle on client-side, not server")
+			return
 		}
-		document.body.classList.remove('no-scroll');
+
+		const classNames = document.body.className.split(" ")
+
+		if (!active) {
+			classNames.push("no-scroll")
+			document.body.className = classNames.join(" ").trim()
+			active = true
+			return
+		}
+
+		for (let i = 0; i < classNames.length; i++) {
+			const className = classNames[i]
+			if (!className) {
+				delete classNames[i]
+				continue
+			}
+			if (className === "no-scroll") {
+				delete classNames[i]
+				break
+			}
+		}
+		document.body.className = classNames.join(" ").trim()
+		active = false
 	};
 }
 

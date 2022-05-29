@@ -14,11 +14,6 @@
 	}
 }
 
-.pointer {
-	cursor: pointer;
-	user-select: none;
-}
-
 // e l v e n
 .logo__text {
 	font-size: 1.2rem;
@@ -36,25 +31,6 @@
 	overflow: hidden;
 }
 
-.big {
-	font-size: 1.5rem;
-	font-weight: bold;
-	margin-bottom: 6px;
-}
-
-.block {
-	background-color: var(--color-level-1);
-	border-radius: var(--border-radius);
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	gap: 8px;
-}
-
-.border-red {
-	border-color: red;
-}
-
 .button {
 	background-color: var(--color-level-2);
 	border-radius: var(--border-radius);
@@ -66,13 +42,8 @@
 	cursor: pointer;
 
 	* {
-		margin: 4px;
+		padding: 4px;
 	}
-}
-
-.with-border {
-	border-radius: var(--border-radius);
-	border: var(--border);
 }
 
 // https://stackoverflow.com/a/36793814

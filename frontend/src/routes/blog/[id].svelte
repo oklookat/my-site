@@ -49,7 +49,7 @@
 </script>
 
 {#if article}
-	<article class="base__container">
+	<article>
 		<div class="article__content">
 			<h1>{article.title}</h1>
 			<ArticleCover {article} />

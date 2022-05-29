@@ -45,7 +45,7 @@
 </script>
 
 <script lang="ts">
-	import Sidebar from '$elven/components/header.svelte';
+	import Header from '$elven/components/header.svelte';
 	import ServiceWrapper from '$elven/components/service_wrapper.svelte';
 	import Progress from '$elven/plugins/elvenProgress/progress.svelte';
 	import { isAdminPanelLoginPage } from '$elven/tools';
@@ -61,7 +61,7 @@
 <div class="container">
 	<Progress />
 	{#if isAdmin}
-		<Sidebar />
+		<Header />
 	{/if}
 
 	<main>
@@ -73,9 +73,6 @@
 
 <style lang="scss">
 	.container {
-		font-size: 1.1rem;
-		line-height: 1.46rem;
-		letter-spacing: 0.0007rem;
 		word-break: break-word;
 		min-height: 100vh;
 		display: grid;

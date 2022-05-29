@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { browser } from '$app/env';
 	import Overlay from '$lib/components/overlay.svelte';
-	import { toggleBodyScroll } from '$elven/tools';
 	import { onDestroy, onMount } from 'svelte';
 
 	let isActive = false;
 	let titled = '';
 	let question = '';
 	let resolver: (value: boolean | PromiseLike<boolean>) => void;
-	let resetNoScroll: () => void;
 
 	async function plugin(title: string, warningText?: string): Promise<boolean> {
 		titled = title;
@@ -20,7 +18,6 @@
 	}
 
 	onMount(() => {
-		resetNoScroll = toggleBodyScroll();
 		window.$confirm = plugin;
 	});
 
@@ -28,53 +25,39 @@
 		if (!browser) {
 			return;
 		}
-		deactivate();
 		window.$confirm = undefined;
+		resolveResolver(false);
 	});
 
-	function deactivate() {
-		resetNoScroll();
+	function resolveResolver(state: boolean) {
 		isActive = false;
+		if (resolver) {
+			resolver(state);
+		}
 	}
 
-	function onClickContainer(e: MouseEvent) {
-		if (!resolver) {
-			return;
-		}
-		deactivate();
-		resolver(false);
+	function onClose() {
+		resolveResolver(false);
 	}
 
-	function onClickYes(e: MouseEvent) {
-		if (!resolver) {
-			return;
-		}
-		deactivate();
-		resolver(true);
-	}
-
-	function onClickNo(e: MouseEvent) {
-		if (!resolver) {
-			return;
-		}
-		deactivate();
-		resolver(false);
+	function onYes() {
+		resolveResolver(true);
 	}
 </script>
 
 {#if isActive}
-	<Overlay onClose={onClickContainer}>
+	<Overlay {onClose}>
 		<div class="confirm">
 			<div class="attention">
 				<b class="title">{titled}</b>
 				<div class="question">{question}</div>
 			</div>
 			<div class="accept">
-				<div class="no" on:click={onClickNo}>no</div>
+				<div class="no" on:click={onClose}>no</div>
 
 				<span class="divider" />
 
-				<div class="yes" on:click={onClickYes}>yes</div>
+				<div class="yes" on:click={onYes}>yes</div>
 			</div>
 		</div>
 	</Overlay>
@@ -119,7 +102,8 @@
 				align-items: center;
 				justify-content: center;
 			}
-			.no, .yes {
+			.no,
+			.yes {
 				&:hover {
 					background-color: var(--color-hover);
 				}

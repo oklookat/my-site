@@ -10,7 +10,9 @@
 	import FilesToolbars from '$elven/components/files_toolbars.svelte';
 	import { Params, Refresh, type RPH_Event } from '$elven/tools/params';
 	import type { Unsubscriber } from 'svelte/store';
-	import { toggleBodyScroll } from '$elven/tools';
+	import Overlay from '$lib/components/overlay.svelte';
+	import ItemsContainer from '$elven/components/items_container.svelte';
+	import Back from '$lib/icons/back.svelte';
 
 	const dispatch = createEventDispatcher<{
 		/** on 'select' option clicked on file */
@@ -49,7 +51,6 @@
 		Store.files.selected.set(null);
 	}
 
-	let setDefScroll: () => void;
 	onMount(async () => {
 		if (!browser) {
 			return;
@@ -58,16 +59,11 @@
 			params = new Params<File>('file');
 		}
 		initStore();
-		setDefScroll = toggleBodyScroll();
 		await getAll();
 	});
 
 	onDestroy(() => {
 		destroyStore();
-		if (!browser) {
-			return;
-		}
-		setDefScroll();
 	});
 
 	/** get all files */
@@ -124,78 +120,77 @@
 		params.setParam(event.name, event.val);
 		await getAll();
 	}
+
+	function onClose(e: MouseEvent) {
+		dispatch('closed');
+	}
 </script>
 
-<div class="overlay base__overlay">
-	<div class="overlay__main">
-		<div
-			class="back"
-			on:click={() => {
-				dispatch('closed');
-			}}
-		>
-			<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-				<rect id="view-box" width="24" height="24" fill="none" />
-				<path
-					d="M.22,10.22A.75.75,0,0,0,1.28,11.28l5-5a.75.75,0,0,0,0-1.061l-5-5A.75.75,0,0,0,.22,1.28l4.47,4.47Z"
-					transform="translate(14.75 17.75) rotate(180)"
-				/>
-			</svg>
-
-			<div class="back__title">
-				<slot name="back-title" />
+<Overlay {onClose}>
+	<div class="portable">
+		<div class="back" on:click={onClose}>
+			<div class="icon">
+				<Back />
 			</div>
+
+			<slot name="back-title" />
 		</div>
 
-		<div class="base__container">
-			<FilesToolbars
-				bind:params
-				on:paramChanged={async (e) => await onParamChanged(e.detail)}
-				on:uploaded={async () => await onUploaded()}
-			/>
-
-			<FilesList {items} on:deleted={async () => await refresh()} />
-
-			<div class="pages">
-				{#if items && items.meta}
-					<Pagination
-						bind:total={items.meta.total_pages}
-						bind:current={items.meta.current_page}
-						on:changed={async (e) => await onPageChanged(e.detail)}
+		<div class="content">
+			<ItemsContainer>
+				<div slot="up">
+					<FilesToolbars
+						bind:params
+						on:uploaded={async () => await onUploaded()}
+						on:paramChanged={async (e) => await onParamChanged(e.detail)}
 					/>
-				{/if}
-			</div>
+				</div>
+
+				<div slot="list">
+					<FilesList {items} on:deleted={async () => await refresh()} />
+				</div>
+
+				<div slot="pages">
+					{#if items && items.meta}
+						<Pagination
+							total={items.meta.total_pages}
+							current={params.getParam('page')}
+							on:changed={async (e) => await onPageChanged(e.detail)}
+						/>
+					{/if}
+				</div>
+			</ItemsContainer>
 		</div>
 	</div>
-</div>
+</Overlay>
 
 <style lang="scss">
-	.overlay {
-		z-index: 7000;
+	.portable {
+		overflow: auto;
 		background-color: var(--color-body);
-		display: block;
-		&__main {
-			z-index: 8000;
-			overflow: auto;
+		width: 100%;
+		height: 100%;
+
+		display: grid;
+		grid-template-rows: max-content 1fr auto;
+
+		.back {
+			cursor: pointer;
+			width: 100%;
+			height: 48px;
+			background-color: var(--color-level-1);
+			display: flex;
+			align-items: center;
+			.icon {
+				height: 100%;
+				width: 30px;
+			}
+		}
+
+		.content {
 			width: 100%;
 			height: 100%;
-
-			display: grid;
-			grid-template-rows: max-content 1fr auto;
-			gap: 12px;
-
-			.back {
-				cursor: pointer;
-				width: 100%;
-				height: 48px;
-				background-color: var(--color-level-1);
-				display: flex;
-				align-items: center;
-				svg {
-					width: 30px;
-					fill: var(--color-text);
-				}
-			}
+			padding: 12px;
 		}
 	}
 </style>

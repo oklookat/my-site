@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import type { FileTypeSelector } from '$elven/tools/extension';
 
-	import { toggleBodyScroll } from '$elven/tools';
 	import Overlay from '$lib/components/overlay.svelte';
 
 	/** on preview closed */
@@ -19,10 +18,7 @@
 	let isAudio = false;
 	let isSupported = false;
 
-	let setDefScroll: () => void;
 	onMount(() => {
-		setDefScroll = toggleBodyScroll();
-
 		// check support
 		isImage = extension.selected === 'IMAGE';
 		isVideo = extension.selected === 'VIDEO';
@@ -40,20 +36,11 @@
 		}
 	});
 
-	onDestroy(() => {
-		setDefScroll();
-	});
-
 	/** play audio by url */
 	function playAudio() {
-		if (!window.$player) {
-			console.error("player not initialized. Why?")
-			onClose();
-			return;
-		}
-		window.$player.clearPlaylist();
-		window.$player.addToPlaylist(url);
-		window.$player.play();
+		window.$player?.clearPlaylist();
+		window.$player?.addToPlaylist(url);
+		window.$player?.play();
 		onClose();
 	}
 </script>

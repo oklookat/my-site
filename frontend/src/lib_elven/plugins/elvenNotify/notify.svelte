@@ -37,7 +37,7 @@
 		width: 100%;
 		z-index: 9999;
 		bottom: 0;
-		margin-bottom: 8px;
+		padding-bottom: 8px;
 		position: fixed;
 		overflow: hidden;
 
@@ -52,7 +52,7 @@
 		}
 
 		@include _desktop() {
-			margin-right: 12px;
+			padding-right: 12px;
 			height: min-content;
 			width: 224px;
 			right: 0;

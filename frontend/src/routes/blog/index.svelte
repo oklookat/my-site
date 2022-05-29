@@ -39,10 +39,10 @@
 </script>
 
 <script lang="ts">
-	
 	import Pagination from '$lib/components/pagination.svelte';
 	import ArticlesToolbars from '$oklookat/components/articles_toolbars.svelte';
 	import ArticlesList from '$oklookat/components/articles_list.svelte';
+	import ItemsContainer from '$elven/components/items_container.svelte';
 
 	/** articles data */
 	export let items: Items<RAW>;
@@ -64,12 +64,16 @@
 	}
 </script>
 
-<div class="articles base__container">
-	<ArticlesToolbars bind:params on:paramChanged={async (e) => await onParamChanged(e.detail)} />
+<ItemsContainer>
+	<div slot="up">
+		<ArticlesToolbars bind:params on:paramChanged={async (e) => await onParamChanged(e.detail)} />
+	</div>
 
-	<ArticlesList bind:items />
+	<div slot="list">
+		<ArticlesList bind:items />
+	</div>
 
-	<div class="pages">
+	<div slot="pages">
 		{#if items.meta}
 			<Pagination
 				bind:total={items.meta.total_pages}
@@ -78,4 +82,4 @@
 			/>
 		{/if}
 	</div>
-</div>
+</ItemsContainer>

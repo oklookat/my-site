@@ -71,3 +71,7 @@ export function convertCurrentTimePretty(currentTime: number, duration: number):
 export function convertPercentsToCurrentTime(percents: number, duration: number): number {
 	return (duration / 100) * percents;
 }
+
+export function log(message: string) {
+	console.log(`[elvenPlayer] ${message}`)
+}

@@ -74,13 +74,13 @@
 		align-items: center;
 		gap: 18px;
 		&__logo {
-			margin-bottom: 16px;
+			padding-bottom: 16px;
 		}
 		&__inputs {
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			margin-top: 108px;
+			padding-top: 108px;
 			gap: 14px;
 			> input {
 				height: 48px;

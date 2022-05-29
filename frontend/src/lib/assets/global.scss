@@ -46,7 +46,7 @@ body {
 	color: var(--color-text);
 	background-color: var(--color-body);
 	text-underline-offset: 0.4em;
-	> div {
+	&:first-child {
 		height: 100%;
 	}
 }
@@ -67,12 +67,15 @@ a {
 	text-decoration: none;
 }
 
+hr {
+	margin: unset;
+}
+
 input {
 	color: var(--color-text);
 	background-color: var(--color-level-1);
 	border: 1px solid var(--color-border);
 	min-height: 24px;
-	border-radius: 4px;
 	text-indent: 6px;
 
 	&::placeholder {
@@ -99,7 +102,6 @@ button {
 	}
 }
 
-h1,
 pre,
 p {
 	margin: 0;
@@ -107,13 +109,4 @@ p {
 
 pre {
 	overflow: auto;
-}
-
-.jmarkd__preview,
-.article__content {
-	min-width: 0;
-	width: 100%;
-	display: grid;
-	flex-direction: column;
-	gap: 24px;
 }
