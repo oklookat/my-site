@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/env';
-	import Portal from 'svelte-portal/src/Portal.svelte';
+	import Portal from "@oklookat/svelte-portal"
 
 	export let onClose: (e: MouseEvent) => void;
 

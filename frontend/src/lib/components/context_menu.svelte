@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { correctElementOverflow } from '$elven/tools';
 	import { onMount } from 'svelte';
-	import Portal from 'svelte-portal/src/Portal.svelte';
+	import Portal from "@oklookat/svelte-portal"
 
 	export let mouseEvent: MouseEvent;
 
