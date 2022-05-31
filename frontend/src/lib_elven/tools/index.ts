@@ -415,3 +415,27 @@ export function saveTwoAfterDot(val: number) {
 	const resultString = dotsSplit.join('.');
 	return Number(resultString);
 }
+
+/**
+ * generate random background and contrast text
+ * 
+ * @see https://stackoverflow.com/questions/11867545/change-text-color-based-on-brightness-of-the-covered-background-area
+ * @returns color for text and background (already in rgb format)
+ */
+export function randomColors(): { text: string; background: string } {
+	const rgb = [255, 0, 0];
+
+	// Randomly update colours
+	rgb[0] = Math.round(Math.random() * 255);
+	rgb[1] = Math.round(Math.random() * 255);
+	rgb[2] = Math.round(Math.random() * 255);
+
+	// http://www.w3.org/TR/AERT#color-contrast
+	const brightness = Math.round((rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000);
+	const textColour = brightness > 125 ? 'black' : 'white';
+	const backgroundColour = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+	return {
+		text: textColour,
+		background: backgroundColour
+	};
+}

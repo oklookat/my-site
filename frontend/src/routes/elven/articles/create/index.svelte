@@ -230,6 +230,7 @@
 			background-color: var(--color-level-1);
 			position: relative;
 			display: flex;
+			justify-content: center;
 
 			.itself, .remove {
 				cursor: pointer;
@@ -256,6 +257,7 @@
 			.upload {
 				align-self: center;
 				justify-self: center;
+				min-height: inherit;
 				width: 100%;
 				:global(svg) {
 					width: 40px;

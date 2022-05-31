@@ -1,3 +1,17 @@
+<script lang="ts" context="module">
+	import type { LoadEvent } from "@sveltejs/kit";
+
+
+	export const load = async (e: LoadEvent) => {
+		const stuff = e.stuff
+		stuff.title = "заплетакер"
+		return {
+			status: 200,
+			stuff: stuff
+		}
+	}
+</script>
+
 <script lang="ts">
 	class ThePartner {
 		public exists = false;
@@ -34,7 +48,7 @@
 	let finalWords: string[] = [];
 	function finalWordsMakeCursed() {
 		if (partners.w1?.exists && partners.w2?.exists) {
-			// свап
+			// swap
 			finalWords[partners.w1.index] = partners.w2.first + partners.w1.second;
 			finalWords[partners.w2.index] = partners.w1.first + partners.w2.second;
 
@@ -76,7 +90,7 @@
 			partners.w2 = new ThePartner();
 		}
 
-		for (let i = 0; i < splitted.length; i++) {
+		for (let i = 0; i < 2; i++) {
 			const word = splitted[i];
 
 			// skip small words
@@ -114,16 +128,22 @@
 </script>
 
 <div class="zapletaker">
-	<div class="text">
-		<div>Текст:</div>
-		<input type="text" bind:value={inputVal} />
+	<div class="desc">
+		<h1>Заплетакер</h1>
+		<div>введи два слова — получишь заплетак</div>
 	</div>
-	<div class="madness">
-		<div>Упоротость:</div>
-		<input type="range" min="1" max={maxCutLen} bind:value={cutLen} />
+	<div class="main">
+		<div class="text">
+			<b>Два слова:</b>
+			<input type="text" bind:value={inputVal} />
+		</div>
+		<div class="madness">
+			<b>Упоротость:</b>
+			<input type="range" min="1" max={maxCutLen} bind:value={cutLen} />
+		</div>
 	</div>
 	<div class="result">
-		<h1>{finalVal}</h1>
+		<h1>{finalVal ? finalVal : "Тут будет результат"}</h1>
 	</div>
 </div>
 
@@ -135,13 +155,39 @@
 		gap: 14px;
 		align-items: center;
 		justify-content: center;
-		.madness,
-		.text {
+		gap: 64px;
+		.desc {
 			display: flex;
 			flex-direction: column;
-			justify-content: center;
 			align-items: center;
-			gap: 12px;
+		}
+		.main {
+			height: 100%;
+			width: 100%;
+			max-width: 324px;
+			margin: auto;
+			display: flex;
+			flex-direction: column;
+			gap: 24px;
+			b {
+				font-size: 1.4rem;
+			}
+			input {
+				height: 44px;
+				width: 100%;
+				font-size: inherit;
+			}
+			.madness,
+			.text {
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				gap: 12px;
+			}
+			.result {
+				align-self: center;
+			}
 		}
 	}
 </style>

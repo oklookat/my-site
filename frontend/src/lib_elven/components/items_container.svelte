@@ -13,7 +13,7 @@
 
 	.items {
 		margin: auto;
-		max-width: 744px;
+		max-width: 690px;
 		height: 100%;
 		display: grid;
 		grid-template-rows: max-content 1fr max-content;

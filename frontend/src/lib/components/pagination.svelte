@@ -77,7 +77,7 @@
 	<div class="paginator">
 		<div class="prev">
 			{#if current > 1}
-				<div class="prev__butt pointer center" on:click={onPrevButton} />
+				<div class="butt pointer center" on:click={onPrevButton} />
 			{/if}
 		</div>
 
@@ -92,7 +92,7 @@
 
 		<div class="next">
 			{#if current < total}
-				<div class="next__butt pointer center" on:click={onNextButton} />
+				<div class="butt pointer center" on:click={onNextButton} />
 			{/if}
 		</div>
 	</div>
@@ -137,14 +137,15 @@
 			grid-template-columns: repeat(3, 1fr);
 			.prev,
 			.next {
-				&__butt {
-					background: var(--color-level-2);
+				.butt {
+					cursor: pointer;
+					background-color: var(--color-level-2);
 					width: 100%;
 					height: 100%;
 				}
 			}
 			.prev {
-				&__butt {
+				.butt {
 					border-radius: var(--border-radius) 0 0 var(--border-radius);
 				}
 			}
@@ -165,7 +166,7 @@
 				}
 			}
 			.next {
-				&__butt {
+				.butt {
 					border-radius: 0 var(--border-radius) var(--border-radius) 0;
 				}
 			}
