@@ -45,11 +45,13 @@
 </script>
 
 <script lang="ts">
-	import Header from '$elven/components/header.svelte';
-	import ServiceWrapper from '$elven/components/service_wrapper.svelte';
 	import Progress from '$elven/plugins/elvenProgress/progress.svelte';
 	import { isAdminPanelLoginPage } from '$elven/tools';
 	import { page } from '$app/stores';
+	import HeaderAndSidebar from '$elven/components/header_and_sidebar.svelte';
+	import Notify from '$elven/plugins/elvenNotify/notify.svelte';
+	import Player from '$elven/plugins/elvenPlayer/player.svelte';
+	import Confirm from '$elven/plugins/elvenChoose/confirm.svelte';
 
 	export let isAdmin = false;
 </script>
@@ -59,16 +61,24 @@
 </svelte:head>
 
 <div class="container">
-	<Progress />
 	{#if isAdmin}
-		<Header />
+		<div class="header">
+			<HeaderAndSidebar />
+		</div>
 	{/if}
 
 	<main>
 		<slot />
 	</main>
 
-	<ServiceWrapper bind:isAdmin />
+	<div class="service">
+		<Notify />
+		<Progress />
+		{#if isAdmin}
+			<Confirm />
+			<Player />
+		{/if}
+	</div>
 </div>
 
 <style lang="scss">
@@ -76,10 +86,38 @@
 		word-break: break-word;
 		min-height: 100vh;
 		display: grid;
-		grid-template-columns: 1fr;
-		grid-template-rows: max-content 1fr max-content;
+		// when header
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: max-content 1fr auto;
+		grid-template-areas:
+			'header header'
+			'main main'
+			'service service';
+		@media screen and(min-width: 755px) {
+			// when sidebar
+			grid-template-columns: max-content 1fr;
+			grid-template-rows: 1fr 1fr auto;
+			grid-template-areas:
+				'header main'
+				'header main'
+				'service service';
+		}
+
+		.header {
+			grid-area: header;
+		}
 		main {
+			grid-area: main;
 			padding: 12px;
+		}
+		.service {
+			grid-area: service;
+			display: flex;
+			height: fit-content;
+			width: 100%;
+			z-index: 100;
+			position: sticky;
+			bottom: 0;
 		}
 	}
 </style>

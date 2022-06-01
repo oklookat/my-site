@@ -70,6 +70,7 @@
 	.progress {
 		z-index: 9999;
 		cursor: default;
+		top: 0;
 		position: absolute;
 		width: 100%;
 		height: 2px;

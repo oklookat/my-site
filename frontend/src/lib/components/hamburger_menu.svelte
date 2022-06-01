@@ -50,7 +50,6 @@
 		.menu {
 			border-right: 1px solid var(--color-border);
 			height: 100%;
-			min-width: 104px;
 			max-width: max-content;
 		}
 	}

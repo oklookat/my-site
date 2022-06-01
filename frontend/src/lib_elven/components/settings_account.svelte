@@ -3,7 +3,6 @@
 	import NetworkUser from '$elven/network/user';
 	import type { User, UserChange } from '$elven/types/user';
 	import { usernameValidate, passwordValidate } from '$elven/types/user';
-	
 
 	const networkUser = new NetworkUser('');
 
@@ -97,14 +96,11 @@
 </script>
 
 {#if isUserDataLoaded}
-	<div class="block account">
-		<div class="big">{user.username}</div>
-		<div class="pointer" on:click={() => setChanger('username')}>
-			change username
-		</div>
-		<div class="pointer" on:click={() => setChanger('password')}>
-			change password
-		</div>
+	<div class="account">
+		<b class="username">{user.username}</b>
+		<div style="cursor: pointer" on:click={() => setChanger('username')}>change username</div>
+		<div style="cursor: pointer" on:click={() => setChanger('password')}>change password</div>
+
 		{#if isChangeCredentials}
 			<div class="change-credentials">
 				<input
@@ -142,25 +138,29 @@
 
 <style lang="scss">
 	.account {
+		background-color: var(--color-level-1);
+		font-size: 1.3rem;
 		padding: 14px;
-		height: max-content;
-		.change-credentials {
-			width: 100%;
-			height: 100%;
-			padding-top: 24px;
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			align-items: center;
-			gap: 16px;
-			> input {
-				height: 46px;
-				max-width: 164px;
-			}
-			> .submit {
-				height: 42px;
-				width: 84px;
-			}
+		.username {
+			font-size: 1.4rem;
+		}
+	}
+
+	.change-credentials {
+		width: 100%;
+		height: 100%;
+		padding-top: 24px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 16px;
+		> input {
+			height: 46px;
+			max-width: 164px;
+		}
+		> .submit {
+			height: 42px;
+			width: 84px;
 		}
 	}
 </style>
