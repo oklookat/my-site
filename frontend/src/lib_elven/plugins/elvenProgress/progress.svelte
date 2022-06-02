@@ -7,7 +7,6 @@
 
 	let percents: number;
 	let settings: Settings = {
-		height: '2px',
 		basicLoading: {
 			startTo: 45,
 			startSpeed: 30,

@@ -61,6 +61,7 @@
 </svelte:head>
 
 <div class="container">
+	<Progress />
 	{#if isAdmin}
 		<div class="header">
 			<HeaderAndSidebar />
@@ -73,7 +74,6 @@
 
 	<div class="service">
 		<Notify />
-		<Progress />
 		{#if isAdmin}
 			<Confirm />
 			<Player />

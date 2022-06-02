@@ -74,17 +74,6 @@ header {
 	}
 }
 
-.jmarkd__preview,
-.article__content {
-	min-width: 0;
-	width: 100%;
-	max-width: 644px;
-	margin: auto;
-	display: grid;
-	flex-direction: column;
-	gap: 24px;
-}
-
 .article {
 	border-radius: var(--border-radius);
 	background-color: var(--color-level-1);
@@ -127,4 +116,23 @@ header {
 			padding: 8px 12px 18px;
 		}
 	}
+}
+
+.jmarkd__preview,
+.article__content {
+	min-width: 0;
+	width: 100%;
+	max-width: 644px;
+	margin: auto;
+	display: grid;
+	flex-direction: column;
+	gap: 24px;
+	a {
+		border-bottom: 1px solid var(--color-text);
+		text-decoration: none;
+	}
+}
+
+.jmarkd__preview {
+	margin: 0;
 }

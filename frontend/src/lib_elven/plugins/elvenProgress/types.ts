@@ -14,8 +14,6 @@ export interface ElvenProgress {
 
 /** settings */
 export type Settings = {
-	/** height of progress line */
-	height: string;
 	basicLoading: {
 		/** go to n percents */
 		startTo: number;

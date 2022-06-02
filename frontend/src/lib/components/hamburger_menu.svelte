@@ -49,6 +49,7 @@
 		left: 0;
 		.menu {
 			border-right: 1px solid var(--color-border);
+			background-color: var(--color-level-1);
 			height: 100%;
 			max-width: max-content;
 		}

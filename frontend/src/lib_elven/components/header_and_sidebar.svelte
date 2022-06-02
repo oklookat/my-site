@@ -24,9 +24,7 @@
 	</div>
 	{#if isHamburgerOpened}
 		<HamburgerMenu on:closed={() => toggleHamburger()}>
-			<div class="hamb-nav">
-				<Navigation />
-			</div>
+			<Navigation />
 		</HamburgerMenu>
 	{/if}
 </header>
@@ -39,11 +37,6 @@
 	.header {
 		@media screen and(min-width: 755px) {
 			display: none;
-		}
-		.hamb-nav {
-			width: 100%;
-			height: 100%;
-			background-color: var(--color-level-1);
 		}
 	}
 	.sidebar {
