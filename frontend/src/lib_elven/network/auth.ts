@@ -9,19 +9,10 @@ export default class NetworkAuth {
 			password: password,
 			type: 'cookie'
 		};
-		try {
-			return await Fetchd.send({ method: 'POST', url: 'auth/login', body: data });
-		} catch (err) {
-			return Promise.reject(err);
-		}
+		return await Fetchd.send({ method: 'POST', url: 'auth/login', body: data });
 	}
 
 	public static async logout(): Promise<Response> {
-		try {
-			const resp = await Fetchd.send({ method: 'POST', url: 'auth/logout' });
-			return resp;
-		} catch (err) {
-			return Promise.reject(err);
-		}
+		return await Fetchd.send({ method: 'POST', url: 'auth/logout' });
 	}
 }

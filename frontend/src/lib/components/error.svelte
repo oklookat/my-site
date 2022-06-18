@@ -1,7 +1,15 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	export let imgURL: string | undefined = undefined;
 	export let code: string;
 	export let short: string;
+
+	onMount(() => {
+		if (imgURL) {
+			imgURL = '/ineed/error/' + imgURL;
+		}
+	});
 </script>
 
 <div class="error">

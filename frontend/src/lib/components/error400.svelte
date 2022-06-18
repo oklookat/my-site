@@ -1,5 +1,5 @@
 <script>
-	import Error from './error.svelte';
+	import Error from '$lib/components/error.svelte';
 
 	function showMsg() {
 		alert(`Короче, хакер, я тебя вычислил и в благородство играть не буду: 
@@ -10,7 +10,7 @@
 	}
 </script>
 
-<Error imgURL="/ineed/fun/err400.jpg" code="HTTP/4xx" short="странный запрос">
+<Error imgURL="400.jpg" code="HTTP/4xx" short="странный запрос">
 	<div style="font-weight: bold;">Тут может быть два варианта:</div>
 	<div>1. Я накосячил и вы попали в просак (извините).</div>
 	<div>2. Вы сами знаете как тут оказались.</div>

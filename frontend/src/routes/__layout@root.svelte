@@ -8,7 +8,7 @@
 	<title>{$page.stuff.title ? $page.stuff.title : 'oklookat'}</title>
 	<meta
 		name="description"
-		content={$page.stuff.description ? $page.stuff.description : 'oklookat home page'}
+		content={$page.stuff.description ? $page.stuff.description : ''}
 	/>
 </svelte:head>
 

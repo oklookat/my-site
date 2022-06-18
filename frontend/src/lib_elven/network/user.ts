@@ -17,21 +17,11 @@ export default class NetworkUser {
 
 	/** get information about current authorized user */
 	public async getMe(): Promise<Response> {
-		try {
-			const response = await Fetchd.send({ method: 'GET', url: 'users/me', headers: this.headers });
-			return response;
-		} catch (err) {
-			throw err;
-		}
+		return await Fetchd.send({ method: 'GET', url: 'users/me', headers: this.headers });
 	}
 
 	/** change username or password */
 	public static async change(body: UserChange) {
-		try {
-			const resp = await Fetchd.send({ method: 'POST', url: 'users/me/change', body: body });
-			return resp;
-		} catch (err) {
-			return Promise.reject(err);
-		}
+		return await Fetchd.send({ method: 'POST', url: 'users/me/change', body: body });
 	}
 }

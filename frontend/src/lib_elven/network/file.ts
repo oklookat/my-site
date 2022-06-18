@@ -1,5 +1,6 @@
 //
 import Fetchd from '$elven/network';
+import type { Fetchable } from '$elven/network/fetch_driver';
 import { addTokenToHeaders } from '$elven/tools';
 import type { Params } from '$elven/types/file';
 
@@ -17,19 +18,14 @@ export default class NetworkFile {
 	}
 
 	/** get files list */
-	public async getAll(params: Params, driver?: typeof fetch): Promise<Response> {
-		try {
-			const resp = await Fetchd.send({
-				method: 'GET',
-				url: 'files',
-				params: params,
-				headers: this.headers,
-				customDriver: driver
-			});
-			return resp;
-		} catch (err) {
-			throw err;
-		}
+	public async getAll(params: Params, driver?: Fetchable): Promise<Response> {
+		return await Fetchd.send({
+			method: 'GET',
+			url: 'files',
+			params: params,
+			headers: this.headers,
+			driver: driver
+		});
 	}
 
 	/** upload one file */
@@ -39,22 +35,11 @@ export default class NetworkFile {
 		}
 		const form = new FormData();
 		form.append('file', file);
-
-		try {
-			const resp = await Fetchd.send({ method: 'POST', url: 'files', body: form });
-			return resp;
-		} catch (err) {
-			throw err;
-		}
+		return await Fetchd.send({ method: 'POST', url: 'files', body: form });
 	}
 
 	/** delete one file */
 	public static async delete(id: string): Promise<Response> {
-		try {
-			const resp = await Fetchd.send({ method: 'DELETE', url: `files/${id}` });
-			return resp;
-		} catch (err) {
-			throw err;
-		}
+		return await Fetchd.send({ method: 'DELETE', url: `files/${id}` });
 	}
 }

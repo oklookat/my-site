@@ -1,5 +1,7 @@
 import { NetworkError } from '$elven/network/errors';
 
+export type Fetchable = typeof fetch
+
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 export interface Stringer {
@@ -11,26 +13,25 @@ export type RequestConfig = {
 	body?: BodyInit | Object;
 	params?: Record<string | number, Stringer>;
 	headers?: Headers;
-	customDriver?: typeof fetch;
+	driver?: Fetchable;
 };
 
 export default class FetchDriver {
-	private baseURL: string;
+	private baseURL = ''
 
-	constructor(baseURL: string) {
+	constructor(baseURL?: string) {
+		if(!baseURL) {
+			return
+		}
+		if(!baseURL.endsWith("/")) {
+			baseURL += "/"
+		}
 		this.baseURL = baseURL;
 	}
 
 	public async send(config: RequestConfig): Promise<Response> {
-		let endpoint = '';
+		const url = new URL(`${this.baseURL}${config.url}`);
 
-		// set request url
-		if (this.baseURL) {
-			endpoint = `${this.baseURL}/${config.url}`;
-		} else {
-			endpoint = config.url;
-		}
-		const url = new URL(endpoint);
 		if (config.params) {
 			// add searchparams to url
 			for (const key in config.params) {
@@ -79,13 +80,10 @@ export default class FetchDriver {
 			delete fetchConfig.body;
 		}
 
-		let okFetch = fetch;
-		if (config.customDriver) {
-			okFetch = config.customDriver;
-		}
+		const driver = config.driver || fetch;
 
 		try {
-			const result = await okFetch(url.toString(), fetchConfig);
+			const result = await driver(url.toString(), fetchConfig);
 			if (!result.ok) {
 				NetworkError.handle(result);
 			}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Toolbar from '$lib/components/toolbar.svelte';
-	import SearchBar from '$elven/components/search_bar.svelte';
+	import SearchBar from '$lib/components/search_bar.svelte';
 	import { Start, type File } from '$elven/types/file';
 	import FilesUploader from '$elven/components/files_uploader.svelte';
 	import { createEventDispatcher, onDestroy } from 'svelte';

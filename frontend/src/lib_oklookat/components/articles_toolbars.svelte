@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SearchBar from '$elven/components/search_bar.svelte';
+	import SearchBar from '$lib/components/search_bar.svelte';
 	import Toolbar from '$lib/components/toolbar.svelte';
 	import type { Params, RPH_Event } from '$elven/tools/params';
 	import type { RAW } from '$elven/types/article';

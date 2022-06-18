@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import Toolbar from '$lib/components/toolbar.svelte';
 	import { By, type RAW } from '$elven/types/article';
-	import SearchBar from '$elven/components/search_bar.svelte';
+	import SearchBar from '$lib/components/search_bar.svelte';
 	import type { Params, RPH_Event } from '$elven/tools/params';
 	import OverlayMobile from '$lib/components/overlay_mobile.svelte';
 

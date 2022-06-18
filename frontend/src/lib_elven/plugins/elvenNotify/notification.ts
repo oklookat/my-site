@@ -1,4 +1,4 @@
-import Animation from '$elven/tools/animation';
+import { fadeIn, fadeOut } from '$elven/tools';
 import { ClassName } from './types';
 
 /** represents one notification */
@@ -50,7 +50,7 @@ export default class Notification {
 	/** run timers, render notification */
 	public render() {
 		this.rootEL.appendChild(this.containerEL);
-		Animation.fadeIn(this.containerEL).then(() => {
+		fadeIn(this.containerEL).then(() => {
 			this.runDeleteTimer();
 		});
 	}
@@ -60,7 +60,7 @@ export default class Notification {
 			clearTimeout(this.deleteTimeout);
 		}
 
-		Animation.fadeOut(this.containerEL).then(() => {
+		fadeOut(this.containerEL).then(() => {
 			this.containerEL.remove();
 		});
 	}

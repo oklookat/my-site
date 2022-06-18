@@ -51,7 +51,7 @@
 
 	import { getEditorConfig } from '$elven/tools/markdown';
 	import { getTokenFromSession } from '$elven/tools';
-	import UploadPhoto from '$elven/icons/upload_photo.svelte';
+	import UploadPhoto from '$lib/icons/upload_photo.svelte';
 	import { Editable } from '$elven/tools/article';
 	import { dateToReadable } from '$elven/tools/dates';
 	import type jmarkd from '@oklookat/jmarkd';
